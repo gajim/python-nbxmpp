@@ -1,0 +1,475 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>nbxmpp.protocol.Hashes</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="nbxmpp-module.html">Package&nbsp;nbxmpp</a> ::
+        <a href="nbxmpp.protocol-module.html">Module&nbsp;protocol</a> ::
+        Class&nbsp;Hashes
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="nbxmpp.protocol.Hashes-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class Hashes</h1><p class="nomargin-top"><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Hashes">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_nbxmpp_p_12" name="uml_class_diagram_for_nbxmpp_p_12">
+<area shape="rect" id="node71" href="nbxmpp.protocol.Hashes-class.html#supported" title="nbxmpp.protocol.Hashes.supported" alt="" coords="159,383,416,401"/>
+<area shape="rect" id="node71" href="nbxmpp.protocol.Hashes-class.html#__init__" title="Takes &quot;tag&quot; argument as the name of node (prepended by namespace, if needed and separated from it by a space), attrs dictionary as the set of arguments, payload list as the set of textual strings and child nodes that this node carries within itself and &quot;parent&quot; argument that is another node that this one will be the child of. Also the __init__ can be provided with &quot;node&quot; argument that is either a text string containing exactly one node or another Node instance to begin with. If both &quot;node&quot; and other arguments is provided then the node initially created as replica of &quot;node&quot; provided and then modified to be compliant with other arguments." alt="" coords="159,404,416,423"/>
+<area shape="rect" id="node71" href="nbxmpp.protocol.Hashes-class.html#calculateHash" title="Calculate the hash and add it. It is preferable doing it here instead of doing it all over the place in Gajim." alt="" coords="159,423,416,441"/>
+<area shape="rect" id="node71" href="nbxmpp.protocol.Hashes-class.html#addHash" title="More than one hash can be added. Although it is permitted, it should not be done for big files because it could slow down Gajim." alt="" coords="159,441,416,460"/>
+<area shape="rect" id="node1" href="nbxmpp.protocol.Hashes-class.html" title="Hash elements for various XEPs as defined in XEP&#45;300" alt="" coords="147,358,427,466"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#FORCE_NODE_RECREATION" title="nbxmpp.simplexml.Node.FORCE_NODE_RECREATION" alt="" coords="17,31,559,49"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#lookup_nsp" title="nbxmpp.simplexml.Node.lookup_nsp" alt="" coords="17,52,559,71"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#__str__" title="Method used to dump node into textual representation. If &quot;fancy&quot; argument is set to True produces indented output for readability" alt="" coords="17,71,559,89"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#addChild" title="If &quot;node&quot; argument is provided, adds it as child node. Else creates new node from the other arguments&#39; values and adds it as well" alt="" coords="17,89,559,108"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#addData" title="Add some CDATA to node" alt="" coords="17,108,559,127"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#clearData" title="Remove all CDATA from the node" alt="" coords="17,127,559,145"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#delAttr" title="Delete an attribute &quot;key&quot;" alt="" coords="17,145,559,164"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#delChild" title="Delete the &quot;node&quot; from the node&#39;s childs list, if &quot;node&quot; is an instance. Else delete the first node that have specified name and (optionally) attributes" alt="" coords="17,164,559,183"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#getAttrs" title="Return all node&#39;s attributes as dictionary" alt="" coords="17,183,559,201"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#getAttr" title="Return value of specified attribute" alt="" coords="17,201,559,220"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#getChildren" title="Return all node&#39;s child nodes as list" alt="" coords="17,220,559,239"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#getData" title="Return all node CDATA as string (concatenated)" alt="" coords="17,239,559,257"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#getName" title="Return the name of node" alt="" coords="17,257,559,276"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#getNamespace" title="Return the namespace of node" alt="" coords="17,276,559,295"/>
+<area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#__getattr__" title="Reduce memory usage caused by T/NT classes &#45; use memory only when needed" alt="" coords="17,313,559,332"/>
+<area shape="rect" id="node2" href="nbxmpp.simplexml.Node-class.html" title="Node class describes syntax of separate XML Node. It have a constructor that permits node creation from set of &quot;namespace name&quot;, attributes and payload of text strings and other nodes. It does not natively support building node from text string and uses NodeBuilder class for that purpose. After creation node can be mangled in many ways so it can be completely changed. Also node can be serialised into string in one of two modes: default (where the textual representation of node describes it exactly) and &quot;fancy&quot; &#45; with whitespace added to make indentation and thus make result more readable by human." alt="" coords="5,6,571,338"/>
+</map>
+  <img src="uml_class_diagram_for_nbxmpp_p_12.gif" alt='' usemap="#uml_class_diagram_for_nbxmpp_p_12" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+Hash elements for various XEPs as defined in XEP-300
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Hashes-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">nsp</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">urn:xmpp:hashes:0</code><code class="variable-quote">'</code></span>)</span><br />
+      Takes &quot;tag&quot; argument as the name of node (prepended by namespace, if
+needed and separated from it by a space), attrs dictionary as the set of
+arguments, payload list as the set of textual strings and child nodes
+that this node carries within itself and &quot;parent&quot; argument that is
+another node that this one will be the child of. Also the __init__ can be
+provided with &quot;node&quot; argument that is either a text string containing
+exactly one node or another Node instance to begin with. If both &quot;node&quot;
+and other arguments is provided then the node initially created as
+replica of &quot;node&quot; provided and then modified to be compliant with other
+arguments.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Hashes.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Hashes-class.html#calculateHash" class="summary-sig-name">calculateHash</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">algo</span>,
+        <span class="summary-sig-arg">file_string</span>)</span><br />
+      Calculate the hash and add it. It is preferable doing it here
+instead of doing it all over the place in Gajim.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Hashes.calculateHash">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Hashes-class.html#addHash" class="summary-sig-name">addHash</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">hash_</span>,
+        <span class="summary-sig-arg">algo</span>)</span><br />
+      More than one hash can be added. Although it is permitted, it should
+not be done for big files because it could slow down Gajim.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Hashes.addHash">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.simplexml.Node-class.html">simplexml.Node</a></code></b>:
+      <code><a href="nbxmpp.simplexml.Node-class.html#__contains__">__contains__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__delitem__">__delitem__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__getattr__">__getattr__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__getitem__">__getitem__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__setitem__">__setitem__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__str__">__str__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#addChild">addChild</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#addData">addData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#clearData">clearData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#delAttr">delAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#delChild">delChild</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getAttr">getAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getAttrs">getAttrs</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getChildren">getChildren</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getData">getData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getName">getName</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getNamespace">getNamespace</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getParent">getParent</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getPayload">getPayload</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTag">getTag</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTagAttr">getTagAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTagData">getTagData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTags">getTags</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#has_attr">has_attr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#iterTags">iterTags</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#lookup_nsp">lookup_nsp</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setAttr">setAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setData">setData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setName">setName</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setNamespace">setNamespace</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setParent">setParent</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setPayload">setPayload</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setTag">setTag</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setTagAttr">setTagAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setTagData">setTagData</a></code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+        <a href="nbxmpp.protocol.Hashes-class.html#supported" class="summary-name">supported</a> = <code title="('md5', 'sha-1', 'sha-256', 'sha-512')"><code class="variable-group">(</code><code class="variable-quote">'</code><code class="variable-string">md5</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">sha-1</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">sha-256</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">sha-512</code><code class="variable-quote">'</code><code class="variable-group">)</code></code>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.simplexml.Node-class.html">simplexml.Node</a></code></b>:
+      <code><a href="nbxmpp.simplexml.Node-class.html#FORCE_NODE_RECREATION">FORCE_NODE_RECREATION</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">nsp</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">urn:xmpp:hashes:0</code><code class="variable-quote">'</code></span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Hashes.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Takes &quot;tag&quot; argument as the name of node (prepended by namespace, if
+needed and separated from it by a space), attrs dictionary as the set of
+arguments, payload list as the set of textual strings and child nodes
+that this node carries within itself and &quot;parent&quot; argument that is
+another node that this one will be the child of. Also the __init__ can be
+provided with &quot;node&quot; argument that is either a text string containing
+exactly one node or another Node instance to begin with. If both &quot;node&quot;
+and other arguments is provided then the node initially created as
+replica of &quot;node&quot; provided and then modified to be compliant with other
+arguments.
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="calculateHash"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">calculateHash</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">algo</span>,
+        <span class="sig-arg">file_string</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Hashes.calculateHash">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Calculate the hash and add it. It is preferable doing it here
+instead of doing it all over the place in Gajim.
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="addHash"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">addHash</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">hash_</span>,
+        <span class="sig-arg">algo</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Hashes.addHash">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  More than one hash can be added. Although it is permitted, it should
+not be done for big files because it could slow down Gajim.
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== CLASS VARIABLE DETAILS ==================== -->
+<a name="section-ClassVariableDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variable Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariableDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="supported"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <h3 class="epydoc">supported</h3>
+  
+  <dl class="fields">
+  </dl>
+  <dl class="fields">
+    <dt>Value:</dt>
+      <dd><table><tr><td><pre class="variable">
+<code class="variable-group">(</code><code class="variable-quote">'</code><code class="variable-string">md5</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">sha-1</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">sha-256</code><code class="variable-quote">'</code><code class="variable-op">, </code><code class="variable-quote">'</code><code class="variable-string">sha-512</code><code class="variable-quote">'</code><code class="variable-group">)</code>
+</pre></td></tr></table>
+</dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue May  8 11:18:05 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

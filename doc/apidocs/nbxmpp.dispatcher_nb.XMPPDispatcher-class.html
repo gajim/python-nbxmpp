@@ -1,0 +1,1411 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>nbxmpp.dispatcher_nb.XMPPDispatcher</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="nbxmpp-module.html">Package&nbsp;nbxmpp</a> ::
+        <a href="nbxmpp.dispatcher_nb-module.html">Module&nbsp;dispatcher_nb</a> ::
+        Class&nbsp;XMPPDispatcher
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class XMPPDispatcher</h1><p class="nomargin-top"><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_nbxmpp_d_2" name="uml_class_diagram_for_nbxmpp_d_2">
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#__init__" title="nbxmpp.dispatcher_nb.XMPPDispatcher.__init__" alt="" coords="17,153,644,172"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#getAnID" title="nbxmpp.dispatcher_nb.XMPPDispatcher.getAnID" alt="" coords="17,172,644,191"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#dumpHandlers" title="Return set of user&#45;registered callbacks in it&#39;s internal format. Used within the library to carry user handlers set over Dispatcher replugins" alt="" coords="17,191,644,209"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#restoreHandlers" title="Restore user&#45;registered callbacks structure from dump previously obtained via dumpHandlers. Used within the library to carry user handlers set over Dispatcher replugins." alt="" coords="17,209,644,228"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#plugin" title="Plug the Dispatcher instance into Client class instance and send initial stream header. Used internally" alt="" coords="17,228,644,247"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#plugout" title="Prepare instance to be destructed" alt="" coords="17,247,644,265"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#StreamInit" title="Send an initial stream header" alt="" coords="17,265,644,284"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#replace_non_character" title="nbxmpp.dispatcher_nb.XMPPDispatcher.replace_non_character" alt="" coords="17,284,644,303"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#ProcessNonBlocking" title="Check incoming stream for data waiting" alt="" coords="17,303,644,321"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterNamespace" title="Create internal structures for newly registered namespace" alt="" coords="17,321,644,340"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterProtocol" title="Used to declare some top&#45;level stanza name to dispatcher" alt="" coords="17,340,644,359"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterNamespaceHandler" title="Register handler for processing all stanzas for specified namespace" alt="" coords="17,359,644,377"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterHandler" title="Register user callback as stanzas handler of declared type" alt="" coords="17,377,644,396"/>
+<area shape="rect" id="node12" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#send" title="Wrap transports send method when plugged into NonBlockingClient. Makes sure stanzas get ID and from tag." alt="" coords="17,415,644,433"/>
+<area shape="rect" id="node1" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html" title="Handles XMPP stream and is the first who takes control over a fresh stanza" alt="" coords="5,121,656,439"/>
+<area shape="rect" id="node3" href="nbxmpp.dispatcher_nb.BOSHDispatcher-class.html" title="nbxmpp.dispatcher_nb.BOSHDispatcher" alt="" coords="259,459,403,498"/>
+<area shape="rect" id="node13" href="nbxmpp.plugin.PlugIn-class.html#PlugIn" title="Attach to owner and register ourself and our _exported_methods in it. If defined by a subclass, call self.plugin(owner) to execute hook code after plugging" alt="" coords="217,39,443,57"/>
+<area shape="rect" id="node13" href="nbxmpp.plugin.PlugIn-class.html#PlugOut" title="Unregister our _exported_methods from owner and detach from it. If defined by a subclass, call self.plugout() after unplugging to execute hook code" alt="" coords="217,57,443,76"/>
+<area shape="rect" id="node13" href="nbxmpp.plugin.PlugIn-class.html#get_instance" title="Factory Method for object creation" alt="" coords="217,76,443,95"/>
+<area shape="rect" id="node2" href="nbxmpp.plugin.PlugIn-class.html" title="Abstract xmpppy plugin infrastructure code, providing plugging in/out and debugging functionality" alt="" coords="205,6,453,101"/>
+</map>
+  <img src="uml_class_diagram_for_nbxmpp_d_2.gif" alt='' usemap="#uml_class_diagram_for_nbxmpp_d_2" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<p>Handles XMPP stream and is the first who takes control over a fresh stanza</p>
+<p>Is plugged into NonBlockingClient but can be replugged to restart handled
+stream headers (used by SASL f.e.).</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#getAnID" class="summary-sig-name">getAnID</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.getAnID">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#dumpHandlers" class="summary-sig-name">dumpHandlers</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return set of user-registered callbacks in it's internal format. Used
+within the library to carry user handlers set over Dispatcher replugins</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.dumpHandlers">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#restoreHandlers" class="summary-sig-name">restoreHandlers</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">handlers</span>)</span><br />
+      Restore user-registered callbacks structure from dump previously obtained
+via dumpHandlers. Used within the library to carry user handlers set over
+Dispatcher replugins.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.restoreHandlers">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#_init" class="summary-sig-name" onclick="show_private();">_init</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Register default namespaces/protocols/handlers. Used internally</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher._init">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#plugin" class="summary-sig-name">plugin</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">owner</span>)</span><br />
+      Plug the Dispatcher instance into Client class instance and send initial
+stream header. Used internally</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.plugin">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#plugout" class="summary-sig-name">plugout</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Prepare instance to be destructed</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.plugout">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#StreamInit" class="summary-sig-name">StreamInit</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Send an initial stream header</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.StreamInit">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#_check_stream_start" class="summary-sig-name" onclick="show_private();">_check_stream_start</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ns</span>,
+        <span class="summary-sig-arg">tag</span>,
+        <span class="summary-sig-arg">attrs</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher._check_stream_start">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#replace_non_character" class="summary-sig-name">replace_non_character</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">data</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.replace_non_character">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#ProcessNonBlocking" class="summary-sig-name">ProcessNonBlocking</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">data</span>)</span><br />
+      Check incoming stream for data waiting</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.ProcessNonBlocking">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterNamespace" class="summary-sig-name">RegisterNamespace</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">xmlns</span>,
+        <span class="summary-sig-arg">order</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">info</code><code class="variable-quote">'</code></span>)</span><br />
+      Create internal structures for newly registered namespace</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterNamespace">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterProtocol" class="summary-sig-name">RegisterProtocol</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">tag_name</span>,
+        <span class="summary-sig-arg">Proto</span>,
+        <span class="summary-sig-arg">xmlns</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">order</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">info</code><code class="variable-quote">'</code></span>)</span><br />
+      Used to declare some top-level stanza name to dispatcher</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterProtocol">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterNamespaceHandler" class="summary-sig-name">RegisterNamespaceHandler</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">xmlns</span>,
+        <span class="summary-sig-arg">handler</span>,
+        <span class="summary-sig-arg">typ</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">ns</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">makefirst</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">system</span>=<span class="summary-sig-default">0</span>)</span><br />
+      Register handler for processing all stanzas for specified namespace</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterNamespaceHandler">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterHandler" class="summary-sig-name">RegisterHandler</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">handler</span>,
+        <span class="summary-sig-arg">typ</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">ns</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">xmlns</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">makefirst</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">system</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Register user callback as stanzas handler of declared type</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterHandler">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterHandlerOnce" class="summary-sig-name">RegisterHandlerOnce</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">handler</span>,
+        <span class="summary-sig-arg">typ</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">ns</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">xmlns</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">makefirst</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">system</span>=<span class="summary-sig-default">0</span>)</span><br />
+      Unregister handler after first call (not implemented yet)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterHandlerOnce">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#UnregisterHandler" class="summary-sig-name">UnregisterHandler</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>,
+        <span class="summary-sig-arg">handler</span>,
+        <span class="summary-sig-arg">typ</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">ns</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">xmlns</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Unregister handler. &quot;typ&quot; and &quot;ns&quot; must be specified exactly the same as
+with registering.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.UnregisterHandler">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterDefaultHandler" class="summary-sig-name">RegisterDefaultHandler</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">handler</span>)</span><br />
+      Specify the handler that will be used if no NodeProcessed exception were
+raised. This is returnStanzaHandler by default.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterDefaultHandler">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterEventHandler" class="summary-sig-name">RegisterEventHandler</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">handler</span>)</span><br />
+      Register handler that will process events. F.e. &quot;FILERECEIVED&quot; event. See
+common/connection: _event_dispatcher()</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterEventHandler">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#returnStanzaHandler" class="summary-sig-name">returnStanzaHandler</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">conn</span>,
+        <span class="summary-sig-arg">stanza</span>)</span><br />
+      Return stanza back to the sender with &lt;feature-not-implemented/&gt; error
+set</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.returnStanzaHandler">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#RegisterCycleHandler" class="summary-sig-name">RegisterCycleHandler</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">handler</span>)</span><br />
+      Register handler that will be called on every Dispatcher.Process() call</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterCycleHandler">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#UnregisterCycleHandler" class="summary-sig-name">UnregisterCycleHandler</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">handler</span>)</span><br />
+      Unregister handler that will is called on every Dispatcher.Process() call</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.UnregisterCycleHandler">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#Event" class="summary-sig-name">Event</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">realm</span>,
+        <span class="summary-sig-arg">event</span>,
+        <span class="summary-sig-arg">data</span>)</span><br />
+      Raise some event</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.Event">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#dispatch" class="summary-sig-name">dispatch</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">stanza</span>,
+        <span class="summary-sig-arg">session</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">direct</span>=<span class="summary-sig-default">0</span>)</span><br />
+      Main procedure that performs XMPP stanza recognition and calling
+apppropriate handlers for it. Called by simplexml</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.dispatch">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#_WaitForData" class="summary-sig-name" onclick="show_private();">_WaitForData</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">data</span>)</span><br />
+      Internal wrapper around ProcessNonBlocking. Will check for</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher._WaitForData">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#SendAndWaitForResponse" class="summary-sig-name">SendAndWaitForResponse</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">stanza</span>,
+        <span class="summary-sig-arg">timeout</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">func</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">args</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Send stanza and wait for recipient's response to it. Will call transports
+on_timeout callback if response is not retrieved in time</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.SendAndWaitForResponse">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#SendAndCallForResponse" class="summary-sig-name">SendAndCallForResponse</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">stanza</span>,
+        <span class="summary-sig-arg">func</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">args</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Put stanza on the wire and call back when recipient replies. Additional
+callback arguments can be specified in args</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.SendAndCallForResponse">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#send" class="summary-sig-name">send</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">stanza</span>,
+        <span class="summary-sig-arg">now</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Wrap transports send method when plugged into NonBlockingClient. Makes
+sure stanzas get ID and from tag.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.send">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.plugin.PlugIn-class.html">plugin.PlugIn</a></code></b>:
+      <code><a href="nbxmpp.plugin.PlugIn-class.html#PlugIn">PlugIn</a></code>,
+      <code><a href="nbxmpp.plugin.PlugIn-class.html#PlugOut">PlugOut</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS METHODS ==================== -->
+<a name="section-ClassMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.plugin.PlugIn-class.html">plugin.PlugIn</a></code></b>:
+      <code><a href="nbxmpp.plugin.PlugIn-class.html#get_instance">get_instance</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.plugin.PlugIn-class.html#__init__">plugin.PlugIn.__init__</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="getAnID"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getAnID</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.getAnID">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="dumpHandlers"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">dumpHandlers</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.dumpHandlers">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return set of user-registered callbacks in it's internal format. Used
+within the library to carry user handlers set over Dispatcher replugins
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="restoreHandlers"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">restoreHandlers</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">handlers</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.restoreHandlers">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Restore user-registered callbacks structure from dump previously obtained
+via dumpHandlers. Used within the library to carry user handlers set over
+Dispatcher replugins.
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_init"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_init</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher._init">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Register default namespaces/protocols/handlers. Used internally
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="plugin"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">plugin</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">owner</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.plugin">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Plug the Dispatcher instance into Client class instance and send initial
+stream header. Used internally
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="plugout"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">plugout</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.plugout">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Prepare instance to be destructed
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="StreamInit"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">StreamInit</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.StreamInit">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Send an initial stream header
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_check_stream_start"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_check_stream_start</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">ns</span>,
+        <span class="sig-arg">tag</span>,
+        <span class="sig-arg">attrs</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher._check_stream_start">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="replace_non_character"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">replace_non_character</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">data</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.replace_non_character">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="ProcessNonBlocking"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">ProcessNonBlocking</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">data</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.ProcessNonBlocking">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Check incoming stream for data waiting
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>data</code></strong> - data received from transports/IO sockets</li>
+    </ul></dd>
+    <dt>Returns:</dt>
+        <dd><ol class="rst-rst-arabic simple rst-arabic simple">
+<li><p class="rst-first rst-first">length of processed data if some data were processed;</p>
+</li>
+<li><p class="rst-first rst-first">'0' string if no data were processed but link is alive;</p>
+</li>
+<li><p class="rst-first rst-first">0 (zero) if underlying connection is closed.</p>
+</li>
+</ol></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="RegisterNamespace"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">RegisterNamespace</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">xmlns</span>,
+        <span class="sig-arg">order</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">info</code><code class="variable-quote">'</code></span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterNamespace">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Create internal structures for newly registered namespace</p>
+<p>You can register handlers for this namespace afterwards. By default
+one namespace is already registered
+(jabber:client or jabber:component:accept depending on context.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="RegisterProtocol"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">RegisterProtocol</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">tag_name</span>,
+        <span class="sig-arg">Proto</span>,
+        <span class="sig-arg">xmlns</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">order</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">info</code><code class="variable-quote">'</code></span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterProtocol">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Used to declare some top-level stanza name to dispatcher</p>
+<p>Needed to start registering handlers for such stanzas. Iq, message and
+presence protocols are registered by default.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="RegisterNamespaceHandler"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">RegisterNamespaceHandler</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">xmlns</span>,
+        <span class="sig-arg">handler</span>,
+        <span class="sig-arg">typ</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">ns</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">makefirst</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">system</span>=<span class="sig-default">0</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterNamespaceHandler">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Register handler for processing all stanzas for specified namespace
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="RegisterHandler"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">RegisterHandler</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">name</span>,
+        <span class="sig-arg">handler</span>,
+        <span class="sig-arg">typ</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">ns</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">xmlns</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">makefirst</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">system</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterHandler">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Register user callback as stanzas handler of declared type</p>
+<p>Callback arguments:
+dispatcher instance (for replying), incoming return of previous handlers.
+The callback must raise xmpp.NodeProcessed just before return if it wants
+to prevent other callbacks to be called with the same stanza as argument
+_and_, more     importantly     library from returning stanza to sender with error set.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>name</code></strong> - name of stanza. F.e. &quot;iq&quot;.</li>
+        <li><strong class="pname"><code>handler</code></strong> - user callback.</li>
+        <li><strong class="pname"><code>typ</code></strong> - value of stanza's &quot;type&quot; attribute. If not specified any
+value will match</li>
+        <li><strong class="pname"><code>ns</code></strong> - namespace of child that stanza must contain.</li>
+        <li><strong class="pname"><code>makefirst</code></strong> - insert handler in the beginning of handlers list instead
+of      adding it to the end. Note that more common handlers i.e. w/o &quot;typ&quot;
+and &quot; will be called first nevertheless.</li>
+        <li><strong class="pname"><code>system</code></strong> - call handler even if NodeProcessed Exception were raised
+already.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="RegisterHandlerOnce"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">RegisterHandlerOnce</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">name</span>,
+        <span class="sig-arg">handler</span>,
+        <span class="sig-arg">typ</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">ns</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">xmlns</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">makefirst</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">system</span>=<span class="sig-default">0</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterHandlerOnce">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Unregister handler after first call (not implemented yet)
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="UnregisterHandler"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">UnregisterHandler</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">name</span>,
+        <span class="sig-arg">handler</span>,
+        <span class="sig-arg">typ</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">ns</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string"></code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">xmlns</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.UnregisterHandler">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Unregister handler. &quot;typ&quot; and &quot;ns&quot; must be specified exactly the same as
+with registering.
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="RegisterDefaultHandler"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">RegisterDefaultHandler</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">handler</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterDefaultHandler">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Specify the handler that will be used if no NodeProcessed exception were
+raised. This is returnStanzaHandler by default.
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="RegisterEventHandler"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">RegisterEventHandler</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">handler</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterEventHandler">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Register handler that will process events. F.e. &quot;FILERECEIVED&quot; event. See
+common/connection: _event_dispatcher()
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="returnStanzaHandler"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">returnStanzaHandler</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">conn</span>,
+        <span class="sig-arg">stanza</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.returnStanzaHandler">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return stanza back to the sender with &lt;feature-not-implemented/&gt; error
+set
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="RegisterCycleHandler"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">RegisterCycleHandler</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">handler</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.RegisterCycleHandler">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Register handler that will be called on every Dispatcher.Process() call
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="UnregisterCycleHandler"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">UnregisterCycleHandler</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">handler</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.UnregisterCycleHandler">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Unregister handler that will is called on every Dispatcher.Process() call
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="Event"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">Event</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">realm</span>,
+        <span class="sig-arg">event</span>,
+        <span class="sig-arg">data</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.Event">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Raise some event
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>realm</code></strong> - scope of event. Usually a namespace.</li>
+        <li><strong class="pname"><code>event</code></strong> - the event itself. F.e. &quot;SUCCESSFUL SEND&quot;.</li>
+        <li><strong class="pname"><code>data</code></strong> - data that comes along with event. Depends on event.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="dispatch"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">dispatch</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">stanza</span>,
+        <span class="sig-arg">session</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">direct</span>=<span class="sig-default">0</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.dispatch">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Main procedure that performs XMPP stanza recognition and calling
+apppropriate handlers for it. Called by simplexml
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_WaitForData"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_WaitForData</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">data</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher._WaitForData">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Internal wrapper around ProcessNonBlocking. Will check for
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="SendAndWaitForResponse"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">SendAndWaitForResponse</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">stanza</span>,
+        <span class="sig-arg">timeout</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">func</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">args</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.SendAndWaitForResponse">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Send stanza and wait for recipient's response to it. Will call transports
+on_timeout callback if response is not retrieved in time</p>
+<p>Be aware: Only timeout of latest call of SendAndWait is active.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="SendAndCallForResponse"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">SendAndCallForResponse</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">stanza</span>,
+        <span class="sig-arg">func</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">args</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.SendAndCallForResponse">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Put stanza on the wire and call back when recipient replies. Additional
+callback arguments can be specified in args
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="send"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">send</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">stanza</span>,
+        <span class="sig-arg">now</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.dispatcher_nb-pysrc.html#XMPPDispatcher.send">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Wrap transports send method when plugged into NonBlockingClient. Makes
+sure stanzas get ID and from tag.
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue May  8 11:18:05 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

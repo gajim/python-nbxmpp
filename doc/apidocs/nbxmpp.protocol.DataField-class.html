@@ -1,0 +1,950 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>nbxmpp.protocol.DataField</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="nbxmpp-module.html">Package&nbsp;nbxmpp</a> ::
+        <a href="nbxmpp.protocol-module.html">Module&nbsp;protocol</a> ::
+        Class&nbsp;DataField
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="nbxmpp.protocol.DataField-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class DataField</h1><p class="nomargin-top"><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_nbxmpp_p_8" name="uml_class_diagram_for_nbxmpp_p_8">
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#__init__" title="Create new data field of specified name,value and type" alt="" coords="17,391,677,409"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#setRequired" title="Change the state of the &#39;required&#39; flag" alt="" coords="17,409,677,428"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#isRequired" title="Return in this field a required one" alt="" coords="17,428,677,447"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#setDesc" title="Set the description of this field" alt="" coords="17,447,677,465"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#getDesc" title="Return the description of this field" alt="" coords="17,465,677,484"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#setValue" title="Set the value of this field" alt="" coords="17,484,677,503"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#getValue" title="nbxmpp.protocol.DataField.getValue" alt="" coords="17,503,677,521"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#setValues" title="Set the values of this field as values&#45;list. Replaces all previous filed values! If you need to just add a value &#45; use addValue method" alt="" coords="17,521,677,540"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#addValue" title="Add one more value to this field. Used in &#39;get&#39; iq&#39;s or such" alt="" coords="17,540,677,559"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#getValues" title="Return the list of values associated with this field" alt="" coords="17,559,677,577"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#getOptions" title="Return label&#45;option pairs list associated with this field" alt="" coords="17,577,677,596"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#setOptions" title="Set label&#45;option pairs list associated with this field" alt="" coords="17,596,677,615"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#addOption" title="Add one more label&#45;option pair to this field" alt="" coords="17,615,677,633"/>
+<area shape="rect" id="node62" href="nbxmpp.protocol.DataField-class.html#setVar" title="Set &#39;var&#39; attribute value of this field" alt="" coords="17,652,677,671"/>
+<area shape="rect" id="node1" href="nbxmpp.protocol.DataField-class.html" title="This class is used in the DataForm class to describe the single data item" alt="" coords="5,358,688,677"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#FORCE_NODE_RECREATION" title="nbxmpp.simplexml.Node.FORCE_NODE_RECREATION" alt="" coords="77,31,619,49"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#lookup_nsp" title="nbxmpp.simplexml.Node.lookup_nsp" alt="" coords="77,52,619,71"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#__str__" title="Method used to dump node into textual representation. If &quot;fancy&quot; argument is set to True produces indented output for readability" alt="" coords="77,71,619,89"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#addChild" title="If &quot;node&quot; argument is provided, adds it as child node. Else creates new node from the other arguments&#39; values and adds it as well" alt="" coords="77,89,619,108"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#addData" title="Add some CDATA to node" alt="" coords="77,108,619,127"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#clearData" title="Remove all CDATA from the node" alt="" coords="77,127,619,145"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#delAttr" title="Delete an attribute &quot;key&quot;" alt="" coords="77,145,619,164"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#delChild" title="Delete the &quot;node&quot; from the node&#39;s childs list, if &quot;node&quot; is an instance. Else delete the first node that have specified name and (optionally) attributes" alt="" coords="77,164,619,183"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#getAttrs" title="Return all node&#39;s attributes as dictionary" alt="" coords="77,183,619,201"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#getAttr" title="Return value of specified attribute" alt="" coords="77,201,619,220"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#getChildren" title="Return all node&#39;s child nodes as list" alt="" coords="77,220,619,239"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#getData" title="Return all node CDATA as string (concatenated)" alt="" coords="77,239,619,257"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#getName" title="Return the name of node" alt="" coords="77,257,619,276"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#getNamespace" title="Return the namespace of node" alt="" coords="77,276,619,295"/>
+<area shape="rect" id="node63" href="nbxmpp.simplexml.Node-class.html#__getattr__" title="Reduce memory usage caused by T/NT classes &#45; use memory only when needed" alt="" coords="77,313,619,332"/>
+<area shape="rect" id="node2" href="nbxmpp.simplexml.Node-class.html" title="Node class describes syntax of separate XML Node. It have a constructor that permits node creation from set of &quot;namespace name&quot;, attributes and payload of text strings and other nodes. It does not natively support building node from text string and uses NodeBuilder class for that purpose. After creation node can be mangled in many ways so it can be completely changed. Also node can be serialised into string in one of two modes: default (where the textual representation of node describes it exactly) and &quot;fancy&quot; &#45; with whitespace added to make indentation and thus make result more readable by human." alt="" coords="65,6,631,338"/>
+</map>
+  <img src="uml_class_diagram_for_nbxmpp_p_8.gif" alt='' usemap="#uml_class_diagram_for_nbxmpp_p_8" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<p>This class is used in the DataForm class to describe the single data item</p>
+<p>If you are working with jabber:x:data (XEP-0004, XEP-0068, XEP-0122) then
+you will need to work with instances of this class.</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">name</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">value</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">typ</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">required</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">desc</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">options</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>,
+        <span class="summary-sig-arg">node</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Create new data field of specified name,value and type</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#setRequired" class="summary-sig-name">setRequired</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">req</span>=<span class="summary-sig-default">1</span>)</span><br />
+      Change the state of the 'required' flag</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setRequired">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#isRequired" class="summary-sig-name">isRequired</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return in this field a required one</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.isRequired">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#setDesc" class="summary-sig-name">setDesc</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">desc</span>)</span><br />
+      Set the description of this field</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setDesc">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#getDesc" class="summary-sig-name">getDesc</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the description of this field</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getDesc">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#setValue" class="summary-sig-name">setValue</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">val</span>)</span><br />
+      Set the value of this field</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setValue">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#getValue" class="summary-sig-name">getValue</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getValue">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#setValues" class="summary-sig-name">setValues</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">lst</span>)</span><br />
+      Set the values of this field as values-list. Replaces all previous filed
+values! If you need to just add a value - use addValue method</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setValues">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#addValue" class="summary-sig-name">addValue</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">val</span>)</span><br />
+      Add one more value to this field. Used in 'get' iq's or such</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.addValue">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#getValues" class="summary-sig-name">getValues</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the list of values associated with this field</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getValues">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#getOptions" class="summary-sig-name">getOptions</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return label-option pairs list associated with this field</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getOptions">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#setOptions" class="summary-sig-name">setOptions</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">lst</span>)</span><br />
+      Set label-option pairs list associated with this field</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setOptions">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#addOption" class="summary-sig-name">addOption</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">opt</span>)</span><br />
+      Add one more label-option pair to this field</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.addOption">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#getType" class="summary-sig-name">getType</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Get type of this field</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getType">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#setType" class="summary-sig-name">setType</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">val</span>)</span><br />
+      Set type of this field</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setType">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#getVar" class="summary-sig-name">getVar</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Get 'var' attribute value of this field</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getVar">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.DataField-class.html#setVar" class="summary-sig-name">setVar</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">val</span>)</span><br />
+      Set 'var' attribute value of this field</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setVar">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.simplexml.Node-class.html">simplexml.Node</a></code></b>:
+      <code><a href="nbxmpp.simplexml.Node-class.html#__contains__">__contains__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__delitem__">__delitem__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__getattr__">__getattr__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__getitem__">__getitem__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__setitem__">__setitem__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__str__">__str__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#addChild">addChild</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#addData">addData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#clearData">clearData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#delAttr">delAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#delChild">delChild</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getAttr">getAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getAttrs">getAttrs</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getChildren">getChildren</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getData">getData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getName">getName</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getNamespace">getNamespace</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getParent">getParent</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getPayload">getPayload</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTag">getTag</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTagAttr">getTagAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTagData">getTagData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTags">getTags</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#has_attr">has_attr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#iterTags">iterTags</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#lookup_nsp">lookup_nsp</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setAttr">setAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setData">setData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setName">setName</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setNamespace">setNamespace</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setParent">setParent</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setPayload">setPayload</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setTag">setTag</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setTagAttr">setTagAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setTagData">setTagData</a></code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.simplexml.Node-class.html">simplexml.Node</a></code></b>:
+      <code><a href="nbxmpp.simplexml.Node-class.html#FORCE_NODE_RECREATION">FORCE_NODE_RECREATION</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">name</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">value</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">typ</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">required</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">desc</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">options</span>=<span class="sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>,
+        <span class="sig-arg">node</span>=<span class="sig-default">None</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Create new data field of specified name,value and type</p>
+<p>Also 'required','desc' and 'options' fields can be set. Alternatively
+other XML object can be passed in as the 'node' parameted
+to replicate it as a new datafiled.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="setRequired"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setRequired</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">req</span>=<span class="sig-default">1</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setRequired">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Change the state of the 'required' flag
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="isRequired"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">isRequired</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.isRequired">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return in this field a required one
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setDesc"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setDesc</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">desc</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setDesc">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Set the description of this field
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getDesc"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getDesc</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getDesc">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the description of this field
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setValue"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setValue</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">val</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setValue">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Set the value of this field
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getValue"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getValue</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getValue">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setValues"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setValues</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">lst</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setValues">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Set the values of this field as values-list. Replaces all previous filed
+values! If you need to just add a value - use addValue method
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="addValue"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">addValue</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">val</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.addValue">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Add one more value to this field. Used in 'get' iq's or such
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getValues"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getValues</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getValues">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the list of values associated with this field
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getOptions"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getOptions</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getOptions">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return label-option pairs list associated with this field
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setOptions"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setOptions</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">lst</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setOptions">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Set label-option pairs list associated with this field
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="addOption"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">addOption</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">opt</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.addOption">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Add one more label-option pair to this field
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getType"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getType</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getType">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Get type of this field
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setType"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setType</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">val</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setType">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Set type of this field
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getVar"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getVar</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.getVar">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Get 'var' attribute value of this field
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setVar"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setVar</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">val</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#DataField.setVar">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Set 'var' attribute value of this field
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue May  8 11:18:05 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>Class Hierarchy</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th bgcolor="#70b0f0" class="navbar-select"
+          >&nbsp;&nbsp;&nbsp;Trees&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">&nbsp;</td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="class-tree.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<center><b>
+ [ <a href="module-tree.html">Module Hierarchy</a>
+ | <a href="class-tree.html">Class Hierarchy</a> ]
+</b></center><br />
+<h1 class="epydoc">Class Hierarchy</h1>
+<ul class="nomargin-top">
+    <li> <strong class="uidlink"><a href="nbxmpp.bosh.AckChecker-class.html">nbxmpp.bosh.AckChecker</a></strong>:
+      <em class="summary">Class for generating rids and generating and checking acknowledgements in
+BOSH messages</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.dispatcher_nb.Dispatcher-class.html">nbxmpp.dispatcher_nb.Dispatcher</a></strong>:
+      <em class="summary">Why is this here - I needed to redefine Dispatcher for BOSH and easiest way
+was to inherit original Dispatcher (now renamed to XMPPDispatcher). Trouble
+is that reference used to access dispatcher instance is in Client attribute
+named by __class__.__name__ of the dispatcher instance .. long story short:</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.stringprepare.EmptyMappingTable-class.html">nbxmpp.stringprepare.EmptyMappingTable</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.stringprepare.ILookupTable-class.html">nbxmpp.stringprepare.ILookupTable</a></strong>:
+      <em class="summary">Interface for character lookup classes</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.stringprepare.IMappingTable-class.html">nbxmpp.stringprepare.IMappingTable</a></strong>:
+      <em class="summary">Interface for character mapping classes</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.idlequeue.IdleObject-class.html">nbxmpp.idlequeue.IdleObject</a></strong>:
+      <em class="summary">Idle listener interface. Listed methods are called by IdleQueue.</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.idlequeue.IdleCommand-class.html">nbxmpp.idlequeue.IdleCommand</a></strong>:
+      <em class="summary">Can be subclassed to execute commands asynchronously by the idlequeue.
+Result will be optained via file descriptor of created pipe</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html">nbxmpp.transports_nb.NonBlockingTCP</a></strong>:
+      <em class="summary">Non-blocking TCP socket wrapper</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.transports_nb.NonBlockingHTTP-class.html">nbxmpp.transports_nb.NonBlockingHTTP</a></strong>:
+      <em class="summary">Socket wrapper that creates HTTP message out of sent data and peels-off HTTP
+headers from incoming messages</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.transports_nb.NonBlockingHTTPBOSH-class.html">nbxmpp.transports_nb.NonBlockingHTTPBOSH</a></strong>:
+      <em class="summary">Class for BOSH HTTP connections. Slightly redefines HTTP transport by
+calling bosh bodytag generating callback before putting data on wire</em>
+    </li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.idlequeue.IdleQueue-class.html">nbxmpp.idlequeue.IdleQueue</a></strong>:
+      <em class="summary">IdleQueue provide three distinct time based features. Uses select.poll()</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.idlequeue.GlibIdleQueue-class.html">nbxmpp.idlequeue.GlibIdleQueue</a></strong>:
+      <em class="summary">Extends IdleQueue to use glib io_add_wath, instead of select/poll In another
+'non gui' implementation of Gajim IdleQueue can be used safetly</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.idlequeue.SelectIdleQueue-class.html">nbxmpp.idlequeue.SelectIdleQueue</a></strong>:
+      <em class="summary">Extends IdleQueue to use select.select() for polling</em>
+    </li>
+    </ul>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.JID-class.html">nbxmpp.protocol.JID</a></strong>:
+      <em class="summary">JID can be built from string, modified, compared, serialised into string</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.bosh.KeyStack-class.html">nbxmpp.bosh.KeyStack</a></strong>:
+      <em class="summary">Class implementing key sequences for BOSH messages</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.stringprepare.LookupTable-class.html">nbxmpp.stringprepare.LookupTable</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.stringprepare.LookupTableFromFunction-class.html">nbxmpp.stringprepare.LookupTableFromFunction</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.stringprepare.MappingTableFromFunction-class.html">nbxmpp.stringprepare.MappingTableFromFunction</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.stringprepare.NamePrep-class.html">nbxmpp.stringprepare.NamePrep</a></strong>:
+      <em class="summary">Implements preparation of internationalized domain names</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.simplexml.NodeBuilder-class.html">nbxmpp.simplexml.NodeBuilder</a></strong>:
+      <em class="summary">Builds a Node class minidom from data parsed to it. This class used for two
+purposes:</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.client_nb.NonBlockingClient-class.html">nbxmpp.client_nb.NonBlockingClient</a></strong>:
+      <em class="summary">Client class is XMPP connection mountpoint. Objects for authentication,
+network communication, roster, xml parsing ... are plugged to client object.
+Client implements the abstract behavior - mostly negotioation and callbacks
+handling, whereas underlying modules take care of feature-specific logic</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.plugin.PlugIn-class.html">nbxmpp.plugin.PlugIn</a></strong>:
+      <em class="summary">Abstract xmpppy plugin infrastructure code, providing plugging in/out and
+debugging functionality</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.auth_nb.NonBlockingBind-class.html">nbxmpp.auth_nb.NonBlockingBind</a></strong>:
+      <em class="summary">Bind some JID to the current connection to allow router know of our
+location. Must be plugged after successful SASL auth</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.auth_nb.NonBlockingNonSASL-class.html">nbxmpp.auth_nb.NonBlockingNonSASL</a></strong>:
+      <em class="summary">Implements old Non-SASL (JEP-0078) authentication used in jabberd1.4 and
+transport authentication</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html">nbxmpp.roster_nb.NonBlockingRoster</a></strong>:
+      <em class="summary">Defines a plenty of methods that will allow you to manage roster. Also
+automatically track presences from remote JIDs taking into account that
+every JID can have multiple resources connected. Does not currently support
+'error' presences. You can also use mapping interface for access to the
+internal representation of contacts in roster</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.tls_nb.NonBlockingTLS-class.html">nbxmpp.tls_nb.NonBlockingTLS</a></strong>:
+      <em class="summary">TLS connection used to encrypts already estabilished tcp connection</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html">nbxmpp.transports_nb.NonBlockingTransport</a></strong>:
+      <em class="summary">Abstract class representing a transport</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.bosh.NonBlockingBOSH-class.html">nbxmpp.bosh.NonBlockingBOSH</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html">nbxmpp.transports_nb.NonBlockingTCP</a></strong>:
+      <em class="summary">Non-blocking TCP socket wrapper</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.transports_nb.NonBlockingHTTP-class.html">nbxmpp.transports_nb.NonBlockingHTTP</a></strong>:
+      <em class="summary">Socket wrapper that creates HTTP message out of sent data and peels-off HTTP
+headers from incoming messages</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.transports_nb.NonBlockingHTTPBOSH-class.html">nbxmpp.transports_nb.NonBlockingHTTPBOSH</a></strong>:
+      <em class="summary">Class for BOSH HTTP connections. Slightly redefines HTTP transport by
+calling bosh bodytag generating callback before putting data on wire</em>
+    </li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.auth_nb.SASL-class.html">nbxmpp.auth_nb.SASL</a></strong>:
+      <em class="summary">Implements SASL authentication. Can be plugged into NonBlockingClient
+to start authentication</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html">nbxmpp.dispatcher_nb.XMPPDispatcher</a></strong>:
+      <em class="summary">Handles XMPP stream and is the first who takes control over a fresh stanza</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.dispatcher_nb.BOSHDispatcher-class.html">nbxmpp.dispatcher_nb.BOSHDispatcher</a></strong>
+    </li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.stringprepare.Profile-class.html">nbxmpp.stringprepare.Profile</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.proxy_connectors.ProxyConnector-class.html">nbxmpp.proxy_connectors.ProxyConnector</a></strong>:
+      <em class="summary">Interface for proxy-connecting object - when tunnneling XMPP over proxies,
+some connecting process usually has to be done before opening stream. Proxy
+connectors are used right after TCP connection is estabilished</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.proxy_connectors.HTTPCONNECTConnector-class.html">nbxmpp.proxy_connectors.HTTPCONNECTConnector</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.proxy_connectors.SOCKS5Connector-class.html">nbxmpp.proxy_connectors.SOCKS5Connector</a></strong>:
+      <em class="summary">SOCKS5 proxy connection class. Allows to use SOCKS5 proxies with
+(optionally) simple authentication (only USERNAME/PASSWORD auth)</em>
+    </li>
+    </ul>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.tls_nb.SSLWrapper-class.html">nbxmpp.tls_nb.SSLWrapper</a></strong>:
+      <em class="summary">Abstract SSLWrapper base class</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.tls_nb.PyOpenSSLWrapper-class.html">nbxmpp.tls_nb.PyOpenSSLWrapper</a></strong>:
+      <em class="summary">Wrapper class for PyOpenSSL's recv() and send() methods</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.tls_nb.StdlibSSLWrapper-class.html">nbxmpp.tls_nb.StdlibSSLWrapper</a></strong>:
+      <em class="summary">Wrapper class for Python socket.ssl read() and write() methods</em>
+    </li>
+    </ul>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.smacks.Smacks-class.html">nbxmpp.smacks.Smacks</a></strong>:
+      <em class="summary">This is Smacks is the Stream Management class. It takes care of requesting
+and sending acks. Also, it keeps track of the unhandled outgoing stanzas.</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.simplexml.T-class.html">nbxmpp.simplexml.T</a></strong>:
+      <em class="summary">Auxiliary class used to quick access to node's child nodes</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.simplexml.NT-class.html">nbxmpp.simplexml.NT</a></strong>:
+      <em class="summary">Auxiliary class used to quick create node's child nodes</em>
+    </li>
+    </ul>
+    </li>
+    <li> <strong class="uidlink">object</strong>:
+      <em class="summary">The most base type</em>
+    <ul>
+    <li> <strong class="uidlink">exceptions.BaseException</strong>:
+      <em class="summary">Common base class for all exceptions</em>
+    <ul>
+    <li> <strong class="uidlink">exceptions.Exception</strong>:
+      <em class="summary">Common base class for all non-exit exceptions.</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.NodeProcessed-class.html">nbxmpp.protocol.NodeProcessed</a></strong>:
+      <em class="summary">Exception that should be raised by handler when the handling should be
+stopped</em>
+    </li>
+    <li> <strong class="uidlink">exceptions.StandardError</strong>:
+      <em class="summary">Base class for all standard Python exceptions that do not represent
+interpreter exiting.</em>
+    <ul>
+    <li> <strong class="uidlink">exceptions.EnvironmentError</strong>:
+      <em class="summary">Base class for I/O related errors.</em>
+    <ul>
+    <li> <strong class="uidlink">exceptions.IOError</strong>:
+      <em class="summary">I/O operation failed.</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.tls_nb.SSLWrapper.Error-class.html">nbxmpp.tls_nb.SSLWrapper.Error</a></strong>:
+      <em class="summary">Generic SSL Error Wrapper</em>
+    </li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.StreamError-class.html">nbxmpp.protocol.StreamError</a></strong>:
+      <em class="summary">Base exception class for stream errors</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.BadFormat-class.html">nbxmpp.protocol.BadFormat</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.BadNamespacePrefix-class.html">nbxmpp.protocol.BadNamespacePrefix</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.Conflict-class.html">nbxmpp.protocol.Conflict</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.ConnectionTimeout-class.html">nbxmpp.protocol.ConnectionTimeout</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.HostGone-class.html">nbxmpp.protocol.HostGone</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.HostUnknown-class.html">nbxmpp.protocol.HostUnknown</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.ImproperAddressing-class.html">nbxmpp.protocol.ImproperAddressing</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.InternalServerError-class.html">nbxmpp.protocol.InternalServerError</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.InvalidFrom-class.html">nbxmpp.protocol.InvalidFrom</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.InvalidID-class.html">nbxmpp.protocol.InvalidID</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.InvalidNamespace-class.html">nbxmpp.protocol.InvalidNamespace</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.InvalidXML-class.html">nbxmpp.protocol.InvalidXML</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.NotAuthorized-class.html">nbxmpp.protocol.NotAuthorized</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.PolicyViolation-class.html">nbxmpp.protocol.PolicyViolation</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.RemoteConnectionFailed-class.html">nbxmpp.protocol.RemoteConnectionFailed</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.ResourceConstraint-class.html">nbxmpp.protocol.ResourceConstraint</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.RestrictedXML-class.html">nbxmpp.protocol.RestrictedXML</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.SeeOtherHost-class.html">nbxmpp.protocol.SeeOtherHost</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.SystemShutdown-class.html">nbxmpp.protocol.SystemShutdown</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.UndefinedCondition-class.html">nbxmpp.protocol.UndefinedCondition</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.UnsupportedEncoding-class.html">nbxmpp.protocol.UnsupportedEncoding</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.UnsupportedStanzaType-class.html">nbxmpp.protocol.UnsupportedStanzaType</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.UnsupportedVersion-class.html">nbxmpp.protocol.UnsupportedVersion</a></strong>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.XMLNotWellFormed-class.html">nbxmpp.protocol.XMLNotWellFormed</a></strong>
+    </li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.simplexml.Node-class.html">nbxmpp.simplexml.Node</a></strong>:
+      <em class="summary">Node class describes syntax of separate XML Node. It have a constructor that
+permits node creation from set of &quot;namespace name&quot;, attributes and payload
+of text strings and other nodes. It does not natively support building node
+from text string and uses NodeBuilder class for that purpose. After
+creation node can be mangled in many ways so it can be completely changed.
+Also node can be serialised into string in one of two modes: default (where
+the textual representation of node describes it exactly) and &quot;fancy&quot; - with
+whitespace added to make indentation and thus make result more readable by
+human.</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.Acks-class.html">nbxmpp.protocol.Acks</a></strong>:
+      <em class="summary">Acknowledgement elements for Stream Management</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.BOSHBody-class.html">nbxmpp.protocol.BOSHBody</a></strong>:
+      <em class="summary">&lt;body&gt; tag that wraps usual XMPP stanzas in XMPP over BOSH</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.DataField-class.html">nbxmpp.protocol.DataField</a></strong>:
+      <em class="summary">This class is used in the DataForm class to describe the single data item</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.DataForm-class.html">nbxmpp.protocol.DataForm</a></strong>:
+      <em class="summary">Used for manipulating dataforms in XMPP</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.ErrorNode-class.html">nbxmpp.protocol.ErrorNode</a></strong>:
+      <em class="summary">XMPP-style error element</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.Hashes-class.html">nbxmpp.protocol.Hashes</a></strong>:
+      <em class="summary">Hash elements for various XEPs as defined in XEP-300</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.Protocol-class.html">nbxmpp.protocol.Protocol</a></strong>:
+      <em class="summary">A &quot;stanza&quot; object class. Contains methods that are common for presences, iqs
+and messages</em>
+    <ul>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.Error-class.html">nbxmpp.protocol.Error</a></strong>:
+      <em class="summary">Used to quickly transform received stanza into error reply</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.Iq-class.html">nbxmpp.protocol.Iq</a></strong>:
+      <em class="summary">XMPP Iq object - get/set dialog mechanism</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.Message-class.html">nbxmpp.protocol.Message</a></strong>:
+      <em class="summary">XMPP Message stanza - &quot;push&quot; mechanism</em>
+    </li>
+    <li> <strong class="uidlink"><a href="nbxmpp.protocol.Presence-class.html">nbxmpp.protocol.Presence</a></strong>
+    </li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+    </ul>
+    </li>
+</ul>
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th bgcolor="#70b0f0" class="navbar-select"
+          >&nbsp;&nbsp;&nbsp;Trees&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue May  8 11:18:04 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

@@ -1,0 +1,1061 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>nbxmpp.transports_nb.NonBlockingTCP</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="nbxmpp-module.html">Package&nbsp;nbxmpp</a> ::
+        <a href="nbxmpp.transports_nb-module.html">Module&nbsp;transports_nb</a> ::
+        Class&nbsp;NonBlockingTCP
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="nbxmpp.transports_nb.NonBlockingTCP-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class NonBlockingTCP</h1><p class="nomargin-top"><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_nbxmpp_t_8" name="uml_class_diagram_for_nbxmpp_t_8">
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#plugin" title="nbxmpp.transports_nb.NonBlockingTransport.plugin" alt="" coords="291,153,608,172"/>
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#plugout" title="nbxmpp.transports_nb.NonBlockingTransport.plugout" alt="" coords="291,172,608,191"/>
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#set_state" title="nbxmpp.transports_nb.NonBlockingTransport.set_state" alt="" coords="291,191,608,209"/>
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#get_state" title="nbxmpp.transports_nb.NonBlockingTransport.get_state" alt="" coords="291,209,608,228"/>
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#onreceive" title="Set the on_receive callback." alt="" coords="291,228,608,247"/>
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#read_timeout2" title="called when there&#39;s no response from server in defined timeout" alt="" coords="291,247,608,265"/>
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#renew_send_timeout" title="nbxmpp.transports_nb.NonBlockingTransport.renew_send_timeout" alt="" coords="291,265,608,284"/>
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#renew_send_timeout2" title="nbxmpp.transports_nb.NonBlockingTransport.renew_send_timeout2" alt="" coords="291,284,608,303"/>
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#set_timeout2" title="nbxmpp.transports_nb.NonBlockingTransport.set_timeout2" alt="" coords="291,303,608,321"/>
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#get_fd" title="nbxmpp.transports_nb.NonBlockingTransport.get_fd" alt="" coords="291,321,608,340"/>
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#set_send_timeout" title="nbxmpp.transports_nb.NonBlockingTransport.set_send_timeout" alt="" coords="291,340,608,359"/>
+<area shape="rect" id="node251" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#set_send_timeout2" title="nbxmpp.transports_nb.NonBlockingTransport.set_send_timeout2" alt="" coords="291,359,608,377"/>
+<area shape="rect" id="node1" href="nbxmpp.transports_nb.NonBlockingTransport-class.html" title="Abstract class representing a transport" alt="" coords="279,121,620,383"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#__init__" title="Each trasport class can have different constructor but it has to have at least all the arguments of NonBlockingTransport constructor" alt="" coords="17,436,604,455"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#start_disconnect" title="nbxmpp.transports_nb.NonBlockingTCP.start_disconnect" alt="" coords="17,455,604,473"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#connect" title="Creates and connects transport to server and port defined in conn_5tuple which should be item from list returned from getaddrinfo" alt="" coords="17,473,604,492"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#tls_init" title="Estabilishes TLS/SSL using this TCP connection by plugging a NonBlockingTLS module" alt="" coords="17,492,604,511"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#pollin" title="Called by idlequeu when receive on plugged socket is possible" alt="" coords="17,511,604,529"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#pollout" title="Called by idlequeu when send to plugged socket is possible" alt="" coords="17,529,604,548"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#pollend" title="Called by idlequeue on TCP connection errors" alt="" coords="17,548,604,567"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#disconnect" title="nbxmpp.transports_nb.NonBlockingTCP.disconnect" alt="" coords="17,567,604,585"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#read_timeout" title="Called when there&#39;s no response from server in defined timeout" alt="" coords="17,585,604,604"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#set_timeout" title="nbxmpp.transports_nb.NonBlockingTCP.set_timeout" alt="" coords="17,604,604,623"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#remove_timeout" title="nbxmpp.transports_nb.NonBlockingTCP.remove_timeout" alt="" coords="17,623,604,641"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#send" title="Append raw_data to the queue of messages to be send. If supplied data is unicode string, encode it to utf&#45;8." alt="" coords="17,641,604,660"/>
+<area shape="rect" id="node250" href="nbxmpp.transports_nb.NonBlockingTCP-class.html#encode_stanza" title="Encode str or unicode to utf&#45;8" alt="" coords="17,660,604,679"/>
+<area shape="rect" id="node6" href="nbxmpp.transports_nb.NonBlockingTCP-class.html" title="Non&#45;blocking TCP socket wrapper" alt="" coords="5,403,616,685"/>
+<area shape="rect" id="node2" href="nbxmpp.transports_nb.NonBlockingHTTPBOSH-class.html" title="Class for BOSH HTTP connections. Slightly redefines HTTP transport by calling bosh bodytag generating callback before putting data on wire" alt="" coords="219,763,403,802"/>
+<area shape="rect" id="node252" href="nbxmpp.plugin.PlugIn-class.html#PlugIn" title="Attach to owner and register ourself and our _exported_methods in it. If defined by a subclass, call self.plugin(owner) to execute hook code after plugging" alt="" coords="336,39,561,57"/>
+<area shape="rect" id="node252" href="nbxmpp.plugin.PlugIn-class.html#PlugOut" title="Unregister our _exported_methods from owner and detach from it. If defined by a subclass, call self.plugout() after unplugging to execute hook code" alt="" coords="336,57,561,76"/>
+<area shape="rect" id="node252" href="nbxmpp.plugin.PlugIn-class.html#get_instance" title="Factory Method for object creation" alt="" coords="336,76,561,95"/>
+<area shape="rect" id="node3" href="nbxmpp.plugin.PlugIn-class.html" title="Abstract xmpppy plugin infrastructure code, providing plugging in/out and debugging functionality" alt="" coords="324,6,572,101"/>
+<area shape="rect" id="node4" href="nbxmpp.transports_nb.NonBlockingHTTP-class.html" title="Socket wrapper that creates HTTP message out of sent data and peels&#45;off HTTP headers from incoming messages" alt="" coords="237,705,384,743"/>
+<area shape="rect" id="node253" href="nbxmpp.idlequeue.IdleObject-class.html#fd" title="filedescriptor, must be unique for each IdleObject" alt="" coords="107,248,237,267"/>
+<area shape="rect" id="node5" href="nbxmpp.idlequeue.IdleObject-class.html" title="Idle listener interface. Listed methods are called by IdleQueue." alt="" coords="95,223,249,281"/>
+</map>
+  <img src="uml_class_diagram_for_nbxmpp_t_8.gif" alt='' usemap="#uml_class_diagram_for_nbxmpp_t_8" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<p>Non-blocking TCP socket wrapper</p>
+<p>It is used for simple XMPP connection. Can be connected via proxy and can
+estabilish TLS connection.</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">raise_event</span>,
+        <span class="summary-sig-arg">on_disconnect</span>,
+        <span class="summary-sig-arg">idlequeue</span>,
+        <span class="summary-sig-arg">estabilish_tls</span>,
+        <span class="summary-sig-arg">certs</span>,
+        <span class="summary-sig-arg">proxy_dict</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Each trasport class can have different constructor but it has to have at
+least all the arguments of NonBlockingTransport constructor</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#start_disconnect" class="summary-sig-name">start_disconnect</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.start_disconnect">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#connect" class="summary-sig-name">connect</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">conn_5tuple</span>,
+        <span class="summary-sig-arg">on_connect</span>,
+        <span class="summary-sig-arg">on_connect_failure</span>)</span><br />
+      Creates and connects transport to server and port defined in conn_5tuple
+which should be item from list returned from getaddrinfo</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.connect">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#_connect_to_proxy" class="summary-sig-name" onclick="show_private();">_connect_to_proxy</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._connect_to_proxy">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#_on_connect" class="summary-sig-name" onclick="show_private();">_on_connect</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Preceed invoking of on_connect callback. TCP connection is already
+estabilished by this time</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._on_connect">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#tls_init" class="summary-sig-name">tls_init</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">on_succ</span>,
+        <span class="summary-sig-arg">on_fail</span>)</span><br />
+      Estabilishes TLS/SSL using this TCP connection by plugging a
+NonBlockingTLS module</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.tls_init">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#pollin" class="summary-sig-name">pollin</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Called by idlequeu when receive on plugged socket is possible</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.pollin">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#pollout" class="summary-sig-name">pollout</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Called by idlequeu when send to plugged socket is possible</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.pollout">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#pollend" class="summary-sig-name">pollend</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Called by idlequeue on TCP connection errors</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.pollend">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#disconnect" class="summary-sig-name">disconnect</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">do_callback</span>=<span class="summary-sig-default">True</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.disconnect">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#read_timeout" class="summary-sig-name">read_timeout</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Called when there's no response from server in defined timeout</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.read_timeout">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#set_timeout" class="summary-sig-name">set_timeout</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">timeout</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.set_timeout">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#remove_timeout" class="summary-sig-name">remove_timeout</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.remove_timeout">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#send" class="summary-sig-name">send</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">raw_data</span>,
+        <span class="summary-sig-arg">now</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Append raw_data to the queue of messages to be send. If supplied data is
+unicode string, encode it to utf-8.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.send">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#encode_stanza" class="summary-sig-name">encode_stanza</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">stanza</span>)</span><br />
+      Encode str or unicode to utf-8</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.encode_stanza">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#_plug_idle" class="summary-sig-name" onclick="show_private();">_plug_idle</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">writable</span>,
+        <span class="summary-sig-arg">readable</span>)</span><br />
+      Plug file descriptor of socket to Idlequeue</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._plug_idle">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#_do_send" class="summary-sig-name" onclick="show_private();">_do_send</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Called when send() to connected socket is possible. First message from
+sendqueue will be sent</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._do_send">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#_do_receive" class="summary-sig-name" onclick="show_private();">_do_receive</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Reads all pending incoming data. Will call owner's disconnected() method
+if appropriate</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._do_receive">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.transports_nb.NonBlockingTCP-class.html#_on_receive" class="summary-sig-name" onclick="show_private();">_on_receive</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">data</span>)</span><br />
+      Preceeds on_receive callback. It peels off and checks HTTP headers in
+HTTP classes, in here it just calls the callback</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._on_receive">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html">NonBlockingTransport</a></code></b>:
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#get_fd">get_fd</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#get_state">get_state</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#onreceive">onreceive</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#plugin">plugin</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#plugout">plugout</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#read_timeout2">read_timeout2</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#renew_send_timeout">renew_send_timeout</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#renew_send_timeout2">renew_send_timeout2</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#set_send_timeout">set_send_timeout</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#set_send_timeout2">set_send_timeout2</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#set_state">set_state</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#set_timeout2">set_timeout2</a></code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html">NonBlockingTransport</a></code></b> (private):
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#_on_connect_failure" onclick="show_private();">_on_connect_failure</a></code>,
+      <code><a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#_tcp_connecting_started" onclick="show_private();">_tcp_connecting_started</a></code>
+      </p></div>
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.plugin.PlugIn-class.html">plugin.PlugIn</a></code></b>:
+      <code><a href="nbxmpp.plugin.PlugIn-class.html#PlugIn">PlugIn</a></code>,
+      <code><a href="nbxmpp.plugin.PlugIn-class.html#PlugOut">PlugOut</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS METHODS ==================== -->
+<a name="section-ClassMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.plugin.PlugIn-class.html">plugin.PlugIn</a></code></b>:
+      <code><a href="nbxmpp.plugin.PlugIn-class.html#get_instance">get_instance</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== INSTANCE VARIABLES ==================== -->
+<a name="section-InstanceVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.idlequeue.IdleObject-class.html">idlequeue.IdleObject</a></code></b>:
+      <code><a href="nbxmpp.idlequeue.IdleObject-class.html#fd">fd</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">raise_event</span>,
+        <span class="sig-arg">on_disconnect</span>,
+        <span class="sig-arg">idlequeue</span>,
+        <span class="sig-arg">estabilish_tls</span>,
+        <span class="sig-arg">certs</span>,
+        <span class="sig-arg">proxy_dict</span>=<span class="sig-default">None</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Each trasport class can have different constructor but it has to have at
+least all the arguments of NonBlockingTransport constructor
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>proxy_dict</code></strong> - dictionary with proxy data as loaded from config file</li>
+    </ul></dd>
+    <dt>Overrides:
+        <a href="nbxmpp.idlequeue.IdleObject-class.html#__init__">idlequeue.IdleObject.__init__</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="start_disconnect"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">start_disconnect</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.start_disconnect">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#start_disconnect">NonBlockingTransport.start_disconnect</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="connect"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">connect</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">conn_5tuple</span>,
+        <span class="sig-arg">on_connect</span>,
+        <span class="sig-arg">on_connect_failure</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.connect">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Creates and connects transport to server and port defined in conn_5tuple
+which should be item from list returned from getaddrinfo
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>conn_5tuple</code></strong> - 5-tuple returned from getaddrinfo</li>
+        <li><strong class="pname"><code>on_connect</code></strong> - callback called on successful connect to the server</li>
+        <li><strong class="pname"><code>on_connect_failure</code></strong> - callback called on failure when connecting</li>
+    </ul></dd>
+    <dt>Overrides:
+        <a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#connect">NonBlockingTransport.connect</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_connect_to_proxy"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_connect_to_proxy</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._connect_to_proxy">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_on_connect"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_on_connect</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._on_connect">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Preceed invoking of on_connect callback. TCP connection is already
+estabilished by this time
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#_on_connect" onclick="show_private();">NonBlockingTransport._on_connect</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="tls_init"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">tls_init</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">on_succ</span>,
+        <span class="sig-arg">on_fail</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.tls_init">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Estabilishes TLS/SSL using this TCP connection by plugging a
+NonBlockingTLS module
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="pollin"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">pollin</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.pollin">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Called by idlequeu when receive on plugged socket is possible
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.idlequeue.IdleObject-class.html#pollin">idlequeue.IdleObject.pollin</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="pollout"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">pollout</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.pollout">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Called by idlequeu when send to plugged socket is possible
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.idlequeue.IdleObject-class.html#pollout">idlequeue.IdleObject.pollout</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="pollend"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">pollend</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.pollend">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Called by idlequeue on TCP connection errors
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.idlequeue.IdleObject-class.html#pollend">idlequeue.IdleObject.pollend</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="disconnect"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">disconnect</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">do_callback</span>=<span class="sig-default">True</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.disconnect">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#disconnect">NonBlockingTransport.disconnect</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="read_timeout"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">read_timeout</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.read_timeout">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Called when there's no response from server in defined timeout
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.idlequeue.IdleObject-class.html#read_timeout">idlequeue.IdleObject.read_timeout</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="set_timeout"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">set_timeout</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">timeout</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.set_timeout">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#set_timeout">NonBlockingTransport.set_timeout</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="remove_timeout"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">remove_timeout</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.remove_timeout">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#remove_timeout">NonBlockingTransport.remove_timeout</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="send"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">send</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">raw_data</span>,
+        <span class="sig-arg">now</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.send">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Append raw_data to the queue of messages to be send. If supplied data is
+unicode string, encode it to utf-8.
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.transports_nb.NonBlockingTransport-class.html#send">NonBlockingTransport.send</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="encode_stanza"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">encode_stanza</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">stanza</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP.encode_stanza">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Encode str or unicode to utf-8
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_plug_idle"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_plug_idle</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">writable</span>,
+        <span class="sig-arg">readable</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._plug_idle">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Plug file descriptor of socket to Idlequeue</p>
+<p>Plugged socket will be watched for &quot;send possible&quot; or/and &quot;recv possible&quot;
+events. pollin() callback is invoked on &quot;recv possible&quot;, pollout() on
+&quot;send_possible&quot;.</p>
+<p>Plugged socket will always be watched for &quot;error&quot; event - in that case,
+pollend() is called.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_do_send"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_do_send</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._do_send">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Called when send() to connected socket is possible. First message from
+sendqueue will be sent
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_do_receive"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_do_receive</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._do_receive">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Reads all pending incoming data. Will call owner's disconnected() method
+if appropriate
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_on_receive"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_on_receive</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">data</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTCP._on_receive">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Preceeds on_receive callback. It peels off and checks HTTP headers in
+HTTP classes, in here it just calls the callback
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue May  8 11:18:08 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

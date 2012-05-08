@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>nbxmpp.plugin.PlugIn</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="nbxmpp-module.html">Package&nbsp;nbxmpp</a> ::
+        <a href="nbxmpp.plugin-module.html">Module&nbsp;plugin</a> ::
+        Class&nbsp;PlugIn
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="nbxmpp.plugin.PlugIn-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class PlugIn</h1><p class="nomargin-top"><span class="codelink"><a href="nbxmpp.plugin-pysrc.html#PlugIn">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_nbxmpp_p" name="uml_class_diagram_for_nbxmpp_p">
+<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#__init__" title="nbxmpp.plugin.PlugIn.__init__" alt="" coords="673,39,899,57"/>
+<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#PlugIn" title="Attach to owner and register ourself and our _exported_methods in it. If defined by a subclass, call self.plugin(owner) to execute hook code after plugging" alt="" coords="673,57,899,76"/>
+<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#PlugOut" title="Unregister our _exported_methods from owner and detach from it. If defined by a subclass, call self.plugout() after unplugging to execute hook code" alt="" coords="673,76,899,95"/>
+<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#get_instance" title="Factory Method for object creation" alt="" coords="673,95,899,113"/>
+<area shape="rect" id="node1" href="nbxmpp.plugin.PlugIn-class.html" title="Abstract xmpppy plugin infrastructure code, providing plugging in/out and debugging functionality" alt="" coords="661,6,909,119"/>
+<area shape="rect" id="node2" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html" title="Handles XMPP stream and is the first who takes control over a fresh stanza" alt="" coords="7,139,241,178"/>
+<area shape="rect" id="node3" href="nbxmpp.auth_nb.SASL-class.html" title="Implements SASL authentication. Can be plugged into NonBlockingClient to start authentication" alt="" coords="271,139,396,178"/>
+<area shape="rect" id="node4" href="nbxmpp.auth_nb.NonBlockingNonSASL-class.html" title="Implements old Non&#45;SASL (JEP&#45;0078) authentication used in jabberd1.4 and transport authentication" alt="" coords="425,139,657,178"/>
+<area shape="rect" id="node6" href="nbxmpp.auth_nb.NonBlockingBind-class.html" title="Bind some JID to the current connection to allow router know of our location. Must be plugged after successful SASL auth" alt="" coords="687,139,887,178"/>
+<area shape="rect" id="node7" href="nbxmpp.tls_nb.NonBlockingTLS-class.html" title="TLS connection used to encrypts already estabilished tcp connection" alt="" coords="916,139,1097,178"/>
+<area shape="rect" id="node8" href="nbxmpp.roster_nb.NonBlockingRoster-class.html" title="Defines a plenty of methods that will allow you to manage roster. Also automatically track presences from remote JIDs taking into account that every JID can have multiple resources connected. Does not currently support &#39;error&#39; presences. You can also use mapping interface for access to the internal representation of contacts in roster" alt="" coords="1127,139,1348,178"/>
+<area shape="rect" id="node10" href="nbxmpp.transports_nb.NonBlockingTransport-class.html" title="Abstract class representing a transport" alt="" coords="1377,139,1644,178"/>
+<area shape="rect" id="node9" href="nbxmpp.dispatcher_nb.BOSHDispatcher-class.html" title="nbxmpp.dispatcher_nb.BOSHDispatcher" alt="" coords="5,198,243,237"/>
+<area shape="rect" id="node5" href="nbxmpp.transports_nb.NonBlockingHTTP-class.html" title="Socket wrapper that creates HTTP message out of sent data and peels&#45;off HTTP headers from incoming messages" alt="" coords="1511,257,1751,295"/>
+<area shape="rect" id="node12" href="nbxmpp.transports_nb.NonBlockingHTTPBOSH-class.html" title="Class for BOSH HTTP connections. Slightly redefines HTTP transport by calling bosh bodytag generating callback before putting data on wire" alt="" coords="1492,315,1769,354"/>
+<area shape="rect" id="node11" href="nbxmpp.bosh.NonBlockingBOSH-class.html" title="nbxmpp.bosh.NonBlockingBOSH" alt="" coords="1296,198,1485,237"/>
+<area shape="rect" id="node13" href="nbxmpp.transports_nb.NonBlockingTCP-class.html" title="Non&#45;blocking TCP socket wrapper" alt="" coords="1515,198,1747,237"/>
+</map>
+  <img src="uml_class_diagram_for_nbxmpp_p.gif" alt='' usemap="#uml_class_diagram_for_nbxmpp_p" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<p>Abstract xmpppy plugin infrastructure code, providing plugging in/out and
+debugging functionality</p>
+<p>Inherit to develop pluggable objects. No code change on the owner class
+required (the object where we plug into)</p>
+<p>For every instance of PlugIn class the 'owner' is the class in what the plug
+was plugged.</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.plugin.PlugIn-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.plugin-pysrc.html#PlugIn.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.plugin.PlugIn-class.html#PlugIn" class="summary-sig-name">PlugIn</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">owner</span>)</span><br />
+      Attach to owner and register ourself and our _exported_methods in it.
+If defined by a subclass, call self.plugin(owner) to execute hook
+code after plugging</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.plugin-pysrc.html#PlugIn.PlugIn">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.plugin.PlugIn-class.html#PlugOut" class="summary-sig-name">PlugOut</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Unregister our _exported_methods from owner and detach from it.
+If defined by a subclass, call self.plugout() after unplugging to execute
+hook code</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.plugin-pysrc.html#PlugIn.PlugOut">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS METHODS ==================== -->
+<a name="section-ClassMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.plugin.PlugIn-class.html#get_instance" class="summary-sig-name">get_instance</a>(<span class="summary-sig-arg">cls</span>,
+        <span class="summary-sig-arg">*args</span>,
+        <span class="summary-sig-arg">**kwargs</span>)</span><br />
+      Factory Method for object creation</td>
+          <td align="right" valign="top">
+            
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.plugin-pysrc.html#PlugIn.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="PlugIn"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">PlugIn</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">owner</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.plugin-pysrc.html#PlugIn.PlugIn">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Attach to owner and register ourself and our _exported_methods in it.
+If defined by a subclass, call self.plugin(owner) to execute hook
+code after plugging
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="PlugOut"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">PlugOut</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.plugin-pysrc.html#PlugIn.PlugOut">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Unregister our _exported_methods from owner and detach from it.
+If defined by a subclass, call self.plugout() after unplugging to execute
+hook code
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="get_instance"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">get_instance</span>(<span class="sig-arg">cls</span>,
+        <span class="sig-arg">*args</span>,
+        <span class="sig-arg">**kwargs</span>)</span>
+    <br /><em class="fname">Class Method</em>
+  </h3>
+  </td><td align="right" valign="top"
+    >&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Factory Method for object creation</p>
+<p>Use this instead of directly initializing the class in order to make
+unit testing easier. For testing, this method can be patched to inject
+mock objects.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue May  8 11:18:05 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

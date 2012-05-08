@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>nbxmpp.idlequeue.SelectIdleQueue</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="nbxmpp-module.html">Package&nbsp;nbxmpp</a> ::
+        <a href="nbxmpp.idlequeue-module.html">Module&nbsp;idlequeue</a> ::
+        Class&nbsp;SelectIdleQueue
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="nbxmpp.idlequeue.SelectIdleQueue-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class SelectIdleQueue</h1><p class="nomargin-top"><span class="codelink"><a href="nbxmpp.idlequeue-pysrc.html#SelectIdleQueue">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_nbxmpp_i_5" name="uml_class_diagram_for_nbxmpp_i_5">
+<area shape="rect" id="node27" href="nbxmpp.idlequeue.SelectIdleQueue-class.html#process" title="Process idlequeue. Check for any pending timeout or alarm events. &#160;Call IdleObjects on possible and requested read, write and error events on their file descriptors" alt="" coords="123,260,229,279"/>
+<area shape="rect" id="node1" href="nbxmpp.idlequeue.SelectIdleQueue-class.html" title="Extends IdleQueue to use select.select() for polling" alt="" coords="111,227,241,285"/>
+<area shape="rect" id="node28" href="nbxmpp.idlequeue.IdleQueue-class.html#PROCESS_TIMEOUT" title="nbxmpp.idlequeue.IdleQueue.PROCESS_TIMEOUT" alt="" coords="17,31,335,49"/>
+<area shape="rect" id="node28" href="nbxmpp.idlequeue.IdleQueue-class.html#__init__" title="nbxmpp.idlequeue.IdleQueue.__init__" alt="" coords="17,52,335,71"/>
+<area shape="rect" id="node28" href="nbxmpp.idlequeue.IdleQueue-class.html#set_alarm" title="Set up a new alarm. alarm_cb will be called after specified seconds." alt="" coords="17,71,335,89"/>
+<area shape="rect" id="node28" href="nbxmpp.idlequeue.IdleQueue-class.html#remove_alarm" title="Remove alarm callback alarm_cb scheduled on alarm_time. Returns True if it was removed sucessfully, otherwise False" alt="" coords="17,89,335,108"/>
+<area shape="rect" id="node28" href="nbxmpp.idlequeue.IdleQueue-class.html#remove_timeout" title="Remove the read timeout" alt="" coords="17,108,335,127"/>
+<area shape="rect" id="node28" href="nbxmpp.idlequeue.IdleQueue-class.html#set_read_timeout" title="Seta a new timeout. If it is not removed after specified seconds, func or obj.read_timeout() will be called" alt="" coords="17,127,335,145"/>
+<area shape="rect" id="node28" href="nbxmpp.idlequeue.IdleQueue-class.html#plug_idle" title="Plug an IdleObject into idlequeue. Filedescriptor fd must be set" alt="" coords="17,145,335,164"/>
+<area shape="rect" id="node28" href="nbxmpp.idlequeue.IdleQueue-class.html#unplug_idle" title="Remove plugged IdleObject, specified by filedescriptor fd" alt="" coords="17,164,335,183"/>
+<area shape="rect" id="node28" href="nbxmpp.idlequeue.IdleQueue-class.html#current_time" title="nbxmpp.idlequeue.IdleQueue.current_time" alt="" coords="17,183,335,201"/>
+<area shape="rect" id="node2" href="nbxmpp.idlequeue.IdleQueue-class.html" title="IdleQueue provide three distinct time based features. Uses select.poll()" alt="" coords="5,6,347,207"/>
+</map>
+  <img src="uml_class_diagram_for_nbxmpp_i_5.gif" alt='' usemap="#uml_class_diagram_for_nbxmpp_i_5" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<p>Extends IdleQueue to use select.select() for polling</p>
+<p>This class exisists for the sake of gtk2.8 on windows, which doesn't seem to
+support io_add_watch properly (yet)</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.idlequeue.SelectIdleQueue-class.html#_init_idle" class="summary-sig-name" onclick="show_private();">_init_idle</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Create a dict, which maps file/pipe/sock descriptor to glib event id</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.idlequeue-pysrc.html#SelectIdleQueue._init_idle">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.idlequeue.SelectIdleQueue-class.html#_add_idle" class="summary-sig-name" onclick="show_private();">_add_idle</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">fd</span>,
+        <span class="summary-sig-arg">flags</span>)</span><br />
+      This method is called when we plug a new idle object. Remove descriptor
+to read/write/error lists, according flags</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.idlequeue-pysrc.html#SelectIdleQueue._add_idle">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.idlequeue.SelectIdleQueue-class.html#_remove_idle" class="summary-sig-name" onclick="show_private();">_remove_idle</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">fd</span>)</span><br />
+      This method is called when we unplug a new idle object. Remove descriptor
+from read/write/error lists</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.idlequeue-pysrc.html#SelectIdleQueue._remove_idle">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.idlequeue.SelectIdleQueue-class.html#process" class="summary-sig-name">process</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Process idlequeue. Check for any pending timeout or alarm events.  Call
+IdleObjects on possible and requested read, write and error events on
+their file descriptors</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.idlequeue-pysrc.html#SelectIdleQueue.process">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.idlequeue.IdleQueue-class.html">IdleQueue</a></code></b>:
+      <code><a href="nbxmpp.idlequeue.IdleQueue-class.html#__init__">__init__</a></code>,
+      <code><a href="nbxmpp.idlequeue.IdleQueue-class.html#current_time">current_time</a></code>,
+      <code><a href="nbxmpp.idlequeue.IdleQueue-class.html#plug_idle">plug_idle</a></code>,
+      <code><a href="nbxmpp.idlequeue.IdleQueue-class.html#remove_alarm">remove_alarm</a></code>,
+      <code><a href="nbxmpp.idlequeue.IdleQueue-class.html#remove_timeout">remove_timeout</a></code>,
+      <code><a href="nbxmpp.idlequeue.IdleQueue-class.html#set_alarm">set_alarm</a></code>,
+      <code><a href="nbxmpp.idlequeue.IdleQueue-class.html#set_read_timeout">set_read_timeout</a></code>,
+      <code><a href="nbxmpp.idlequeue.IdleQueue-class.html#unplug_idle">unplug_idle</a></code>
+      </p>
+    <div class="private">    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.idlequeue.IdleQueue-class.html">IdleQueue</a></code></b> (private):
+      <code><a href="nbxmpp.idlequeue.IdleQueue-class.html#_check_time_events" onclick="show_private();">_check_time_events</a></code>,
+      <code><a href="nbxmpp.idlequeue.IdleQueue-class.html#_process_events" onclick="show_private();">_process_events</a></code>
+      </p></div>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.idlequeue.IdleQueue-class.html">IdleQueue</a></code></b>:
+      <code><a href="nbxmpp.idlequeue.IdleQueue-class.html#PROCESS_TIMEOUT">PROCESS_TIMEOUT</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="_init_idle"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_init_idle</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.idlequeue-pysrc.html#SelectIdleQueue._init_idle">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Create a dict, which maps file/pipe/sock descriptor to glib event id
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.idlequeue.IdleQueue-class.html#_init_idle" onclick="show_private();">IdleQueue._init_idle</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_add_idle"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_add_idle</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">fd</span>,
+        <span class="sig-arg">flags</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.idlequeue-pysrc.html#SelectIdleQueue._add_idle">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  This method is called when we plug a new idle object. Remove descriptor
+to read/write/error lists, according flags
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.idlequeue.IdleQueue-class.html#_add_idle" onclick="show_private();">IdleQueue._add_idle</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="_remove_idle"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_remove_idle</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">fd</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.idlequeue-pysrc.html#SelectIdleQueue._remove_idle">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  This method is called when we unplug a new idle object. Remove descriptor
+from read/write/error lists
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.idlequeue.IdleQueue-class.html#_remove_idle" onclick="show_private();">IdleQueue._remove_idle</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="process"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">process</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.idlequeue-pysrc.html#SelectIdleQueue.process">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Process idlequeue. Check for any pending timeout or alarm events.  Call
+IdleObjects on possible and requested read, write and error events on
+their file descriptors</p>
+<p>Call this in regular intervals.</p>
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.idlequeue.IdleQueue-class.html#process">IdleQueue.process</a>
+        <dd><em class="note">(inherited documentation)</em></dd>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue May  8 11:18:05 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

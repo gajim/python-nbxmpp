@@ -1,0 +1,950 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>nbxmpp.protocol.Presence</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="nbxmpp-module.html">Package&nbsp;nbxmpp</a> ::
+        <a href="nbxmpp.protocol-module.html">Module&nbsp;protocol</a> ::
+        Class&nbsp;Presence
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="nbxmpp.protocol.Presence-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class Presence</h1><p class="nomargin-top"><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_nbxmpp_p_26" name="uml_class_diagram_for_nbxmpp_p_26">
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#__init__" title="You can specify recipient, type of message, priority, show and status values any additional attributes, sender of the presence, timestamp, any additional payload (f.e. jabber:x:delay element) and namespace in one go. Alternatively you can pass in the other XML object as the &#39;node&#39; parameted to replicate it as presence" alt="" coords="17,729,1085,748"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#getPriority" title="Return the priority of the message" alt="" coords="17,748,1085,767"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#getShow" title="Return the show value of the message" alt="" coords="17,767,1085,785"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#getStatus" title="Return the status string of the message" alt="" coords="17,785,1085,804"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#setPriority" title="Set the priority of the message" alt="" coords="17,804,1085,823"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#setShow" title="Set the show value of the message" alt="" coords="17,823,1085,841"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#setStatus" title="Set the status string of the message" alt="" coords="17,841,1085,860"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#getRole" title="Return the presence role (for groupchat)" alt="" coords="17,860,1085,879"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#getAffiliation" title="Return the presence affiliation (for groupchat)" alt="" coords="17,879,1085,897"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#getNewNick" title="Return the status code of the presence (for groupchat)" alt="" coords="17,897,1085,916"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#getJid" title="Return the presence jid (for groupchat)" alt="" coords="17,916,1085,935"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#getReason" title="Returns the reason of the presence (for groupchat)" alt="" coords="17,935,1085,953"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#getActor" title="Return the reason of the presence (for groupchat)" alt="" coords="17,953,1085,972"/>
+<area shape="rect" id="node122" href="nbxmpp.protocol.Presence-class.html#getStatusCode" title="Return the status code of the presence (for groupchat)" alt="" coords="17,972,1085,991"/>
+<area shape="rect" id="node1" href="nbxmpp.protocol.Presence-class.html" title="nbxmpp.protocol.Presence" alt="" coords="5,697,1096,997"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#getTo" title="Return value of the &#39;to&#39; attribute" alt="" coords="461,391,641,409"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#getFrom" title="Return value of the &#39;from&#39; attribute" alt="" coords="461,409,641,428"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#getTimestamp" title="Return the timestamp in the &#39;yyyymmddThhmmss&#39; format" alt="" coords="461,428,641,447"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#getTimestamp2" title="Return the timestamp in the &#39;yyyymmddThhmmss&#39; format" alt="" coords="461,447,641,465"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#getID" title="Return the value of the &#39;id&#39; attribute" alt="" coords="461,465,641,484"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#setTo" title="Set the value of the &#39;to&#39; attribute" alt="" coords="461,484,641,503"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#getType" title="Return the value of the &#39;type&#39; attribute" alt="" coords="461,503,641,521"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#setFrom" title="Set the value of the &#39;from&#39; attribute" alt="" coords="461,521,641,540"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#setType" title="Set the value of the &#39;type&#39; attribute" alt="" coords="461,540,641,559"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#setID" title="Set the value of the &#39;id&#39; attribute" alt="" coords="461,559,641,577"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#getError" title="Return the error&#45;condition (if present) or the textual description of the error (otherwise)" alt="" coords="461,577,641,596"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#getErrorMsg" title="Return the textual description of the error (if present) or the error condition" alt="" coords="461,596,641,615"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#getErrorCode" title="Return the error code. Obsolete." alt="" coords="461,615,641,633"/>
+<area shape="rect" id="node123" href="nbxmpp.protocol.Protocol-class.html#__setitem__" title="Set the item &#39;item&#39; to the value &#39;val&#39;" alt="" coords="461,652,641,671"/>
+<area shape="rect" id="node2" href="nbxmpp.protocol.Protocol-class.html" title="A &quot;stanza&quot; object class. Contains methods that are common for presences, iqs and messages" alt="" coords="449,358,652,677"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#FORCE_NODE_RECREATION" title="nbxmpp.simplexml.Node.FORCE_NODE_RECREATION" alt="" coords="281,31,823,49"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#lookup_nsp" title="nbxmpp.simplexml.Node.lookup_nsp" alt="" coords="281,52,823,71"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#__str__" title="Method used to dump node into textual representation. If &quot;fancy&quot; argument is set to True produces indented output for readability" alt="" coords="281,71,823,89"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#addChild" title="If &quot;node&quot; argument is provided, adds it as child node. Else creates new node from the other arguments&#39; values and adds it as well" alt="" coords="281,89,823,108"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#addData" title="Add some CDATA to node" alt="" coords="281,108,823,127"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#clearData" title="Remove all CDATA from the node" alt="" coords="281,127,823,145"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#delAttr" title="Delete an attribute &quot;key&quot;" alt="" coords="281,145,823,164"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#delChild" title="Delete the &quot;node&quot; from the node&#39;s childs list, if &quot;node&quot; is an instance. Else delete the first node that have specified name and (optionally) attributes" alt="" coords="281,164,823,183"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#getAttrs" title="Return all node&#39;s attributes as dictionary" alt="" coords="281,183,823,201"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#getAttr" title="Return value of specified attribute" alt="" coords="281,201,823,220"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#getChildren" title="Return all node&#39;s child nodes as list" alt="" coords="281,220,823,239"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#getData" title="Return all node CDATA as string (concatenated)" alt="" coords="281,239,823,257"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#getName" title="Return the name of node" alt="" coords="281,257,823,276"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#getNamespace" title="Return the namespace of node" alt="" coords="281,276,823,295"/>
+<area shape="rect" id="node124" href="nbxmpp.simplexml.Node-class.html#__getattr__" title="Reduce memory usage caused by T/NT classes &#45; use memory only when needed" alt="" coords="281,313,823,332"/>
+<area shape="rect" id="node3" href="nbxmpp.simplexml.Node-class.html" title="Node class describes syntax of separate XML Node. It have a constructor that permits node creation from set of &quot;namespace name&quot;, attributes and payload of text strings and other nodes. It does not natively support building node from text string and uses NodeBuilder class for that purpose. After creation node can be mangled in many ways so it can be completely changed. Also node can be serialised into string in one of two modes: default (where the textual representation of node describes it exactly) and &quot;fancy&quot; &#45; with whitespace added to make indentation and thus make result more readable by human." alt="" coords="269,6,835,338"/>
+</map>
+  <img src="uml_class_diagram_for_nbxmpp_p_26.gif" alt='' usemap="#uml_class_diagram_for_nbxmpp_p_26" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">to</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">typ</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">priority</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">show</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">status</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">attrs</span>=<span class="summary-sig-default"><code class="variable-group">{</code><code class="variable-group">}</code></span>,
+        <span class="summary-sig-arg">frm</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">timestamp</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">payload</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>,
+        <span class="summary-sig-arg">xmlns</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">jabber:client</code><code class="variable-quote">'</code></span>,
+        <span class="summary-sig-arg">node</span>=<span class="summary-sig-default">None</span>)</span><br />
+      You can specify recipient, type of message, priority, show and status
+values any additional attributes, sender of the presence, timestamp, any
+additional payload (f.e. jabber:x:delay element) and namespace in one go.
+Alternatively you can pass in the other XML object as the 'node'
+parameted to replicate it as presence</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#getPriority" class="summary-sig-name">getPriority</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the priority of the message</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getPriority">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#getShow" class="summary-sig-name">getShow</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the show value of the message</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getShow">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#getStatus" class="summary-sig-name">getStatus</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the status string of the message</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getStatus">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#setPriority" class="summary-sig-name">setPriority</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">val</span>)</span><br />
+      Set the priority of the message</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.setPriority">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#setShow" class="summary-sig-name">setShow</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">val</span>)</span><br />
+      Set the show value of the message</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.setShow">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#setStatus" class="summary-sig-name">setStatus</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">val</span>)</span><br />
+      Set the status string of the message</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.setStatus">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#_muc_getItemAttr" class="summary-sig-name" onclick="show_private();">_muc_getItemAttr</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">tag</span>,
+        <span class="summary-sig-arg">attr</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence._muc_getItemAttr">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#_muc_getSubTagDataAttr" class="summary-sig-name" onclick="show_private();">_muc_getSubTagDataAttr</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">tag</span>,
+        <span class="summary-sig-arg">attr</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence._muc_getSubTagDataAttr">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#getRole" class="summary-sig-name">getRole</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the presence role (for groupchat)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getRole">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#getAffiliation" class="summary-sig-name">getAffiliation</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the presence affiliation (for groupchat)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getAffiliation">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#getNewNick" class="summary-sig-name">getNewNick</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the status code of the presence (for groupchat)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getNewNick">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#getJid" class="summary-sig-name">getJid</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the presence jid (for groupchat)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getJid">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#getReason" class="summary-sig-name">getReason</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Returns the reason of the presence (for groupchat)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getReason">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#getActor" class="summary-sig-name">getActor</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the reason of the presence (for groupchat)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getActor">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.protocol.Presence-class.html#getStatusCode" class="summary-sig-name">getStatusCode</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the status code of the presence (for groupchat)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getStatusCode">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.protocol.Protocol-class.html">Protocol</a></code></b>:
+      <code><a href="nbxmpp.protocol.Protocol-class.html#__setitem__">__setitem__</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#getError">getError</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#getErrorCode">getErrorCode</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#getErrorMsg">getErrorMsg</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#getFrom">getFrom</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#getID">getID</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#getProperties">getProperties</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#getStatusConditions">getStatusConditions</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#getTimestamp">getTimestamp</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#getTimestamp2">getTimestamp2</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#getTo">getTo</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#getType">getType</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#setError">setError</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#setFrom">setFrom</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#setID">setID</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#setTimestamp">setTimestamp</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#setTo">setTo</a></code>,
+      <code><a href="nbxmpp.protocol.Protocol-class.html#setType">setType</a></code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.simplexml.Node-class.html">simplexml.Node</a></code></b>:
+      <code><a href="nbxmpp.simplexml.Node-class.html#__contains__">__contains__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__delitem__">__delitem__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__getattr__">__getattr__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__getitem__">__getitem__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#__str__">__str__</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#addChild">addChild</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#addData">addData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#clearData">clearData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#delAttr">delAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#delChild">delChild</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getAttr">getAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getAttrs">getAttrs</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getChildren">getChildren</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getData">getData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getName">getName</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getNamespace">getNamespace</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getParent">getParent</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getPayload">getPayload</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTag">getTag</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTagAttr">getTagAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTagData">getTagData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#getTags">getTags</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#has_attr">has_attr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#iterTags">iterTags</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#lookup_nsp">lookup_nsp</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setAttr">setAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setData">setData</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setName">setName</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setNamespace">setNamespace</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setParent">setParent</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setPayload">setPayload</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setTag">setTag</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setTagAttr">setTagAttr</a></code>,
+      <code><a href="nbxmpp.simplexml.Node-class.html#setTagData">setTagData</a></code>
+      </p>
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS VARIABLES ==================== -->
+<a name="section-ClassVariables"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Variables</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassVariables"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.simplexml.Node-class.html">simplexml.Node</a></code></b>:
+      <code><a href="nbxmpp.simplexml.Node-class.html#FORCE_NODE_RECREATION">FORCE_NODE_RECREATION</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">to</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">typ</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">priority</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">show</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">status</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">attrs</span>=<span class="sig-default"><code class="variable-group">{</code><code class="variable-group">}</code></span>,
+        <span class="sig-arg">frm</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">timestamp</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">payload</span>=<span class="sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>,
+        <span class="sig-arg">xmlns</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">jabber:client</code><code class="variable-quote">'</code></span>,
+        <span class="sig-arg">node</span>=<span class="sig-default">None</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  You can specify recipient, type of message, priority, show and status
+values any additional attributes, sender of the presence, timestamp, any
+additional payload (f.e. jabber:x:delay element) and namespace in one go.
+Alternatively you can pass in the other XML object as the 'node'
+parameted to replicate it as presence
+  <dl class="fields">
+    <dt>Overrides:
+        object.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="getPriority"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getPriority</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getPriority">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the priority of the message
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getShow"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getShow</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getShow">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the show value of the message
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getStatus"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getStatus</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getStatus">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the status string of the message
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setPriority"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setPriority</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">val</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.setPriority">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Set the priority of the message
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setShow"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setShow</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">val</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.setShow">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Set the show value of the message
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setStatus"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setStatus</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">val</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.setStatus">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Set the status string of the message
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_muc_getItemAttr"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_muc_getItemAttr</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">tag</span>,
+        <span class="sig-arg">attr</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence._muc_getItemAttr">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_muc_getSubTagDataAttr"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_muc_getSubTagDataAttr</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">tag</span>,
+        <span class="sig-arg">attr</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence._muc_getSubTagDataAttr">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getRole"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getRole</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getRole">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the presence role (for groupchat)
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getAffiliation"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getAffiliation</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getAffiliation">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the presence affiliation (for groupchat)
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getNewNick"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getNewNick</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getNewNick">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the status code of the presence (for groupchat)
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getJid"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getJid</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getJid">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the presence jid (for groupchat)
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getReason"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getReason</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getReason">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Returns the reason of the presence (for groupchat)
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getActor"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getActor</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getActor">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the reason of the presence (for groupchat)
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getStatusCode"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getStatusCode</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Presence.getStatusCode">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the status code of the presence (for groupchat)
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue May  8 11:18:06 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

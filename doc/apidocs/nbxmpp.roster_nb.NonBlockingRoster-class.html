@@ -1,0 +1,1467 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>nbxmpp.roster_nb.NonBlockingRoster</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="nbxmpp-module.html">Package&nbsp;nbxmpp</a> ::
+        <a href="nbxmpp.roster_nb-module.html">Module&nbsp;roster_nb</a> ::
+        Class&nbsp;NonBlockingRoster
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="nbxmpp.roster_nb.NonBlockingRoster-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class NonBlockingRoster</h1><p class="nomargin-top"><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster">source&nbsp;code</a></span></p>
+<center>
+<center>  <map id="uml_class_diagram_for_nbxmpp_r" name="uml_class_diagram_for_nbxmpp_r">
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#__init__" title="Init internal variables" alt="" coords="17,153,313,172"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#Request" title="Request roster from server if it were not yet requested (or if the &#39;force&#39; argument is set)" alt="" coords="17,172,313,191"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#RosterIqHandler" title="Subscription tracker. Used internally for setting items state in internal roster representation" alt="" coords="17,191,313,209"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#PresenceHandler" title="Presence tracker. Used internally for setting items&#39; resources state in internal roster representation" alt="" coords="17,209,313,228"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#delItem" title="Delete contact &#39;jid&#39; from roster" alt="" coords="17,228,313,247"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getAsk" title="Return &#39;ask&#39; value of contact &#39;jid&#39;" alt="" coords="17,247,313,265"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getGroups" title="Return groups list that contact &#39;jid&#39; belongs to" alt="" coords="17,265,313,284"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getName" title="Return name of contact &#39;jid&#39;" alt="" coords="17,284,313,303"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getPriority" title="Return priority of contact &#39;jid&#39;. &#39;jid&#39; should be a full (not bare) JID" alt="" coords="17,303,313,321"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getRawRoster" title="Return roster representation in internal format" alt="" coords="17,321,313,340"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getRawItem" title="Return roster item &#39;jid&#39; representation in internal format" alt="" coords="17,340,313,359"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getShow" title="Return &#39;show&#39; value of contact &#39;jid&#39;. &#39;jid&#39; should be a full (not bare) JID" alt="" coords="17,359,313,377"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getStatus" title="Return &#39;status&#39; value of contact &#39;jid&#39;. &#39;jid&#39; should be a full (not bare) JID" alt="" coords="17,377,313,396"/>
+<area shape="rect" id="node205" href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getRoster" title="Request roster from server if neccessary and returns self" alt="" coords="17,415,313,433"/>
+<area shape="rect" id="node1" href="nbxmpp.roster_nb.NonBlockingRoster-class.html" title="Defines a plenty of methods that will allow you to manage roster. Also automatically track presences from remote JIDs taking into account that every JID can have multiple resources connected. Does not currently support &#39;error&#39; presences. You can also use mapping interface for access to the internal representation of contacts in roster" alt="" coords="5,121,325,439"/>
+<area shape="rect" id="node206" href="nbxmpp.plugin.PlugIn-class.html#PlugIn" title="Attach to owner and register ourself and our _exported_methods in it. If defined by a subclass, call self.plugin(owner) to execute hook code after plugging" alt="" coords="52,39,277,57"/>
+<area shape="rect" id="node206" href="nbxmpp.plugin.PlugIn-class.html#PlugOut" title="Unregister our _exported_methods from owner and detach from it. If defined by a subclass, call self.plugout() after unplugging to execute hook code" alt="" coords="52,57,277,76"/>
+<area shape="rect" id="node206" href="nbxmpp.plugin.PlugIn-class.html#get_instance" title="Factory Method for object creation" alt="" coords="52,76,277,95"/>
+<area shape="rect" id="node2" href="nbxmpp.plugin.PlugIn-class.html" title="Abstract xmpppy plugin infrastructure code, providing plugging in/out and debugging functionality" alt="" coords="40,6,288,101"/>
+</map>
+  <img src="uml_class_diagram_for_nbxmpp_r.gif" alt='' usemap="#uml_class_diagram_for_nbxmpp_r" ismap="ismap" class="graph-without-title" />
+</center>
+</center>
+<hr />
+Defines a plenty of methods that will allow you to manage roster. Also
+automatically track presences from remote JIDs taking into account that
+every JID can have multiple resources connected. Does not currently support
+'error' presences. You can also use mapping interface for access to the
+internal representation of contacts in roster
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">version</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Init internal variables</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#Request" class="summary-sig-name">Request</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">force</span>=<span class="summary-sig-default">0</span>)</span><br />
+      Request roster from server if it were not yet requested (or if the
+'force' argument is set)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.Request">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#RosterIqHandler" class="summary-sig-name">RosterIqHandler</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dis</span>,
+        <span class="summary-sig-arg">stanza</span>)</span><br />
+      Subscription tracker. Used internally for setting items state in internal
+roster representation</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.RosterIqHandler">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#PresenceHandler" class="summary-sig-name">PresenceHandler</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dis</span>,
+        <span class="summary-sig-arg">pres</span>)</span><br />
+      Presence tracker. Used internally for setting items' resources state in
+internal roster representation</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.PresenceHandler">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#_getItemData" class="summary-sig-name" onclick="show_private();">_getItemData</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>,
+        <span class="summary-sig-arg">dataname</span>)</span><br />
+      Return specific jid's representation in internal format. Used internally</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster._getItemData">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#_getResourceData" class="summary-sig-name" onclick="show_private();">_getResourceData</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>,
+        <span class="summary-sig-arg">dataname</span>)</span><br />
+      Return specific jid's resource representation in internal format. Used
+internally</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster._getResourceData">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#delItem" class="summary-sig-name">delItem</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Delete contact 'jid' from roster</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.delItem">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getAsk" class="summary-sig-name">getAsk</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Return 'ask' value of contact 'jid'</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getAsk">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getGroups" class="summary-sig-name">getGroups</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Return groups list that contact 'jid' belongs to</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getGroups">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getName" class="summary-sig-name">getName</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Return name of contact 'jid'</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getName">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getPriority" class="summary-sig-name">getPriority</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Return priority of contact 'jid'. 'jid' should be a full (not bare) JID</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getPriority">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getRawRoster" class="summary-sig-name">getRawRoster</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return roster representation in internal format</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getRawRoster">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getRawItem" class="summary-sig-name">getRawItem</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Return roster item 'jid' representation in internal format</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getRawItem">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getShow" class="summary-sig-name">getShow</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Return 'show' value of contact 'jid'. 'jid' should be a full (not bare)
+JID</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getShow">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getStatus" class="summary-sig-name">getStatus</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Return 'status' value of contact 'jid'. 'jid' should be a full (not bare)
+JID</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getStatus">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getSubscription" class="summary-sig-name">getSubscription</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Return 'subscription' value of contact 'jid'</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getSubscription">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getResources" class="summary-sig-name">getResources</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Return list of connected resources of contact 'jid'</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getResources">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#setItem" class="summary-sig-name">setItem</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>,
+        <span class="summary-sig-arg">name</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">groups</span>=<span class="summary-sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>)</span><br />
+      Rename contact 'jid' and sets the groups list that it now belongs to</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.setItem">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#setItemMulti" class="summary-sig-name">setItemMulti</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">items</span>)</span><br />
+      Rename multiple contacts and sets their group lists</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.setItemMulti">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getItems" class="summary-sig-name">getItems</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return list of all [bare] JIDs that the roster is currently tracks</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getItems">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#keys" class="summary-sig-name">keys</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Same as getItems. Provided for the sake of dictionary interface</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.keys">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#__getitem__" class="summary-sig-name">__getitem__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">item</span>)</span><br />
+      Get the contact in the internal format. Raises KeyError if JID 'item' is
+not in roster</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.__getitem__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getItem" class="summary-sig-name">getItem</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">item</span>)</span><br />
+      Get the contact in the internal format (or None if JID 'item' is not in
+roster)</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getItem">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#Subscribe" class="summary-sig-name">Subscribe</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Send subscription request to JID 'jid'</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.Subscribe">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#Unsubscribe" class="summary-sig-name">Unsubscribe</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Ask for removing our subscription for JID 'jid'</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.Unsubscribe">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#Authorize" class="summary-sig-name">Authorize</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Authorize JID 'jid'. Works only if these JID requested auth previously</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.Authorize">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#Unauthorize" class="summary-sig-name">Unauthorize</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">jid</span>)</span><br />
+      Unauthorise JID 'jid'. Use for declining authorisation request or for
+removing existing authorization</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.Unauthorize">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getRaw" class="summary-sig-name">getRaw</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return the internal data representation of the roster</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getRaw">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#setRaw" class="summary-sig-name">setRaw</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">data</span>)</span><br />
+      Return the internal data representation of the roster</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.setRaw">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#plugin" class="summary-sig-name">plugin</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">owner</span>,
+        <span class="summary-sig-arg">request</span>=<span class="summary-sig-default">1</span>)</span><br />
+      Register presence and subscription trackers in the owner's dispatcher.
+Also request roster from server if the 'request' argument is set. Used
+internally</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.plugin">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#_on_roster_set" class="summary-sig-name" onclick="show_private();">_on_roster_set</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">data</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster._on_roster_set">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="nbxmpp.roster_nb.NonBlockingRoster-class.html#getRoster" class="summary-sig-name">getRoster</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">on_ready</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">force</span>=<span class="summary-sig-default">False</span>)</span><br />
+      Request roster from server if neccessary and returns self</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getRoster">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.plugin.PlugIn-class.html">plugin.PlugIn</a></code></b>:
+      <code><a href="nbxmpp.plugin.PlugIn-class.html#PlugIn">PlugIn</a></code>,
+      <code><a href="nbxmpp.plugin.PlugIn-class.html#PlugOut">PlugOut</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS METHODS ==================== -->
+<a name="section-ClassMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Class Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-ClassMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code><a href="nbxmpp.plugin.PlugIn-class.html">plugin.PlugIn</a></code></b>:
+      <code><a href="nbxmpp.plugin.PlugIn-class.html#get_instance">get_instance</a></code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">version</span>=<span class="sig-default">None</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Init internal variables
+  <dl class="fields">
+    <dt>Overrides:
+        <a href="nbxmpp.plugin.PlugIn-class.html#__init__">plugin.PlugIn.__init__</a>
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="Request"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">Request</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">force</span>=<span class="sig-default">0</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.Request">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Request roster from server if it were not yet requested (or if the
+'force' argument is set)
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="RosterIqHandler"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">RosterIqHandler</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">dis</span>,
+        <span class="sig-arg">stanza</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.RosterIqHandler">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Subscription tracker. Used internally for setting items state in internal
+roster representation
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="PresenceHandler"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">PresenceHandler</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">dis</span>,
+        <span class="sig-arg">pres</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.PresenceHandler">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Presence tracker. Used internally for setting items' resources state in
+internal roster representation
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_getItemData"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_getItemData</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>,
+        <span class="sig-arg">dataname</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster._getItemData">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return specific jid's representation in internal format. Used internally
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_getResourceData"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_getResourceData</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>,
+        <span class="sig-arg">dataname</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster._getResourceData">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return specific jid's resource representation in internal format. Used
+internally
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="delItem"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">delItem</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.delItem">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Delete contact 'jid' from roster
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getAsk"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getAsk</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getAsk">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return 'ask' value of contact 'jid'
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getGroups"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getGroups</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getGroups">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return groups list that contact 'jid' belongs to
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getName"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getName</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getName">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return name of contact 'jid'
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getPriority"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getPriority</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getPriority">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return priority of contact 'jid'. 'jid' should be a full (not bare) JID
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getRawRoster"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getRawRoster</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getRawRoster">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return roster representation in internal format
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getRawItem"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getRawItem</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getRawItem">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return roster item 'jid' representation in internal format
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getShow"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getShow</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getShow">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return 'show' value of contact 'jid'. 'jid' should be a full (not bare)
+JID
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getStatus"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getStatus</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getStatus">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return 'status' value of contact 'jid'. 'jid' should be a full (not bare)
+JID
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getSubscription"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getSubscription</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getSubscription">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return 'subscription' value of contact 'jid'
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getResources"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getResources</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getResources">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return list of connected resources of contact 'jid'
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setItem"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setItem</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>,
+        <span class="sig-arg">name</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">groups</span>=<span class="sig-default"><code class="variable-group">[</code><code class="variable-group">]</code></span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.setItem">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Rename contact 'jid' and sets the groups list that it now belongs to
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setItemMulti"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setItemMulti</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">items</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.setItemMulti">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Rename multiple contacts and sets their group lists
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getItems"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getItems</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getItems">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return list of all [bare] JIDs that the roster is currently tracks
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="keys"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">keys</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.keys">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Same as getItems. Provided for the sake of dictionary interface
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="__getitem__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__getitem__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">item</span>)</span>
+    <br /><em class="fname">(Indexing operator)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.__getitem__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Get the contact in the internal format. Raises KeyError if JID 'item' is
+not in roster
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getItem"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getItem</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">item</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getItem">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Get the contact in the internal format (or None if JID 'item' is not in
+roster)
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="Subscribe"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">Subscribe</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.Subscribe">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Send subscription request to JID 'jid'
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="Unsubscribe"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">Unsubscribe</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.Unsubscribe">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Ask for removing our subscription for JID 'jid'
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="Authorize"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">Authorize</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.Authorize">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Authorize JID 'jid'. Works only if these JID requested auth previously
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="Unauthorize"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">Unauthorize</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">jid</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.Unauthorize">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Unauthorise JID 'jid'. Use for declining authorisation request or for
+removing existing authorization
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getRaw"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getRaw</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getRaw">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the internal data representation of the roster
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setRaw"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setRaw</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">data</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.setRaw">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Return the internal data representation of the roster
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="plugin"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">plugin</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">owner</span>,
+        <span class="sig-arg">request</span>=<span class="sig-default">1</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.plugin">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Register presence and subscription trackers in the owner's dispatcher.
+Also request roster from server if the 'request' argument is set. Used
+internally
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="_on_roster_set"></a>
+<div class="private">
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">_on_roster_set</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">data</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster._on_roster_set">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="getRoster"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">getRoster</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">on_ready</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">force</span>=<span class="sig-default">False</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="nbxmpp.roster_nb-pysrc.html#NonBlockingRoster.getRoster">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  Request roster from server if neccessary and returns self
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue May  8 11:18:07 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>

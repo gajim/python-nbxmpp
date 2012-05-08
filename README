@@ -1,0 +1,17 @@
+                              python-nbxmpp
+                      http://python-nbxmpp.gajim.org
+
+ The goal of this python library is to provide a way for python applications
+to use Jabber/XMPP networks in a non-blocking way. This library is initialy a
+fork of xmpppy one, but using non-blocking sockets.
+
+  Installation
+
+Simply run 'python setup.py install' as root
+
+   Usage
+
+You have to 'import xmpppy' in your program. Then look at examples in ths doc
+folder.
+
+2012-05-08       Yann Leboulanger

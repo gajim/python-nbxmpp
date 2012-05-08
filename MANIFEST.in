@@ -1,0 +1,3 @@
+include ChangeLog COPYING README
+recursive-include doc *
+recursive-include nbxmpp *.py

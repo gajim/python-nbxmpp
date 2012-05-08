@@ -1,0 +1,1193 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>nbxmpp.tls_nb</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="nbxmpp-module.html">Package&nbsp;nbxmpp</a> ::
+        Module&nbsp;tls_nb
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="nbxmpp.tls_nb-pysrc.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<h1 class="epydoc">Source Code for <a href="nbxmpp.tls_nb-module.html">Module nbxmpp.tls_nb</a></h1>
+<pre class="py-src">
+<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"><tt class="py-comment">##   tls_nb.py</tt> </tt>
+<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-comment">##       based on transports_nb.py</tt> </tt>
+<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"><tt class="py-comment">##</tt> </tt>
+<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment">##   Copyright (C) 2003-2004 Alexey "Snake" Nezhdanov</tt> </tt>
+<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment">##       modified by Dimitur Kirov &lt;dkirov@gmail.com&gt;</tt> </tt>
+<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment">##       modified by Tomas Karasek &lt;tom.to.the.k@gmail.com&gt;</tt> </tt>
+<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-comment">##</tt> </tt>
+<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment">##   This program is free software; you can redistribute it and/or modify</tt> </tt>
+<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment">##   it under the terms of the GNU General Public License as published by</tt> </tt>
+<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment">##   the Free Software Foundation; either version 2, or (at your option)</tt> </tt>
+<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment">##   any later version.</tt> </tt>
+<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment">##</tt> </tt>
+<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment">##   This program is distributed in the hope that it will be useful,</tt> </tt>
+<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment">##   but WITHOUT ANY WARRANTY; without even the implied warranty of</tt> </tt>
+<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment">##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</tt> </tt>
+<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-comment">##   GNU General Public License for more details.</tt> </tt>
+<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"> </tt>
+<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">socket</tt> </tt>
+<a name="L19"></a><tt class="py-lineno"> 19</tt>  <tt class="py-line"><tt class="py-keyword">from</tt> <tt id="link-0" class="py-name" targets="Method nbxmpp.auth_nb.NonBlockingBind.plugin()=nbxmpp.auth_nb.NonBlockingBind-class.html#plugin,Method nbxmpp.auth_nb.NonBlockingNonSASL.plugin()=nbxmpp.auth_nb.NonBlockingNonSASL-class.html#plugin,Method nbxmpp.auth_nb.SASL.plugin()=nbxmpp.auth_nb.SASL-class.html#plugin,Method nbxmpp.dispatcher_nb.XMPPDispatcher.plugin()=nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#plugin,Module nbxmpp.plugin=nbxmpp.plugin-module.html,Method nbxmpp.roster_nb.NonBlockingRoster.plugin()=nbxmpp.roster_nb.NonBlockingRoster-class.html#plugin,Method nbxmpp.tls_nb.NonBlockingTLS.plugin()=nbxmpp.tls_nb.NonBlockingTLS-class.html#plugin,Method nbxmpp.transports_nb.NonBlockingTransport.plugin()=nbxmpp.transports_nb.NonBlockingTransport-class.html#plugin"><a title="nbxmpp.auth_nb.NonBlockingBind.plugin
+nbxmpp.auth_nb.NonBlockingNonSASL.plugin
+nbxmpp.auth_nb.SASL.plugin
+nbxmpp.dispatcher_nb.XMPPDispatcher.plugin
+nbxmpp.plugin
+nbxmpp.roster_nb.NonBlockingRoster.plugin
+nbxmpp.tls_nb.NonBlockingTLS.plugin
+nbxmpp.transports_nb.NonBlockingTransport.plugin" class="py-name" href="#" onclick="return doclink('link-0', 'plugin', 'link-0');">plugin</a></tt> <tt class="py-keyword">import</tt> <tt id="link-1" class="py-name" targets="Method nbxmpp.dispatcher_nb.BOSHDispatcher.PlugIn()=nbxmpp.dispatcher_nb.BOSHDispatcher-class.html#PlugIn,Method nbxmpp.dispatcher_nb.Dispatcher.PlugIn()=nbxmpp.dispatcher_nb.Dispatcher-class.html#PlugIn,Class nbxmpp.plugin.PlugIn=nbxmpp.plugin.PlugIn-class.html,Method nbxmpp.plugin.PlugIn.PlugIn()=nbxmpp.plugin.PlugIn-class.html#PlugIn"><a title="nbxmpp.dispatcher_nb.BOSHDispatcher.PlugIn
+nbxmpp.dispatcher_nb.Dispatcher.PlugIn
+nbxmpp.plugin.PlugIn
+nbxmpp.plugin.PlugIn.PlugIn" class="py-name" href="#" onclick="return doclink('link-1', 'PlugIn', 'link-1');">PlugIn</a></tt> </tt>
+<a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line"> </tt>
+<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">sys</tt> </tt>
+<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">os</tt> </tt>
+<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">time</tt> </tt>
+<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"> </tt>
+<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">traceback</tt> </tt>
+<a name="L26"></a><tt class="py-lineno"> 26</tt>  <tt class="py-line"> </tt>
+<a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">logging</tt> </tt>
+<a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"><tt id="link-2" class="py-name" targets="Variable nbxmpp.auth_nb.log=nbxmpp.auth_nb-module.html#log,Variable nbxmpp.bosh.log=nbxmpp.bosh-module.html#log,Variable nbxmpp.client_nb.log=nbxmpp.client_nb-module.html#log,Variable nbxmpp.dispatcher_nb.log=nbxmpp.dispatcher_nb-module.html#log,Variable nbxmpp.idlequeue.log=nbxmpp.idlequeue-module.html#log,Variable nbxmpp.plugin.log=nbxmpp.plugin-module.html#log,Variable nbxmpp.proxy_connectors.log=nbxmpp.proxy_connectors-module.html#log,Variable nbxmpp.roster_nb.log=nbxmpp.roster_nb-module.html#log,Variable nbxmpp.simplexml.log=nbxmpp.simplexml-module.html#log,Variable nbxmpp.smacks.log=nbxmpp.smacks-module.html#log,Variable nbxmpp.tls_nb.log=nbxmpp.tls_nb-module.html#log,Variable nbxmpp.transports_nb.log=nbxmpp.transports_nb-module.html#log"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-2', 'log', 'link-2');">log</a></tt> <tt class="py-op">=</tt> <tt class="py-name">logging</tt><tt class="py-op">.</tt><tt class="py-name">getLogger</tt><tt class="py-op">(</tt><tt class="py-string">'nbxmpp.tls_nb'</tt><tt class="py-op">)</tt> </tt>
+<a name="L29"></a><tt class="py-lineno"> 29</tt>  <tt class="py-line"> </tt>
+<a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line"><tt id="link-3" class="py-name" targets="Variable nbxmpp.tls_nb.USE_PYOPENSSL=nbxmpp.tls_nb-module.html#USE_PYOPENSSL"><a title="nbxmpp.tls_nb.USE_PYOPENSSL" class="py-name" href="#" onclick="return doclink('link-3', 'USE_PYOPENSSL', 'link-3');">USE_PYOPENSSL</a></tt> <tt class="py-op">=</tt> <tt class="py-name">False</tt> </tt>
+<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line"> </tt>
+<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line"><tt id="link-4" class="py-name" targets="Variable nbxmpp.tls_nb.PYOPENSSL=nbxmpp.tls_nb-module.html#PYOPENSSL"><a title="nbxmpp.tls_nb.PYOPENSSL" class="py-name" href="#" onclick="return doclink('link-4', 'PYOPENSSL', 'link-4');">PYOPENSSL</a></tt> <tt class="py-op">=</tt> <tt class="py-string">'PYOPENSSL'</tt> </tt>
+<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line"><tt id="link-5" class="py-name" targets="Variable nbxmpp.tls_nb.PYSTDLIB=nbxmpp.tls_nb-module.html#PYSTDLIB"><a title="nbxmpp.tls_nb.PYSTDLIB" class="py-name" href="#" onclick="return doclink('link-5', 'PYSTDLIB', 'link-5');">PYSTDLIB</a></tt>  <tt class="py-op">=</tt> <tt class="py-string">'PYSTDLIB'</tt> </tt>
+<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line"> </tt>
+<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line"><tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">    <tt class="py-comment">#raise ImportError("Manually disabled PyOpenSSL")</tt> </tt>
+<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line">    <tt class="py-keyword">import</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt> </tt>
+<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">    <tt class="py-keyword">import</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">crypto</tt> </tt>
+<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">    <tt id="link-6" class="py-name"><a title="nbxmpp.tls_nb.USE_PYOPENSSL" class="py-name" href="#" onclick="return doclink('link-6', 'USE_PYOPENSSL', 'link-3');">USE_PYOPENSSL</a></tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">    <tt id="link-7" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-7', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt><tt class="py-string">"PyOpenSSL loaded"</tt><tt class="py-op">)</tt> </tt>
+<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line"><tt class="py-keyword">except</tt> <tt class="py-name">ImportError</tt><tt class="py-op">:</tt> </tt>
+<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">    <tt id="link-8" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-8', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">"Import of PyOpenSSL failed:"</tt><tt class="py-op">,</tt> <tt class="py-name">exc_info</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line"> </tt>
+<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">    <tt class="py-comment"># FIXME: Remove these prints before release, replace with a warning dialog.</tt> </tt>
+<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">stderr</tt><tt class="py-op">,</tt> <tt class="py-string">"="</tt> <tt class="py-op">*</tt> <tt class="py-number">79</tt> </tt>
+<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">stderr</tt><tt class="py-op">,</tt> <tt class="py-string">"PyOpenSSL not found, falling back to Python builtin SSL objects (insecure)."</tt> </tt>
+<a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line">    <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">stderr</tt><tt class="py-op">,</tt> <tt class="py-string">"="</tt> <tt class="py-op">*</tt> <tt class="py-number">79</tt> </tt>
+<a name="L48"></a><tt class="py-lineno"> 48</tt>  <tt class="py-line"> </tt>
+<a name="gattr"></a><div id="gattr-def"><a name="L49"></a><tt class="py-lineno"> 49</tt> <a class="py-toggle" href="#" id="gattr-toggle" onclick="return toggle('gattr');">-</a><tt class="py-line"><tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb-module.html#gattr">gattr</a><tt class="py-op">(</tt><tt class="py-param">obj</tt><tt class="py-op">,</tt> <tt class="py-param">attr</tt><tt class="py-op">,</tt> <tt class="py-param">default</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="gattr-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="gattr-expanded"><a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line">    <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">getattr</tt><tt class="py-op">(</tt><tt class="py-name">obj</tt><tt class="py-op">,</tt> <tt class="py-name">attr</tt><tt class="py-op">)</tt> </tt>
+<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line">    <tt class="py-keyword">except</tt> <tt class="py-name">AttributeError</tt><tt class="py-op">:</tt> </tt>
+<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">default</tt> </tt>
+</div><a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line"> </tt>
+<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line"> </tt>
+<a name="SSLWrapper"></a><div id="SSLWrapper-def"><a name="L56"></a><tt class="py-lineno"> 56</tt> <a class="py-toggle" href="#" id="SSLWrapper-toggle" onclick="return toggle('SSLWrapper');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="nbxmpp.tls_nb.SSLWrapper-class.html">SSLWrapper</a><tt class="py-op">:</tt> </tt>
+</div><div id="SSLWrapper-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="SSLWrapper-expanded"><a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">    Abstract SSLWrapper base class</tt> </tt>
+<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"> </tt>
+<a name="SSLWrapper.Error"></a><div id="SSLWrapper.Error-def"><a name="L61"></a><tt class="py-lineno"> 61</tt> <a class="py-toggle" href="#" id="SSLWrapper.Error-toggle" onclick="return toggle('SSLWrapper.Error');">-</a><tt class="py-line">    <tt class="py-keyword">class</tt> <a class="py-def-name" href="nbxmpp.tls_nb.SSLWrapper.Error-class.html">Error</a><tt class="py-op">(</tt><tt class="py-base-class">IOError</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SSLWrapper.Error-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="SSLWrapper.Error-expanded"><a name="L62"></a><tt class="py-lineno"> 62</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line"><tt class="py-docstring">        Generic SSL Error Wrapper</tt> </tt>
+<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line"> </tt>
+<a name="SSLWrapper.Error.__init__"></a><div id="SSLWrapper.Error.__init__-def"><a name="L66"></a><tt class="py-lineno"> 66</tt> <a class="py-toggle" href="#" id="SSLWrapper.Error.__init__-toggle" onclick="return toggle('SSLWrapper.Error.__init__');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.SSLWrapper.Error-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">sock</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">exc</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">errno</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">strerror</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> </tt>
+<a name="L67"></a><tt class="py-lineno"> 67</tt>  <tt class="py-line">                        <tt class="py-param">peer</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SSLWrapper.Error.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++++++++++"></div><div id="SSLWrapper.Error.__init__-expanded"><a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">parent</tt> <tt class="py-op">=</tt> <tt class="py-name">IOError</tt> </tt>
+<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line"> </tt>
+<a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line">            <tt class="py-name">errno</tt> <tt class="py-op">=</tt> <tt class="py-name">errno</tt> <tt class="py-keyword">or</tt> <tt id="link-9" class="py-name" targets="Function nbxmpp.tls_nb.gattr()=nbxmpp.tls_nb-module.html#gattr"><a title="nbxmpp.tls_nb.gattr" class="py-name" href="#" onclick="return doclink('link-9', 'gattr', 'link-9');">gattr</a></tt><tt class="py-op">(</tt><tt class="py-name">exc</tt><tt class="py-op">,</tt> <tt class="py-string">'errno'</tt><tt class="py-op">)</tt> <tt class="py-keyword">or</tt> <tt class="py-name">exc</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line">            <tt class="py-name">strerror</tt> <tt class="py-op">=</tt> <tt class="py-name">strerror</tt> <tt class="py-keyword">or</tt> <tt id="link-10" class="py-name"><a title="nbxmpp.tls_nb.gattr" class="py-name" href="#" onclick="return doclink('link-10', 'gattr', 'link-9');">gattr</a></tt><tt class="py-op">(</tt><tt class="py-name">exc</tt><tt class="py-op">,</tt> <tt class="py-string">'strerror'</tt><tt class="py-op">)</tt> <tt class="py-keyword">or</tt> <tt id="link-11" class="py-name"><a title="nbxmpp.tls_nb.gattr" class="py-name" href="#" onclick="return doclink('link-11', 'gattr', 'link-9');">gattr</a></tt><tt class="py-op">(</tt><tt class="py-name">exc</tt><tt class="py-op">,</tt> <tt class="py-string">'args'</tt><tt class="py-op">)</tt> </tt>
+<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">strerror</tt><tt class="py-op">,</tt> <tt class="py-name">basestring</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L73"></a><tt class="py-lineno"> 73</tt>  <tt class="py-line">                <tt class="py-name">strerror</tt> <tt class="py-op">=</tt> <tt class="py-name">repr</tt><tt class="py-op">(</tt><tt class="py-name">strerror</tt><tt class="py-op">)</tt> </tt>
+<a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line"> </tt>
+<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sock</tt> <tt class="py-op">=</tt> <tt class="py-name">sock</tt> </tt>
+<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc</tt> <tt class="py-op">=</tt> <tt class="py-name">exc</tt> </tt>
+<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">peer</tt> <tt class="py-op">=</tt> <tt class="py-name">peer</tt> </tt>
+<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_name</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L79"></a><tt class="py-lineno"> 79</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_args</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_str</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_repr</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line"> </tt>
+<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_name</tt> <tt class="py-op">=</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc</tt><tt class="py-op">.</tt><tt class="py-name">__class__</tt><tt class="py-op">)</tt> </tt>
+<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_args</tt> <tt class="py-op">=</tt> <tt id="link-12" class="py-name"><a title="nbxmpp.tls_nb.gattr" class="py-name" href="#" onclick="return doclink('link-12', 'gattr', 'link-9');">gattr</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc</tt><tt class="py-op">,</tt> <tt class="py-string">'args'</tt><tt class="py-op">)</tt> </tt>
+<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_str</tt> <tt class="py-op">=</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc</tt><tt class="py-op">)</tt> </tt>
+<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_repr</tt> <tt class="py-op">=</tt> <tt class="py-name">repr</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc</tt><tt class="py-op">)</tt> </tt>
+<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">errno</tt><tt class="py-op">:</tt> </tt>
+<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">                    <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">                        <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">exc</tt><tt class="py-op">,</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">SysCallError</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">                            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_args</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-op">&gt;</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
+<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">                                <tt class="py-name">errno</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_args</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
+<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">                            <tt class="py-name">strerror</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_args</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
+<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">                    <tt class="py-keyword">except</tt><tt class="py-op">:</tt> <tt class="py-keyword">pass</tt> </tt>
+<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line"> </tt>
+<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">parent</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Method nbxmpp.auth_nb.NonBlockingBind.__init__()=nbxmpp.auth_nb.NonBlockingBind-class.html#__init__,Method nbxmpp.auth_nb.NonBlockingNonSASL.__init__()=nbxmpp.auth_nb.NonBlockingNonSASL-class.html#__init__,Method nbxmpp.auth_nb.SASL.__init__()=nbxmpp.auth_nb.SASL-class.html#__init__,Method nbxmpp.bosh.AckChecker.__init__()=nbxmpp.bosh.AckChecker-class.html#__init__,Method nbxmpp.bosh.KeyStack.__init__()=nbxmpp.bosh.KeyStack-class.html#__init__,Method nbxmpp.bosh.NonBlockingBOSH.__init__()=nbxmpp.bosh.NonBlockingBOSH-class.html#__init__,Method nbxmpp.client_nb.NonBlockingClient.__init__()=nbxmpp.client_nb.NonBlockingClient-class.html#__init__,Method nbxmpp.dispatcher_nb.XMPPDispatcher.__init__()=nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#__init__,Method nbxmpp.idlequeue.IdleCommand.__init__()=nbxmpp.idlequeue.IdleCommand-class.html#__init__,Method nbxmpp.idlequeue.IdleObject.__init__()=nbxmpp.idlequeue.IdleObject-class.html#__init__,Method nbxmpp.idlequeue.IdleQueue.__init__()=nbxmpp.idlequeue.IdleQueue-class.html#__init__,Method nbxmpp.plugin.PlugIn.__init__()=nbxmpp.plugin.PlugIn-class.html#__init__,Method nbxmpp.protocol.Acks.__init__()=nbxmpp.protocol.Acks-class.html#__init__,Method nbxmpp.protocol.BOSHBody.__init__()=nbxmpp.protocol.BOSHBody-class.html#__init__,Method nbxmpp.protocol.DataField.__init__()=nbxmpp.protocol.DataField-class.html#__init__,Method nbxmpp.protocol.DataForm.__init__()=nbxmpp.protocol.DataForm-class.html#__init__,Method nbxmpp.protocol.Error.__init__()=nbxmpp.protocol.Error-class.html#__init__,Method nbxmpp.protocol.ErrorNode.__init__()=nbxmpp.protocol.ErrorNode-class.html#__init__,Method nbxmpp.protocol.Hashes.__init__()=nbxmpp.protocol.Hashes-class.html#__init__,Method nbxmpp.protocol.Iq.__init__()=nbxmpp.protocol.Iq-class.html#__init__,Method nbxmpp.protocol.JID.__init__()=nbxmpp.protocol.JID-class.html#__init__,Method nbxmpp.protocol.Message.__init__()=nbxmpp.protocol.Message-class.html#__init__,Method nbxmpp.protocol.Presence.__init__()=nbxmpp.protocol.Presence-class.html#__init__,Method nbxmpp.protocol.Protocol.__init__()=nbxmpp.protocol.Protocol-class.html#__init__,Method nbxmpp.proxy_connectors.ProxyConnector.__init__()=nbxmpp.proxy_connectors.ProxyConnector-class.html#__init__,Method nbxmpp.roster_nb.NonBlockingRoster.__init__()=nbxmpp.roster_nb.NonBlockingRoster-class.html#__init__,Method nbxmpp.simplexml.Node.__init__()=nbxmpp.simplexml.Node-class.html#__init__,Method nbxmpp.simplexml.NodeBuilder.__init__()=nbxmpp.simplexml.NodeBuilder-class.html#__init__,Method nbxmpp.simplexml.T.__init__()=nbxmpp.simplexml.T-class.html#__init__,Method nbxmpp.smacks.Smacks.__init__()=nbxmpp.smacks.Smacks-class.html#__init__,Method nbxmpp.stringprepare.EmptyMappingTable.__init__()=nbxmpp.stringprepare.EmptyMappingTable-class.html#__init__,Method nbxmpp.stringprepare.LookupTable.__init__()=nbxmpp.stringprepare.LookupTable-class.html#__init__,Method nbxmpp.stringprepare.LookupTableFromFunction.__init__()=nbxmpp.stringprepare.LookupTableFromFunction-class.html#__init__,Method nbxmpp.stringprepare.MappingTableFromFunction.__init__()=nbxmpp.stringprepare.MappingTableFromFunction-class.html#__init__,Method nbxmpp.stringprepare.Profile.__init__()=nbxmpp.stringprepare.Profile-class.html#__init__,Method nbxmpp.tls_nb.NonBlockingTLS.__init__()=nbxmpp.tls_nb.NonBlockingTLS-class.html#__init__,Method nbxmpp.tls_nb.PyOpenSSLWrapper.__init__()=nbxmpp.tls_nb.PyOpenSSLWrapper-class.html#__init__,Method nbxmpp.tls_nb.SSLWrapper.Error.__init__()=nbxmpp.tls_nb.SSLWrapper.Error-class.html#__init__,Method nbxmpp.tls_nb.SSLWrapper.__init__()=nbxmpp.tls_nb.SSLWrapper-class.html#__init__,Method nbxmpp.tls_nb.StdlibSSLWrapper.__init__()=nbxmpp.tls_nb.StdlibSSLWrapper-class.html#__init__,Method nbxmpp.transports_nb.NonBlockingHTTP.__init__()=nbxmpp.transports_nb.NonBlockingHTTP-class.html#__init__,Method nbxmpp.transports_nb.NonBlockingTCP.__init__()=nbxmpp.transports_nb.NonBlockingTCP-class.html#__init__,Method nbxmpp.transports_nb.NonBlockingTransport.__init__()=nbxmpp.transports_nb.NonBlockingTransport-class.html#__init__"><a title="nbxmpp.auth_nb.NonBlockingBind.__init__
+nbxmpp.auth_nb.NonBlockingNonSASL.__init__
+nbxmpp.auth_nb.SASL.__init__
+nbxmpp.bosh.AckChecker.__init__
+nbxmpp.bosh.KeyStack.__init__
+nbxmpp.bosh.NonBlockingBOSH.__init__
+nbxmpp.client_nb.NonBlockingClient.__init__
+nbxmpp.dispatcher_nb.XMPPDispatcher.__init__
+nbxmpp.idlequeue.IdleCommand.__init__
+nbxmpp.idlequeue.IdleObject.__init__
+nbxmpp.idlequeue.IdleQueue.__init__
+nbxmpp.plugin.PlugIn.__init__
+nbxmpp.protocol.Acks.__init__
+nbxmpp.protocol.BOSHBody.__init__
+nbxmpp.protocol.DataField.__init__
+nbxmpp.protocol.DataForm.__init__
+nbxmpp.protocol.Error.__init__
+nbxmpp.protocol.ErrorNode.__init__
+nbxmpp.protocol.Hashes.__init__
+nbxmpp.protocol.Iq.__init__
+nbxmpp.protocol.JID.__init__
+nbxmpp.protocol.Message.__init__
+nbxmpp.protocol.Presence.__init__
+nbxmpp.protocol.Protocol.__init__
+nbxmpp.proxy_connectors.ProxyConnector.__init__
+nbxmpp.roster_nb.NonBlockingRoster.__init__
+nbxmpp.simplexml.Node.__init__
+nbxmpp.simplexml.NodeBuilder.__init__
+nbxmpp.simplexml.T.__init__
+nbxmpp.smacks.Smacks.__init__
+nbxmpp.stringprepare.EmptyMappingTable.__init__
+nbxmpp.stringprepare.LookupTable.__init__
+nbxmpp.stringprepare.LookupTableFromFunction.__init__
+nbxmpp.stringprepare.MappingTableFromFunction.__init__
+nbxmpp.stringprepare.Profile.__init__
+nbxmpp.tls_nb.NonBlockingTLS.__init__
+nbxmpp.tls_nb.PyOpenSSLWrapper.__init__
+nbxmpp.tls_nb.SSLWrapper.Error.__init__
+nbxmpp.tls_nb.SSLWrapper.__init__
+nbxmpp.tls_nb.StdlibSSLWrapper.__init__
+nbxmpp.transports_nb.NonBlockingHTTP.__init__
+nbxmpp.transports_nb.NonBlockingTCP.__init__
+nbxmpp.transports_nb.NonBlockingTransport.__init__" class="py-name" href="#" onclick="return doclink('link-13', '__init__', 'link-13');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-name">errno</tt><tt class="py-op">,</tt> <tt class="py-name">strerror</tt><tt class="py-op">)</tt> </tt>
+<a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line"> </tt>
+<a name="L98"></a><tt class="py-lineno"> 98</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">peer</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt> <tt class="py-keyword">and</tt> <tt class="py-name">sock</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">                <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">                    <tt class="py-name">ppeer</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sock</tt><tt class="py-op">.</tt><tt class="py-name">getpeername</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">                    <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">ppeer</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-number">2</tt> <tt class="py-keyword">and</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">ppeer</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-name">basestring</tt><tt class="py-op">)</tt> \ </tt>
+<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">                    <tt class="py-keyword">and</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">ppeer</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-name">int</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">                        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">peer</tt> <tt class="py-op">=</tt> <tt class="py-name">ppeer</tt> </tt>
+<a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line">                <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L105"></a><tt class="py-lineno">105</tt>  <tt class="py-line">                    <tt class="py-keyword">pass</tt> </tt>
+</div><a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line"> </tt>
+<a name="SSLWrapper.Error.__str__"></a><div id="SSLWrapper.Error.__str__-def"><a name="L107"></a><tt class="py-lineno">107</tt> <a class="py-toggle" href="#" id="SSLWrapper.Error.__str__-toggle" onclick="return toggle('SSLWrapper.Error.__str__');">-</a><tt class="py-line">        <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.SSLWrapper.Error-class.html#__str__">__str__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SSLWrapper.Error.__str__-collapsed" style="display:none;" pad="+++" indent="++++++++++++++++"></div><div id="SSLWrapper.Error.__str__-expanded"><a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">            <tt class="py-name">s</tt> <tt class="py-op">=</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">__class__</tt><tt class="py-op">)</tt> </tt>
+<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">peer</tt><tt class="py-op">:</tt> </tt>
+<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">                <tt class="py-name">s</tt> <tt class="py-op">+=</tt> <tt class="py-string">" for %s:%d"</tt> <tt class="py-op">%</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">peer</tt> </tt>
+<a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">errno</tt> <tt class="py-keyword">is</tt> <tt class="py-keyword">not</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L112"></a><tt class="py-lineno">112</tt>  <tt class="py-line">                <tt class="py-name">s</tt> <tt class="py-op">+=</tt> <tt class="py-string">": [Errno: %d]"</tt> <tt class="py-op">%</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">errno</tt> </tt>
+<a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">strerror</tt><tt class="py-op">:</tt> </tt>
+<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">                <tt class="py-name">s</tt> <tt class="py-op">+=</tt> <tt class="py-string">" (%s)"</tt> <tt class="py-op">%</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">strerror</tt> </tt>
+<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_name</tt><tt class="py-op">:</tt> </tt>
+<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">                <tt class="py-name">s</tt> <tt class="py-op">+=</tt> <tt class="py-string">", Caused by %s"</tt> <tt class="py-op">%</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_name</tt> </tt>
+<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_str</tt><tt class="py-op">:</tt> </tt>
+<a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line">                    <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">strerror</tt><tt class="py-op">:</tt> </tt>
+<a name="L119"></a><tt class="py-lineno">119</tt>  <tt class="py-line">                        <tt class="py-name">s</tt> <tt class="py-op">+=</tt> <tt class="py-string">"(%s)"</tt> <tt class="py-op">%</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_str</tt> </tt>
+<a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">                    <tt class="py-keyword">else</tt><tt class="py-op">:</tt> <tt class="py-name">s</tt> <tt class="py-op">+=</tt> <tt class="py-string">"(%s)"</tt> <tt class="py-op">%</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">exc_args</tt><tt class="py-op">)</tt> </tt>
+<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">s</tt> </tt>
+</div></div><a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line"> </tt>
+<a name="SSLWrapper.__init__"></a><div id="SSLWrapper.__init__-def"><a name="L123"></a><tt class="py-lineno">123</tt> <a class="py-toggle" href="#" id="SSLWrapper.__init__-toggle" onclick="return toggle('SSLWrapper.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.SSLWrapper-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">sslobj</tt><tt class="py-op">,</tt> <tt class="py-param">sock</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SSLWrapper.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="SSLWrapper.__init__-expanded"><a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt> <tt class="py-op">=</tt> <tt class="py-name">sslobj</tt> </tt>
+<a name="L125"></a><tt class="py-lineno">125</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sock</tt> <tt class="py-op">=</tt> <tt class="py-name">sock</tt> </tt>
+<a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">        <tt id="link-14" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-14', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">"%s.__init__ called with %s"</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">__class__</tt><tt class="py-op">,</tt> <tt class="py-name">sslobj</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line"> </tt>
+<a name="SSLWrapper.recv"></a><div id="SSLWrapper.recv-def"><a name="L128"></a><tt class="py-lineno">128</tt> <a class="py-toggle" href="#" id="SSLWrapper.recv-toggle" onclick="return toggle('SSLWrapper.recv');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.SSLWrapper-class.html#recv">recv</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">data</tt><tt class="py-op">,</tt> <tt class="py-param">flags</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SSLWrapper.recv-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="SSLWrapper.recv-expanded"><a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L130"></a><tt class="py-lineno">130</tt>  <tt class="py-line"><tt class="py-docstring">        Receive wrapper for SSL object</tt> </tt>
+<a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line"><tt class="py-docstring">        We can return None out of this function to signal that no data is</tt> </tt>
+<a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line"><tt class="py-docstring">        available right now. Better than an exception, which differs</tt> </tt>
+<a name="L134"></a><tt class="py-lineno">134</tt>  <tt class="py-line"><tt class="py-docstring">        depending on which SSL lib we're using. Unfortunately returning ''</tt> </tt>
+<a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line"><tt class="py-docstring">        can indicate that the socket has been closed, so to be sure, we avoid</tt> </tt>
+<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line"><tt class="py-docstring">        this by returning None.</tt> </tt>
+<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">        <tt class="py-keyword">raise</tt> <tt class="py-name">NotImplementedError</tt> </tt>
+</div><a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line"> </tt>
+<a name="SSLWrapper.send"></a><div id="SSLWrapper.send-def"><a name="L140"></a><tt class="py-lineno">140</tt> <a class="py-toggle" href="#" id="SSLWrapper.send-toggle" onclick="return toggle('SSLWrapper.send');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.SSLWrapper-class.html#send">send</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">data</tt><tt class="py-op">,</tt> <tt class="py-param">flags</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">now</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="SSLWrapper.send-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="SSLWrapper.send-expanded"><a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line"><tt class="py-docstring">        Send wrapper for SSL object</tt> </tt>
+<a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L144"></a><tt class="py-lineno">144</tt>  <tt class="py-line">        <tt class="py-keyword">raise</tt> <tt class="py-name">NotImplementedError</tt> </tt>
+</div></div><a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line"> </tt>
+<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line"> </tt>
+<a name="PyOpenSSLWrapper"></a><div id="PyOpenSSLWrapper-def"><a name="L147"></a><tt class="py-lineno">147</tt> <a class="py-toggle" href="#" id="PyOpenSSLWrapper-toggle" onclick="return toggle('PyOpenSSLWrapper');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="nbxmpp.tls_nb.PyOpenSSLWrapper-class.html">PyOpenSSLWrapper</a><tt class="py-op">(</tt><tt class="py-base-class">SSLWrapper</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PyOpenSSLWrapper-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="PyOpenSSLWrapper-expanded"><a name="L148"></a><tt class="py-lineno">148</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line"><tt class="py-docstring">    Wrapper class for PyOpenSSL's recv() and send() methods</tt> </tt>
+<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line"> </tt>
+<a name="PyOpenSSLWrapper.__init__"></a><div id="PyOpenSSLWrapper.__init__-def"><a name="L152"></a><tt class="py-lineno">152</tt> <a class="py-toggle" href="#" id="PyOpenSSLWrapper.__init__-toggle" onclick="return toggle('PyOpenSSLWrapper.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.PyOpenSSLWrapper-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-op">*</tt><tt class="py-param">args</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PyOpenSSLWrapper.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="PyOpenSSLWrapper.__init__-expanded"><a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">parent</tt> <tt class="py-op">=</tt> <tt id="link-15" class="py-name" targets="Class nbxmpp.tls_nb.SSLWrapper=nbxmpp.tls_nb.SSLWrapper-class.html"><a title="nbxmpp.tls_nb.SSLWrapper" class="py-name" href="#" onclick="return doclink('link-15', 'SSLWrapper', 'link-15');">SSLWrapper</a></tt> </tt>
+<a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">parent</tt><tt class="py-op">.</tt><tt id="link-16" class="py-name"><a title="nbxmpp.auth_nb.NonBlockingBind.__init__
+nbxmpp.auth_nb.NonBlockingNonSASL.__init__
+nbxmpp.auth_nb.SASL.__init__
+nbxmpp.bosh.AckChecker.__init__
+nbxmpp.bosh.KeyStack.__init__
+nbxmpp.bosh.NonBlockingBOSH.__init__
+nbxmpp.client_nb.NonBlockingClient.__init__
+nbxmpp.dispatcher_nb.XMPPDispatcher.__init__
+nbxmpp.idlequeue.IdleCommand.__init__
+nbxmpp.idlequeue.IdleObject.__init__
+nbxmpp.idlequeue.IdleQueue.__init__
+nbxmpp.plugin.PlugIn.__init__
+nbxmpp.protocol.Acks.__init__
+nbxmpp.protocol.BOSHBody.__init__
+nbxmpp.protocol.DataField.__init__
+nbxmpp.protocol.DataForm.__init__
+nbxmpp.protocol.Error.__init__
+nbxmpp.protocol.ErrorNode.__init__
+nbxmpp.protocol.Hashes.__init__
+nbxmpp.protocol.Iq.__init__
+nbxmpp.protocol.JID.__init__
+nbxmpp.protocol.Message.__init__
+nbxmpp.protocol.Presence.__init__
+nbxmpp.protocol.Protocol.__init__
+nbxmpp.proxy_connectors.ProxyConnector.__init__
+nbxmpp.roster_nb.NonBlockingRoster.__init__
+nbxmpp.simplexml.Node.__init__
+nbxmpp.simplexml.NodeBuilder.__init__
+nbxmpp.simplexml.T.__init__
+nbxmpp.smacks.Smacks.__init__
+nbxmpp.stringprepare.EmptyMappingTable.__init__
+nbxmpp.stringprepare.LookupTable.__init__
+nbxmpp.stringprepare.LookupTableFromFunction.__init__
+nbxmpp.stringprepare.MappingTableFromFunction.__init__
+nbxmpp.stringprepare.Profile.__init__
+nbxmpp.tls_nb.NonBlockingTLS.__init__
+nbxmpp.tls_nb.PyOpenSSLWrapper.__init__
+nbxmpp.tls_nb.SSLWrapper.Error.__init__
+nbxmpp.tls_nb.SSLWrapper.__init__
+nbxmpp.tls_nb.StdlibSSLWrapper.__init__
+nbxmpp.transports_nb.NonBlockingHTTP.__init__
+nbxmpp.transports_nb.NonBlockingTCP.__init__
+nbxmpp.transports_nb.NonBlockingTransport.__init__" class="py-name" href="#" onclick="return doclink('link-16', '__init__', 'link-13');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-op">*</tt><tt class="py-name">args</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L155"></a><tt class="py-lineno">155</tt>  <tt class="py-line"> </tt>
+<a name="PyOpenSSLWrapper.is_numtoolarge"></a><div id="PyOpenSSLWrapper.is_numtoolarge-def"><a name="L156"></a><tt class="py-lineno">156</tt> <a class="py-toggle" href="#" id="PyOpenSSLWrapper.is_numtoolarge-toggle" onclick="return toggle('PyOpenSSLWrapper.is_numtoolarge');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.PyOpenSSLWrapper-class.html#is_numtoolarge">is_numtoolarge</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">e</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PyOpenSSLWrapper.is_numtoolarge-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="PyOpenSSLWrapper.is_numtoolarge-expanded"><a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line">        <tt class="py-docstring">''' Magic methods don't need documentation '''</tt> </tt>
+<a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line">        <tt class="py-name">t</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-string">'asn1 encoding routines'</tt><tt class="py-op">,</tt> <tt class="py-string">'a2d_ASN1_OBJECT'</tt><tt class="py-op">,</tt> <tt class="py-string">'first num too large'</tt><tt class="py-op">)</tt> </tt>
+<a name="L159"></a><tt class="py-lineno">159</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-op">(</tt><tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">args</tt><tt class="py-op">,</tt> <tt class="py-op">(</tt><tt class="py-name">list</tt><tt class="py-op">,</tt> <tt class="py-name">tuple</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> <tt class="py-keyword">and</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">args</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-number">1</tt> <tt class="py-keyword">and</tt> </tt>
+<a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line">                <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-op">(</tt><tt class="py-name">list</tt><tt class="py-op">,</tt> <tt class="py-name">tuple</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> <tt class="py-keyword">and</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> <tt class="py-op">==</tt> <tt class="py-number">2</tt> <tt class="py-keyword">and</tt> </tt>
+<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line">                <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-op">==</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> <tt class="py-op">==</tt> <tt class="py-name">t</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line"> </tt>
+<a name="PyOpenSSLWrapper.recv"></a><div id="PyOpenSSLWrapper.recv-def"><a name="L163"></a><tt class="py-lineno">163</tt> <a class="py-toggle" href="#" id="PyOpenSSLWrapper.recv-toggle" onclick="return toggle('PyOpenSSLWrapper.recv');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.PyOpenSSLWrapper-class.html#recv">recv</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">bufsize</tt><tt class="py-op">,</tt> <tt class="py-param">flags</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PyOpenSSLWrapper.recv-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="PyOpenSSLWrapper.recv-expanded"><a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line">        <tt class="py-name">retval</tt> <tt class="py-op">=</tt> <tt class="py-name">None</tt> </tt>
+<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">flags</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line">                <tt class="py-name">retval</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">.</tt><tt id="link-17" class="py-name" targets="Method nbxmpp.tls_nb.PyOpenSSLWrapper.recv()=nbxmpp.tls_nb.PyOpenSSLWrapper-class.html#recv,Method nbxmpp.tls_nb.SSLWrapper.recv()=nbxmpp.tls_nb.SSLWrapper-class.html#recv,Method nbxmpp.tls_nb.StdlibSSLWrapper.recv()=nbxmpp.tls_nb.StdlibSSLWrapper-class.html#recv"><a title="nbxmpp.tls_nb.PyOpenSSLWrapper.recv
+nbxmpp.tls_nb.SSLWrapper.recv
+nbxmpp.tls_nb.StdlibSSLWrapper.recv" class="py-name" href="#" onclick="return doclink('link-17', 'recv', 'link-17');">recv</a></tt><tt class="py-op">(</tt><tt class="py-name">bufsize</tt><tt class="py-op">)</tt> </tt>
+<a name="L168"></a><tt class="py-lineno">168</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line">                <tt class="py-name">retval</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">.</tt><tt id="link-18" class="py-name"><a title="nbxmpp.tls_nb.PyOpenSSLWrapper.recv
+nbxmpp.tls_nb.SSLWrapper.recv
+nbxmpp.tls_nb.StdlibSSLWrapper.recv" class="py-name" href="#" onclick="return doclink('link-18', 'recv', 'link-17');">recv</a></tt><tt class="py-op">(</tt><tt class="py-name">bufsize</tt><tt class="py-op">,</tt> <tt class="py-name">flags</tt><tt class="py-op">)</tt> </tt>
+<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-op">(</tt><tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">WantReadError</tt><tt class="py-op">,</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">WantWriteError</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line">            <tt id="link-19" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-19', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">"Recv: Want-error: "</tt> <tt class="py-op">+</tt> <tt class="py-name">repr</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">SysCallError</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line">            <tt id="link-20" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-20', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">"Recv: Got OpenSSL.SSL.SysCallError: "</tt> <tt class="py-op">+</tt> <tt class="py-name">repr</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line">                    <tt class="py-name">exc_info</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> <tt id="link-21" class="py-name"><a title="nbxmpp.tls_nb.SSLWrapper" class="py-name" href="#" onclick="return doclink('link-21', 'SSLWrapper', 'link-15');">SSLWrapper</a></tt><tt class="py-op">.</tt><tt id="link-22" class="py-name" targets="Class nbxmpp.protocol.Error=nbxmpp.protocol.Error-class.html,Class nbxmpp.tls_nb.SSLWrapper.Error=nbxmpp.tls_nb.SSLWrapper.Error-class.html"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-22', 'Error', 'link-22');">Error</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sock</tt> <tt class="py-keyword">or</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">)</tt> </tt>
+<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">ZeroReturnError</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line">            <tt class="py-comment"># end-of-connection raises ZeroReturnError instead of having the</tt> </tt>
+<a name="L178"></a><tt class="py-lineno">178</tt>  <tt class="py-line">            <tt class="py-comment"># connection's .recv() method return a zero-sized result.</tt> </tt>
+<a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> <tt id="link-23" class="py-name"><a title="nbxmpp.tls_nb.SSLWrapper" class="py-name" href="#" onclick="return doclink('link-23', 'SSLWrapper', 'link-15');">SSLWrapper</a></tt><tt class="py-op">.</tt><tt id="link-24" class="py-name"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-24', 'Error', 'link-22');">Error</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sock</tt> <tt class="py-keyword">or</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">,</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
+<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt id="link-25" class="py-name"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-25', 'Error', 'link-22');">Error</a></tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-26" class="py-name" targets="Method nbxmpp.tls_nb.PyOpenSSLWrapper.is_numtoolarge()=nbxmpp.tls_nb.PyOpenSSLWrapper-class.html#is_numtoolarge"><a title="nbxmpp.tls_nb.PyOpenSSLWrapper.is_numtoolarge" class="py-name" href="#" onclick="return doclink('link-26', 'is_numtoolarge', 'link-26');">is_numtoolarge</a></tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L182"></a><tt class="py-lineno">182</tt>  <tt class="py-line">                <tt class="py-comment"># warn, but ignore this exception</tt> </tt>
+<a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line">                <tt id="link-27" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-27', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">warning</tt><tt class="py-op">(</tt><tt class="py-string">"Recv: OpenSSL: asn1enc: first num too large (ignored)"</tt><tt class="py-op">)</tt> </tt>
+<a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line">                <tt id="link-28" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-28', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">"Recv: Caught OpenSSL.SSL.Error:"</tt><tt class="py-op">,</tt> <tt class="py-name">exc_info</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line">                <tt class="py-keyword">raise</tt> <tt id="link-29" class="py-name"><a title="nbxmpp.tls_nb.SSLWrapper" class="py-name" href="#" onclick="return doclink('link-29', 'SSLWrapper', 'link-15');">SSLWrapper</a></tt><tt class="py-op">.</tt><tt id="link-30" class="py-name"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-30', 'Error', 'link-22');">Error</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sock</tt> <tt class="py-keyword">or</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">)</tt> </tt>
+<a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">retval</tt> </tt>
+</div><a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line"> </tt>
+<a name="PyOpenSSLWrapper.send"></a><div id="PyOpenSSLWrapper.send-def"><a name="L189"></a><tt class="py-lineno">189</tt> <a class="py-toggle" href="#" id="PyOpenSSLWrapper.send-toggle" onclick="return toggle('PyOpenSSLWrapper.send');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.PyOpenSSLWrapper-class.html#send">send</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">data</tt><tt class="py-op">,</tt> <tt class="py-param">flags</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">now</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="PyOpenSSLWrapper.send-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="PyOpenSSLWrapper.send-expanded"><a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">flags</tt> <tt class="py-keyword">is</tt> <tt class="py-name">None</tt><tt class="py-op">:</tt> </tt>
+<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">.</tt><tt id="link-31" class="py-name" targets="Method nbxmpp.bosh.NonBlockingBOSH.send()=nbxmpp.bosh.NonBlockingBOSH-class.html#send,Method nbxmpp.dispatcher_nb.XMPPDispatcher.send()=nbxmpp.dispatcher_nb.XMPPDispatcher-class.html#send,Method nbxmpp.tls_nb.PyOpenSSLWrapper.send()=nbxmpp.tls_nb.PyOpenSSLWrapper-class.html#send,Method nbxmpp.tls_nb.SSLWrapper.send()=nbxmpp.tls_nb.SSLWrapper-class.html#send,Method nbxmpp.tls_nb.StdlibSSLWrapper.send()=nbxmpp.tls_nb.StdlibSSLWrapper-class.html#send,Method nbxmpp.transports_nb.NonBlockingTCP.send()=nbxmpp.transports_nb.NonBlockingTCP-class.html#send,Method nbxmpp.transports_nb.NonBlockingTransport.send()=nbxmpp.transports_nb.NonBlockingTransport-class.html#send"><a title="nbxmpp.bosh.NonBlockingBOSH.send
+nbxmpp.dispatcher_nb.XMPPDispatcher.send
+nbxmpp.tls_nb.PyOpenSSLWrapper.send
+nbxmpp.tls_nb.SSLWrapper.send
+nbxmpp.tls_nb.StdlibSSLWrapper.send
+nbxmpp.transports_nb.NonBlockingTCP.send
+nbxmpp.transports_nb.NonBlockingTransport.send" class="py-name" href="#" onclick="return doclink('link-31', 'send', 'link-31');">send</a></tt><tt class="py-op">(</tt><tt class="py-name">data</tt><tt class="py-op">)</tt> </tt>
+<a name="L193"></a><tt class="py-lineno">193</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">.</tt><tt id="link-32" class="py-name"><a title="nbxmpp.bosh.NonBlockingBOSH.send
+nbxmpp.dispatcher_nb.XMPPDispatcher.send
+nbxmpp.tls_nb.PyOpenSSLWrapper.send
+nbxmpp.tls_nb.SSLWrapper.send
+nbxmpp.tls_nb.StdlibSSLWrapper.send
+nbxmpp.transports_nb.NonBlockingTCP.send
+nbxmpp.transports_nb.NonBlockingTransport.send" class="py-name" href="#" onclick="return doclink('link-32', 'send', 'link-31');">send</a></tt><tt class="py-op">(</tt><tt class="py-name">data</tt><tt class="py-op">,</tt> <tt class="py-name">flags</tt><tt class="py-op">)</tt> </tt>
+<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-op">(</tt><tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">WantReadError</tt><tt class="py-op">,</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">WantWriteError</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">            <tt class="py-comment">#log.debug("Send: " + repr(e))</tt> </tt>
+<a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line">            <tt class="py-name">time</tt><tt class="py-op">.</tt><tt class="py-name">sleep</tt><tt class="py-op">(</tt><tt class="py-number">0.1</tt><tt class="py-op">)</tt> <tt class="py-comment"># prevent 100% CPU usage</tt> </tt>
+<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">SysCallError</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">            <tt id="link-33" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-33', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">error</tt><tt class="py-op">(</tt><tt class="py-string">"Send: Got OpenSSL.SSL.SysCallError: "</tt> <tt class="py-op">+</tt> <tt class="py-name">repr</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L200"></a><tt class="py-lineno">200</tt>  <tt class="py-line">                    <tt class="py-name">exc_info</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line">            <tt class="py-keyword">raise</tt> <tt id="link-34" class="py-name"><a title="nbxmpp.tls_nb.SSLWrapper" class="py-name" href="#" onclick="return doclink('link-34', 'SSLWrapper', 'link-15');">SSLWrapper</a></tt><tt class="py-op">.</tt><tt id="link-35" class="py-name"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-35', 'Error', 'link-22');">Error</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sock</tt> <tt class="py-keyword">or</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">)</tt> </tt>
+<a name="L202"></a><tt class="py-lineno">202</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt id="link-36" class="py-name"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-36', 'Error', 'link-22');">Error</a></tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L203"></a><tt class="py-lineno">203</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-37" class="py-name"><a title="nbxmpp.tls_nb.PyOpenSSLWrapper.is_numtoolarge" class="py-name" href="#" onclick="return doclink('link-37', 'is_numtoolarge', 'link-26');">is_numtoolarge</a></tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L204"></a><tt class="py-lineno">204</tt>  <tt class="py-line">                <tt class="py-comment"># warn, but ignore this exception</tt> </tt>
+<a name="L205"></a><tt class="py-lineno">205</tt>  <tt class="py-line">                <tt id="link-38" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-38', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">warning</tt><tt class="py-op">(</tt><tt class="py-string">"Send: OpenSSL: asn1enc: first num too large (ignored)"</tt><tt class="py-op">)</tt> </tt>
+<a name="L206"></a><tt class="py-lineno">206</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L207"></a><tt class="py-lineno">207</tt>  <tt class="py-line">                <tt id="link-39" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-39', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">error</tt><tt class="py-op">(</tt><tt class="py-string">"Send: Caught OpenSSL.SSL.Error:"</tt><tt class="py-op">,</tt> <tt class="py-name">exc_info</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L208"></a><tt class="py-lineno">208</tt>  <tt class="py-line">                <tt class="py-keyword">raise</tt> <tt id="link-40" class="py-name"><a title="nbxmpp.tls_nb.SSLWrapper" class="py-name" href="#" onclick="return doclink('link-40', 'SSLWrapper', 'link-15');">SSLWrapper</a></tt><tt class="py-op">.</tt><tt id="link-41" class="py-name"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-41', 'Error', 'link-22');">Error</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sock</tt> <tt class="py-keyword">or</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">)</tt> </tt>
+<a name="L209"></a><tt class="py-lineno">209</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-number">0</tt> </tt>
+</div></div><a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line"> </tt>
+<a name="L211"></a><tt class="py-lineno">211</tt>  <tt class="py-line"> </tt>
+<a name="StdlibSSLWrapper"></a><div id="StdlibSSLWrapper-def"><a name="L212"></a><tt class="py-lineno">212</tt> <a class="py-toggle" href="#" id="StdlibSSLWrapper-toggle" onclick="return toggle('StdlibSSLWrapper');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="nbxmpp.tls_nb.StdlibSSLWrapper-class.html">StdlibSSLWrapper</a><tt class="py-op">(</tt><tt class="py-base-class">SSLWrapper</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="StdlibSSLWrapper-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="StdlibSSLWrapper-expanded"><a name="L213"></a><tt class="py-lineno">213</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L214"></a><tt class="py-lineno">214</tt>  <tt class="py-line"><tt class="py-docstring">    Wrapper class for Python socket.ssl read() and write() methods</tt> </tt>
+<a name="L215"></a><tt class="py-lineno">215</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L216"></a><tt class="py-lineno">216</tt>  <tt class="py-line"> </tt>
+<a name="StdlibSSLWrapper.__init__"></a><div id="StdlibSSLWrapper.__init__-def"><a name="L217"></a><tt class="py-lineno">217</tt> <a class="py-toggle" href="#" id="StdlibSSLWrapper.__init__-toggle" onclick="return toggle('StdlibSSLWrapper.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.StdlibSSLWrapper-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-op">*</tt><tt class="py-param">args</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="StdlibSSLWrapper.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="StdlibSSLWrapper.__init__-expanded"><a name="L218"></a><tt class="py-lineno">218</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">parent</tt> <tt class="py-op">=</tt> <tt id="link-42" class="py-name"><a title="nbxmpp.tls_nb.SSLWrapper" class="py-name" href="#" onclick="return doclink('link-42', 'SSLWrapper', 'link-15');">SSLWrapper</a></tt> </tt>
+<a name="L219"></a><tt class="py-lineno">219</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">parent</tt><tt class="py-op">.</tt><tt id="link-43" class="py-name"><a title="nbxmpp.auth_nb.NonBlockingBind.__init__
+nbxmpp.auth_nb.NonBlockingNonSASL.__init__
+nbxmpp.auth_nb.SASL.__init__
+nbxmpp.bosh.AckChecker.__init__
+nbxmpp.bosh.KeyStack.__init__
+nbxmpp.bosh.NonBlockingBOSH.__init__
+nbxmpp.client_nb.NonBlockingClient.__init__
+nbxmpp.dispatcher_nb.XMPPDispatcher.__init__
+nbxmpp.idlequeue.IdleCommand.__init__
+nbxmpp.idlequeue.IdleObject.__init__
+nbxmpp.idlequeue.IdleQueue.__init__
+nbxmpp.plugin.PlugIn.__init__
+nbxmpp.protocol.Acks.__init__
+nbxmpp.protocol.BOSHBody.__init__
+nbxmpp.protocol.DataField.__init__
+nbxmpp.protocol.DataForm.__init__
+nbxmpp.protocol.Error.__init__
+nbxmpp.protocol.ErrorNode.__init__
+nbxmpp.protocol.Hashes.__init__
+nbxmpp.protocol.Iq.__init__
+nbxmpp.protocol.JID.__init__
+nbxmpp.protocol.Message.__init__
+nbxmpp.protocol.Presence.__init__
+nbxmpp.protocol.Protocol.__init__
+nbxmpp.proxy_connectors.ProxyConnector.__init__
+nbxmpp.roster_nb.NonBlockingRoster.__init__
+nbxmpp.simplexml.Node.__init__
+nbxmpp.simplexml.NodeBuilder.__init__
+nbxmpp.simplexml.T.__init__
+nbxmpp.smacks.Smacks.__init__
+nbxmpp.stringprepare.EmptyMappingTable.__init__
+nbxmpp.stringprepare.LookupTable.__init__
+nbxmpp.stringprepare.LookupTableFromFunction.__init__
+nbxmpp.stringprepare.MappingTableFromFunction.__init__
+nbxmpp.stringprepare.Profile.__init__
+nbxmpp.tls_nb.NonBlockingTLS.__init__
+nbxmpp.tls_nb.PyOpenSSLWrapper.__init__
+nbxmpp.tls_nb.SSLWrapper.Error.__init__
+nbxmpp.tls_nb.SSLWrapper.__init__
+nbxmpp.tls_nb.StdlibSSLWrapper.__init__
+nbxmpp.transports_nb.NonBlockingHTTP.__init__
+nbxmpp.transports_nb.NonBlockingTCP.__init__
+nbxmpp.transports_nb.NonBlockingTransport.__init__" class="py-name" href="#" onclick="return doclink('link-43', '__init__', 'link-13');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-op">*</tt><tt class="py-name">args</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L220"></a><tt class="py-lineno">220</tt>  <tt class="py-line"> </tt>
+<a name="StdlibSSLWrapper.recv"></a><div id="StdlibSSLWrapper.recv-def"><a name="L221"></a><tt class="py-lineno">221</tt> <a class="py-toggle" href="#" id="StdlibSSLWrapper.recv-toggle" onclick="return toggle('StdlibSSLWrapper.recv');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.StdlibSSLWrapper-class.html#recv">recv</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">bufsize</tt><tt class="py-op">,</tt> <tt class="py-param">flags</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="StdlibSSLWrapper.recv-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="StdlibSSLWrapper.recv-expanded"><a name="L222"></a><tt class="py-lineno">222</tt>  <tt class="py-line">        <tt class="py-comment"># we simply ignore flags since ssl object doesn't support it</tt> </tt>
+<a name="L223"></a><tt class="py-lineno">223</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L224"></a><tt class="py-lineno">224</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">.</tt><tt class="py-name">read</tt><tt class="py-op">(</tt><tt class="py-name">bufsize</tt><tt class="py-op">)</tt> </tt>
+<a name="L225"></a><tt class="py-lineno">225</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">socket</tt><tt class="py-op">.</tt><tt class="py-name">sslerror</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L226"></a><tt class="py-lineno">226</tt>  <tt class="py-line">            <tt id="link-44" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-44', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">"Recv: Caught socket.sslerror: "</tt> <tt class="py-op">+</tt> <tt class="py-name">repr</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">exc_info</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L227"></a><tt class="py-lineno">227</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-keyword">not</tt> <tt class="py-keyword">in</tt> <tt class="py-op">(</tt><tt class="py-name">socket</tt><tt class="py-op">.</tt><tt class="py-name">SSL_ERROR_WANT_READ</tt><tt class="py-op">,</tt> <tt class="py-name">socket</tt><tt class="py-op">.</tt><tt class="py-name">SSL_ERROR_WANT_WRITE</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L228"></a><tt class="py-lineno">228</tt>  <tt class="py-line">                <tt class="py-keyword">raise</tt> <tt id="link-45" class="py-name"><a title="nbxmpp.tls_nb.SSLWrapper" class="py-name" href="#" onclick="return doclink('link-45', 'SSLWrapper', 'link-15');">SSLWrapper</a></tt><tt class="py-op">.</tt><tt id="link-46" class="py-name"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-46', 'Error', 'link-22');">Error</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sock</tt> <tt class="py-keyword">or</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">)</tt> </tt>
+<a name="L229"></a><tt class="py-lineno">229</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">None</tt> </tt>
+</div><a name="L230"></a><tt class="py-lineno">230</tt>  <tt class="py-line"> </tt>
+<a name="StdlibSSLWrapper.send"></a><div id="StdlibSSLWrapper.send-def"><a name="L231"></a><tt class="py-lineno">231</tt> <a class="py-toggle" href="#" id="StdlibSSLWrapper.send-toggle" onclick="return toggle('StdlibSSLWrapper.send');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.StdlibSSLWrapper-class.html#send">send</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">data</tt><tt class="py-op">,</tt> <tt class="py-param">flags</tt><tt class="py-op">=</tt><tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-param">now</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="StdlibSSLWrapper.send-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="StdlibSSLWrapper.send-expanded"><a name="L232"></a><tt class="py-lineno">232</tt>  <tt class="py-line">        <tt class="py-comment"># we simply ignore flags since ssl object doesn't support it</tt> </tt>
+<a name="L233"></a><tt class="py-lineno">233</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L234"></a><tt class="py-lineno">234</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">.</tt><tt class="py-name">write</tt><tt class="py-op">(</tt><tt class="py-name">data</tt><tt class="py-op">)</tt> </tt>
+<a name="L235"></a><tt class="py-lineno">235</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">socket</tt><tt class="py-op">.</tt><tt class="py-name">sslerror</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L236"></a><tt class="py-lineno">236</tt>  <tt class="py-line">            <tt id="link-47" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-47', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">"Send: Caught socket.sslerror:"</tt><tt class="py-op">,</tt> <tt class="py-name">exc_info</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L237"></a><tt class="py-lineno">237</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">e</tt><tt class="py-op">.</tt><tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> <tt class="py-keyword">not</tt> <tt class="py-keyword">in</tt> <tt class="py-op">(</tt><tt class="py-name">socket</tt><tt class="py-op">.</tt><tt class="py-name">SSL_ERROR_WANT_READ</tt><tt class="py-op">,</tt> <tt class="py-name">socket</tt><tt class="py-op">.</tt><tt class="py-name">SSL_ERROR_WANT_WRITE</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L238"></a><tt class="py-lineno">238</tt>  <tt class="py-line">                <tt class="py-keyword">raise</tt> <tt id="link-48" class="py-name"><a title="nbxmpp.tls_nb.SSLWrapper" class="py-name" href="#" onclick="return doclink('link-48', 'SSLWrapper', 'link-15');">SSLWrapper</a></tt><tt class="py-op">.</tt><tt id="link-49" class="py-name"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-49', 'Error', 'link-22');">Error</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sock</tt> <tt class="py-keyword">or</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">sslobj</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">)</tt> </tt>
+<a name="L239"></a><tt class="py-lineno">239</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-number">0</tt> </tt>
+</div></div><a name="L240"></a><tt class="py-lineno">240</tt>  <tt class="py-line"> </tt>
+<a name="L241"></a><tt class="py-lineno">241</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingTLS"></a><div id="NonBlockingTLS-def"><a name="L242"></a><tt class="py-lineno">242</tt> <a class="py-toggle" href="#" id="NonBlockingTLS-toggle" onclick="return toggle('NonBlockingTLS');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="nbxmpp.tls_nb.NonBlockingTLS-class.html">NonBlockingTLS</a><tt class="py-op">(</tt><tt class="py-base-class">PlugIn</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingTLS-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="NonBlockingTLS-expanded"><a name="L243"></a><tt class="py-lineno">243</tt>  <tt class="py-line">    <tt class="py-docstring">"""</tt> </tt>
+<a name="L244"></a><tt class="py-lineno">244</tt>  <tt class="py-line"><tt class="py-docstring">    TLS connection used to encrypts already estabilished tcp connection</tt> </tt>
+<a name="L245"></a><tt class="py-lineno">245</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
+<a name="L246"></a><tt class="py-lineno">246</tt>  <tt class="py-line"><tt class="py-docstring">    Can be plugged into NonBlockingTCP and will make use of StdlibSSLWrapper or</tt> </tt>
+<a name="L247"></a><tt class="py-lineno">247</tt>  <tt class="py-line"><tt class="py-docstring">    PyOpenSSLWrapper.</tt> </tt>
+<a name="L248"></a><tt class="py-lineno">248</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
+<a name="L249"></a><tt class="py-lineno">249</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingTLS.__init__"></a><div id="NonBlockingTLS.__init__-def"><a name="L250"></a><tt class="py-lineno">250</tt> <a class="py-toggle" href="#" id="NonBlockingTLS.__init__-toggle" onclick="return toggle('NonBlockingTLS.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.NonBlockingTLS-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">cacerts</tt><tt class="py-op">,</tt> <tt class="py-param">mycerts</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingTLS.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingTLS.__init__-expanded"><a name="L251"></a><tt class="py-lineno">251</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L252"></a><tt class="py-lineno">252</tt>  <tt class="py-line"><tt class="py-docstring">        :param cacerts: path to pem file with certificates of known XMPP servers</tt> </tt>
+<a name="L253"></a><tt class="py-lineno">253</tt>  <tt class="py-line"><tt class="py-docstring">        :param mycerts: path to pem file with certificates of user trusted servers</tt> </tt>
+<a name="L254"></a><tt class="py-lineno">254</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L255"></a><tt class="py-lineno">255</tt>  <tt class="py-line">        <tt id="link-50" class="py-name"><a title="nbxmpp.dispatcher_nb.BOSHDispatcher.PlugIn
+nbxmpp.dispatcher_nb.Dispatcher.PlugIn
+nbxmpp.plugin.PlugIn
+nbxmpp.plugin.PlugIn.PlugIn" class="py-name" href="#" onclick="return doclink('link-50', 'PlugIn', 'link-1');">PlugIn</a></tt><tt class="py-op">.</tt><tt id="link-51" class="py-name"><a title="nbxmpp.auth_nb.NonBlockingBind.__init__
+nbxmpp.auth_nb.NonBlockingNonSASL.__init__
+nbxmpp.auth_nb.SASL.__init__
+nbxmpp.bosh.AckChecker.__init__
+nbxmpp.bosh.KeyStack.__init__
+nbxmpp.bosh.NonBlockingBOSH.__init__
+nbxmpp.client_nb.NonBlockingClient.__init__
+nbxmpp.dispatcher_nb.XMPPDispatcher.__init__
+nbxmpp.idlequeue.IdleCommand.__init__
+nbxmpp.idlequeue.IdleObject.__init__
+nbxmpp.idlequeue.IdleQueue.__init__
+nbxmpp.plugin.PlugIn.__init__
+nbxmpp.protocol.Acks.__init__
+nbxmpp.protocol.BOSHBody.__init__
+nbxmpp.protocol.DataField.__init__
+nbxmpp.protocol.DataForm.__init__
+nbxmpp.protocol.Error.__init__
+nbxmpp.protocol.ErrorNode.__init__
+nbxmpp.protocol.Hashes.__init__
+nbxmpp.protocol.Iq.__init__
+nbxmpp.protocol.JID.__init__
+nbxmpp.protocol.Message.__init__
+nbxmpp.protocol.Presence.__init__
+nbxmpp.protocol.Protocol.__init__
+nbxmpp.proxy_connectors.ProxyConnector.__init__
+nbxmpp.roster_nb.NonBlockingRoster.__init__
+nbxmpp.simplexml.Node.__init__
+nbxmpp.simplexml.NodeBuilder.__init__
+nbxmpp.simplexml.T.__init__
+nbxmpp.smacks.Smacks.__init__
+nbxmpp.stringprepare.EmptyMappingTable.__init__
+nbxmpp.stringprepare.LookupTable.__init__
+nbxmpp.stringprepare.LookupTableFromFunction.__init__
+nbxmpp.stringprepare.MappingTableFromFunction.__init__
+nbxmpp.stringprepare.Profile.__init__
+nbxmpp.tls_nb.NonBlockingTLS.__init__
+nbxmpp.tls_nb.PyOpenSSLWrapper.__init__
+nbxmpp.tls_nb.SSLWrapper.Error.__init__
+nbxmpp.tls_nb.SSLWrapper.__init__
+nbxmpp.tls_nb.StdlibSSLWrapper.__init__
+nbxmpp.transports_nb.NonBlockingHTTP.__init__
+nbxmpp.transports_nb.NonBlockingTCP.__init__
+nbxmpp.transports_nb.NonBlockingTransport.__init__" class="py-name" href="#" onclick="return doclink('link-51', '__init__', 'link-13');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
+<a name="L256"></a><tt class="py-lineno">256</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">cacerts</tt> <tt class="py-op">=</tt> <tt class="py-name">cacerts</tt> </tt>
+<a name="L257"></a><tt class="py-lineno">257</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">mycerts</tt> <tt class="py-op">=</tt> <tt class="py-name">mycerts</tt> </tt>
+</div><a name="L258"></a><tt class="py-lineno">258</tt>  <tt class="py-line"> </tt>
+<a name="L259"></a><tt class="py-lineno">259</tt>  <tt class="py-line">    <tt class="py-comment"># from ssl.h (partial extract)</tt> </tt>
+<a name="L260"></a><tt class="py-lineno">260</tt>  <tt class="py-line">    <tt id="link-52" class="py-name" targets="Variable nbxmpp.tls_nb.NonBlockingTLS.ssl_h_bits=nbxmpp.tls_nb.NonBlockingTLS-class.html#ssl_h_bits"><a title="nbxmpp.tls_nb.NonBlockingTLS.ssl_h_bits" class="py-name" href="#" onclick="return doclink('link-52', 'ssl_h_bits', 'link-52');">ssl_h_bits</a></tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt>  <tt class="py-string">"SSL_ST_CONNECT"</tt><tt class="py-op">:</tt> <tt class="py-number">0x1000</tt><tt class="py-op">,</tt> <tt class="py-string">"SSL_ST_ACCEPT"</tt><tt class="py-op">:</tt> <tt class="py-number">0x2000</tt><tt class="py-op">,</tt> </tt>
+<a name="L261"></a><tt class="py-lineno">261</tt>  <tt class="py-line">                    <tt class="py-string">"SSL_CB_LOOP"</tt><tt class="py-op">:</tt> <tt class="py-number">0x01</tt><tt class="py-op">,</tt> <tt class="py-string">"SSL_CB_EXIT"</tt><tt class="py-op">:</tt> <tt class="py-number">0x02</tt><tt class="py-op">,</tt> </tt>
+<a name="L262"></a><tt class="py-lineno">262</tt>  <tt class="py-line">                    <tt class="py-string">"SSL_CB_READ"</tt><tt class="py-op">:</tt> <tt class="py-number">0x04</tt><tt class="py-op">,</tt> <tt class="py-string">"SSL_CB_WRITE"</tt><tt class="py-op">:</tt> <tt class="py-number">0x08</tt><tt class="py-op">,</tt> </tt>
+<a name="L263"></a><tt class="py-lineno">263</tt>  <tt class="py-line">                    <tt class="py-string">"SSL_CB_ALERT"</tt><tt class="py-op">:</tt> <tt class="py-number">0x4000</tt><tt class="py-op">,</tt> </tt>
+<a name="L264"></a><tt class="py-lineno">264</tt>  <tt class="py-line">                    <tt class="py-string">"SSL_CB_HANDSHAKE_START"</tt><tt class="py-op">:</tt> <tt class="py-number">0x10</tt><tt class="py-op">,</tt> <tt class="py-string">"SSL_CB_HANDSHAKE_DONE"</tt><tt class="py-op">:</tt> <tt class="py-number">0x20</tt><tt class="py-op">}</tt> </tt>
+<a name="L265"></a><tt class="py-lineno">265</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingTLS.plugin"></a><div id="NonBlockingTLS.plugin-def"><a name="L266"></a><tt class="py-lineno">266</tt> <a class="py-toggle" href="#" id="NonBlockingTLS.plugin-toggle" onclick="return toggle('NonBlockingTLS.plugin');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.NonBlockingTLS-class.html#plugin">plugin</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">owner</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingTLS.plugin-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingTLS.plugin-expanded"><a name="L267"></a><tt class="py-lineno">267</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L268"></a><tt class="py-lineno">268</tt>  <tt class="py-line"><tt class="py-docstring">        Use to PlugIn TLS into transport and start establishing immediately.</tt> </tt>
+<a name="L269"></a><tt class="py-lineno">269</tt>  <tt class="py-line"><tt class="py-docstring">        Returns True if TLS/SSL was established correctly, otherwise False</tt> </tt>
+<a name="L270"></a><tt class="py-lineno">270</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L271"></a><tt class="py-lineno">271</tt>  <tt class="py-line">        <tt id="link-53" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-53', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt><tt class="py-string">'Starting TLS estabilishing'</tt><tt class="py-op">)</tt> </tt>
+<a name="L272"></a><tt class="py-lineno">272</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L273"></a><tt class="py-lineno">273</tt>  <tt class="py-line">            <tt class="py-name">res</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-54" class="py-name" targets="Method nbxmpp.tls_nb.NonBlockingTLS._startSSL()=nbxmpp.tls_nb.NonBlockingTLS-class.html#_startSSL"><a title="nbxmpp.tls_nb.NonBlockingTLS._startSSL" class="py-name" href="#" onclick="return doclink('link-54', '_startSSL', 'link-54');">_startSSL</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L274"></a><tt class="py-lineno">274</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">Exception</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L275"></a><tt class="py-lineno">275</tt>  <tt class="py-line">            <tt id="link-55" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-55', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">error</tt><tt class="py-op">(</tt><tt class="py-string">"PlugIn: while trying _startSSL():"</tt><tt class="py-op">,</tt> <tt class="py-name">exc_info</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L276"></a><tt class="py-lineno">276</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">False</tt> </tt>
+<a name="L277"></a><tt class="py-lineno">277</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">res</tt> </tt>
+</div><a name="L278"></a><tt class="py-lineno">278</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingTLS._dumpX509"></a><div id="NonBlockingTLS._dumpX509-def"><a name="L279"></a><tt class="py-lineno">279</tt> <a class="py-toggle" href="#" id="NonBlockingTLS._dumpX509-toggle" onclick="return toggle('NonBlockingTLS._dumpX509');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.NonBlockingTLS-class.html#_dumpX509">_dumpX509</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">cert</tt><tt class="py-op">,</tt> <tt class="py-param">stream</tt><tt class="py-op">=</tt><tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">stderr</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingTLS._dumpX509-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingTLS._dumpX509-expanded"><a name="L280"></a><tt class="py-lineno">280</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">stream</tt><tt class="py-op">,</tt> <tt class="py-string">"Digest (SHA-1):"</tt><tt class="py-op">,</tt> <tt class="py-name">cert</tt><tt class="py-op">.</tt><tt class="py-name">digest</tt><tt class="py-op">(</tt><tt class="py-string">"sha1"</tt><tt class="py-op">)</tt> </tt>
+<a name="L281"></a><tt class="py-lineno">281</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">stream</tt><tt class="py-op">,</tt> <tt class="py-string">"Digest (MD5):"</tt><tt class="py-op">,</tt> <tt class="py-name">cert</tt><tt class="py-op">.</tt><tt class="py-name">digest</tt><tt class="py-op">(</tt><tt class="py-string">"md5"</tt><tt class="py-op">)</tt> </tt>
+<a name="L282"></a><tt class="py-lineno">282</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">stream</tt><tt class="py-op">,</tt> <tt class="py-string">"Serial #:"</tt><tt class="py-op">,</tt> <tt class="py-name">cert</tt><tt class="py-op">.</tt><tt class="py-name">get_serial_number</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L283"></a><tt class="py-lineno">283</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">stream</tt><tt class="py-op">,</tt> <tt class="py-string">"Version:"</tt><tt class="py-op">,</tt> <tt class="py-name">cert</tt><tt class="py-op">.</tt><tt class="py-name">get_version</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L284"></a><tt class="py-lineno">284</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">stream</tt><tt class="py-op">,</tt> <tt class="py-string">"Expired:"</tt><tt class="py-op">,</tt> <tt class="py-op">(</tt><tt class="py-string">"Yes"</tt> <tt class="py-keyword">if</tt> <tt class="py-name">cert</tt><tt class="py-op">.</tt><tt class="py-name">has_expired</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-keyword">else</tt> <tt class="py-string">"No"</tt><tt class="py-op">)</tt> </tt>
+<a name="L285"></a><tt class="py-lineno">285</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">stream</tt><tt class="py-op">,</tt> <tt class="py-string">"Subject:"</tt> </tt>
+<a name="L286"></a><tt class="py-lineno">286</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-56" class="py-name" targets="Method nbxmpp.tls_nb.NonBlockingTLS._dumpX509Name()=nbxmpp.tls_nb.NonBlockingTLS-class.html#_dumpX509Name"><a title="nbxmpp.tls_nb.NonBlockingTLS._dumpX509Name" class="py-name" href="#" onclick="return doclink('link-56', '_dumpX509Name', 'link-56');">_dumpX509Name</a></tt><tt class="py-op">(</tt><tt class="py-name">cert</tt><tt class="py-op">.</tt><tt class="py-name">get_subject</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">stream</tt><tt class="py-op">)</tt> </tt>
+<a name="L287"></a><tt class="py-lineno">287</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">stream</tt><tt class="py-op">,</tt> <tt class="py-string">"Issuer:"</tt> </tt>
+<a name="L288"></a><tt class="py-lineno">288</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-57" class="py-name"><a title="nbxmpp.tls_nb.NonBlockingTLS._dumpX509Name" class="py-name" href="#" onclick="return doclink('link-57', '_dumpX509Name', 'link-56');">_dumpX509Name</a></tt><tt class="py-op">(</tt><tt class="py-name">cert</tt><tt class="py-op">.</tt><tt class="py-name">get_issuer</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">stream</tt><tt class="py-op">)</tt> </tt>
+<a name="L289"></a><tt class="py-lineno">289</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-58" class="py-name" targets="Method nbxmpp.tls_nb.NonBlockingTLS._dumpPKey()=nbxmpp.tls_nb.NonBlockingTLS-class.html#_dumpPKey"><a title="nbxmpp.tls_nb.NonBlockingTLS._dumpPKey" class="py-name" href="#" onclick="return doclink('link-58', '_dumpPKey', 'link-58');">_dumpPKey</a></tt><tt class="py-op">(</tt><tt class="py-name">cert</tt><tt class="py-op">.</tt><tt class="py-name">get_pubkey</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">stream</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L290"></a><tt class="py-lineno">290</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingTLS._dumpX509Name"></a><div id="NonBlockingTLS._dumpX509Name-def"><a name="L291"></a><tt class="py-lineno">291</tt> <a class="py-toggle" href="#" id="NonBlockingTLS._dumpX509Name-toggle" onclick="return toggle('NonBlockingTLS._dumpX509Name');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.NonBlockingTLS-class.html#_dumpX509Name">_dumpX509Name</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">name</tt><tt class="py-op">,</tt> <tt class="py-param">stream</tt><tt class="py-op">=</tt><tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">stderr</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingTLS._dumpX509Name-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingTLS._dumpX509Name-expanded"><a name="L292"></a><tt class="py-lineno">292</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">stream</tt><tt class="py-op">,</tt> <tt class="py-string">"X509Name:"</tt><tt class="py-op">,</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt id="link-59" class="py-name" targets="Variable nbxmpp.name=nbxmpp-module.html#name,Variable nbxmpp.protocol.name=nbxmpp.protocol-module.html#name"><a title="nbxmpp.name
+nbxmpp.protocol.name" class="py-name" href="#" onclick="return doclink('link-59', 'name', 'link-59');">name</a></tt><tt class="py-op">)</tt> </tt>
+</div><a name="L293"></a><tt class="py-lineno">293</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingTLS._dumpPKey"></a><div id="NonBlockingTLS._dumpPKey-def"><a name="L294"></a><tt class="py-lineno">294</tt> <a class="py-toggle" href="#" id="NonBlockingTLS._dumpPKey-toggle" onclick="return toggle('NonBlockingTLS._dumpPKey');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.NonBlockingTLS-class.html#_dumpPKey">_dumpPKey</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">pkey</tt><tt class="py-op">,</tt> <tt class="py-param">stream</tt><tt class="py-op">=</tt><tt class="py-name">sys</tt><tt class="py-op">.</tt><tt class="py-name">stderr</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingTLS._dumpPKey-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingTLS._dumpPKey-expanded"><a name="L295"></a><tt class="py-lineno">295</tt>  <tt class="py-line">        <tt class="py-name">typedict</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt><tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">crypto</tt><tt class="py-op">.</tt><tt class="py-name">TYPE_RSA</tt><tt class="py-op">:</tt> <tt class="py-string">"RSA"</tt><tt class="py-op">,</tt> </tt>
+<a name="L296"></a><tt class="py-lineno">296</tt>  <tt class="py-line">                                        <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">crypto</tt><tt class="py-op">.</tt><tt class="py-name">TYPE_DSA</tt><tt class="py-op">:</tt> <tt class="py-string">"DSA"</tt><tt class="py-op">}</tt> </tt>
+<a name="L297"></a><tt class="py-lineno">297</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">stream</tt><tt class="py-op">,</tt> <tt class="py-string">"PKey bits:"</tt><tt class="py-op">,</tt> <tt class="py-name">pkey</tt><tt class="py-op">.</tt><tt class="py-name">bits</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L298"></a><tt class="py-lineno">298</tt>  <tt class="py-line">        <tt class="py-keyword">print</tt> <tt class="py-op">&gt;&gt;</tt> <tt class="py-name">stream</tt><tt class="py-op">,</tt> <tt class="py-string">"PKey type: %s (%d)"</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">typedict</tt><tt class="py-op">.</tt><tt id="link-60" class="py-name" targets="Method nbxmpp.bosh.KeyStack.get()=nbxmpp.bosh.KeyStack-class.html#get"><a title="nbxmpp.bosh.KeyStack.get" class="py-name" href="#" onclick="return doclink('link-60', 'get', 'link-60');">get</a></tt><tt class="py-op">(</tt><tt class="py-name">pkey</tt><tt class="py-op">.</tt><tt class="py-name">type</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L299"></a><tt class="py-lineno">299</tt>  <tt class="py-line">                <tt class="py-string">"Unknown"</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">pkey</tt><tt class="py-op">.</tt><tt class="py-name">type</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L300"></a><tt class="py-lineno">300</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingTLS._startSSL"></a><div id="NonBlockingTLS._startSSL-def"><a name="L301"></a><tt class="py-lineno">301</tt> <a class="py-toggle" href="#" id="NonBlockingTLS._startSSL-toggle" onclick="return toggle('NonBlockingTLS._startSSL');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.NonBlockingTLS-class.html#_startSSL">_startSSL</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingTLS._startSSL-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingTLS._startSSL-expanded"><a name="L302"></a><tt class="py-lineno">302</tt>  <tt class="py-line">        <tt class="py-docstring">"""</tt> </tt>
+<a name="L303"></a><tt class="py-lineno">303</tt>  <tt class="py-line"><tt class="py-docstring">        Immediatedly switch socket to TLS mode. Used internally</tt> </tt>
+<a name="L304"></a><tt class="py-lineno">304</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
+<a name="L305"></a><tt class="py-lineno">305</tt>  <tt class="py-line">        <tt id="link-61" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-61', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">"_startSSL called"</tt><tt class="py-op">)</tt> </tt>
+<a name="L306"></a><tt class="py-lineno">306</tt>  <tt class="py-line"> </tt>
+<a name="L307"></a><tt class="py-lineno">307</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt id="link-62" class="py-name"><a title="nbxmpp.tls_nb.USE_PYOPENSSL" class="py-name" href="#" onclick="return doclink('link-62', 'USE_PYOPENSSL', 'link-3');">USE_PYOPENSSL</a></tt><tt class="py-op">:</tt> </tt>
+<a name="L308"></a><tt class="py-lineno">308</tt>  <tt class="py-line">            <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-63" class="py-name" targets="Method nbxmpp.tls_nb.NonBlockingTLS._startSSL_pyOpenSSL()=nbxmpp.tls_nb.NonBlockingTLS-class.html#_startSSL_pyOpenSSL"><a title="nbxmpp.tls_nb.NonBlockingTLS._startSSL_pyOpenSSL" class="py-name" href="#" onclick="return doclink('link-63', '_startSSL_pyOpenSSL', 'link-63');">_startSSL_pyOpenSSL</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L309"></a><tt class="py-lineno">309</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L310"></a><tt class="py-lineno">310</tt>  <tt class="py-line">            <tt class="py-name">result</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-64" class="py-name" targets="Method nbxmpp.tls_nb.NonBlockingTLS._startSSL_stdlib()=nbxmpp.tls_nb.NonBlockingTLS-class.html#_startSSL_stdlib"><a title="nbxmpp.tls_nb.NonBlockingTLS._startSSL_stdlib" class="py-name" href="#" onclick="return doclink('link-64', '_startSSL_stdlib', 'link-64');">_startSSL_stdlib</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L311"></a><tt class="py-lineno">311</tt>  <tt class="py-line"> </tt>
+<a name="L312"></a><tt class="py-lineno">312</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">result</tt><tt class="py-op">:</tt> </tt>
+<a name="L313"></a><tt class="py-lineno">313</tt>  <tt class="py-line">            <tt id="link-65" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-65', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">'Synchronous handshake completed'</tt><tt class="py-op">)</tt> </tt>
+<a name="L314"></a><tt class="py-lineno">314</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">True</tt> </tt>
+<a name="L315"></a><tt class="py-lineno">315</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L316"></a><tt class="py-lineno">316</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">False</tt> </tt>
+</div><a name="L317"></a><tt class="py-lineno">317</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingTLS._load_cert_file"></a><div id="NonBlockingTLS._load_cert_file-def"><a name="L318"></a><tt class="py-lineno">318</tt> <a class="py-toggle" href="#" id="NonBlockingTLS._load_cert_file-toggle" onclick="return toggle('NonBlockingTLS._load_cert_file');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.NonBlockingTLS-class.html#_load_cert_file">_load_cert_file</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">cert_path</tt><tt class="py-op">,</tt> <tt class="py-param">cert_store</tt><tt class="py-op">,</tt> <tt class="py-param">logg</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingTLS._load_cert_file-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingTLS._load_cert_file-expanded"><a name="L319"></a><tt class="py-lineno">319</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">isfile</tt><tt class="py-op">(</tt><tt class="py-name">cert_path</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L320"></a><tt class="py-lineno">320</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> </tt>
+<a name="L321"></a><tt class="py-lineno">321</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L322"></a><tt class="py-lineno">322</tt>  <tt class="py-line">            <tt class="py-name">f</tt> <tt class="py-op">=</tt> <tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">cert_path</tt><tt class="py-op">)</tt> </tt>
+<a name="L323"></a><tt class="py-lineno">323</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt> <tt class="py-name">IOError</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L324"></a><tt class="py-lineno">324</tt>  <tt class="py-line">            <tt id="link-66" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-66', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">warning</tt><tt class="py-op">(</tt><tt class="py-string">'Unable to open certificate file %s: %s'</tt> <tt class="py-op">%</tt> \ </tt>
+<a name="L325"></a><tt class="py-lineno">325</tt>  <tt class="py-line">                    <tt class="py-op">(</tt><tt class="py-name">cert_path</tt><tt class="py-op">,</tt> <tt class="py-name">str</tt><tt class="py-op">(</tt><tt class="py-name">e</tt><tt class="py-op">)</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L326"></a><tt class="py-lineno">326</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> </tt>
+<a name="L327"></a><tt class="py-lineno">327</tt>  <tt class="py-line">        <tt class="py-name">lines</tt> <tt class="py-op">=</tt> <tt class="py-name">f</tt><tt class="py-op">.</tt><tt class="py-name">readlines</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L328"></a><tt class="py-lineno">328</tt>  <tt class="py-line">        <tt class="py-name">i</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L329"></a><tt class="py-lineno">329</tt>  <tt class="py-line">        <tt class="py-name">begin</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> </tt>
+<a name="L330"></a><tt class="py-lineno">330</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">line</tt> <tt class="py-keyword">in</tt> <tt class="py-name">lines</tt><tt class="py-op">:</tt> </tt>
+<a name="L331"></a><tt class="py-lineno">331</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-string">'BEGIN CERTIFICATE'</tt> <tt class="py-keyword">in</tt> <tt class="py-name">line</tt><tt class="py-op">:</tt> </tt>
+<a name="L332"></a><tt class="py-lineno">332</tt>  <tt class="py-line">                <tt class="py-name">begin</tt> <tt class="py-op">=</tt> <tt class="py-name">i</tt> </tt>
+<a name="L333"></a><tt class="py-lineno">333</tt>  <tt class="py-line">            <tt class="py-keyword">elif</tt> <tt class="py-string">'END CERTIFICATE'</tt> <tt class="py-keyword">in</tt> <tt class="py-name">line</tt> <tt class="py-keyword">and</tt> <tt class="py-name">begin</tt> <tt class="py-op">&gt;</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">:</tt> </tt>
+<a name="L334"></a><tt class="py-lineno">334</tt>  <tt class="py-line">                <tt class="py-name">cert</tt> <tt class="py-op">=</tt> <tt class="py-string">''</tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-name">lines</tt><tt class="py-op">[</tt><tt class="py-name">begin</tt><tt class="py-op">:</tt><tt class="py-name">i</tt><tt class="py-op">+</tt><tt class="py-number">2</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
+<a name="L335"></a><tt class="py-lineno">335</tt>  <tt class="py-line">                <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L336"></a><tt class="py-lineno">336</tt>  <tt class="py-line">                    <tt class="py-name">x509cert</tt> <tt class="py-op">=</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">crypto</tt><tt class="py-op">.</tt><tt class="py-name">load_certificate</tt><tt class="py-op">(</tt> </tt>
+<a name="L337"></a><tt class="py-lineno">337</tt>  <tt class="py-line">                            <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">crypto</tt><tt class="py-op">.</tt><tt class="py-name">FILETYPE_PEM</tt><tt class="py-op">,</tt> <tt class="py-name">cert</tt><tt class="py-op">)</tt> </tt>
+<a name="L338"></a><tt class="py-lineno">338</tt>  <tt class="py-line">                    <tt class="py-name">cert_store</tt><tt class="py-op">.</tt><tt class="py-name">add_cert</tt><tt class="py-op">(</tt><tt class="py-name">x509cert</tt><tt class="py-op">)</tt> </tt>
+<a name="L339"></a><tt class="py-lineno">339</tt>  <tt class="py-line">                <tt class="py-keyword">except</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">crypto</tt><tt class="py-op">.</tt><tt id="link-67" class="py-name"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-67', 'Error', 'link-22');">Error</a></tt><tt class="py-op">,</tt> <tt class="py-name">exception_obj</tt><tt class="py-op">:</tt> </tt>
+<a name="L340"></a><tt class="py-lineno">340</tt>  <tt class="py-line">                    <tt class="py-keyword">if</tt> <tt class="py-name">logg</tt><tt class="py-op">:</tt> </tt>
+<a name="L341"></a><tt class="py-lineno">341</tt>  <tt class="py-line">                        <tt id="link-68" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-68', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">warning</tt><tt class="py-op">(</tt><tt class="py-string">'Unable to load a certificate from file %s: %s'</tt> <tt class="py-op">%</tt>\ </tt>
+<a name="L342"></a><tt class="py-lineno">342</tt>  <tt class="py-line">                                <tt class="py-op">(</tt><tt class="py-name">cert_path</tt><tt class="py-op">,</tt> <tt class="py-name">exception_obj</tt><tt class="py-op">.</tt><tt class="py-name">args</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt><tt class="py-op">[</tt><tt class="py-number">2</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L343"></a><tt class="py-lineno">343</tt>  <tt class="py-line">                <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L344"></a><tt class="py-lineno">344</tt>  <tt class="py-line">                    <tt id="link-69" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-69', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">warning</tt><tt class="py-op">(</tt><tt class="py-string">'Unknown error while loading certificate from file '</tt> </tt>
+<a name="L345"></a><tt class="py-lineno">345</tt>  <tt class="py-line">                            <tt class="py-string">'%s'</tt> <tt class="py-op">%</tt> <tt class="py-name">cert_path</tt><tt class="py-op">)</tt> </tt>
+<a name="L346"></a><tt class="py-lineno">346</tt>  <tt class="py-line">                <tt class="py-name">begin</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> </tt>
+<a name="L347"></a><tt class="py-lineno">347</tt>  <tt class="py-line">            <tt class="py-name">i</tt> <tt class="py-op">+=</tt> <tt class="py-number">1</tt> </tt>
+</div><a name="L348"></a><tt class="py-lineno">348</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingTLS._startSSL_pyOpenSSL"></a><div id="NonBlockingTLS._startSSL_pyOpenSSL-def"><a name="L349"></a><tt class="py-lineno">349</tt> <a class="py-toggle" href="#" id="NonBlockingTLS._startSSL_pyOpenSSL-toggle" onclick="return toggle('NonBlockingTLS._startSSL_pyOpenSSL');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.NonBlockingTLS-class.html#_startSSL_pyOpenSSL">_startSSL_pyOpenSSL</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingTLS._startSSL_pyOpenSSL-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingTLS._startSSL_pyOpenSSL-expanded"><a name="L350"></a><tt class="py-lineno">350</tt>  <tt class="py-line">        <tt id="link-70" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-70', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">"_startSSL_pyOpenSSL called"</tt><tt class="py-op">)</tt> </tt>
+<a name="L351"></a><tt class="py-lineno">351</tt>  <tt class="py-line">        <tt class="py-name">tcpsock</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt> </tt>
+<a name="L352"></a><tt class="py-lineno">352</tt>  <tt class="py-line">        <tt class="py-comment"># NonBlockingHTTPBOSH instance has no attribute _owner</tt> </tt>
+<a name="L353"></a><tt class="py-lineno">353</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">hasattr</tt><tt class="py-op">(</tt><tt class="py-name">tcpsock</tt><tt class="py-op">,</tt> <tt class="py-string">'_owner'</tt><tt class="py-op">)</tt> <tt class="py-keyword">and</tt> <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt class="py-name">_caller</tt><tt class="py-op">.</tt><tt class="py-name">client_cert</tt> \ </tt>
+<a name="L354"></a><tt class="py-lineno">354</tt>  <tt class="py-line">        <tt class="py-keyword">and</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">exists</tt><tt class="py-op">(</tt><tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt class="py-name">_caller</tt><tt class="py-op">.</tt><tt class="py-name">client_cert</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L355"></a><tt class="py-lineno">355</tt>  <tt class="py-line">            <tt class="py-name">conn</tt> <tt class="py-op">=</tt> <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt class="py-name">_caller</tt> </tt>
+<a name="L356"></a><tt class="py-lineno">356</tt>  <tt class="py-line">            <tt class="py-comment"># FIXME make a checkbox for Client Cert / SSLv23 / TLSv1</tt> </tt>
+<a name="L357"></a><tt class="py-lineno">357</tt>  <tt class="py-line">            <tt class="py-comment"># If we are going to use a client cert/key pair for authentication,</tt> </tt>
+<a name="L358"></a><tt class="py-lineno">358</tt>  <tt class="py-line">            <tt class="py-comment"># we choose TLSv1 method.</tt> </tt>
+<a name="L359"></a><tt class="py-lineno">359</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslContext</tt> <tt class="py-op">=</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">Context</tt><tt class="py-op">(</tt><tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">TLSv1_METHOD</tt><tt class="py-op">)</tt> </tt>
+<a name="L360"></a><tt class="py-lineno">360</tt>  <tt class="py-line">            <tt id="link-71" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-71', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">'Using client cert and key from %s'</tt> <tt class="py-op">%</tt> <tt class="py-name">conn</tt><tt class="py-op">.</tt><tt class="py-name">client_cert</tt><tt class="py-op">)</tt> </tt>
+<a name="L361"></a><tt class="py-lineno">361</tt>  <tt class="py-line">            <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L362"></a><tt class="py-lineno">362</tt>  <tt class="py-line">                <tt class="py-name">p12</tt> <tt class="py-op">=</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">crypto</tt><tt class="py-op">.</tt><tt class="py-name">load_pkcs12</tt><tt class="py-op">(</tt><tt class="py-name">open</tt><tt class="py-op">(</tt><tt class="py-name">conn</tt><tt class="py-op">.</tt><tt class="py-name">client_cert</tt><tt class="py-op">)</tt><tt class="py-op">.</tt><tt class="py-name">read</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L363"></a><tt class="py-lineno">363</tt>  <tt class="py-line">                    <tt class="py-name">conn</tt><tt class="py-op">.</tt><tt class="py-name">client_cert_passphrase</tt><tt class="py-op">)</tt> </tt>
+<a name="L364"></a><tt class="py-lineno">364</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">crypto</tt><tt class="py-op">.</tt><tt id="link-72" class="py-name"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-72', 'Error', 'link-22');">Error</a></tt><tt class="py-op">,</tt> <tt class="py-name">exception_obj</tt><tt class="py-op">:</tt> </tt>
+<a name="L365"></a><tt class="py-lineno">365</tt>  <tt class="py-line">                <tt id="link-73" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-73', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">warning</tt><tt class="py-op">(</tt><tt class="py-string">'Unable to load client pkcs12 certificate from '</tt> </tt>
+<a name="L366"></a><tt class="py-lineno">366</tt>  <tt class="py-line">                    <tt class="py-string">'file %s: %s ... Is it a valid PKCS12 cert?'</tt> <tt class="py-op">%</tt> \ </tt>
+<a name="L367"></a><tt class="py-lineno">367</tt>  <tt class="py-line">                <tt class="py-op">(</tt><tt class="py-name">conn</tt><tt class="py-op">.</tt><tt class="py-name">client_cert</tt><tt class="py-op">,</tt> <tt class="py-name">exception_obj</tt><tt class="py-op">.</tt><tt class="py-name">args</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L368"></a><tt class="py-lineno">368</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L369"></a><tt class="py-lineno">369</tt>  <tt class="py-line">                <tt id="link-74" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-74', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">warning</tt><tt class="py-op">(</tt><tt class="py-string">'Unknown error while loading certificate from file '</tt> </tt>
+<a name="L370"></a><tt class="py-lineno">370</tt>  <tt class="py-line">                    <tt class="py-string">'%s'</tt> <tt class="py-op">%</tt> <tt class="py-name">conn</tt><tt class="py-op">.</tt><tt class="py-name">client_cert</tt><tt class="py-op">)</tt> </tt>
+<a name="L371"></a><tt class="py-lineno">371</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L372"></a><tt class="py-lineno">372</tt>  <tt class="py-line">                <tt id="link-75" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-75', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt><tt class="py-string">'PKCS12 Client cert loaded OK'</tt><tt class="py-op">)</tt> </tt>
+<a name="L373"></a><tt class="py-lineno">373</tt>  <tt class="py-line">                <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L374"></a><tt class="py-lineno">374</tt>  <tt class="py-line">                    <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslContext</tt><tt class="py-op">.</tt><tt class="py-name">use_certificate</tt><tt class="py-op">(</tt><tt class="py-name">p12</tt><tt class="py-op">.</tt><tt class="py-name">get_certificate</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L375"></a><tt class="py-lineno">375</tt>  <tt class="py-line">                    <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslContext</tt><tt class="py-op">.</tt><tt class="py-name">use_privatekey</tt><tt class="py-op">(</tt><tt class="py-name">p12</tt><tt class="py-op">.</tt><tt class="py-name">get_privatekey</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L376"></a><tt class="py-lineno">376</tt>  <tt class="py-line">                    <tt id="link-76" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-76', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt><tt class="py-string">'p12 cert and key loaded'</tt><tt class="py-op">)</tt> </tt>
+<a name="L377"></a><tt class="py-lineno">377</tt>  <tt class="py-line">                <tt class="py-keyword">except</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">crypto</tt><tt class="py-op">.</tt><tt id="link-77" class="py-name"><a title="nbxmpp.protocol.Error
+nbxmpp.tls_nb.SSLWrapper.Error" class="py-name" href="#" onclick="return doclink('link-77', 'Error', 'link-22');">Error</a></tt><tt class="py-op">,</tt> <tt class="py-name">exception_obj</tt><tt class="py-op">:</tt> </tt>
+<a name="L378"></a><tt class="py-lineno">378</tt>  <tt class="py-line">                    <tt id="link-78" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-78', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">warning</tt><tt class="py-op">(</tt><tt class="py-string">'Unable to extract client certificate from '</tt> </tt>
+<a name="L379"></a><tt class="py-lineno">379</tt>  <tt class="py-line">                        <tt class="py-string">'file %s'</tt> <tt class="py-op">%</tt> <tt class="py-name">conn</tt><tt class="py-op">.</tt><tt class="py-name">client_cert</tt><tt class="py-op">)</tt> </tt>
+<a name="L380"></a><tt class="py-lineno">380</tt>  <tt class="py-line">                <tt class="py-keyword">except</tt> <tt class="py-name">Exception</tt><tt class="py-op">,</tt> <tt class="py-name">msg</tt><tt class="py-op">:</tt> </tt>
+<a name="L381"></a><tt class="py-lineno">381</tt>  <tt class="py-line">                    <tt id="link-79" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-79', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">warning</tt><tt class="py-op">(</tt><tt class="py-string">'Unknown error extracting client certificate '</tt> </tt>
+<a name="L382"></a><tt class="py-lineno">382</tt>  <tt class="py-line">                        <tt class="py-string">'from file %s: %s'</tt> <tt class="py-op">%</tt> <tt class="py-op">(</tt><tt class="py-name">conn</tt><tt class="py-op">.</tt><tt class="py-name">client_cert</tt><tt class="py-op">,</tt> <tt class="py-name">msg</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L383"></a><tt class="py-lineno">383</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L384"></a><tt class="py-lineno">384</tt>  <tt class="py-line">                    <tt id="link-80" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-80', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt><tt class="py-string">'client cert and key loaded OK'</tt><tt class="py-op">)</tt> </tt>
+<a name="L385"></a><tt class="py-lineno">385</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L386"></a><tt class="py-lineno">386</tt>  <tt class="py-line">            <tt class="py-comment"># See http://docs.python.org/dev/library/ssl.html</tt> </tt>
+<a name="L387"></a><tt class="py-lineno">387</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslContext</tt> <tt class="py-op">=</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">Context</tt><tt class="py-op">(</tt><tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">SSLv23_METHOD</tt><tt class="py-op">)</tt> </tt>
+<a name="L388"></a><tt class="py-lineno">388</tt>  <tt class="py-line">            <tt class="py-name">flags</tt> <tt class="py-op">=</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">OP_NO_SSLv2</tt> </tt>
+<a name="L389"></a><tt class="py-lineno">389</tt>  <tt class="py-line">            <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L390"></a><tt class="py-lineno">390</tt>  <tt class="py-line">                <tt class="py-name">flags</tt> <tt class="py-op">|=</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">OP_NO_TICKET</tt> </tt>
+<a name="L391"></a><tt class="py-lineno">391</tt>  <tt class="py-line">            <tt class="py-keyword">except</tt> <tt class="py-name">AttributeError</tt><tt class="py-op">,</tt> <tt class="py-name">e</tt><tt class="py-op">:</tt> </tt>
+<a name="L392"></a><tt class="py-lineno">392</tt>  <tt class="py-line">                <tt class="py-comment"># py-OpenSSL &lt; 0.9 or old OpenSSL</tt> </tt>
+<a name="L393"></a><tt class="py-lineno">393</tt>  <tt class="py-line">                <tt class="py-name">flags</tt> <tt class="py-op">|=</tt> <tt class="py-number">16384</tt> </tt>
+<a name="L394"></a><tt class="py-lineno">394</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslContext</tt><tt class="py-op">.</tt><tt class="py-name">set_options</tt><tt class="py-op">(</tt><tt class="py-name">flags</tt><tt class="py-op">)</tt> </tt>
+<a name="L395"></a><tt class="py-lineno">395</tt>  <tt class="py-line"> </tt>
+<a name="L396"></a><tt class="py-lineno">396</tt>  <tt class="py-line">        <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">ssl_errnum</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L397"></a><tt class="py-lineno">397</tt>  <tt class="py-line">        <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslContext</tt><tt class="py-op">.</tt><tt class="py-name">set_verify</tt><tt class="py-op">(</tt><tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">VERIFY_PEER</tt><tt class="py-op">,</tt> </tt>
+<a name="L398"></a><tt class="py-lineno">398</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-81" class="py-name" targets="Method nbxmpp.tls_nb.NonBlockingTLS._ssl_verify_callback()=nbxmpp.tls_nb.NonBlockingTLS-class.html#_ssl_verify_callback"><a title="nbxmpp.tls_nb.NonBlockingTLS._ssl_verify_callback" class="py-name" href="#" onclick="return doclink('link-81', '_ssl_verify_callback', 'link-81');">_ssl_verify_callback</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L399"></a><tt class="py-lineno">399</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L400"></a><tt class="py-lineno">400</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslContext</tt><tt class="py-op">.</tt><tt class="py-name">load_verify_locations</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">cacerts</tt><tt class="py-op">)</tt> </tt>
+<a name="L401"></a><tt class="py-lineno">401</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L402"></a><tt class="py-lineno">402</tt>  <tt class="py-line">            <tt id="link-82" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-82', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">warning</tt><tt class="py-op">(</tt><tt class="py-string">'Unable to load SSL certificates from file %s'</tt> <tt class="py-op">%</tt> \ </tt>
+<a name="L403"></a><tt class="py-lineno">403</tt>  <tt class="py-line">                    <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">abspath</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">cacerts</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
+<a name="L404"></a><tt class="py-lineno">404</tt>  <tt class="py-line">        <tt class="py-name">store</tt> <tt class="py-op">=</tt> <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslContext</tt><tt class="py-op">.</tt><tt class="py-name">get_cert_store</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L405"></a><tt class="py-lineno">405</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-83" class="py-name" targets="Method nbxmpp.tls_nb.NonBlockingTLS._load_cert_file()=nbxmpp.tls_nb.NonBlockingTLS-class.html#_load_cert_file"><a title="nbxmpp.tls_nb.NonBlockingTLS._load_cert_file" class="py-name" href="#" onclick="return doclink('link-83', '_load_cert_file', 'link-83');">_load_cert_file</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">mycerts</tt><tt class="py-op">,</tt> <tt class="py-name">store</tt><tt class="py-op">)</tt> </tt>
+<a name="L406"></a><tt class="py-lineno">406</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">isdir</tt><tt class="py-op">(</tt><tt class="py-string">'/etc/ssl/certs'</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L407"></a><tt class="py-lineno">407</tt>  <tt class="py-line">            <tt class="py-keyword">for</tt> <tt class="py-name">f</tt> <tt class="py-keyword">in</tt> <tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">listdir</tt><tt class="py-op">(</tt><tt class="py-string">'/etc/ssl/certs'</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L408"></a><tt class="py-lineno">408</tt>  <tt class="py-line">                <tt class="py-comment"># We don't logg because there is a lot a duplicated certs in this</tt> </tt>
+<a name="L409"></a><tt class="py-lineno">409</tt>  <tt class="py-line">                <tt class="py-comment"># folder</tt> </tt>
+<a name="L410"></a><tt class="py-lineno">410</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-84" class="py-name"><a title="nbxmpp.tls_nb.NonBlockingTLS._load_cert_file" class="py-name" href="#" onclick="return doclink('link-84', '_load_cert_file', 'link-83');">_load_cert_file</a></tt><tt class="py-op">(</tt><tt class="py-name">os</tt><tt class="py-op">.</tt><tt class="py-name">path</tt><tt class="py-op">.</tt><tt class="py-name">join</tt><tt class="py-op">(</tt><tt class="py-string">'/etc/ssl/certs'</tt><tt class="py-op">,</tt> <tt class="py-name">f</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> <tt class="py-name">store</tt><tt class="py-op">,</tt> </tt>
+<a name="L411"></a><tt class="py-lineno">411</tt>  <tt class="py-line">                        <tt class="py-name">logg</tt><tt class="py-op">=</tt><tt class="py-name">False</tt><tt class="py-op">)</tt> </tt>
+<a name="L412"></a><tt class="py-lineno">412</tt>  <tt class="py-line"> </tt>
+<a name="L413"></a><tt class="py-lineno">413</tt>  <tt class="py-line">        <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslObj</tt> <tt class="py-op">=</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">SSL</tt><tt class="py-op">.</tt><tt class="py-name">Connection</tt><tt class="py-op">(</tt><tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslContext</tt><tt class="py-op">,</tt> </tt>
+<a name="L414"></a><tt class="py-lineno">414</tt>  <tt class="py-line">                <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sock</tt><tt class="py-op">)</tt> </tt>
+<a name="L415"></a><tt class="py-lineno">415</tt>  <tt class="py-line">        <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslObj</tt><tt class="py-op">.</tt><tt class="py-name">set_connect_state</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> <tt class="py-comment"># set to client mode</tt> </tt>
+<a name="L416"></a><tt class="py-lineno">416</tt>  <tt class="py-line">        <tt class="py-name">wrapper</tt> <tt class="py-op">=</tt> <tt id="link-85" class="py-name" targets="Class nbxmpp.tls_nb.PyOpenSSLWrapper=nbxmpp.tls_nb.PyOpenSSLWrapper-class.html"><a title="nbxmpp.tls_nb.PyOpenSSLWrapper" class="py-name" href="#" onclick="return doclink('link-85', 'PyOpenSSLWrapper', 'link-85');">PyOpenSSLWrapper</a></tt><tt class="py-op">(</tt><tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslObj</tt><tt class="py-op">)</tt> </tt>
+<a name="L417"></a><tt class="py-lineno">417</tt>  <tt class="py-line">        <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_recv</tt> <tt class="py-op">=</tt> <tt class="py-name">wrapper</tt><tt class="py-op">.</tt><tt id="link-86" class="py-name"><a title="nbxmpp.tls_nb.PyOpenSSLWrapper.recv
+nbxmpp.tls_nb.SSLWrapper.recv
+nbxmpp.tls_nb.StdlibSSLWrapper.recv" class="py-name" href="#" onclick="return doclink('link-86', 'recv', 'link-17');">recv</a></tt> </tt>
+<a name="L418"></a><tt class="py-lineno">418</tt>  <tt class="py-line">        <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_send</tt> <tt class="py-op">=</tt> <tt class="py-name">wrapper</tt><tt class="py-op">.</tt><tt id="link-87" class="py-name"><a title="nbxmpp.bosh.NonBlockingBOSH.send
+nbxmpp.dispatcher_nb.XMPPDispatcher.send
+nbxmpp.tls_nb.PyOpenSSLWrapper.send
+nbxmpp.tls_nb.SSLWrapper.send
+nbxmpp.tls_nb.StdlibSSLWrapper.send
+nbxmpp.transports_nb.NonBlockingTCP.send
+nbxmpp.transports_nb.NonBlockingTransport.send" class="py-name" href="#" onclick="return doclink('link-87', 'send', 'link-31');">send</a></tt> </tt>
+<a name="L419"></a><tt class="py-lineno">419</tt>  <tt class="py-line"> </tt>
+<a name="L420"></a><tt class="py-lineno">420</tt>  <tt class="py-line">        <tt id="link-88" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-88', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">"Initiating handshake..."</tt><tt class="py-op">)</tt> </tt>
+<a name="L421"></a><tt class="py-lineno">421</tt>  <tt class="py-line">        <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslObj</tt><tt class="py-op">.</tt><tt class="py-name">setblocking</tt><tt class="py-op">(</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L422"></a><tt class="py-lineno">422</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L423"></a><tt class="py-lineno">423</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslObj</tt><tt class="py-op">.</tt><tt class="py-name">do_handshake</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L424"></a><tt class="py-lineno">424</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L425"></a><tt class="py-lineno">425</tt>  <tt class="py-line">            <tt id="link-89" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-89', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">error</tt><tt class="py-op">(</tt><tt class="py-string">'Error while TLS handshake: '</tt><tt class="py-op">,</tt> <tt class="py-name">exc_info</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L426"></a><tt class="py-lineno">426</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">False</tt> </tt>
+<a name="L427"></a><tt class="py-lineno">427</tt>  <tt class="py-line">        <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslObj</tt><tt class="py-op">.</tt><tt class="py-name">setblocking</tt><tt class="py-op">(</tt><tt class="py-name">False</tt><tt class="py-op">)</tt> </tt>
+<a name="L428"></a><tt class="py-lineno">428</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt class="py-name">ssl_lib</tt> <tt class="py-op">=</tt> <tt id="link-90" class="py-name"><a title="nbxmpp.tls_nb.PYOPENSSL" class="py-name" href="#" onclick="return doclink('link-90', 'PYOPENSSL', 'link-4');">PYOPENSSL</a></tt> </tt>
+<a name="L429"></a><tt class="py-lineno">429</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">True</tt> </tt>
+</div><a name="L430"></a><tt class="py-lineno">430</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingTLS._startSSL_stdlib"></a><div id="NonBlockingTLS._startSSL_stdlib-def"><a name="L431"></a><tt class="py-lineno">431</tt> <a class="py-toggle" href="#" id="NonBlockingTLS._startSSL_stdlib-toggle" onclick="return toggle('NonBlockingTLS._startSSL_stdlib');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.NonBlockingTLS-class.html#_startSSL_stdlib">_startSSL_stdlib</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingTLS._startSSL_stdlib-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingTLS._startSSL_stdlib-expanded"><a name="L432"></a><tt class="py-lineno">432</tt>  <tt class="py-line">        <tt id="link-91" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-91', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">debug</tt><tt class="py-op">(</tt><tt class="py-string">"_startSSL_stdlib called"</tt><tt class="py-op">)</tt> </tt>
+<a name="L433"></a><tt class="py-lineno">433</tt>  <tt class="py-line">        <tt class="py-name">tcpsock</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt> </tt>
+<a name="L434"></a><tt class="py-lineno">434</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L435"></a><tt class="py-lineno">435</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sock</tt><tt class="py-op">.</tt><tt class="py-name">setblocking</tt><tt class="py-op">(</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L436"></a><tt class="py-lineno">436</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslObj</tt> <tt class="py-op">=</tt> <tt class="py-name">socket</tt><tt class="py-op">.</tt><tt class="py-name">ssl</tt><tt class="py-op">(</tt><tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sock</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">,</tt> <tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+<a name="L437"></a><tt class="py-lineno">437</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sock</tt><tt class="py-op">.</tt><tt class="py-name">setblocking</tt><tt class="py-op">(</tt><tt class="py-name">False</tt><tt class="py-op">)</tt> </tt>
+<a name="L438"></a><tt class="py-lineno">438</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslIssuer</tt> <tt class="py-op">=</tt> <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslObj</tt><tt class="py-op">.</tt><tt class="py-name">issuer</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L439"></a><tt class="py-lineno">439</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslServer</tt> <tt class="py-op">=</tt> <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslObj</tt><tt class="py-op">.</tt><tt class="py-name">server</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L440"></a><tt class="py-lineno">440</tt>  <tt class="py-line">            <tt class="py-name">wrapper</tt> <tt class="py-op">=</tt> <tt id="link-92" class="py-name" targets="Class nbxmpp.tls_nb.StdlibSSLWrapper=nbxmpp.tls_nb.StdlibSSLWrapper-class.html"><a title="nbxmpp.tls_nb.StdlibSSLWrapper" class="py-name" href="#" onclick="return doclink('link-92', 'StdlibSSLWrapper', 'link-92');">StdlibSSLWrapper</a></tt><tt class="py-op">(</tt><tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sslObj</tt><tt class="py-op">,</tt> <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_sock</tt><tt class="py-op">)</tt> </tt>
+<a name="L441"></a><tt class="py-lineno">441</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_recv</tt> <tt class="py-op">=</tt> <tt class="py-name">wrapper</tt><tt class="py-op">.</tt><tt id="link-93" class="py-name"><a title="nbxmpp.tls_nb.PyOpenSSLWrapper.recv
+nbxmpp.tls_nb.SSLWrapper.recv
+nbxmpp.tls_nb.StdlibSSLWrapper.recv" class="py-name" href="#" onclick="return doclink('link-93', 'recv', 'link-17');">recv</a></tt> </tt>
+<a name="L442"></a><tt class="py-lineno">442</tt>  <tt class="py-line">            <tt class="py-name">tcpsock</tt><tt class="py-op">.</tt><tt class="py-name">_send</tt> <tt class="py-op">=</tt> <tt class="py-name">wrapper</tt><tt class="py-op">.</tt><tt id="link-94" class="py-name"><a title="nbxmpp.bosh.NonBlockingBOSH.send
+nbxmpp.dispatcher_nb.XMPPDispatcher.send
+nbxmpp.tls_nb.PyOpenSSLWrapper.send
+nbxmpp.tls_nb.SSLWrapper.send
+nbxmpp.tls_nb.StdlibSSLWrapper.send
+nbxmpp.transports_nb.NonBlockingTCP.send
+nbxmpp.transports_nb.NonBlockingTransport.send" class="py-name" href="#" onclick="return doclink('link-94', 'send', 'link-31');">send</a></tt> </tt>
+<a name="L443"></a><tt class="py-lineno">443</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L444"></a><tt class="py-lineno">444</tt>  <tt class="py-line">            <tt id="link-95" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-95', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">error</tt><tt class="py-op">(</tt><tt class="py-string">"Exception caught in _startSSL_stdlib:"</tt><tt class="py-op">,</tt> <tt class="py-name">exc_info</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L445"></a><tt class="py-lineno">445</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">False</tt> </tt>
+<a name="L446"></a><tt class="py-lineno">446</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt class="py-name">ssl_lib</tt> <tt class="py-op">=</tt> <tt id="link-96" class="py-name"><a title="nbxmpp.tls_nb.PYSTDLIB" class="py-name" href="#" onclick="return doclink('link-96', 'PYSTDLIB', 'link-5');">PYSTDLIB</a></tt> </tt>
+<a name="L447"></a><tt class="py-lineno">447</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">True</tt> </tt>
+</div><a name="L448"></a><tt class="py-lineno">448</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingTLS._ssl_verify_callback"></a><div id="NonBlockingTLS._ssl_verify_callback-def"><a name="L449"></a><tt class="py-lineno">449</tt> <a class="py-toggle" href="#" id="NonBlockingTLS._ssl_verify_callback-toggle" onclick="return toggle('NonBlockingTLS._ssl_verify_callback');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.tls_nb.NonBlockingTLS-class.html#_ssl_verify_callback">_ssl_verify_callback</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">sslconn</tt><tt class="py-op">,</tt> <tt class="py-param">cert</tt><tt class="py-op">,</tt> <tt class="py-param">errnum</tt><tt class="py-op">,</tt> <tt class="py-param">depth</tt><tt class="py-op">,</tt> <tt class="py-param">ok</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingTLS._ssl_verify_callback-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingTLS._ssl_verify_callback-expanded"><a name="L450"></a><tt class="py-lineno">450</tt>  <tt class="py-line">        <tt class="py-comment"># Exceptions can't propagate up through this callback, so print them here.</tt> </tt>
+<a name="L451"></a><tt class="py-lineno">451</tt>  <tt class="py-line">        <tt class="py-keyword">try</tt><tt class="py-op">:</tt> </tt>
+<a name="L452"></a><tt class="py-lineno">452</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt class="py-name">ssl_fingerprint_sha1</tt> <tt class="py-op">=</tt> <tt class="py-name">cert</tt><tt class="py-op">.</tt><tt class="py-name">digest</tt><tt class="py-op">(</tt><tt class="py-string">'sha1'</tt><tt class="py-op">)</tt> </tt>
+<a name="L453"></a><tt class="py-lineno">453</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt class="py-name">ssl_certificate</tt> <tt class="py-op">=</tt> <tt class="py-name">cert</tt> </tt>
+<a name="L454"></a><tt class="py-lineno">454</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt class="py-name">ssl_errnum</tt> <tt class="py-op">=</tt> <tt class="py-name">errnum</tt> </tt>
+<a name="L455"></a><tt class="py-lineno">455</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt class="py-name">ssl_cert_pem</tt> <tt class="py-op">=</tt> <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">crypto</tt><tt class="py-op">.</tt><tt class="py-name">dump_certificate</tt><tt class="py-op">(</tt> </tt>
+<a name="L456"></a><tt class="py-lineno">456</tt>  <tt class="py-line">                    <tt class="py-name">OpenSSL</tt><tt class="py-op">.</tt><tt class="py-name">crypto</tt><tt class="py-op">.</tt><tt class="py-name">FILETYPE_PEM</tt><tt class="py-op">,</tt> <tt class="py-name">cert</tt><tt class="py-op">)</tt> </tt>
+<a name="L457"></a><tt class="py-lineno">457</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">True</tt> </tt>
+<a name="L458"></a><tt class="py-lineno">458</tt>  <tt class="py-line">        <tt class="py-keyword">except</tt><tt class="py-op">:</tt> </tt>
+<a name="L459"></a><tt class="py-lineno">459</tt>  <tt class="py-line">            <tt id="link-97" class="py-name"><a title="nbxmpp.auth_nb.log
+nbxmpp.bosh.log
+nbxmpp.client_nb.log
+nbxmpp.dispatcher_nb.log
+nbxmpp.idlequeue.log
+nbxmpp.plugin.log
+nbxmpp.proxy_connectors.log
+nbxmpp.roster_nb.log
+nbxmpp.simplexml.log
+nbxmpp.smacks.log
+nbxmpp.tls_nb.log
+nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-97', 'log', 'link-2');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">error</tt><tt class="py-op">(</tt><tt class="py-string">"Exception caught in _ssl_info_callback:"</tt><tt class="py-op">,</tt> <tt class="py-name">exc_info</tt><tt class="py-op">=</tt><tt class="py-name">True</tt><tt class="py-op">)</tt> </tt>
+<a name="L460"></a><tt class="py-lineno">460</tt>  <tt class="py-line">            <tt class="py-comment"># Make sure something is printed, even if log is disabled.</tt> </tt>
+<a name="L461"></a><tt class="py-lineno">461</tt>  <tt class="py-line">            <tt class="py-name">traceback</tt><tt class="py-op">.</tt><tt class="py-name">print_exc</tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L462"></a><tt class="py-lineno">462</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<!--
+expandto(location.href);
+// -->
+</script>
+</pre>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="nbxmpp-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="http://python-nbxmpp.gajim.org">python-nbxmpp</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue May  8 11:18:08 2012
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
