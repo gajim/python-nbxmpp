@@ -1070,34 +1070,30 @@ class Hashes(Node):
         hash_ = None
         # file_string can be a string or a file
         if type(file_string) == str: # if it is a string
-            if algo == 'md5':
-                hl = hashlib.md5()
-            elif algo == 'sha-1':
+            if algo == 'sha-1':
                 hl = hashlib.sha1()
+            elif algo == 'md5':
+                hl = hashlib.md5()
             elif algo == 'sha-256':
                 hl = hashlib.sha256()
             elif algo == 'sha-512':
                 hl = hashlib.sha512()
-
             if hl:
                 hl.update(file_string)
                 hash_ = hl.hexdigest()
         else: # if it is a file
-
-            if algo == 'md5':
-                hl = hashlib.md5()
-            elif algo == 'sha-1':
+            if algo == 'sha-1':
                 hl = hashlib.sha1()
+            elif algo == 'md5':
+                hl = hashlib.md5()
             elif algo == 'sha-256':
                 hl = hashlib.sha256()
             elif algo == 'sha-512':
                 hl = hashlib.sha512()
-
             if hl:
                 for line in file_string:
                     hl.update(line)
                 hash_ = hl.hexdigest()
-
         return hash_
 
     def addHash(self, hash_, algo):
