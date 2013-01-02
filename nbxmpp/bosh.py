@@ -20,11 +20,11 @@
 
 import locale, random
 from hashlib import sha1
-from transports_nb import NonBlockingTransport, NonBlockingHTTPBOSH,\
+from .transports_nb import NonBlockingTransport, NonBlockingHTTPBOSH,\
         CONNECTED, CONNECTING, DISCONNECTED, DISCONNECTING,\
         urisplit, DISCONNECT_TIMEOUT_SECONDS
-from protocol import BOSHBody, Protocol, NS_CLIENT
-from simplexml import Node
+from .protocol import BOSHBody, Protocol, NS_CLIENT
+from .simplexml import Node
 
 import logging
 log = logging.getLogger('nbxmpp.bosh')

@@ -30,7 +30,7 @@ def XMLescape(txt):
     entities
     """
     # replace also FORM FEED and ESC, because they are not valid XML chars
-    return txt.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace(u'\x0C', "").replace(u'\x1B', "")
+    return txt.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace('\x0C', "").replace('\x1B', "")
 
 ENCODING='utf-8'
 
@@ -111,7 +111,7 @@ class Node(object):
             for k, v in nsp.items(): self.nsp_cache[k] = v
         for attr, val in attrs.items():
             if attr == 'xmlns':
-                self.nsd[u''] = val
+                self.nsd[''] = val
             elif attr.startswith('xmlns:'):
                 self.nsd[attr[6:]] = val
             self.attrs[attr]=attrs[attr]
@@ -566,7 +566,7 @@ class NodeBuilder:
         """
         self.check_data_buffer()
         self._inc_depth()
-        log.info("STARTTAG.. DEPTH -> %i , tag -> %s, attrs -> %s" % (self.__depth, tag, `attrs`))
+        log.info("STARTTAG.. DEPTH -> %i , tag -> %s, attrs -> %s" % (self.__depth, tag, attrs))
         if self.__depth == self._dispatch_depth:
             if not self._mini_dom :
                 self._mini_dom = Node(tag=tag, attrs=attrs, nsp = self._document_nsp, node_built=True)
@@ -582,7 +582,7 @@ class NodeBuilder:
             nsp, name = (['']+tag.split(':'))[-2:]
             for attr, val in attrs.items():
                 if attr == 'xmlns':
-                    self._document_nsp[u''] = val
+                    self._document_nsp[''] = val
                 elif attr.startswith('xmlns:'):
                     self._document_nsp[attr[6:]] = val
                 else:
@@ -590,7 +590,7 @@ class NodeBuilder:
             ns = self._document_nsp.get(nsp, 'http://www.gajim.org/xmlns/undeclared-root')
             try:
                 self.stream_header_received(ns, name, attrs)
-            except ValueError, e:
+            except ValueError as e:
                 self._document_attrs = None
                 raise ValueError(str(e))
         if not self.last_is_data and self._ptr.parent:

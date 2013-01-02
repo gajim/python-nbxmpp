@@ -16,7 +16,7 @@
 ##   GNU General Public License for more details.
 
 import socket
-from plugin import PlugIn
+from .plugin import PlugIn
 
 import sys
 import os
@@ -42,9 +42,9 @@ except ImportError:
     log.debug("Import of PyOpenSSL failed:", exc_info=True)
 
     # FIXME: Remove these prints before release, replace with a warning dialog.
-    print >> sys.stderr, "=" * 79
-    print >> sys.stderr, "PyOpenSSL not found, falling back to Python builtin SSL objects (insecure)."
-    print >> sys.stderr, "=" * 79
+    print("=" * 79, file=sys.stderr)
+    print("PyOpenSSL not found, falling back to Python builtin SSL objects (insecure).", file=sys.stderr)
+    print("=" * 79, file=sys.stderr)
 
 def gattr(obj, attr, default=None):
     try:
@@ -167,17 +167,17 @@ class PyOpenSSLWrapper(SSLWrapper):
                 retval = self.sslobj.recv(bufsize)
             else:
                 retval = self.sslobj.recv(bufsize, flags)
-        except (OpenSSL.SSL.WantReadError, OpenSSL.SSL.WantWriteError), e:
+        except (OpenSSL.SSL.WantReadError, OpenSSL.SSL.WantWriteError) as e:
             log.debug("Recv: Want-error: " + repr(e))
-        except OpenSSL.SSL.SysCallError, e:
+        except OpenSSL.SSL.SysCallError as e:
             log.debug("Recv: Got OpenSSL.SSL.SysCallError: " + repr(e),
                     exc_info=True)
             raise SSLWrapper.Error(self.sock or self.sslobj, e)
-        except OpenSSL.SSL.ZeroReturnError, e:
+        except OpenSSL.SSL.ZeroReturnError as e:
             # end-of-connection raises ZeroReturnError instead of having the
             # connection's .recv() method return a zero-sized result.
             raise SSLWrapper.Error(self.sock or self.sslobj, e, -1)
-        except OpenSSL.SSL.Error, e:
+        except OpenSSL.SSL.Error as e:
             if self.is_numtoolarge(e):
                 # warn, but ignore this exception
                 log.warning("Recv: OpenSSL: asn1enc: first num too large (ignored)")
@@ -192,14 +192,14 @@ class PyOpenSSLWrapper(SSLWrapper):
                 return self.sslobj.send(data)
             else:
                 return self.sslobj.send(data, flags)
-        except (OpenSSL.SSL.WantReadError, OpenSSL.SSL.WantWriteError), e:
+        except (OpenSSL.SSL.WantReadError, OpenSSL.SSL.WantWriteError) as e:
             #log.debug("Send: " + repr(e))
             time.sleep(0.1) # prevent 100% CPU usage
-        except OpenSSL.SSL.SysCallError, e:
+        except OpenSSL.SSL.SysCallError as e:
             log.error("Send: Got OpenSSL.SSL.SysCallError: " + repr(e),
                     exc_info=True)
             raise SSLWrapper.Error(self.sock or self.sslobj, e)
-        except OpenSSL.SSL.Error, e:
+        except OpenSSL.SSL.Error as e:
             if self.is_numtoolarge(e):
                 # warn, but ignore this exception
                 log.warning("Send: OpenSSL: asn1enc: first num too large (ignored)")
@@ -222,7 +222,7 @@ class StdlibSSLWrapper(SSLWrapper):
         # we simply ignore flags since ssl object doesn't support it
         try:
             return self.sslobj.read(bufsize)
-        except socket.sslerror, e:
+        except socket.sslerror as e:
             log.debug("Recv: Caught socket.sslerror: " + repr(e), exc_info=True)
             if e.args[0] not in (socket.SSL_ERROR_WANT_READ, socket.SSL_ERROR_WANT_WRITE):
                 raise SSLWrapper.Error(self.sock or self.sslobj, e)
@@ -232,7 +232,7 @@ class StdlibSSLWrapper(SSLWrapper):
         # we simply ignore flags since ssl object doesn't support it
         try:
             return self.sslobj.write(data)
-        except socket.sslerror, e:
+        except socket.sslerror as e:
             log.debug("Send: Caught socket.sslerror:", exc_info=True)
             if e.args[0] not in (socket.SSL_ERROR_WANT_READ, socket.SSL_ERROR_WANT_WRITE):
                 raise SSLWrapper.Error(self.sock or self.sslobj, e)
@@ -271,32 +271,32 @@ class NonBlockingTLS(PlugIn):
         log.info('Starting TLS estabilishing')
         try:
             res = self._startSSL()
-        except Exception, e:
+        except Exception as e:
             log.error("PlugIn: while trying _startSSL():", exc_info=True)
             return False
         return res
 
     def _dumpX509(self, cert, stream=sys.stderr):
-        print >> stream, "Digest (SHA-1):", cert.digest("sha1")
-        print >> stream, "Digest (MD5):", cert.digest("md5")
-        print >> stream, "Serial #:", cert.get_serial_number()
-        print >> stream, "Version:", cert.get_version()
-        print >> stream, "Expired:", ("Yes" if cert.has_expired() else "No")
-        print >> stream, "Subject:"
+        print("Digest (SHA-1):" + cert.digest("sha1"), file=stream)
+        print("Digest (MD5):" + cert.digest("md5"), file=stream)
+        print("Serial #:" + cert.get_serial_number(), file=stream)
+        print("Version:" + cert.get_version(), file=stream)
+        print("Expired:" + ("Yes" if cert.has_expired() else "No"), file=stream)
+        print("Subject:", file=stream)
         self._dumpX509Name(cert.get_subject(), stream)
-        print >> stream, "Issuer:"
+        print("Issuer:", file=stream)
         self._dumpX509Name(cert.get_issuer(), stream)
         self._dumpPKey(cert.get_pubkey(), stream)
 
     def _dumpX509Name(self, name, stream=sys.stderr):
-        print >> stream, "X509Name:", str(name)
+        print("X509Name:" + str(name), file=stream)
 
     def _dumpPKey(self, pkey, stream=sys.stderr):
         typedict = {OpenSSL.crypto.TYPE_RSA: "RSA",
                                         OpenSSL.crypto.TYPE_DSA: "DSA"}
-        print >> stream, "PKey bits:", pkey.bits()
-        print >> stream, "PKey type: %s (%d)" % (typedict.get(pkey.type(),
-                "Unknown"), pkey.type())
+        print("PKey bits:" + pkey.bits(), file=stream)
+        print("PKey type: %s (%d)" % (typedict.get(pkey.type(),
+                "Unknown"), pkey.type()), file=stream)
 
     def _startSSL(self):
         """
@@ -320,7 +320,7 @@ class NonBlockingTLS(PlugIn):
             return
         try:
             f = open(cert_path)
-        except IOError, e:
+        except IOError as e:
             log.warning('Unable to open certificate file %s: %s' % \
                     (cert_path, str(e)))
             return
@@ -336,7 +336,7 @@ class NonBlockingTLS(PlugIn):
                     x509cert = OpenSSL.crypto.load_certificate(
                             OpenSSL.crypto.FILETYPE_PEM, cert)
                     cert_store.add_cert(x509cert)
-                except OpenSSL.crypto.Error, exception_obj:
+                except OpenSSL.crypto.Error as exception_obj:
                     if logg:
                         log.warning('Unable to load a certificate from file %s: %s' %\
                                 (cert_path, exception_obj.args[0][0][2]))
@@ -361,7 +361,7 @@ class NonBlockingTLS(PlugIn):
             try:
                 p12 = OpenSSL.crypto.load_pkcs12(open(conn.client_cert).read(),
                     conn.client_cert_passphrase)
-            except OpenSSL.crypto.Error, exception_obj:
+            except OpenSSL.crypto.Error as exception_obj:
                 log.warning('Unable to load client pkcs12 certificate from '
                     'file %s: %s ... Is it a valid PKCS12 cert?' % \
                 (conn.client_cert, exception_obj.args))
@@ -374,10 +374,10 @@ class NonBlockingTLS(PlugIn):
                     tcpsock._sslContext.use_certificate(p12.get_certificate())
                     tcpsock._sslContext.use_privatekey(p12.get_privatekey())
                     log.info('p12 cert and key loaded')
-                except OpenSSL.crypto.Error, exception_obj:
+                except OpenSSL.crypto.Error as exception_obj:
                     log.warning('Unable to extract client certificate from '
                         'file %s' % conn.client_cert)
-                except Exception, msg:
+                except Exception as msg:
                     log.warning('Unknown error extracting client certificate '
                         'from file %s: %s' % (conn.client_cert, msg))
                 else:
@@ -388,7 +388,7 @@ class NonBlockingTLS(PlugIn):
             flags = OpenSSL.SSL.OP_NO_SSLv2
             try:
                 flags |= OpenSSL.SSL.OP_NO_TICKET
-            except AttributeError, e:
+            except AttributeError as e:
                 # py-OpenSSL < 0.9 or old OpenSSL
                 flags |= 16384
             tcpsock._sslContext.set_options(flags)
@@ -420,7 +420,7 @@ class NonBlockingTLS(PlugIn):
         log.debug("Initiating handshake...")
         try:
             tcpsock._sslObj.do_handshake()
-        except (OpenSSL.SSL.WantReadError, OpenSSL.SSL.WantWriteError), e:
+        except (OpenSSL.SSL.WantReadError, OpenSSL.SSL.WantWriteError) as e:
             pass
         except:
             log.error('Error while TLS handshake: ', exc_info=True)

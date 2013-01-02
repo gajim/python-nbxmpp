@@ -1,5 +1,5 @@
-from protocol import Acks
-from protocol import NS_STREAM_MGMT
+from .protocol import Acks
+from .protocol import NS_STREAM_MGMT
 import logging
 log = logging.getLogger('nbxmpp.smacks')
 

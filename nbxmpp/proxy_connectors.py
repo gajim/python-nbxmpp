@@ -108,7 +108,7 @@ class HTTPCONNECTConnector(ProxyConnector):
             #traceback.print_exc()
             self.on_failure('Invalid proxy reply')
             return
-        if code <> '200':
+        if code != '200':
             log.error('Invalid proxy reply: %s %s %s' % (proto, code, desc))
             self.on_failure('Invalid proxy reply')
             return

@@ -22,7 +22,7 @@
 XML canonicalisation methods (for XEP-0116)
 """
 
-from simplexml import ustr
+from .simplexml import ustr
 
 def c14n(node, is_buggy):
     s = "<" + node.name

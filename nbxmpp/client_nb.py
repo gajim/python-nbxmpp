@@ -21,8 +21,8 @@ Client class establishs connection to XMPP Server and handles authentication
 """
 
 import socket
-import transports_nb, dispatcher_nb, auth_nb, roster_nb, protocol, bosh
-from protocol import NS_TLS
+from . import transports_nb, dispatcher_nb, auth_nb, roster_nb, protocol, bosh
+from .protocol import NS_TLS
 
 import logging
 log = logging.getLogger('nbxmpp.client_nb')
@@ -249,9 +249,9 @@ class NonBlockingClient:
         try:
             self.ip_addresses = socket.getaddrinfo(hostname, port,
                     socket.AF_UNSPEC, socket.SOCK_STREAM)
-        except socket.gaierror, (errnum, errstr):
+        except socket.gaierror as exc:
             self.disconnect(message='Lookup failure for %s:%s, hostname: %s - %s' %
-                     (self.Server, self.Port, hostname, errstr))
+                     (self.Server, self.Port, hostname, str(exc)))
         else:
             on_success()
 

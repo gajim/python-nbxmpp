@@ -25,7 +25,7 @@ log = logging.getLogger('nbxmpp.idlequeue')
 
 # needed for get_idleqeue
 try:
-    import gobject
+    from gi.repository import GObject
     HAVE_GOBJECT = True
 except ImportError:
     HAVE_GOBJECT = False
@@ -190,7 +190,7 @@ class IdleCommand(IdleObject):
     def pollin(self):
         try:
             res = self.pipe.read()
-        except Exception, e:
+        except Exception as e:
             res = ''
         if res == '':
             return self.pollend()
@@ -424,7 +424,7 @@ class IdleQueue:
             return True
         try:
             waiting_descriptors = self.selector.poll(0)
-        except select.error, e:
+        except select.error as e:
             waiting_descriptors = []
             if e[0] != 4: # interrupt
                 raise
@@ -480,7 +480,7 @@ class SelectIdleQueue(IdleQueue):
         try:
             waiting_descriptors = select.select(self.read_fds.keys(),
                     self.write_fds.keys(), self.error_fds.keys(), 0)
-        except select.error, e:
+        except select.error as e:
             waiting_descriptors = ((), (), ())
             if e[0] != 4: # interrupt
                 raise
@@ -517,15 +517,15 @@ class GlibIdleQueue(IdleQueue):
         self.events = {}
         # time() is already called in glib, we just get the last value
         # overrides IdleQueue.current_time()
-        self.current_time = gobject.get_current_time
+        self.current_time = GObject.get_current_time
 
     def _add_idle(self, fd, flags):
         """
         This method is called when we plug a new idle object. Start listening for
         events from fd
         """
-        res = gobject.io_add_watch(fd, flags, self._process_events,
-                priority=gobject.PRIORITY_LOW)
+        res = GObject.io_add_watch(fd, flags, self._process_events,
+                priority=GObject.PRIORITY_LOW)
         # store the id of the watch, so that we can remove it on unplug
         self.events[fd] = res
 
@@ -544,7 +544,7 @@ class GlibIdleQueue(IdleQueue):
         """
         if not fd in self.events:
             return
-        gobject.source_remove(self.events[fd])
+        GObject.source_remove(self.events[fd])
         del(self.events[fd])
 
     def process(self):

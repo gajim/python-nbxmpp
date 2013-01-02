@@ -20,15 +20,13 @@ data structures, including jabber-objects like JID or different stanzas and
 sub- stanzas) handling routines
 """
 
-from simplexml import Node, NodeBuilder
+from .simplexml import Node, NodeBuilder
 import time
 import string
 import hashlib
 
 def ascii_upper(s):
-    trans_table = string.maketrans(string.ascii_lowercase,
-        string.ascii_uppercase)
-    return s.translate(trans_table)
+    return s.upper()
 
 NS_ACTIVITY       = 'http://jabber.org/protocol/activity'             # XEP-0108
 NS_ADDRESS        = 'http://jabber.org/protocol/address'              # XEP-0033
@@ -663,7 +661,7 @@ class Protocol(Node):
             else:
                 error = ErrorNode(ERR_UNDEFINED_CONDITION, code=code,
                     typ='cancel', text=error)
-        elif type(error) in [type(''), type(u'')]:
+        elif type(error)  == str:
             error=ErrorNode(error)
         self.setType('error')
         self.addChild(node=error)
@@ -776,8 +774,8 @@ class Message(Protocol):
                 self.getTag('html').addChild(node=dom)
             else:
                 self.setTag('html', namespace=NS_XHTML_IM).addChild(node=dom)
-        except Exception, e:
-            print "Error", e
+        except Exception as e:
+            print("Error" + str(e))
             # FIXME: log. we could not set xhtml (parse error, whatever)
 
     def setSubject(self, val):

@@ -118,7 +118,7 @@ class Profile:
             if result_c is not None:
                 result.append(result_c)
 
-        return u"".join(result)
+        return "".join(result)
 
     def check_prohibiteds(self, string):
         for c in string:
@@ -228,8 +228,8 @@ B_2 = MappingTableFromFunction(stringprep.map_table_b2)
 nodeprep = Profile(mappings=[B_1, B_2],
                                                 prohibiteds=[C_11, C_12, C_21, C_22,
                                                                                 C_3, C_4, C_5, C_6, C_7, C_8, C_9,
-                                                                                LookupTable([u'"', u'&', u"'", u'/',
-                                                                                                                u':', u'<', u'>', u'@'])])
+                                                                                LookupTable(['"', '&', "'", '/',
+                                                                                                                ':', '<', '>', '@'])])
 
 resourceprep = Profile(mappings=[B_1,],
                                                         prohibiteds=[C_12, C_21, C_22,

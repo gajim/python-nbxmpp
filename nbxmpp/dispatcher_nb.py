@@ -20,11 +20,13 @@ Main xmpp decision making logic. Provides library with methods to assign
 different handlers to different XMPP stanzas and namespaces
 """
 
-import simplexml, sys, locale
+from . import simplexml
+import sys
+import locale
 import re
 from xml.parsers.expat import ExpatError
-from plugin import PlugIn
-from protocol import (NS_STREAMS, NS_XMPP_STREAMS, NS_HTTP_BIND, Iq, Presence,
+from .plugin import PlugIn
+from .protocol import (NS_STREAMS, NS_XMPP_STREAMS, NS_HTTP_BIND, Iq, Presence,
         Message, Protocol, Node, Error, ERR_FEATURE_NOT_IMPLEMENTED, StreamError)
 import logging
 log = logging.getLogger('nbxmpp.dispatcher_nb')
@@ -95,17 +97,17 @@ class XMPPDispatcher(PlugIn):
         self.sm = None
 
         # \ufddo -> \ufdef range
-        c = u'\ufdd0'
+        c = '\ufdd0'
         r = c.encode('utf8')
-        while (c < u'\ufdef'):
+        while (c < '\ufdef'):
             c = unichr(ord(c) + 1)
             r += '|' + c.encode('utf8')
 
         # \ufffe-\uffff, \u1fffe-\u1ffff, ..., \u10fffe-\u10ffff
-        c = u'\ufffe'
+        c = '\ufffe'
         r += '|' + c.encode('utf8')
         r += '|' + unichr(ord(c) + 1).encode('utf8')
-        while (c < u'\U0010fffe'):
+        while (c < '\U0010fffe'):
             c = unichr(ord(c) + 0x10000)
             r += '|' + c.encode('utf8')
             r += '|' + unichr(ord(c) + 1).encode('utf8')
@@ -198,7 +200,7 @@ class XMPPDispatcher(PlugIn):
                     % (tag, ns))
 
     def replace_non_character(self, data):
-        return re.sub(self.invalid_chars_re, u'\ufffd'.encode('utf-8'), data)
+        return re.sub(self.invalid_chars_re, '\ufffd'.encode('utf-8'), data)
 
     def ProcessNonBlocking(self, data):
         """
@@ -220,7 +222,7 @@ class XMPPDispatcher(PlugIn):
             handler(self)
         if len(self._pendingExceptions) > 0:
             _pendingException = self._pendingExceptions.pop()
-            raise _pendingException[0], _pendingException[1], _pendingException[2]
+            raise _pendingException
         try:
             self.Stream.Parse(data)
             # end stream:stream tag received
@@ -231,13 +233,13 @@ class XMPPDispatcher(PlugIn):
             log.error('Invalid XML received from server. Forcing disconnect.')
             self._owner.Connection.disconnect()
             return 0
-        except ValueError, e:
+        except ValueError as e:
             log.debug('ValueError: %s' % str(e))
             self._owner.Connection.pollend()
             return 0
         if len(self._pendingExceptions) > 0:
             _pendingException = self._pendingExceptions.pop()
-            raise _pendingException[0], _pendingException[1], _pendingException[2]
+            raise _pendingException
         if len(data) == 0:
             return '0'
         return len(data)
@@ -474,7 +476,7 @@ class XMPPDispatcher(PlugIn):
                         (cb, args))
                 try:
                     cb(session,stanza,**args)
-                except Exception, typ:
+                except Exception as typ:
                     if typ.__class__.__name__ != 'NodeProcessed':
                         raise
             else:
@@ -486,7 +488,7 @@ class XMPPDispatcher(PlugIn):
             if user or handler['system']:
                 try:
                     handler['func'](session, stanza)
-                except Exception, typ:
+                except Exception as typ:
                     if typ.__class__.__name__ != 'NodeProcessed':
                         self._pendingExceptions.insert(0, sys.exc_info())
                         return
@@ -552,7 +554,7 @@ class XMPPDispatcher(PlugIn):
         sure stanzas get ID and from tag.
         """
         ID = None
-        if type(stanza) not in [type(''), type(u'')]:
+        if type(stanza) != str:
             if isinstance(stanza, Protocol):
                 ID = stanza.getID()
                 if ID is None:

@@ -21,15 +21,15 @@ Can be used both for client and transport authentication
 See client_nb.py
 """
 
-from protocol import NS_SASL, NS_SESSION, NS_STREAMS, NS_BIND, NS_AUTH
-from protocol import NS_STREAM_MGMT
-from protocol import Node, NodeProcessed, isResultNode, Iq, Protocol, JID
-from plugin import PlugIn
-from smacks import Smacks
+from .protocol import NS_SASL, NS_SESSION, NS_STREAMS, NS_BIND, NS_AUTH
+from .protocol import NS_STREAM_MGMT
+from .protocol import Node, NodeProcessed, isResultNode, Iq, Protocol, JID
+from .plugin import PlugIn
+from .smacks import Smacks
 import base64
 import random
 import itertools
-import dispatcher_nb
+from . import dispatcher_nb
 import hashlib
 import hmac
 import hashlib
@@ -218,7 +218,7 @@ class SASL(PlugIn):
             raise NodeProcessed
         if "EXTERNAL" in self.mecs:
             self.mecs.remove('EXTERNAL')
-            sasl_data = u'%s@%s' % (self.username, self._owner.Server)
+            sasl_data = '%s@%s' % (self.username, self._owner.Server)
             sasl_data = sasl_data.encode('utf-8').encode('base64').replace(
                 '\n', '')
             node = Node('auth', attrs={'xmlns': NS_SASL,
@@ -241,7 +241,7 @@ class SASL(PlugIn):
                 self.startsasl = SASL_IN_PROCESS
                 self._owner.send(str(node))
                 raise NodeProcessed
-            except kerberos.GSSError, e:
+            except kerberos.GSSError as e:
                 log.info('GSSAPI authentication failed: %s' % str(e))
         if 'SCRAM-SHA-1' in self.mecs:
             self.mecs.remove('SCRAM-SHA-1')
@@ -486,19 +486,19 @@ class SASL(PlugIn):
                 self.resp['nc'], self.resp['cnonce'], self.resp['qop'],
                 HH(A2)]))
             self.resp['response'] = response
-            sasl_data = u''
+            sasl_data = ''
             for key in ('charset', 'username', 'realm', 'nonce', 'nc', 'cnonce',
             'digest-uri', 'response', 'qop'):
                 if key in ('nc', 'qop', 'response', 'charset'):
-                    sasl_data += u"%s=%s," % (key, self.resp[key])
+                    sasl_data += "%s=%s," % (key, self.resp[key])
                 else:
-                    sasl_data += u'%s="%s",' % (key, self.resp[key])
+                    sasl_data += '%s="%s",' % (key, self.resp[key])
             sasl_data = sasl_data[:-1].encode('utf-8').encode('base64').replace(
                 '\r', '').replace('\n', '')
             node = Node('response', attrs={'xmlns': NS_SASL},
                 payload=[sasl_data])
         elif self.mechanism == 'PLAIN':
-            sasl_data = u'\x00%s\x00%s' % (self.username, self.password)
+            sasl_data = '\x00%s\x00%s' % (self.username, self.password)
             sasl_data = sasl_data.encode('utf-8').encode('base64').replace(
                 '\n', '')
             node = Node('auth', attrs={'xmlns': NS_SASL, 'mechanism': 'PLAIN'},

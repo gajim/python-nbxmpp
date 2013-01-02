@@ -24,18 +24,18 @@ Transports are not aware of XMPP stanzas and only responsible for low-level
 connection handling.
 """
 
-from simplexml import ustr
-from plugin import PlugIn
-from idlequeue import IdleObject
-import proxy_connectors
-import tls_nb
+from .simplexml import ustr
+from .plugin import PlugIn
+from .idlequeue import IdleObject
+from . import proxy_connectors
+from . import tls_nb
 
 import socket
 import errno
 import time
 import traceback
 import base64
-import urlparse
+from urllib.parse import urlparse
 
 import logging
 log = logging.getLogger('nbxmpp.transports_nb')
@@ -47,7 +47,7 @@ def urisplit(uri):
     'httpcm.jabber.org', 123, '/webclient') return 443 as default port if proto
     is https else 80
     """
-    splitted =  urlparse.urlsplit(uri)
+    splitted =  urlparse(uri)
     proto, host, path = splitted.scheme, splitted.hostname, splitted.path
     try:
         port = splitted.port
@@ -330,9 +330,9 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
 
         try:
             self._sock = socket.socket(*conn_5tuple[:3])
-        except socket.error, (errnum, errstr):
+        except socket.error as e:
             self._on_connect_failure('NonBlockingTCP Connect: Error while creating\
-                    socket: %s %s' % (errnum, errstr))
+                    socket: %s' % atr(e))
             return
 
         self._send = self._sock.send
@@ -356,7 +356,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         try:
             self._sock.setblocking(False)
             self._sock.connect((self.server, self.port))
-        except Exception, exc:
+        except Exception as exc:
             errnum, errstr = exc.args
 
         if errnum in (errno.EINPROGRESS, errno.EALREADY, errno.EWOULDBLOCK):
@@ -458,8 +458,8 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         try:
             self._sock.shutdown(socket.SHUT_RDWR)
             self._sock.close()
-        except socket.error, (errnum, errstr):
-            log.info('Error while disconnecting socket: %s' % errstr)
+        except socket.error as e:
+            log.info('Error while disconnecting socket: %s' % str(e))
         self.fd = -1
         NonBlockingTransport.disconnect(self, do_callback)
 
@@ -565,9 +565,9 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         try:
             # get as many bites, as possible, but not more than RECV_BUFSIZE
             received = self._recv(RECV_BUFSIZE)
-        except socket.error, (errnum, errstr):
+        except socket.error as e:
             log.info("_do_receive: got %s:" % received, exc_info=True)
-        except tls_nb.SSLWrapper.Error, e:
+        except tls_nb.SSLWrapper.Error as e:
             log.info("_do_receive, caught SSL error, got %s:" % received,
                     exc_info=True)
             errnum, errstr = e.errno, e.strerror

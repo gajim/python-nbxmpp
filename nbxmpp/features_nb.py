@@ -20,7 +20,7 @@ Different stuff that wasn't worth separating it into modules
 (Registration, Privacy Lists, ...)
 """
 
-from protocol import NS_REGISTER, NS_PRIVACY, NS_DATA, Iq, isResultNode, Node
+from .protocol import NS_REGISTER, NS_PRIVACY, NS_DATA, Iq, isResultNode, Node
 
 def _on_default_response(disp, iq, cb):
     def _on_response(resp):
