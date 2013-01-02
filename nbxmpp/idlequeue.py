@@ -128,8 +128,7 @@ class IdleCommand(IdleObject):
         """
         Return one line representation of command and its arguments
         """
-        return  reduce(lambda left, right: left + ' ' + right,
-                self._compose_command_args())
+        return ' '.join(self._compose_command_args())
 
     def wait_child(self):
         if self.pipe.poll() is None:
@@ -323,7 +322,7 @@ class IdleQueue:
                     self.queue[fd].read_timeout()
                 self.remove_timeout(fd, timeout)
 
-        times = self.alarms.keys()
+        times = list(self.alarms.keys())
         for alarm_time in times:
             if alarm_time > current_time:
                 continue
@@ -478,8 +477,8 @@ class SelectIdleQueue(IdleQueue):
             self._check_time_events()
             return True
         try:
-            waiting_descriptors = select.select(self.read_fds.keys(),
-                    self.write_fds.keys(), self.error_fds.keys(), 0)
+            waiting_descriptors = select.select(list(self.read_fds.keys()),
+                    list(self.write_fds.keys()), list(self.error_fds.keys()), 0)
         except select.error as e:
             waiting_descriptors = ((), (), ())
             if e[0] != 4: # interrupt

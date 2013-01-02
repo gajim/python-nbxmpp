@@ -320,7 +320,7 @@ class NonBlockingClient:
 
         if not mode:
             # starting state
-            if self.__dict__.has_key('Dispatcher'):
+            if 'Dispatcher' in self.__dict__:
                 self.Dispatcher.PlugOut()
                 self.got_features = False
             dispatcher_nb.Dispatcher.get_instance().PlugIn(self)
@@ -564,7 +564,7 @@ class NonBlockingClient:
         """
         Plug in the roster
         """
-        if not self.__dict__.has_key('NonBlockingRoster'):
+        if 'NonBlockingRoster' not in self.__dict__:
             return roster_nb.NonBlockingRoster.get_instance(version=version).PlugIn(self)
 
     def getRoster(self, on_ready=None, force=False):
@@ -572,7 +572,7 @@ class NonBlockingClient:
         Return the Roster instance, previously plugging it in and requesting
         roster from server if needed
         """
-        if self.__dict__.has_key('NonBlockingRoster'):
+        if 'NonBlockingRoster' in self.__dict__:
             return self.NonBlockingRoster.getRoster(on_ready, force)
         return None
 

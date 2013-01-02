@@ -321,27 +321,27 @@ class NonBlockingBOSH(NonBlockingTransport):
         self.remove_bosh_wait_timeout()
 
         if self.after_init:
-            if stanza_attrs.has_key('sid'):
+            if 'sid' in stanza_attrs:
                 # session ID should be only in init response
                 self.bosh_sid = stanza_attrs['sid']
 
-            if stanza_attrs.has_key('requests'):
+            if 'requests' in stanza_attrs:
                 self.bosh_requests = int(stanza_attrs['requests'])
 
-            if stanza_attrs.has_key('wait'):
+            if 'wait' in stanza_attrs:
                 self.bosh_wait = int(stanza_attrs['wait'])
             self.after_init = False
 
         ack = None
-        if stanza_attrs.has_key('ack'):
+        if 'ack' in stanza_attrs:
             ack = stanza_attrs['ack']
         self.ack_checker.process_incoming_ack(ack=ack,
                 socket=self.current_recv_socket)
 
-        if stanza_attrs.has_key('type'):
+        if 'type' in stanza_attrs:
             if stanza_attrs['type'] in ['terminate', 'terminal']:
                 condition = 'n/a'
-                if stanza_attrs.has_key('condition'):
+                if 'condition' in stanza_attrs:
                     condition = stanza_attrs['condition']
                 if condition == 'n/a':
                     log.info('Received sesion-ending terminating stanza')

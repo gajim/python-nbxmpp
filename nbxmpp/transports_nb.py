@@ -507,7 +507,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         """
         Encode str or unicode to utf-8
         """
-        if isinstance(stanza, unicode):
+        if isinstance(stanza, str):
             stanza = stanza.encode('utf-8')
         elif not isinstance(stanza, str):
             stanza = ustr(stanza).encode('utf-8')

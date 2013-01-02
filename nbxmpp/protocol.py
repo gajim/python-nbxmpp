@@ -761,7 +761,7 @@ class Protocol(Node):
         if self['from']:
             self.setFrom(self['from'])
         if node and type(self) == type(node) and \
-        self.__class__ == node.__class__ and self.attrs.has_key('id'):
+        self.__class__ == node.__class__ and 'id' in self.attrs:
             del self.attrs['id']
         self.timestamp = None
         for d in self.getTags('delay', namespace=NS_DELAY2):
@@ -1550,7 +1550,7 @@ class DataField(Node):
         """
         Add one more label-option pair to this field
         """
-        if isinstance(opt, basestring):
+        if isinstance(opt, str):
             self.addChild('option').setTagData('value', opt)
         else:
             self.addChild('option', {'label': opt[0]}).setTagData('value',
@@ -1621,7 +1621,7 @@ class DataForm(Node):
                 newdata.append(DataField(name, data[name]))
             data = newdata
         for child in data:
-            if isinstance(child, basestring):
+            if isinstance(child, str):
                 self.addInstructions(child)
             elif child.__class__.__name__ == 'DataField':
                 self.kids.append(child)
@@ -1695,7 +1695,7 @@ class DataForm(Node):
         for field in self.getTags('field'):
             name = field.getAttr('var')
             typ = field.getType()
-            if isinstance(typ, basestring) and typ.endswith('-multi'):
+            if isinstance(typ, str) and typ.endswith('-multi'):
                 val = []
                 for i in field.getTags('value'):
                     val.append(i.getData())

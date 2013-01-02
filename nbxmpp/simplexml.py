@@ -39,14 +39,14 @@ def ustr(what):
     Converts object "what" to unicode string using it's own __str__ method if
     accessible or unicode method otherwise
     """
-    if isinstance(what, unicode):
+    if isinstance(what, str):
         return what
     try:
         r = what.__str__()
     except AttributeError:
         r = str(what)
-    if not isinstance(r, unicode):
-        return unicode(r, ENCODING)
+    if not isinstance(r, str):
+        return str(r, ENCODING)
     return r
 
 class Node(object):
@@ -124,7 +124,7 @@ class Node(object):
                     self.namespace, self.name = tag.split()
                 else:
                     self.name = tag
-        if isinstance(payload, basestring): payload=[payload]
+        if isinstance(payload, str): payload=[payload]
         for i in payload:
             if isinstance(i, Node):
                 self.addChild(node=i)
@@ -163,7 +163,7 @@ class Node(object):
             for a in self.kids:
                 if not fancy and (len(self.data)-1)>=cnt: s=s+XMLescape(self.data[cnt])
                 elif (len(self.data)-1)>=cnt: s=s+XMLescape(self.data[cnt].strip())
-                if isinstance(a, str) or isinstance(a, unicode):
+                if isinstance(a, str) or isinstance(a, str):
                     s = s + a.__str__()
                 else:
                     s = s + a.__str__(fancy and fancy+1)
@@ -384,7 +384,7 @@ class Node(object):
         replaces all node's previous content. If you wish just to add child or
         CDATA - use addData or addChild methods
         """
-        if isinstance(payload, basestring):
+        if isinstance(payload, str):
             payload = [payload]
         if add:
             self.kids += payload

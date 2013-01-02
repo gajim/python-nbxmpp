@@ -100,17 +100,17 @@ class XMPPDispatcher(PlugIn):
         c = '\ufdd0'
         r = c.encode('utf8')
         while (c < '\ufdef'):
-            c = unichr(ord(c) + 1)
+            c = chr(ord(c) + 1)
             r += '|' + c.encode('utf8')
 
         # \ufffe-\uffff, \u1fffe-\u1ffff, ..., \u10fffe-\u10ffff
         c = '\ufffe'
         r += '|' + c.encode('utf8')
-        r += '|' + unichr(ord(c) + 1).encode('utf8')
+        r += '|' + chr(ord(c) + 1).encode('utf8')
         while (c < '\U0010fffe'):
-            c = unichr(ord(c) + 0x10000)
+            c = chr(ord(c) + 0x10000)
             r += '|' + c.encode('utf8')
-            r += '|' + unichr(ord(c) + 1).encode('utf8')
+            r += '|' + chr(ord(c) + 1).encode('utf8')
 
         self.invalid_chars_re = re.compile(r)
 
