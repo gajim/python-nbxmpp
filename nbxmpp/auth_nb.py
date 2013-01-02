@@ -378,7 +378,7 @@ class SASL(PlugIn):
                     s = s.encode('utf-8')
                 except:
                     pass
-                ui_1 = HMAC(s, (salt + '\0\0\0\01').encode('utf-8'))
+                ui_1 = HMAC(s, salt + b'\0\0\0\01')
                 ui = ui_1
                 for i in range(iters - 1):
                     ii += 1
@@ -399,8 +399,7 @@ class SASL(PlugIn):
                 r += ',r=' + data['r']
                 self.scram_soup += r
                 self.scram_soup = self.scram_soup.encode('utf-8')
-                salt = base64.b64decode(data['s'].encode('utf-8')).decode(
-                    'utf-8')
+                salt = base64.b64decode(data['s'].encode('utf-8'))
                 iter = int(data['i'])
                 SaltedPassword = Hi(self.password, salt, iter)
                 # TODO: Could cache this, along with salt+iter.
