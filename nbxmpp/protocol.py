@@ -169,77 +169,317 @@ NS_HASHES_SHA1    = 'urn:xmpp:hash-function-textual-names:sha-1'
 NS_HASHES_SHA256  = 'urn:xmpp:hash-function-textual-names:sha-256'
 NS_HASHES_SHA512  = 'urn:xmpp:hash-function-textual-names:sha-512'
 
-xmpp_stream_error_conditions = '''
-bad-format --  --  -- The entity has sent XML that cannot be processed.
-bad-namespace-prefix --  --  -- The entity has sent a namespace prefix that is unsupported, or has sent no namespace prefix on an element that requires such a prefix.
-conflict --  --  -- The server is closing the active stream for this entity because a new stream has been initiated that conflicts with the existing stream.
-connection-timeout --  --  -- The entity has not generated any traffic over the stream for some period of time.
-host-gone --  --  -- The value of the 'to' attribute provided by the initiating entity in the stream header corresponds to a hostname that is no longer hosted by the server.
-host-unknown --  --  -- The value of the 'to' attribute provided by the initiating entity in the stream header does not correspond to a hostname that is hosted by the server.
-improper-addressing --  --  -- A stanza sent between two servers lacks a 'to' or 'from' attribute (or the attribute has no value).
-internal-server-error --  --  -- The server has experienced a misconfiguration or an otherwise-undefined internal error that prevents it from servicing the stream.
-invalid-from -- cancel --  -- The JID or hostname provided in a 'from' address does not match an authorized JID or validated domain negotiated between servers via SASL or dialback, or between a client and a server via authentication and resource authorization.
-invalid-id --  --  -- The stream ID or dialback ID is invalid or does not match an ID previously provided.
-invalid-namespace --  --  -- The streams namespace name is something other than "http://etherx.jabber.org/streams" or the dialback namespace name is something other than "jabber:server:dialback".
-invalid-xml --  --  -- The entity has sent invalid XML over the stream to a server that performs validation.
-not-authorized --  --  -- The entity has attempted to send data before the stream has been authenticated, or otherwise is not authorized to perform an action related to stream negotiation.
-policy-violation --  --  -- The entity has violated some local service policy.
-remote-connection-failed --  --  -- The server is unable to properly connect to a remote resource that is required for authentication or authorization.
-resource-constraint --  --  -- The server lacks the system resources necessary to service the stream.
-restricted-xml --  --  -- The entity has attempted to send restricted XML features such as a comment, processing instruction, DTD, entity reference, or unescaped character.
-see-other-host --  --  -- The server will not provide service to the initiating entity but is redirecting traffic to another host.
-system-shutdown --  --  -- The server is being shut down and all active streams are being closed.
-undefined-condition --  --  -- The error condition is not one of those defined by the other conditions in this list.
-unsupported-encoding --  --  -- The initiating entity has encoded the stream in an encoding that is not supported by the server.
-unsupported-stanza-type --  --  -- The initiating entity has sent a first-level child of the stream that is not supported by the server.
-unsupported-version --  --  -- The value of the 'version' attribute provided by the initiating entity in the stream header specifies a version of XMPP that is not supported by the server.
-xml-not-well-formed --  --  -- The initiating entity has sent XML that is not well-formed.'''
+#xmpp_stream_error_conditions = '''
+#bad-format --  --  -- The entity has sent XML that cannot be processed.
+#bad-namespace-prefix --  --  -- The entity has sent a namespace prefix that is unsupported, or has sent no namespace prefix on an element that requires such a prefix.
+#conflict --  --  -- The server is closing the active stream for this entity because a new stream has been initiated that conflicts with the existing stream.
+#connection-timeout --  --  -- The entity has not generated any traffic over the stream for some period of time.
+#host-gone --  --  -- The value of the 'to' attribute provided by the initiating entity in the stream header corresponds to a hostname that is no longer hosted by the server.
+#host-unknown --  --  -- The value of the 'to' attribute provided by the initiating entity in the stream header does not correspond to a hostname that is hosted by the server.
+#improper-addressing --  --  -- A stanza sent between two servers lacks a 'to' or 'from' attribute (or the attribute has no value).
+#internal-server-error --  --  -- The server has experienced a misconfiguration or an otherwise-undefined internal error that prevents it from servicing the stream.
+#invalid-from -- cancel --  -- The JID or hostname provided in a 'from' address does not match an authorized JID or validated domain negotiated between servers via SASL or dialback, or between a client and a server via authentication and resource authorization.
+#invalid-id --  --  -- The stream ID or dialback ID is invalid or does not match an ID previously provided.
+#invalid-namespace --  --  -- The streams namespace name is something other than "http://etherx.jabber.org/streams" or the dialback namespace name is something other than "jabber:server:dialback".
+#invalid-xml --  --  -- The entity has sent invalid XML over the stream to a server that performs validation.
+#not-authorized --  --  -- The entity has attempted to send data before the stream has been authenticated, or otherwise is not authorized to perform an action related to stream negotiation.
+#policy-violation --  --  -- The entity has violated some local service policy.
+#remote-connection-failed --  --  -- The server is unable to properly connect to a remote resource that is required for authentication or authorization.
+#resource-constraint --  --  -- The server lacks the system resources necessary to service the stream.
+#restricted-xml --  --  -- The entity has attempted to send restricted XML features such as a comment, processing instruction, DTD, entity reference, or unescaped character.
+#see-other-host --  --  -- The server will not provide service to the initiating entity but is redirecting traffic to another host.
+#system-shutdown --  --  -- The server is being shut down and all active streams are being closed.
+#undefined-condition --  --  -- The error condition is not one of those defined by the other conditions in this list.
+#unsupported-encoding --  --  -- The initiating entity has encoded the stream in an encoding that is not supported by the server.
+#unsupported-stanza-type --  --  -- The initiating entity has sent a first-level child of the stream that is not supported by the server.
+#unsupported-version --  --  -- The value of the 'version' attribute provided by the initiating entity in the stream header specifies a version of XMPP that is not supported by the server.
+#xml-not-well-formed --  --  -- The initiating entity has sent XML that is not well-formed.'''
 
-xmpp_stanza_error_conditions = '''
-bad-request -- 400 -- modify -- The sender has sent XML that is malformed or that cannot be processed.
-conflict -- 409 -- cancel -- Access cannot be granted because an existing resource or session exists with the same name or address.
-feature-not-implemented -- 501 -- cancel -- The feature requested is not implemented by the recipient or server and therefore cannot be processed.
-forbidden -- 403 -- auth -- The requesting entity does not possess the required permissions to perform the action.
-gone -- 302 -- modify -- The recipient or server can no longer be contacted at this address.
-internal-server-error -- 500 -- wait -- The server could not process the stanza because of a misconfiguration or an otherwise-undefined internal server error.
-item-not-found -- 404 -- cancel -- The addressed JID or item requested cannot be found.
-jid-malformed -- 400 -- modify -- The value of the 'to' attribute in the sender's stanza does not adhere to the syntax defined in Addressing Scheme.
-not-acceptable -- 406 -- cancel -- The recipient or server understands the request but is refusing to process it because it does not meet criteria defined by the recipient or server.
-not-allowed -- 405 -- cancel -- The recipient or server does not allow any entity to perform the action.
-not-authorized -- 401 -- auth -- The sender must provide proper credentials before being allowed to perform the action, or has provided improper credentials.
-payment-required -- 402 -- auth -- The requesting entity is not authorized to access the requested service because payment is required.
-recipient-unavailable -- 404 -- wait -- The intended recipient is temporarily unavailable.
-redirect -- 302 -- modify -- The recipient or server is redirecting requests for this information to another entity.
-registration-required -- 407 -- auth -- The requesting entity is not authorized to access the requested service because registration is required.
-remote-server-not-found -- 404 -- cancel -- A remote server or service specified as part or all of the JID of the intended recipient does not exist.
-remote-server-timeout -- 504 -- wait -- A remote server or service specified as part or all of the JID of the intended recipient could not be contacted within a reasonable amount of time.
-resource-constraint -- 500 -- wait -- The server or recipient lacks the system resources necessary to service the request.
-service-unavailable -- 503 -- cancel -- The server or recipient does not currently provide the requested service.
-subscription-required -- 407 -- auth -- The requesting entity is not authorized to access the requested service because a subscription is required.
-undefined-condition -- 500 --  -- Undefined Condition
-unexpected-request -- 400 -- wait -- The recipient or server understood the request but was not expecting it at this time (e.g., the request was out of order).'''
+#xmpp_stanza_error_conditions = '''
+#bad-request -- 400 -- modify -- The sender has sent XML that is malformed or that cannot be processed.
+#conflict -- 409 -- cancel -- Access cannot be granted because an existing resource or session exists with the same name or address.
+#feature-not-implemented -- 501 -- cancel -- The feature requested is not implemented by the recipient or server and therefore cannot be processed.
+#forbidden -- 403 -- auth -- The requesting entity does not possess the required permissions to perform the action.
+#gone -- 302 -- modify -- The recipient or server can no longer be contacted at this address.
+#internal-server-error -- 500 -- wait -- The server could not process the stanza because of a misconfiguration or an otherwise-undefined internal server error.
+#item-not-found -- 404 -- cancel -- The addressed JID or item requested cannot be found.
+#jid-malformed -- 400 -- modify -- The value of the 'to' attribute in the sender's stanza does not adhere to the syntax defined in Addressing Scheme.
+#not-acceptable -- 406 -- cancel -- The recipient or server understands the request but is refusing to process it because it does not meet criteria defined by the recipient or server.
+#not-allowed -- 405 -- cancel -- The recipient or server does not allow any entity to perform the action.
+#not-authorized -- 401 -- auth -- The sender must provide proper credentials before being allowed to perform the action, or has provided improper credentials.
+#payment-required -- 402 -- auth -- The requesting entity is not authorized to access the requested service because payment is required.
+#recipient-unavailable -- 404 -- wait -- The intended recipient is temporarily unavailable.
+#redirect -- 302 -- modify -- The recipient or server is redirecting requests for this information to another entity.
+#registration-required -- 407 -- auth -- The requesting entity is not authorized to access the requested service because registration is required.
+#remote-server-not-found -- 404 -- cancel -- A remote server or service specified as part or all of the JID of the intended recipient does not exist.
+#remote-server-timeout -- 504 -- wait -- A remote server or service specified as part or all of the JID of the intended recipient could not be contacted within a reasonable amount of time.
+#resource-constraint -- 500 -- wait -- The server or recipient lacks the system resources necessary to service the request.
+#service-unavailable -- 503 -- cancel -- The server or recipient does not currently provide the requested service.
+#subscription-required -- 407 -- auth -- The requesting entity is not authorized to access the requested service because a subscription is required.
+#undefined-condition -- 500 --  -- Undefined Condition
+#unexpected-request -- 400 -- wait -- The recipient or server understood the request but was not expecting it at this time (e.g., the request was out of order).'''
 
-sasl_error_conditions = '''
-aborted --  --  -- The receiving entity acknowledges an <abort/> element sent by the initiating entity; sent in reply to the <abort/> element.
-incorrect-encoding --  --  -- The data provided by the initiating entity could not be processed because the [BASE64]Josefsson, S., The Base16, Base32, and Base64 Data Encodings, July 2003. encoding is incorrect (e.g., because the encoding does not adhere to the definition in Section 3 of [BASE64]Josefsson, S., The Base16, Base32, and Base64 Data Encodings, July 2003.); sent in reply to a <response/> element or an <auth/> element with initial response data.
-invalid-authzid --  --  -- The authzid provided by the initiating entity is invalid, either because it is incorrectly formatted or because the initiating entity does not have permissions to authorize that ID; sent in reply to a <response/> element or an <auth/> element with initial response data.
-invalid-mechanism --  --  -- The initiating entity did not provide a mechanism or requested a mechanism that is not supported by the receiving entity; sent in reply to an <auth/> element.
-mechanism-too-weak --  --  -- The mechanism requested by the initiating entity is weaker than server policy permits for that initiating entity; sent in reply to a <response/> element or an <auth/> element with initial response data.
-not-authorized --  --  -- The authentication failed because the initiating entity did not provide valid credentials (this includes but is not limited to the case of an unknown username); sent in reply to a <response/> element or an <auth/> element with initial response data.
-temporary-auth-failure --  --  -- The authentication failed because of a temporary error condition within the receiving entity; sent in reply to an <auth/> element or <response/> element.'''
+#sasl_error_conditions = '''
+#aborted --  --  -- The receiving entity acknowledges an <abort/> element sent by the initiating entity; sent in reply to the <abort/> element.
+#incorrect-encoding --  --  -- The data provided by the initiating entity could not be processed because the [BASE64]Josefsson, S., The Base16, Base32, and Base64 Data Encodings, July 2003. encoding is incorrect (e.g., because the encoding does not adhere to the definition in Section 3 of [BASE64]Josefsson, S., The Base16, Base32, and Base64 Data Encodings, July 2003.); sent in reply to a <response/> element or an <auth/> element with initial response data.
+#invalid-authzid --  --  -- The authzid provided by the initiating entity is invalid, either because it is incorrectly formatted or because the initiating entity does not have permissions to authorize that ID; sent in reply to a <response/> element or an <auth/> element with initial response data.
+#invalid-mechanism --  --  -- The initiating entity did not provide a mechanism or requested a mechanism that is not supported by the receiving entity; sent in reply to an <auth/> element.
+#mechanism-too-weak --  --  -- The mechanism requested by the initiating entity is weaker than server policy permits for that initiating entity; sent in reply to a <response/> element or an <auth/> element with initial response data.
+#not-authorized --  --  -- The authentication failed because the initiating entity did not provide valid credentials (this includes but is not limited to the case of an unknown username); sent in reply to a <response/> element or an <auth/> element with initial response data.
+#temporary-auth-failure --  --  -- The authentication failed because of a temporary error condition within the receiving entity; sent in reply to an <auth/> element or <response/> element.'''
 
-ERRORS, _errorcodes = {}, {}
-for ns, errname, errpool in ((NS_XMPP_STREAMS, 'STREAM',
-xmpp_stream_error_conditions), (NS_STANZAS, 'ERR', xmpp_stanza_error_conditions),
-(NS_SASL, 'SASL', sasl_error_conditions)):
-    for err in errpool.split('\n')[1:]:
-        cond, code, typ, text = err.split(' -- ')
-        name = errname + '_' + ascii_upper(cond).replace('-', '_')
-        locals()[name] = ns + ' ' + cond
-        ERRORS[ns + ' ' + cond] = [code, typ, text]
-        if code:
-            _errorcodes[code] = cond
-del ns, errname, errpool, err, cond, code, typ, text
+#ERRORS, _errorcodes, loc = {}, {}, {}
+#for ns, errname, errpool in ((NS_XMPP_STREAMS, 'STREAM',
+#xmpp_stream_error_conditions), (NS_STANZAS, 'ERR', xmpp_stanza_error_conditions),
+#(NS_SASL, 'SASL', sasl_error_conditions)):
+    #for err in errpool.split('\n')[1:]:
+        #cond, code, typ, text = err.split(' -- ')
+        #name = errname + '_' + ascii_upper(cond).replace('-', '_')
+        #locals()[name] = ns + ' ' + cond
+        #loc[name] = ns + ' ' + cond
+        #ERRORS[ns + ' ' + cond] = [code, typ, text]
+        #if code:
+            #_errorcodes[code] = cond
+#del ns, errname, errpool, err, cond, code, typ, text
+#import pprint
+#pprint.pprint(ERRORS)
+#pprint.pprint(_errorcodes)
+#for (k, v) in loc.items():
+     #print('%s = \'%s\'' % (k, v))
+
+ERRORS = {
+    'urn:ietf:params:xml:ns:xmpp-sasl aborted': ['',
+        '',
+        'The receiving entity acknowledges an <abort/> element sent by the initiating entity; sent in reply to the <abort/> element.'],
+    'urn:ietf:params:xml:ns:xmpp-sasl incorrect-encoding': ['',
+        '',
+        'The data provided by the initiating entity could not be processed because the [BASE64]Josefsson, S., The Base16, Base32, and Base64 Data Encodings, July 2003. encoding is incorrect (e.g., because the encoding does not adhere to the definition in Section 3 of [BASE64]Josefsson, S., The Base16, Base32, and Base64 Data Encodings, July 2003.); sent in reply to a <response/> element or an <auth/> element with initial response data.'],
+    'urn:ietf:params:xml:ns:xmpp-sasl invalid-authzid': ['',
+        '',
+        'The authzid provided by the initiating entity is invalid, either because it is incorrectly formatted or because the initiating entity does not have permissions to authorize that ID; sent in reply to a <response/> element or an <auth/> element with initial response data.'],
+    'urn:ietf:params:xml:ns:xmpp-sasl invalid-mechanism': ['',
+        '',
+        'The initiating entity did not provide a mechanism or requested a mechanism that is not supported by the receiving entity; sent in reply to an <auth/> element.'],
+    'urn:ietf:params:xml:ns:xmpp-sasl mechanism-too-weak': ['',
+        '',
+        'The mechanism requested by the initiating entity is weaker than server policy permits for that initiating entity; sent in reply to a <response/> element or an <auth/> element with initial response data.'],
+    'urn:ietf:params:xml:ns:xmpp-sasl not-authorized': ['',
+        '',
+        'The authentication failed because the initiating entity did not provide valid credentials (this includes but is not limited to the case of an unknown username); sent in reply to a <response/> element or an <auth/> element with initial response data.'],
+    'urn:ietf:params:xml:ns:xmpp-sasl temporary-auth-failure': ['',
+        '',
+        'The authentication failed because of a temporary error condition within the receiving entity; sent in reply to an <auth/> element or <response/> element.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas bad-request': ['400',
+        'modify',
+        'The sender has sent XML that is malformed or that cannot be processed.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas conflict': ['409',
+        'cancel',
+        'Access cannot be granted because an existing resource or session exists with the same name or address.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas feature-not-implemented': ['501',
+        'cancel',
+        'The feature requested is not implemented by the recipient or server and therefore cannot be processed.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas forbidden': ['403',
+        'auth',
+        'The requesting entity does not possess the required permissions to perform the action.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas gone': ['302',
+        'modify',
+        'The recipient or server can no longer be contacted at this address.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas internal-server-error': ['500',
+        'wait',
+        'The server could not process the stanza because of a misconfiguration or an otherwise-undefined internal server error.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas item-not-found': ['404',
+        'cancel',
+        'The addressed JID or item requested cannot be found.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas jid-malformed': ['400',
+        'modify',
+        "The value of the        'to' attribute in the sender's stanza does not adhere to the syntax defined in Addressing Scheme."],
+    'urn:ietf:params:xml:ns:xmpp-stanzas not-acceptable': ['406',
+        'cancel',
+        'The recipient or server understands the request but is refusing to process it because it does not meet criteria defined by the recipient or server.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas not-allowed': ['405',
+        'cancel',
+        'The recipient or server does not allow any entity to perform the action.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas not-authorized': ['401',
+        'auth',
+        'The sender must provide proper credentials before being allowed to perform the action, or has provided improper credentials.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas payment-required': ['402',
+        'auth',
+        'The requesting entity is not authorized to access the requested service because payment is required.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas recipient-unavailable': ['404',
+        'wait',
+        'The intended recipient is temporarily unavailable.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas redirect': ['302',
+        'modify',
+        'The recipient or server is redirecting requests for this information to another entity.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas registration-required': ['407',
+        'auth',
+        'The requesting entity is not authorized to access the requested service because registration is required.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas remote-server-not-found': ['404',
+        'cancel',
+        'A remote server or service specified as part or all of the JID of the intended recipient does not exist.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas remote-server-timeout': ['504',
+        'wait',
+        'A remote server or service specified as part or all of the JID of the intended recipient could not be contacted within a reasonable amount of time.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas resource-constraint': ['500',
+        'wait',
+        'The server or recipient lacks the system resources necessary to service the request.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas service-unavailable': ['503',
+        'cancel',
+        'The server or recipient does not currently provide the requested service.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas subscription-required': ['407',
+        'auth',
+        'The requesting entity is not authorized to access the requested service because a subscription is required.'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas undefined-condition': ['500',
+        '',
+        'Undefined Condition'],
+    'urn:ietf:params:xml:ns:xmpp-stanzas unexpected-request': ['400',
+        'wait',
+        'The recipient or server understood the request but was not expecting it at this time (e.g., the request was out of order).'],
+    'urn:ietf:params:xml:ns:xmpp-streams bad-format': ['',
+        '',
+        'The entity has sent XML that cannot be processed.'],
+    'urn:ietf:params:xml:ns:xmpp-streams bad-namespace-prefix': ['',
+        '',
+        'The entity has sent a namespace prefix that is unsupported, or has sent no namespace prefix on an element that requires such a prefix.'],
+    'urn:ietf:params:xml:ns:xmpp-streams conflict': ['',
+        '',
+        'The server is closing the active stream for this entity because a new stream has been initiated that conflicts with the existing stream.'],
+    'urn:ietf:params:xml:ns:xmpp-streams connection-timeout': ['',
+        '',
+        'The entity has not generated any traffic over the stream for some period of time.'],
+    'urn:ietf:params:xml:ns:xmpp-streams host-gone': ['',
+        '',
+        "The value of the        'to' attribute provided by the initiating entity in the stream header corresponds to a hostname that is no longer hosted by the server."],
+    'urn:ietf:params:xml:ns:xmpp-streams host-unknown': ['',
+        '',
+        "The value of the        'to' attribute provided by the initiating entity in the stream header does not correspond to a hostname that is hosted by the server."],
+    'urn:ietf:params:xml:ns:xmpp-streams improper-addressing': ['',
+        '',
+        "A stanza sent between two servers lacks a        'to' or 'from' attribute (or the attribute has no value)."],
+    'urn:ietf:params:xml:ns:xmpp-streams internal-server-error': ['',
+        '',
+        'The server has experienced a misconfiguration or an otherwise-undefined internal error that prevents it from servicing the stream.'],
+    'urn:ietf:params:xml:ns:xmpp-streams invalid-from': ['cancel',
+        '',
+        "The JID or hostname provided in a        'from' address does not match an authorized JID or validated domain negotiated between servers via SASL or dialback, or between a client and a server via authentication and resource authorization."],
+    'urn:ietf:params:xml:ns:xmpp-streams invalid-id': ['',
+        '',
+        'The stream ID or dialback ID is invalid or does not match an ID previously provided.'],
+    'urn:ietf:params:xml:ns:xmpp-streams invalid-namespace': ['',
+        '',
+        'The streams namespace name is something other than        "http://etherx.jabber.org/streams" or the dialback namespace name is something other than "jabber:server:dialback".'],
+    'urn:ietf:params:xml:ns:xmpp-streams invalid-xml': ['',
+        '',
+        'The entity has sent invalid XML over the stream to a server that performs validation.'],
+    'urn:ietf:params:xml:ns:xmpp-streams not-authorized': ['',
+        '',
+        'The entity has attempted to send data before the stream has been authenticated, or otherwise is not authorized to perform an action related to stream negotiation.'],
+    'urn:ietf:params:xml:ns:xmpp-streams policy-violation': ['',
+        '',
+        'The entity has violated some local service policy.'],
+    'urn:ietf:params:xml:ns:xmpp-streams remote-connection-failed': ['',
+        '',
+        'The server is unable to properly connect to a remote resource that is required for authentication or authorization.'],
+    'urn:ietf:params:xml:ns:xmpp-streams resource-constraint': ['',
+        '',
+        'The server lacks the system resources necessary to service the stream.'],
+    'urn:ietf:params:xml:ns:xmpp-streams restricted-xml': ['',
+        '',
+        'The entity has attempted to send restricted XML features such as a comment, processing instruction, DTD, entity reference, or unescaped character.'],
+    'urn:ietf:params:xml:ns:xmpp-streams see-other-host': ['',
+        '',
+        'The server will not provide service to the initiating entity but is redirecting traffic to another host.'],
+    'urn:ietf:params:xml:ns:xmpp-streams system-shutdown': ['',
+        '',
+        'The server is being shut down and all active streams are being closed.'],
+    'urn:ietf:params:xml:ns:xmpp-streams undefined-condition': ['',
+        '',
+        'The error condition is not one of those defined by the other conditions in this list.'],
+    'urn:ietf:params:xml:ns:xmpp-streams unsupported-encoding': ['',
+        '',
+        'The initiating entity has encoded the stream in an encoding that is not supported by the server.'],
+    'urn:ietf:params:xml:ns:xmpp-streams unsupported-stanza-type': ['',
+        '',
+        'The initiating entity has sent a first-level child of the stream that is not supported by the server.'],
+    'urn:ietf:params:xml:ns:xmpp-streams unsupported-version': ['',
+        '',
+        "The value of the        'version' attribute provided by the initiating entity in the stream header specifies a version of XMPP that is not supported by the server."],
+    'urn:ietf:params:xml:ns:xmpp-streams xml-not-well-formed': ['',
+        '',
+        'The initiating entity has sent XML that is not well-formed.']
+}
+
+_errorcodes = {
+    '302': 'redirect',
+    '400': 'unexpected-request',
+    '401': 'not-authorized',
+    '402': 'payment-required',
+    '403': 'forbidden',
+    '404': 'remote-server-not-found',
+    '405': 'not-allowed',
+    '406': 'not-acceptable',
+    '407': 'subscription-required',
+    '409': 'conflict',
+    '500': 'undefined-condition',
+    '501': 'feature-not-implemented',
+    '503': 'service-unavailable',
+    '504': 'remote-server-timeout',
+    'cancel': 'invalid-from'
+}
+
+STREAM_NOT_AUTHORIZED = 'urn:ietf:params:xml:ns:xmpp-streams not-authorized'
+STREAM_REMOTE_CONNECTION_FAILED = 'urn:ietf:params:xml:ns:xmpp-streams remote-connection-failed'
+SASL_MECHANISM_TOO_WEAK = 'urn:ietf:params:xml:ns:xmpp-sasl mechanism-too-weak'
+STREAM_XML_NOT_WELL_FORMED = 'urn:ietf:params:xml:ns:xmpp-streams xml-not-well-formed'
+ERR_JID_MALFORMED = 'urn:ietf:params:xml:ns:xmpp-stanzas jid-malformed'
+STREAM_SEE_OTHER_HOST = 'urn:ietf:params:xml:ns:xmpp-streams see-other-host'
+STREAM_BAD_NAMESPACE_PREFIX = 'urn:ietf:params:xml:ns:xmpp-streams bad-namespace-prefix'
+ERR_SERVICE_UNAVAILABLE = 'urn:ietf:params:xml:ns:xmpp-stanzas service-unavailable'
+STREAM_CONNECTION_TIMEOUT = 'urn:ietf:params:xml:ns:xmpp-streams connection-timeout'
+STREAM_UNSUPPORTED_VERSION = 'urn:ietf:params:xml:ns:xmpp-streams unsupported-version'
+STREAM_IMPROPER_ADDRESSING = 'urn:ietf:params:xml:ns:xmpp-streams improper-addressing'
+STREAM_UNDEFINED_CONDITION = 'urn:ietf:params:xml:ns:xmpp-streams undefined-condition'
+SASL_NOT_AUTHORIZED = 'urn:ietf:params:xml:ns:xmpp-sasl not-authorized'
+ERR_GONE = 'urn:ietf:params:xml:ns:xmpp-stanzas gone'
+SASL_TEMPORARY_AUTH_FAILURE = 'urn:ietf:params:xml:ns:xmpp-sasl temporary-auth-failure'
+ERR_REMOTE_SERVER_NOT_FOUND = 'urn:ietf:params:xml:ns:xmpp-stanzas remote-server-not-found'
+ERR_UNEXPECTED_REQUEST = 'urn:ietf:params:xml:ns:xmpp-stanzas unexpected-request'
+ERR_RECIPIENT_UNAVAILABLE = 'urn:ietf:params:xml:ns:xmpp-stanzas recipient-unavailable'
+ERR_CONFLICT = 'urn:ietf:params:xml:ns:xmpp-stanzas conflict'
+STREAM_SYSTEM_SHUTDOWN = 'urn:ietf:params:xml:ns:xmpp-streams system-shutdown'
+STREAM_BAD_FORMAT = 'urn:ietf:params:xml:ns:xmpp-streams bad-format'
+ERR_SUBSCRIPTION_REQUIRED = 'urn:ietf:params:xml:ns:xmpp-stanzas subscription-required'
+STREAM_INTERNAL_SERVER_ERROR = 'urn:ietf:params:xml:ns:xmpp-streams internal-server-error'
+ERR_NOT_AUTHORIZED = 'urn:ietf:params:xml:ns:xmpp-stanzas not-authorized'
+SASL_ABORTED = 'urn:ietf:params:xml:ns:xmpp-sasl aborted'
+ERR_REGISTRATION_REQUIRED = 'urn:ietf:params:xml:ns:xmpp-stanzas registration-required'
+ERR_INTERNAL_SERVER_ERROR = 'urn:ietf:params:xml:ns:xmpp-stanzas internal-server-error'
+SASL_INCORRECT_ENCODING = 'urn:ietf:params:xml:ns:xmpp-sasl incorrect-encoding'
+STREAM_HOST_GONE = 'urn:ietf:params:xml:ns:xmpp-streams host-gone'
+STREAM_POLICY_VIOLATION = 'urn:ietf:params:xml:ns:xmpp-streams policy-violation'
+STREAM_INVALID_XML = 'urn:ietf:params:xml:ns:xmpp-streams invalid-xml'
+STREAM_CONFLICT = 'urn:ietf:params:xml:ns:xmpp-streams conflict'
+STREAM_RESOURCE_CONSTRAINT = 'urn:ietf:params:xml:ns:xmpp-streams resource-constraint'
+STREAM_UNSUPPORTED_ENCODING = 'urn:ietf:params:xml:ns:xmpp-streams unsupported-encoding'
+ERR_NOT_ALLOWED = 'urn:ietf:params:xml:ns:xmpp-stanzas not-allowed'
+ERR_ITEM_NOT_FOUND = 'urn:ietf:params:xml:ns:xmpp-stanzas item-not-found'
+ERR_NOT_ACCEPTABLE = 'urn:ietf:params:xml:ns:xmpp-stanzas not-acceptable'
+STREAM_INVALID_FROM = 'urn:ietf:params:xml:ns:xmpp-streams invalid-from'
+ERR_FEATURE_NOT_IMPLEMENTED = 'urn:ietf:params:xml:ns:xmpp-stanzas feature-not-implemented'
+ERR_BAD_REQUEST = 'urn:ietf:params:xml:ns:xmpp-stanzas bad-request'
+STREAM_INVALID_ID = 'urn:ietf:params:xml:ns:xmpp-streams invalid-id'
+STREAM_HOST_UNKNOWN = 'urn:ietf:params:xml:ns:xmpp-streams host-unknown'
+ERR_UNDEFINED_CONDITION = 'urn:ietf:params:xml:ns:xmpp-stanzas undefined-condition'
+SASL_INVALID_MECHANISM = 'urn:ietf:params:xml:ns:xmpp-sasl invalid-mechanism'
+STREAM_RESTRICTED_XML = 'urn:ietf:params:xml:ns:xmpp-streams restricted-xml'
+ERR_RESOURCE_CONSTRAINT = 'urn:ietf:params:xml:ns:xmpp-stanzas resource-constraint'
+ERR_REMOTE_SERVER_TIMEOUT = 'urn:ietf:params:xml:ns:xmpp-stanzas remote-server-timeout'
+SASL_INVALID_AUTHZID = 'urn:ietf:params:xml:ns:xmpp-sasl invalid-authzid'
+ERR_PAYMENT_REQUIRED = 'urn:ietf:params:xml:ns:xmpp-stanzas payment-required'
+STREAM_INVALID_NAMESPACE = 'urn:ietf:params:xml:ns:xmpp-streams invalid-namespace'
+ERR_REDIRECT = 'urn:ietf:params:xml:ns:xmpp-stanzas redirect'
+STREAM_UNSUPPORTED_STANZA_TYPE = 'urn:ietf:params:xml:ns:xmpp-streams unsupported-stanza-type'
+ERR_FORBIDDEN = 'urn:ietf:params:xml:ns:xmpp-stanzas forbidden'
 
 def isResultNode(node):
     """
