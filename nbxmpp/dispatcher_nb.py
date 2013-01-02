@@ -98,21 +98,21 @@ class XMPPDispatcher(PlugIn):
 
         # \ufddo -> \ufdef range
         c = '\ufdd0'
-        r = c.encode('utf8')
+        r = c
         while (c < '\ufdef'):
             c = chr(ord(c) + 1)
-            r += '|' + c.encode('utf8')
+            r += '|' + c
 
         # \ufffe-\uffff, \u1fffe-\u1ffff, ..., \u10fffe-\u10ffff
         c = '\ufffe'
-        r += '|' + c.encode('utf8')
-        r += '|' + chr(ord(c) + 1).encode('utf8')
+        r += '|' + c
+        r += '|' + chr(ord(c) + 1)
         while (c < '\U0010fffe'):
             c = chr(ord(c) + 0x10000)
-            r += '|' + c.encode('utf8')
-            r += '|' + chr(ord(c) + 1).encode('utf8')
+            r += '|' + c
+            r += '|' + chr(ord(c) + 1)
 
-        self.invalid_chars_re = re.compile(r)
+        self.invalid_chars_re = re.compile(r.encode('utf-8'))
 
     def getAnID(self):
         global outgoingID
@@ -222,7 +222,9 @@ class XMPPDispatcher(PlugIn):
             handler(self)
         if len(self._pendingExceptions) > 0:
             _pendingException = self._pendingExceptions.pop()
-            raise _pendingException
+            e = _pendingException[0](_pendingException[1])
+            e.__traceback__ = _pendingException[2]
+            raise e
         try:
             self.Stream.Parse(data)
             # end stream:stream tag received
@@ -239,7 +241,9 @@ class XMPPDispatcher(PlugIn):
             return 0
         if len(self._pendingExceptions) > 0:
             _pendingException = self._pendingExceptions.pop()
-            raise _pendingException
+            e = _pendingException[0](_pendingException[1])
+            e.__traceback__ = _pendingException[2]
+            raise e
         if len(data) == 0:
             return '0'
         return len(data)
@@ -507,7 +511,7 @@ class XMPPDispatcher(PlugIn):
         # we have released dispatcher, so self._owner has no methods
         if not res:
             return
-        for (_id, _iq) in self._expected.items():
+        for (_id, _iq) in list(self._expected.items()):
             if _iq is None:
                 # If the expected Stanza would have arrived, ProcessNonBlocking
                 # would have placed the reply stanza in there

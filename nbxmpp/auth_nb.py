@@ -219,8 +219,8 @@ class SASL(PlugIn):
         if "EXTERNAL" in self.mecs:
             self.mecs.remove('EXTERNAL')
             sasl_data = '%s@%s' % (self.username, self._owner.Server)
-            sasl_data = sasl_data.encode('utf-8').encode('base64').replace(
-                '\n', '')
+            sasl_data = base64.b64encode(sasl_data.encode('utf-8')).decode(
+                'utf-8').replace('\n', '')
             node = Node('auth', attrs={'xmlns': NS_SASL,
                 'mechanism': 'EXTERNAL'}, payload=[sasl_data])
             self.mechanism = 'EXTERNAL'
@@ -285,10 +285,15 @@ class SASL(PlugIn):
             return
 
         def scram_base64(s):
-            return ''.join(s.encode('base64').split('\n'))
+            try:
+                s = s.encode('utf-8')
+            except:
+                pass
+            return ''.join(base64.b64encode(s).decode('utf-8').\
+                split('\n'))
 
         incoming_data = challenge.getData()
-        data=base64.decodestring(incoming_data)
+        data=base64.b64decode(incoming_data.encode('utf-8')).decode('utf-8')
         ### Handle Auth result
         def on_auth_fail(reason):
             log.info('Failed SASL authentification: %s' % reason)
@@ -361,11 +366,11 @@ class SASL(PlugIn):
             hashfn = hashlib.sha1
 
             def HMAC(k, s):
-                return hmac.HMAC(key=k, msg=s, digestmod=hashfn).digest()
+                return hmac.new(key=k, msg=s, digestmod=hashfn).digest()
 
             def XOR(x, y):
-                r = (chr(ord(px) ^ ord(py)) for px, py in zip(x, y))
-                return ''.join(r)
+                r = [px ^ py for px, py in zip(x, y)]
+                return bytes(r)
 
             def Hi(s, salt, iters):
                 ii = 1
@@ -373,7 +378,7 @@ class SASL(PlugIn):
                     s = s.encode('utf-8')
                 except:
                     pass
-                ui_1 = HMAC(s, salt + '\0\0\0\01')
+                ui_1 = HMAC(s, (salt + '\0\0\0\01').encode('utf-8'))
                 ui = ui_1
                 for i in range(iters - 1):
                     ii += 1
@@ -393,16 +398,18 @@ class SASL(PlugIn):
                 r = 'c=' + scram_base64(self.scram_gs2)
                 r += ',r=' + data['r']
                 self.scram_soup += r
-                salt = data['s'].decode('base64')
+                self.scram_soup = self.scram_soup.encode('utf-8')
+                salt = base64.b64decode(data['s'].encode('utf-8')).decode(
+                    'utf-8')
                 iter = int(data['i'])
                 SaltedPassword = Hi(self.password, salt, iter)
                 # TODO: Could cache this, along with salt+iter.
-                ClientKey = HMAC(SaltedPassword, 'Client Key')
+                ClientKey = HMAC(SaltedPassword, b'Client Key')
                 StoredKey = scram_H(ClientKey)
                 ClientSignature = HMAC(StoredKey, self.scram_soup)
                 ClientProof = XOR(ClientKey, ClientSignature)
                 r += ',p=' + scram_base64(ClientProof)
-                ServerKey = HMAC(SaltedPassword, 'Server Key')
+                ServerKey = HMAC(SaltedPassword, b'Server Key')
                 self.scram_ServerSignature = HMAC(ServerKey, self.scram_soup)
                 sasl_data = scram_base64(r)
                 node = Node('response', attrs={'xmlns': NS_SASL},
@@ -412,7 +419,8 @@ class SASL(PlugIn):
 
             if self.scram_step == 1:
                 data = scram_parse(data)
-                if data['v'].decode('base64') != self.scram_ServerSignature:
+                if base64.b64decode(data['v'].encode('utf-8')).decode('utf-8') \
+                != self.scram_ServerSignature:
                     # TODO: Not clear what to do here - need to abort.
                     raise Exception
                 node = Node('response', attrs={'xmlns': NS_SASL});
@@ -468,8 +476,8 @@ class SASL(PlugIn):
                 itertools.repeat(random.randint, 7))
             self.scram_soup = 'n=' + self.username + ',r=' + nonce
             self.scram_gs2 = 'n,,' # No CB yet.
-            sasl_data = (self.scram_gs2 + self.scram_soup).encode('base64').\
-                replace('\n', '')
+            sasl_data = base64.b64encode((self.scram_gs2 + self.scram_soup).\
+                encode('utf-8')).decode('utf-8').replace('\n', '')
             node = Node('auth', attrs={'xmlns': NS_SASL,
                 'mechanism': self.mechanism}, payload=[sasl_data])
         elif self.mechanism == 'DIGEST-MD5':
@@ -493,14 +501,14 @@ class SASL(PlugIn):
                     sasl_data += "%s=%s," % (key, self.resp[key])
                 else:
                     sasl_data += '%s="%s",' % (key, self.resp[key])
-            sasl_data = sasl_data[:-1].encode('utf-8').encode('base64').replace(
-                '\r', '').replace('\n', '')
+            sasl_data = base64.b64encode(sasl_data[:-1].encode('utf-8')).\
+                decode('utf-8').replace('\r', '').replace('\n', '')
             node = Node('response', attrs={'xmlns': NS_SASL},
                 payload=[sasl_data])
         elif self.mechanism == 'PLAIN':
             sasl_data = '\x00%s\x00%s' % (self.username, self.password)
-            sasl_data = sasl_data.encode('utf-8').encode('base64').replace(
-                '\n', '')
+            sasl_data = base64.b64encode(sasl_data.encode('utf-8')).decode(
+                'utf-8').replace('\n', '')
             node = Node('auth', attrs={'xmlns': NS_SASL, 'mechanism': 'PLAIN'},
                 payload=[sasl_data])
         elif self.mechanism == 'X-MESSENGER-OAUTH2':

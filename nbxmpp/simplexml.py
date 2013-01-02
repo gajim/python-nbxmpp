@@ -163,7 +163,7 @@ class Node(object):
             for a in self.kids:
                 if not fancy and (len(self.data)-1)>=cnt: s=s+XMLescape(self.data[cnt])
                 elif (len(self.data)-1)>=cnt: s=s+XMLescape(self.data[cnt].strip())
-                if isinstance(a, str) or isinstance(a, str):
+                if isinstance(a, str):
                     s = s + a.__str__()
                 else:
                     s = s + a.__str__(fancy and fancy+1)

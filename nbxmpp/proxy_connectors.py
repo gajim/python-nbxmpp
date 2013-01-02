@@ -22,7 +22,8 @@ SOCKS5 proxy
 Authentication to NTLM (Microsoft implementation) proxies can be next.
 """
 
-import struct, socket, base64
+import struct, socket
+from base64 import b64encode
 import logging
 log = logging.getLogger('nbxmpp.proxy_connectors')
 
@@ -91,7 +92,8 @@ class HTTPCONNECTConnector(ProxyConnector):
                 'User-Agent: Gajim']
         if self.proxy_user and self.proxy_pass:
             credentials = '%s:%s' % (self.proxy_user, self.proxy_pass)
-            credentials = base64.encodestring(credentials).strip()
+            credentials = b64encode(credentials.encode('utf-8')).decode(
+                'utf-8').strip()
             connector.append('Proxy-Authorization: Basic '+credentials)
         connector.append('\r\n')
         self.onreceive(self._on_headers_sent)
