@@ -307,6 +307,9 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         # bytes remained from the last send message
         self.sendbuff = ''
 
+        # bytes remained from the last received message
+        self.receivedbuff = b''
+
         self.proxy_dict = proxy_dict
         self.on_remote_disconnect = self.disconnect
 
@@ -599,9 +602,26 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         self.remove_timeout()
         self.renew_send_timeout()
         self.renew_send_timeout2()
+
+        if self.receivedbuff:
+            received = self.receivedbuff + received
+            self.receivedbuff = b''
+
+        # try to decode data
+        try:
+            received = received.decode('utf-8')
+        except UnicodeDecodeError:
+            for i in range(-1, -4, -1):
+                char = received[i]
+                if char & 0xc0 == 0xc0:
+                    self.receivedbuff = received[i:]
+                    received = received[:i]
+                    break
+            received = received.decode('utf-8')
+
         # pass received data to owner
         if self.on_receive:
-            self.raise_event(DATA_RECEIVED, received.decode('utf-8'))
+            self.raise_event(DATA_RECEIVED, received)
             self._on_receive(received)
         else:
             # This should never happen, so we need the debug.

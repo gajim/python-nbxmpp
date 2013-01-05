@@ -334,10 +334,9 @@ class NonBlockingClient:
                 self.Dispatcher.ProcessNonBlocking(data)
                 self.ip_addresses = []
             if not hasattr(self, 'Dispatcher') or \
-                    self.Dispatcher.Stream._document_attrs is None:
-                self._xmpp_connect_machine(
-                        mode='FAILURE',
-                        data='Error on stream open')
+            self.Dispatcher.Stream._document_attrs is None:
+                self._xmpp_connect_machine(mode='FAILURE',
+                    data='Error on stream open')
                 return
 
             # if terminating stanza was received after init request then client gets

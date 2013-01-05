@@ -112,7 +112,7 @@ class XMPPDispatcher(PlugIn):
             r += '|' + c
             r += '|' + chr(ord(c) + 1)
 
-        self.invalid_chars_re = re.compile(r.encode('utf-8'))
+        self.invalid_chars_re = re.compile(r)
 
     def getAnID(self):
         global outgoingID
@@ -200,7 +200,7 @@ class XMPPDispatcher(PlugIn):
                     % (tag, ns))
 
     def replace_non_character(self, data):
-        return re.sub(self.invalid_chars_re, '\ufffd'.encode('utf-8'), data)
+        return re.sub(self.invalid_chars_re, '\ufffd', data)
 
     def ProcessNonBlocking(self, data):
         """
