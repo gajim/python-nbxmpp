@@ -546,7 +546,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
                 self._plug_idle(
                         writable=((self.sendqueue!=[]) or (self.sendbuff!='')),
                         readable=True)
-                self.raise_event(DATA_SENT, sent_data)
+                self.raise_event(DATA_SENT, sent_data.decode('utf-8'))
 
         except Exception:
             log.error('_do_send:', exc_info=True)
@@ -601,7 +601,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         self.renew_send_timeout2()
         # pass received data to owner
         if self.on_receive:
-            self.raise_event(DATA_RECEIVED, received)
+            self.raise_event(DATA_RECEIVED, received.decode('utf-8'))
             self._on_receive(received)
         else:
             # This should never happen, so we need the debug.
