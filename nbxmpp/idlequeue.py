@@ -307,7 +307,7 @@ class IdleQueue:
         """
         current_time = self.current_time()
 
-        for fd, timeouts in self.read_timeouts.items():
+        for fd, timeouts in list(self.read_timeouts.items()):
             if fd not in self.queue:
                 self.remove_timeout(fd)
                 continue
