@@ -306,6 +306,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
 
         # bytes remained from the last send message
         self.sendbuff = ''
+        self.sent_bytes_buff = b''
 
         # bytes remained from the last received message
         self.received_bytes_buff = b''
@@ -547,7 +548,22 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
                 sent_data = self.sendbuff[:send_count]
                 self.sendbuff = self.sendbuff[send_count:]
                 self._plug_idle(writable=(self.sendqueue != []), readable=True)
-                self.raise_event(DATA_SENT, sent_data.decode('utf-8'))
+                
+                if self.sent_bytes_buff:
+                    sent_data = self.sent_bytes_buff + sent_data
+                    self.sent_bytes_buff = b''
+                # try to decode sent data
+                try:
+                    sent_data = sent_data.decode('utf-8')
+                except UnicodeDecodeError:
+                    for i in range(-1, -4, -1):
+                        char = sent_data[i]
+                        if char & 0xc0 == 0xc0:
+                            self.sent_bytes_buff = sent_data[i:]
+                            sent_data = sent_data[:i]
+                            break
+                    sent_data = sent_data.decode('utf-8')
+                self.raise_event(DATA_SENT, sent_data)
 
         except Exception:
             log.error('_do_send:', exc_info=True)
