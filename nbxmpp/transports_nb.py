@@ -546,9 +546,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             if send_count:
                 sent_data = self.sendbuff[:send_count]
                 self.sendbuff = self.sendbuff[send_count:]
-                self._plug_idle(
-                        writable=((self.sendqueue!=[]) or (self.sendbuff!='')),
-                        readable=True)
+                self._plug_idle(writable=(self.sendqueue != []), readable=True)
                 self.raise_event(DATA_SENT, sent_data.decode('utf-8'))
 
         except Exception:
