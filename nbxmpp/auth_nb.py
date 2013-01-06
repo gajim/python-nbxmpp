@@ -39,7 +39,7 @@ log = logging.getLogger('nbxmpp.auth_nb')
 
 def HH(some): return hashlib.md5(some).hexdigest()
 def H(some): return hashlib.md5(some).digest()
-def C(some): return ':'.join(some)
+def C(some): return b':'.join(some)
 
 try:
     kerberos = __import__('kerberos')
@@ -463,7 +463,7 @@ class SASL(PlugIn):
     @staticmethod
     def _convert_to_iso88591(string):
         try:
-            string = string.decode('utf-8').encode('iso-8859-1')
+            string = string.encode('iso-8859-1')
         except UnicodeEncodeError:
             pass
         return string
@@ -484,14 +484,18 @@ class SASL(PlugIn):
             hash_realm = self._convert_to_iso88591(self.resp['realm'])
             hash_password = self._convert_to_iso88591(self.password)
             A1 = C([H(C([hash_username, hash_realm, hash_password])),
-                self.resp['nonce'], self.resp['cnonce']])
-            A2 = C(['AUTHENTICATE', self.resp['digest-uri']])
-            response = HH(C([HH(A1), self.resp['nonce'], self.resp['nc'],
-                self.resp['cnonce'], self.resp['qop'], HH(A2)]))
-            A2 = C(['', self.resp['digest-uri']])
-            self.digest_rspauth = HH(C([HH(A1), self.resp['nonce'],
-                self.resp['nc'], self.resp['cnonce'], self.resp['qop'],
-                HH(A2)]))
+                self.resp['nonce'].encode('utf-8'), self.resp['cnonce'].encode(
+                'utf-8')])
+            A2 = C([b'AUTHENTICATE', self.resp['digest-uri'].encode('utf-8')])
+            response = HH(C([HH(A1).encode('utf-8'), self.resp['nonce'].encode(
+                'utf-8'), self.resp['nc'].encode('utf-8'), self.resp['cnonce'].\
+                encode('utf-8'), self.resp['qop'].encode('utf-8'), HH(A2).\
+                encode('utf-8')]))
+            A2 = C([b'', self.resp['digest-uri'].encode('utf-8')])
+            self.digest_rspauth = HH(C([HH(A1).encode('utf-8'), self.resp[
+                'nonce'].encode('utf-8'), self.resp['nc'].encode('utf-8'),
+                self.resp['cnonce'].encode('utf-8'), self.resp['qop'].encode(
+                'utf-8'), HH(A2).encode('utf-8')]))
             self.resp['response'] = response
             sasl_data = ''
             for key in ('charset', 'username', 'realm', 'nonce', 'nc', 'cnonce',
