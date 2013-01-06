@@ -16,6 +16,7 @@
 ##   GNU General Public License for more details.
 
 import socket
+import ssl
 from .plugin import PlugIn
 
 import sys
@@ -222,9 +223,10 @@ class StdlibSSLWrapper(SSLWrapper):
         # we simply ignore flags since ssl object doesn't support it
         try:
             return self.sslobj.read(bufsize)
-        except socket.sslerror as e:
-            log.debug("Recv: Caught socket.sslerror: " + repr(e), exc_info=True)
-            if e.args[0] not in (socket.SSL_ERROR_WANT_READ, socket.SSL_ERROR_WANT_WRITE):
+        except ssl.SSLError as e:
+            log.debug("Recv: Caught ssl.SSLError: " + repr(e), exc_info=True)
+            if e.args[0] not in (ssl.SSL_ERROR_WANT_READ,
+            ssl.SSL_ERROR_WANT_WRITE):
                 raise SSLWrapper.Error(self.sock or self.sslobj, e)
         return None
 
@@ -232,9 +234,10 @@ class StdlibSSLWrapper(SSLWrapper):
         # we simply ignore flags since ssl object doesn't support it
         try:
             return self.sslobj.write(data)
-        except socket.sslerror as e:
+        except ssl.SSLError as e:
             log.debug("Send: Caught socket.sslerror:", exc_info=True)
-            if e.args[0] not in (socket.SSL_ERROR_WANT_READ, socket.SSL_ERROR_WANT_WRITE):
+            if e.args[0] not in (ssl.SSL_ERROR_WANT_READ,
+            ssl.SSL_ERROR_WANT_WRITE):
                 raise SSLWrapper.Error(self.sock or self.sslobj, e)
         return 0
 
@@ -433,14 +436,24 @@ class NonBlockingTLS(PlugIn):
         log.debug("_startSSL_stdlib called")
         tcpsock=self._owner
         try:
-            tcpsock._sock.setblocking(True)
-            tcpsock._sslObj = socket.ssl(tcpsock._sock, None, None)
-            tcpsock._sock.setblocking(False)
-            tcpsock._sslIssuer = tcpsock._sslObj.issuer()
-            tcpsock._sslServer = tcpsock._sslObj.server()
+            tcpsock._sslObj = ssl.wrap_socket(tcpsock._sock,
+                ssl_version=ssl.PROTOCOL_TLSv1, do_handshake_on_connect=False)
             wrapper = StdlibSSLWrapper(tcpsock._sslObj, tcpsock._sock)
             tcpsock._recv = wrapper.recv
             tcpsock._send = wrapper.send
+            log.debug("Initiating handshake...")
+            try:
+                tcpsock._sslObj.do_handshake()
+            except (ssl.SSLError) as e:
+                if e.args[0] in (ssl.SSL_ERROR_WANT_READ,
+                ssl.SSL_ERROR_WANT_WRITE):
+                    pass
+                else:
+                    log.error('Error while TLS handshake: ', exc_info=True)
+                    return False
+            except:
+                log.error('Error while TLS handshake: ', exc_info=True)
+                return False
         except:
             log.error("Exception caught in _startSSL_stdlib:", exc_info=True)
             return False
@@ -455,7 +468,7 @@ class NonBlockingTLS(PlugIn):
             self._owner.ssl_certificate.append(cert)
             self._owner.ssl_errnum.append(errnum)
             self._owner.ssl_cert_pem.append(OpenSSL.crypto.dump_certificate(
-                    OpenSSL.crypto.FILETYPE_PEM, cert).decode('utf-8'))
+                OpenSSL.crypto.FILETYPE_PEM, cert).decode('utf-8'))
             return True
         except:
             log.error("Exception caught in _ssl_info_callback:", exc_info=True)
