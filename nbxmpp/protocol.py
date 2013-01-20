@@ -152,6 +152,7 @@ NS_VIEWING        = 'http://jabber.org/protocol/viewing'              # XEP--197
 NS_WAITINGLIST    = 'http://jabber.org/protocol/waitinglist'          # XEP-0130
 NS_XHTML_IM       = 'http://jabber.org/protocol/xhtml-im'             # XEP-0071
 NS_XHTML          = 'http://www.w3.org/1999/xhtml'                    # "
+NS_X_OOB          = 'jabber:x:oob'                                    # XEP-0066
 NS_DATA_LAYOUT    = 'http://jabber.org/protocol/xdata-layout'         # XEP-0141
 NS_DATA_VALIDATE  = 'http://jabber.org/protocol/xdata-validate'       # XEP-0122
 NS_XMPP_STREAMS   = 'urn:ietf:params:xml:ns:xmpp-streams'
