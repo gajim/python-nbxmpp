@@ -70,7 +70,7 @@ class SSLWrapper:
 
             errno = errno or gattr(exc, 'errno') or exc.args[0]
             strerror = strerror or gattr(exc, 'strerror') or gattr(exc, 'args')
-            if not isinstance(strerror, basestring):
+            if not isinstance(strerror, str):
                 strerror = repr(strerror)
 
             self.sock = sock
@@ -99,7 +99,7 @@ class SSLWrapper:
             if self.peer is None and sock is not None:
                 try:
                     ppeer = self.sock.getpeername()
-                    if len(ppeer) == 2 and isinstance(ppeer[0], basestring) \
+                    if len(ppeer) == 2 and isinstance(ppeer[0], str) \
                     and isinstance(ppeer[1], int):
                         self.peer = ppeer
                 except:
