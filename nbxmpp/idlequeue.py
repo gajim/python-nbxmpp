@@ -311,7 +311,7 @@ class IdleQueue:
             if fd not in self.queue:
                 self.remove_timeout(fd)
                 continue
-            for timeout, func in timeouts.items():
+            for timeout, func in list(timeouts.items()):
                 if timeout > current_time:
                     continue
                 if func:
