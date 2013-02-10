@@ -399,13 +399,9 @@ class NonBlockingTLS(PlugIn):
 
         tcpsock.ssl_errnum = [0]
         tcpsock._sslContext.set_verify(OpenSSL.SSL.VERIFY_PEER,
-                self._ssl_verify_callback)
-        try:
-            tcpsock._sslContext.load_verify_locations(self.cacerts)
-        except:
-            log.warning('Unable to load SSL certificates from file %s' % \
-                    os.path.abspath(self.cacerts))
+            self._ssl_verify_callback)
         store = tcpsock._sslContext.get_cert_store()
+        self._load_cert_file(self.cacerts, store)
         self._load_cert_file(self.mycerts, store)
         if os.path.isdir('/etc/ssl/certs'):
             for f in os.listdir('/etc/ssl/certs'):
