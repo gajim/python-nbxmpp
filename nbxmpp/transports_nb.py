@@ -548,7 +548,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
                 sent_data = self.sendbuff[:send_count]
                 self.sendbuff = self.sendbuff[send_count:]
                 self._plug_idle(writable=(self.sendqueue != []), readable=True)
-                
+
                 if self.sent_bytes_buff:
                     sent_data = self.sent_bytes_buff + sent_data
                     self.sent_bytes_buff = b''
