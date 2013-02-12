@@ -361,7 +361,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             self._sock.setblocking(False)
             self._sock.connect((self.server, self.port))
         except Exception as exc:
-            errnum, errstr = e.errno, e.strerror
+            errnum, errstr = exc.errno, exc.strerror
 
         if errnum in (errno.EINPROGRESS, errno.EALREADY, errno.EWOULDBLOCK):
             # connecting in progress
