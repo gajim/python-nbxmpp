@@ -43,6 +43,7 @@ NS_ATTENTION      = 'urn:xmpp:attention:0'                            # XEP-0224
 NS_AUTH           = 'jabber:iq:auth'
 NS_AVATAR         = 'http://www.xmpp.org/extensions/xep-0084.html#ns-metadata'
 NS_BIND           = 'urn:ietf:params:xml:ns:xmpp-bind'
+NS_BLOCKING       = 'urn:xmpp:blocking'                               # XEP-0191
 NS_BOB            = 'urn:xmpp:bob'                                    # XEP-0231
 NS_BOOKMARKS      = 'storage:bookmarks'                               # XEP-0048
 NS_BROWSE         = 'jabber:iq:browse'
