@@ -63,6 +63,7 @@ NS_COMPONENT_ACCEPT = 'jabber:component:accept'
 NS_COMPONENT_1    = 'http://jabberd.jabberstudio.org/ns/component/1.0'
 NS_COMPRESS       = 'http://jabber.org/protocol/compress'             # XEP-0138
 NS_CONFERENCE     = 'jabber:x:conference'
+NS_CORRECT        = 'urn:xmpp:message-correct:0'                      # XEP-0308
 NS_DATA           = 'jabber:x:data'                                   # XEP-0004
 NS_DATA_MEDIA     = 'urn:xmpp:media-element'                          # XEP-0221
 NS_DELAY          = 'jabber:x:delay'
