@@ -252,6 +252,10 @@ class NonBlockingClient:
         except socket.gaierror as exc:
             self.disconnect(message='Lookup failure for %s:%s, hostname: %s - %s' %
                      (self.Server, self.Port, hostname, str(exc)))
+        except socket.error as exc:
+            errnum, errstr = exc.errno, exc.strerror
+            self.disconnect(message='General socket error for %s:%s, hostname: '
+                '%s - %s' % (self.Server, self.Port, hostname, errstr))
         else:
             on_success()
 
