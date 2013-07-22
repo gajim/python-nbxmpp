@@ -88,6 +88,12 @@ class NonBlockingBOSH(NonBlockingTransport):
             self.proxy_dict['xmpp_server'] = (host, port)
             self.proxy_dict['credentials'] = self.proxy_creds
 
+        # ssl variables
+        self.ssl_fingerprint_sha1 = []
+        self.ssl_certificate = []
+        self.ssl_errnum = []
+        self.ssl_cert_pem = []
+
 
     def connect(self, conn_5tuple, on_connect, on_connect_failure):
         NonBlockingTransport.connect(self, conn_5tuple, on_connect, on_connect_failure)
