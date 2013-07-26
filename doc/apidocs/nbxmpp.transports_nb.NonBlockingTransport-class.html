@@ -64,6 +64,10 @@
 <h1 class="epydoc">Class NonBlockingTransport</h1><p class="nomargin-top"><span class="codelink"><a href="nbxmpp.transports_nb-pysrc.html#NonBlockingTransport">source&nbsp;code</a></span></p>
 <center>
 <center>  <map id="uml_class_diagram_for_nbxmpp_t_9" name="uml_class_diagram_for_nbxmpp_t_9">
+<area shape="rect" id="node257" href="nbxmpp.plugin.PlugIn-class.html#PlugIn" title="Attach to owner and register ourself and our _exported_methods in it. If defined by a subclass, call self.plugin(owner) to execute hook code after plugging" alt="" coords="139,39,364,57"/>
+<area shape="rect" id="node257" href="nbxmpp.plugin.PlugIn-class.html#PlugOut" title="Unregister our _exported_methods from owner and detach from it. If defined by a subclass, call self.plugout() after unplugging to execute hook code" alt="" coords="139,57,364,76"/>
+<area shape="rect" id="node257" href="nbxmpp.plugin.PlugIn-class.html#get_instance" title="Factory Method for object creation" alt="" coords="139,76,364,95"/>
+<area shape="rect" id="node1" href="nbxmpp.plugin.PlugIn-class.html" title="Abstract xmpppy plugin infrastructure code, providing plugging in/out and debugging functionality" alt="" coords="127,6,375,101"/>
 <area shape="rect" id="node256" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#__init__" title="Each trasport class can have different constructor but it has to have at least all the arguments of NonBlockingTransport constructor" alt="" coords="17,153,485,172"/>
 <area shape="rect" id="node256" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#plugin" title="nbxmpp.transports_nb.NonBlockingTransport.plugin" alt="" coords="17,172,485,191"/>
 <area shape="rect" id="node256" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#plugout" title="nbxmpp.transports_nb.NonBlockingTransport.plugout" alt="" coords="17,191,485,209"/>
@@ -78,15 +82,11 @@
 <area shape="rect" id="node256" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#renew_send_timeout" title="nbxmpp.transports_nb.NonBlockingTransport.renew_send_timeout" alt="" coords="17,359,485,377"/>
 <area shape="rect" id="node256" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#renew_send_timeout2" title="nbxmpp.transports_nb.NonBlockingTransport.renew_send_timeout2" alt="" coords="17,377,485,396"/>
 <area shape="rect" id="node256" href="nbxmpp.transports_nb.NonBlockingTransport-class.html#start_disconnect" title="nbxmpp.transports_nb.NonBlockingTransport.start_disconnect" alt="" coords="17,415,485,433"/>
-<area shape="rect" id="node1" href="nbxmpp.transports_nb.NonBlockingTransport-class.html" title="Abstract class representing a transport" alt="" coords="5,121,496,439"/>
-<area shape="rect" id="node4" href="nbxmpp.bosh.NonBlockingBOSH-class.html" title="nbxmpp.bosh.NonBlockingBOSH" alt="" coords="61,459,251,498"/>
-<area shape="rect" id="node6" href="nbxmpp.transports_nb.NonBlockingTCP-class.html" title="Non&#45;blocking TCP socket wrapper" alt="" coords="280,459,419,498"/>
-<area shape="rect" id="node257" href="nbxmpp.plugin.PlugIn-class.html#PlugIn" title="Attach to owner and register ourself and our _exported_methods in it. If defined by a subclass, call self.plugin(owner) to execute hook code after plugging" alt="" coords="139,39,364,57"/>
-<area shape="rect" id="node257" href="nbxmpp.plugin.PlugIn-class.html#PlugOut" title="Unregister our _exported_methods from owner and detach from it. If defined by a subclass, call self.plugout() after unplugging to execute hook code" alt="" coords="139,57,364,76"/>
-<area shape="rect" id="node257" href="nbxmpp.plugin.PlugIn-class.html#get_instance" title="Factory Method for object creation" alt="" coords="139,76,364,95"/>
-<area shape="rect" id="node2" href="nbxmpp.plugin.PlugIn-class.html" title="Abstract xmpppy plugin infrastructure code, providing plugging in/out and debugging functionality" alt="" coords="127,6,375,101"/>
-<area shape="rect" id="node3" href="nbxmpp.transports_nb.NonBlockingHTTP-class.html" title="Socket wrapper that creates HTTP message out of sent data and peels&#45;off HTTP headers from incoming messages" alt="" coords="276,518,423,557"/>
-<area shape="rect" id="node5" href="nbxmpp.transports_nb.NonBlockingHTTPBOSH-class.html" title="Class for BOSH HTTP connections. Slightly redefines HTTP transport by calling bosh bodytag generating callback before putting data on wire" alt="" coords="257,577,441,615"/>
+<area shape="rect" id="node5" href="nbxmpp.transports_nb.NonBlockingTransport-class.html" title="Abstract class representing a transport" alt="" coords="5,121,496,439"/>
+<area shape="rect" id="node2" href="nbxmpp.transports_nb.NonBlockingHTTPBOSH-class.html" title="Class for BOSH HTTP connections. Slightly redefines HTTP transport by calling bosh bodytag generating callback before putting data on wire" alt="" coords="256,577,440,615"/>
+<area shape="rect" id="node3" href="nbxmpp.bosh.NonBlockingBOSH-class.html" title="nbxmpp.bosh.NonBlockingBOSH" alt="" coords="63,459,249,498"/>
+<area shape="rect" id="node4" href="nbxmpp.transports_nb.NonBlockingTCP-class.html" title="Non&#45;blocking TCP socket wrapper" alt="" coords="279,459,417,498"/>
+<area shape="rect" id="node6" href="nbxmpp.transports_nb.NonBlockingHTTP-class.html" title="Socket wrapper that creates HTTP message out of sent data and peels&#45;off HTTP headers from incoming messages" alt="" coords="275,518,421,557"/>
 </map>
   <img src="uml_class_diagram_for_nbxmpp_t_9.gif" alt='' usemap="#uml_class_diagram_for_nbxmpp_t_9" ismap="ismap" class="graph-without-title" />
 </center>
@@ -1080,7 +1080,7 @@ itself.</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue May  8 11:18:08 2012
+    Generated by Epydoc 3.0.1 on Fri Jul 26 11:25:15 2013
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

@@ -64,33 +64,33 @@
 <h1 class="epydoc">Class Node</h1><p class="nomargin-top"><span class="codelink"><a href="nbxmpp.simplexml-pysrc.html#Node">source&nbsp;code</a></span></p>
 <center>
 <center>  <map id="uml_class_diagram_for_nbxmpp_s_2" name="uml_class_diagram_for_nbxmpp_s_2">
-<area shape="rect" id="node1" href="nbxmpp.protocol.Acks-class.html" title="Acknowledgement elements for Stream Management" alt="" coords="5,358,128,397"/>
-<area shape="rect" id="node2" href="nbxmpp.protocol.DataField-class.html" title="This class is used in the DataForm class to describe the single data item" alt="" coords="157,358,309,397"/>
-<area shape="rect" id="node3" href="nbxmpp.protocol.ErrorNode-class.html" title="XMPP&#45;style error element" alt="" coords="339,358,496,397"/>
-<area shape="rect" id="node4" href="nbxmpp.protocol.DataForm-class.html" title="Used for manipulating dataforms in XMPP" alt="" coords="525,358,683,397"/>
-<area shape="rect" id="node5" href="nbxmpp.protocol.BOSHBody-class.html" title="&lt;body&gt; tag that wraps usual XMPP stanzas in XMPP over BOSH" alt="" coords="712,358,875,397"/>
-<area shape="rect" id="node6" href="nbxmpp.protocol.Protocol-class.html" title="A &quot;stanza&quot; object class. Contains methods that are common for presences, iqs and messages" alt="" coords="904,358,1048,397"/>
-<area shape="rect" id="node7" href="nbxmpp.protocol.Iq-class.html" title="XMPP Iq object &#45; get/set dialog mechanism" alt="" coords="677,417,781,455"/>
-<area shape="rect" id="node8" href="nbxmpp.protocol.Message-class.html" title="XMPP Message stanza &#45; &quot;push&quot; mechanism" alt="" coords="811,417,960,455"/>
-<area shape="rect" id="node10" href="nbxmpp.protocol.Presence-class.html" title="nbxmpp.protocol.Presence" alt="" coords="989,417,1141,455"/>
-<area shape="rect" id="node11" href="nbxmpp.protocol.Error-class.html" title="Used to quickly transform received stanza into error reply" alt="" coords="1171,417,1293,455"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#FORCE_NODE_RECREATION" title="nbxmpp.simplexml.Node.FORCE_NODE_RECREATION" alt="" coords="265,31,943,49"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#__init__" title="Takes &quot;tag&quot; argument as the name of node (prepended by namespace, if needed and separated from it by a space), attrs dictionary as the set of arguments, payload list as the set of textual strings and child nodes that this node carries within itself and &quot;parent&quot; argument that is another node that this one will be the child of. Also the __init__ can be provided with &quot;node&quot; argument that is either a text string containing exactly one node or another Node instance to begin with. If both &quot;node&quot; and other arguments is provided then the node initially created as replica of &quot;node&quot; provided and then modified to be compliant with other arguments." alt="" coords="265,52,943,71"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#lookup_nsp" title="nbxmpp.simplexml.Node.lookup_nsp" alt="" coords="265,71,943,89"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#__str__" title="Method used to dump node into textual representation. If &quot;fancy&quot; argument is set to True produces indented output for readability" alt="" coords="265,89,943,108"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#addChild" title="If &quot;node&quot; argument is provided, adds it as child node. Else creates new node from the other arguments&#39; values and adds it as well" alt="" coords="265,108,943,127"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#addData" title="Add some CDATA to node" alt="" coords="265,127,943,145"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#clearData" title="Remove all CDATA from the node" alt="" coords="265,145,943,164"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#delAttr" title="Delete an attribute &quot;key&quot;" alt="" coords="265,164,943,183"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#delChild" title="Delete the &quot;node&quot; from the node&#39;s childs list, if &quot;node&quot; is an instance. Else delete the first node that have specified name and (optionally) attributes" alt="" coords="265,183,943,201"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#getAttrs" title="Return all node&#39;s attributes as dictionary" alt="" coords="265,201,943,220"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#getAttr" title="Return value of specified attribute" alt="" coords="265,220,943,239"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#getChildren" title="Return all node&#39;s child nodes as list" alt="" coords="265,239,943,257"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#getData" title="Return all node CDATA as string (concatenated)" alt="" coords="265,257,943,276"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#getName" title="Return the name of node" alt="" coords="265,276,943,295"/>
-<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#__getattr__" title="Reduce memory usage caused by T/NT classes &#45; use memory only when needed" alt="" coords="265,313,943,332"/>
-<area shape="rect" id="node9" href="nbxmpp.simplexml.Node-class.html" title="Node class describes syntax of separate XML Node. It have a constructor that permits node creation from set of &quot;namespace name&quot;, attributes and payload of text strings and other nodes. It does not natively support building node from text string and uses NodeBuilder class for that purpose. After creation node can be mangled in many ways so it can be completely changed. Also node can be serialised into string in one of two modes: default (where the textual representation of node describes it exactly) and &quot;fancy&quot; &#45; with whitespace added to make indentation and thus make result more readable by human." alt="" coords="253,6,955,338"/>
-<area shape="rect" id="node12" href="nbxmpp.protocol.Hashes-class.html" title="Hash elements for various XEPs as defined in XEP&#45;300" alt="" coords="1077,358,1219,397"/>
+<area shape="rect" id="node1" href="nbxmpp.protocol.Acks-class.html" title="Acknowledgement elements for Stream Management" alt="" coords="117,358,240,397"/>
+<area shape="rect" id="node2" href="nbxmpp.protocol.Protocol-class.html" title="A &quot;stanza&quot; object class. Contains methods that are common for presences, iqs and messages" alt="" coords="269,358,413,397"/>
+<area shape="rect" id="node5" href="nbxmpp.protocol.Presence-class.html" title="nbxmpp.protocol.Presence" alt="" coords="5,417,155,455"/>
+<area shape="rect" id="node10" href="nbxmpp.protocol.Message-class.html" title="XMPP Message stanza &#45; &quot;push&quot; mechanism" alt="" coords="184,417,333,455"/>
+<area shape="rect" id="node11" href="nbxmpp.protocol.Error-class.html" title="Used to quickly transform received stanza into error reply" alt="" coords="363,417,485,455"/>
+<area shape="rect" id="node12" href="nbxmpp.protocol.Iq-class.html" title="XMPP Iq object &#45; get/set dialog mechanism" alt="" coords="515,417,619,455"/>
+<area shape="rect" id="node3" href="nbxmpp.protocol.ErrorNode-class.html" title="XMPP&#45;style error element" alt="" coords="443,358,600,397"/>
+<area shape="rect" id="node4" href="nbxmpp.protocol.Hashes-class.html" title="Hash elements for various XEPs as defined in XEP&#45;300" alt="" coords="629,358,768,397"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#FORCE_NODE_RECREATION" title="nbxmpp.simplexml.Node.FORCE_NODE_RECREATION" alt="" coords="360,31,1037,49"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#__init__" title="Takes &quot;tag&quot; argument as the name of node (prepended by namespace, if needed and separated from it by a space), attrs dictionary as the set of arguments, payload list as the set of textual strings and child nodes that this node carries within itself and &quot;parent&quot; argument that is another node that this one will be the child of. Also the __init__ can be provided with &quot;node&quot; argument that is either a text string containing exactly one node or another Node instance to begin with. If both &quot;node&quot; and other arguments is provided then the node initially created as replica of &quot;node&quot; provided and then modified to be compliant with other arguments." alt="" coords="360,52,1037,71"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#lookup_nsp" title="nbxmpp.simplexml.Node.lookup_nsp" alt="" coords="360,71,1037,89"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#__str__" title="Method used to dump node into textual representation. If &quot;fancy&quot; argument is set to True produces indented output for readability" alt="" coords="360,89,1037,108"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#addChild" title="If &quot;node&quot; argument is provided, adds it as child node. Else creates new node from the other arguments&#39; values and adds it as well" alt="" coords="360,108,1037,127"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#addData" title="Add some CDATA to node" alt="" coords="360,127,1037,145"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#clearData" title="Remove all CDATA from the node" alt="" coords="360,145,1037,164"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#delAttr" title="Delete an attribute &quot;key&quot;" alt="" coords="360,164,1037,183"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#delChild" title="Delete the &quot;node&quot; from the node&#39;s childs list, if &quot;node&quot; is an instance. Else delete the first node that have specified name and (optionally) attributes" alt="" coords="360,183,1037,201"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#getAttrs" title="Return all node&#39;s attributes as dictionary" alt="" coords="360,201,1037,220"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#getAttr" title="Return value of specified attribute" alt="" coords="360,220,1037,239"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#getChildren" title="Return all node&#39;s child nodes as list" alt="" coords="360,239,1037,257"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#getData" title="Return all node CDATA as string (concatenated)" alt="" coords="360,257,1037,276"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#getName" title="Return the name of node" alt="" coords="360,276,1037,295"/>
+<area shape="rect" id="node209" href="nbxmpp.simplexml.Node-class.html#__getattr__" title="Reduce memory usage caused by T/NT classes &#45; use memory only when needed" alt="" coords="360,313,1037,332"/>
+<area shape="rect" id="node6" href="nbxmpp.simplexml.Node-class.html" title="Node class describes syntax of separate XML Node. It have a constructor that permits node creation from set of &quot;namespace name&quot;, attributes and payload of text strings and other nodes. It does not natively support building node from text string and uses NodeBuilder class for that purpose. After creation node can be mangled in many ways so it can be completely changed. Also node can be serialised into string in one of two modes: default (where the textual representation of node describes it exactly) and &quot;fancy&quot; &#45; with whitespace added to make indentation and thus make result more readable by human." alt="" coords="348,6,1049,338"/>
+<area shape="rect" id="node7" href="nbxmpp.protocol.DataField-class.html" title="This class is used in the DataForm class to describe the single data item" alt="" coords="797,358,949,397"/>
+<area shape="rect" id="node8" href="nbxmpp.protocol.DataForm-class.html" title="Used for manipulating dataforms in XMPP" alt="" coords="979,358,1133,397"/>
+<area shape="rect" id="node9" href="nbxmpp.protocol.BOSHBody-class.html" title="&lt;body&gt; tag that wraps usual XMPP stanzas in XMPP over BOSH" alt="" coords="1163,358,1325,397"/>
 </map>
   <img src="uml_class_diagram_for_nbxmpp_s_2.gif" alt='' usemap="#uml_class_diagram_for_nbxmpp_s_2" ismap="ismap" class="graph-without-title" />
 </center>
@@ -1755,7 +1755,7 @@ attribute &quot;attr&quot; to value &quot;val&quot;
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue May  8 11:18:07 2012
+    Generated by Epydoc 3.0.1 on Fri Jul 26 11:25:15 2013
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

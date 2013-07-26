@@ -67,7 +67,7 @@
 <area shape="rect" id="node71" href="nbxmpp.protocol.Hashes-class.html#supported" title="nbxmpp.protocol.Hashes.supported" alt="" coords="159,383,416,401"/>
 <area shape="rect" id="node71" href="nbxmpp.protocol.Hashes-class.html#__init__" title="Takes &quot;tag&quot; argument as the name of node (prepended by namespace, if needed and separated from it by a space), attrs dictionary as the set of arguments, payload list as the set of textual strings and child nodes that this node carries within itself and &quot;parent&quot; argument that is another node that this one will be the child of. Also the __init__ can be provided with &quot;node&quot; argument that is either a text string containing exactly one node or another Node instance to begin with. If both &quot;node&quot; and other arguments is provided then the node initially created as replica of &quot;node&quot; provided and then modified to be compliant with other arguments." alt="" coords="159,404,416,423"/>
 <area shape="rect" id="node71" href="nbxmpp.protocol.Hashes-class.html#calculateHash" title="Calculate the hash and add it. It is preferable doing it here instead of doing it all over the place in Gajim." alt="" coords="159,423,416,441"/>
-<area shape="rect" id="node71" href="nbxmpp.protocol.Hashes-class.html#addHash" title="More than one hash can be added. Although it is permitted, it should not be done for big files because it could slow down Gajim." alt="" coords="159,441,416,460"/>
+<area shape="rect" id="node71" href="nbxmpp.protocol.Hashes-class.html#addHash" title="nbxmpp.protocol.Hashes.addHash" alt="" coords="159,441,416,460"/>
 <area shape="rect" id="node1" href="nbxmpp.protocol.Hashes-class.html" title="Hash elements for various XEPs as defined in XEP&#45;300" alt="" coords="147,358,427,466"/>
 <area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#FORCE_NODE_RECREATION" title="nbxmpp.simplexml.Node.FORCE_NODE_RECREATION" alt="" coords="17,31,559,49"/>
 <area shape="rect" id="node72" href="nbxmpp.simplexml.Node-class.html#lookup_nsp" title="nbxmpp.simplexml.Node.lookup_nsp" alt="" coords="17,52,559,71"/>
@@ -116,7 +116,7 @@ Hash elements for various XEPs as defined in XEP-300
       <table width="100%" cellpadding="0" cellspacing="0" border="0">
         <tr>
           <td><span class="summary-sig"><a href="nbxmpp.protocol.Hashes-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
-        <span class="summary-sig-arg">nsp</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">urn:xmpp:hashes:0</code><code class="variable-quote">'</code></span>)</span><br />
+        <span class="summary-sig-arg">nsp</span>=<span class="summary-sig-default"><code class="variable-quote">'</code><code class="variable-string">urn:xmpp:hashes:1</code><code class="variable-quote">'</code></span>)</span><br />
       Takes &quot;tag&quot; argument as the name of node (prepended by namespace, if
 needed and separated from it by a space), attrs dictionary as the set of
 arguments, payload list as the set of textual strings and child nodes
@@ -164,9 +164,7 @@ instead of doing it all over the place in Gajim.</td>
         <tr>
           <td><span class="summary-sig"><a href="nbxmpp.protocol.Hashes-class.html#addHash" class="summary-sig-name">addHash</a>(<span class="summary-sig-arg">self</span>,
         <span class="summary-sig-arg">hash_</span>,
-        <span class="summary-sig-arg">algo</span>)</span><br />
-      More than one hash can be added. Although it is permitted, it should
-not be done for big files because it could slow down Gajim.</td>
+        <span class="summary-sig-arg">algo</span>)</span></td>
           <td align="right" valign="top">
             <span class="codelink"><a href="nbxmpp.protocol-pysrc.html#Hashes.addHash">source&nbsp;code</a></span>
             
@@ -314,7 +312,7 @@ not be done for big files because it could slow down Gajim.</td>
   <table width="100%" cellpadding="0" cellspacing="0" border="0">
   <tr valign="top"><td>
   <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
-        <span class="sig-arg">nsp</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">urn:xmpp:hashes:0</code><code class="variable-quote">'</code></span>)</span>
+        <span class="sig-arg">nsp</span>=<span class="sig-default"><code class="variable-quote">'</code><code class="variable-string">urn:xmpp:hashes:1</code><code class="variable-quote">'</code></span>)</span>
     <br /><em class="fname">(Constructor)</em>
   </h3>
   </td><td align="right" valign="top"
@@ -378,8 +376,7 @@ instead of doing it all over the place in Gajim.
     </td>
   </tr></table>
   
-  More than one hash can be added. Although it is permitted, it should
-not be done for big files because it could slow down Gajim.
+  
   <dl class="fields">
   </dl>
 </td></tr></table>
@@ -453,7 +450,7 @@ not be done for big files because it could slow down Gajim.
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue May  8 11:18:05 2012
+    Generated by Epydoc 3.0.1 on Fri Jul 26 11:25:13 2013
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"

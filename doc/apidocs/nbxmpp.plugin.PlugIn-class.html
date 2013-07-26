@@ -64,23 +64,23 @@
 <h1 class="epydoc">Class PlugIn</h1><p class="nomargin-top"><span class="codelink"><a href="nbxmpp.plugin-pysrc.html#PlugIn">source&nbsp;code</a></span></p>
 <center>
 <center>  <map id="uml_class_diagram_for_nbxmpp_p" name="uml_class_diagram_for_nbxmpp_p">
-<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#__init__" title="nbxmpp.plugin.PlugIn.__init__" alt="" coords="673,39,899,57"/>
-<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#PlugIn" title="Attach to owner and register ourself and our _exported_methods in it. If defined by a subclass, call self.plugin(owner) to execute hook code after plugging" alt="" coords="673,57,899,76"/>
-<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#PlugOut" title="Unregister our _exported_methods from owner and detach from it. If defined by a subclass, call self.plugout() after unplugging to execute hook code" alt="" coords="673,76,899,95"/>
-<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#get_instance" title="Factory Method for object creation" alt="" coords="673,95,899,113"/>
-<area shape="rect" id="node1" href="nbxmpp.plugin.PlugIn-class.html" title="Abstract xmpppy plugin infrastructure code, providing plugging in/out and debugging functionality" alt="" coords="661,6,909,119"/>
-<area shape="rect" id="node2" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html" title="Handles XMPP stream and is the first who takes control over a fresh stanza" alt="" coords="7,139,241,178"/>
-<area shape="rect" id="node3" href="nbxmpp.auth_nb.SASL-class.html" title="Implements SASL authentication. Can be plugged into NonBlockingClient to start authentication" alt="" coords="271,139,396,178"/>
-<area shape="rect" id="node4" href="nbxmpp.auth_nb.NonBlockingNonSASL-class.html" title="Implements old Non&#45;SASL (JEP&#45;0078) authentication used in jabberd1.4 and transport authentication" alt="" coords="425,139,657,178"/>
-<area shape="rect" id="node6" href="nbxmpp.auth_nb.NonBlockingBind-class.html" title="Bind some JID to the current connection to allow router know of our location. Must be plugged after successful SASL auth" alt="" coords="687,139,887,178"/>
-<area shape="rect" id="node7" href="nbxmpp.tls_nb.NonBlockingTLS-class.html" title="TLS connection used to encrypts already estabilished tcp connection" alt="" coords="916,139,1097,178"/>
-<area shape="rect" id="node8" href="nbxmpp.roster_nb.NonBlockingRoster-class.html" title="Defines a plenty of methods that will allow you to manage roster. Also automatically track presences from remote JIDs taking into account that every JID can have multiple resources connected. Does not currently support &#39;error&#39; presences. You can also use mapping interface for access to the internal representation of contacts in roster" alt="" coords="1127,139,1348,178"/>
-<area shape="rect" id="node10" href="nbxmpp.transports_nb.NonBlockingTransport-class.html" title="Abstract class representing a transport" alt="" coords="1377,139,1644,178"/>
-<area shape="rect" id="node9" href="nbxmpp.dispatcher_nb.BOSHDispatcher-class.html" title="nbxmpp.dispatcher_nb.BOSHDispatcher" alt="" coords="5,198,243,237"/>
-<area shape="rect" id="node5" href="nbxmpp.transports_nb.NonBlockingHTTP-class.html" title="Socket wrapper that creates HTTP message out of sent data and peels&#45;off HTTP headers from incoming messages" alt="" coords="1511,257,1751,295"/>
-<area shape="rect" id="node12" href="nbxmpp.transports_nb.NonBlockingHTTPBOSH-class.html" title="Class for BOSH HTTP connections. Slightly redefines HTTP transport by calling bosh bodytag generating callback before putting data on wire" alt="" coords="1492,315,1769,354"/>
-<area shape="rect" id="node11" href="nbxmpp.bosh.NonBlockingBOSH-class.html" title="nbxmpp.bosh.NonBlockingBOSH" alt="" coords="1296,198,1485,237"/>
-<area shape="rect" id="node13" href="nbxmpp.transports_nb.NonBlockingTCP-class.html" title="Non&#45;blocking TCP socket wrapper" alt="" coords="1515,198,1747,237"/>
+<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#__init__" title="nbxmpp.plugin.PlugIn.__init__" alt="" coords="897,39,1123,57"/>
+<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#PlugIn" title="Attach to owner and register ourself and our _exported_methods in it. If defined by a subclass, call self.plugin(owner) to execute hook code after plugging" alt="" coords="897,57,1123,76"/>
+<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#PlugOut" title="Unregister our _exported_methods from owner and detach from it. If defined by a subclass, call self.plugout() after unplugging to execute hook code" alt="" coords="897,76,1123,95"/>
+<area shape="rect" id="node29" href="nbxmpp.plugin.PlugIn-class.html#get_instance" title="Factory Method for object creation" alt="" coords="897,95,1123,113"/>
+<area shape="rect" id="node1" href="nbxmpp.plugin.PlugIn-class.html" title="Abstract xmpppy plugin infrastructure code, providing plugging in/out and debugging functionality" alt="" coords="885,6,1133,119"/>
+<area shape="rect" id="node2" href="nbxmpp.transports_nb.NonBlockingTransport-class.html" title="Abstract class representing a transport" alt="" coords="129,139,396,178"/>
+<area shape="rect" id="node3" href="nbxmpp.tls_nb.NonBlockingTLS-class.html" title="TLS connection used to encrypts already estabilished tcp connection" alt="" coords="425,139,607,178"/>
+<area shape="rect" id="node5" href="nbxmpp.dispatcher_nb.XMPPDispatcher-class.html" title="Handles XMPP stream and is the first who takes control over a fresh stanza" alt="" coords="636,139,871,178"/>
+<area shape="rect" id="node6" href="nbxmpp.roster_nb.NonBlockingRoster-class.html" title="Defines a plenty of methods that will allow you to manage roster. Also automatically track presences from remote JIDs taking into account that every JID can have multiple resources connected. Does not currently support &#39;error&#39; presences. You can also use mapping interface for access to the internal representation of contacts in roster" alt="" coords="900,139,1121,178"/>
+<area shape="rect" id="node7" href="nbxmpp.auth_nb.SASL-class.html" title="Implements SASL authentication. Can be plugged into NonBlockingClient to start authentication" alt="" coords="1151,139,1276,178"/>
+<area shape="rect" id="node9" href="nbxmpp.auth_nb.NonBlockingNonSASL-class.html" title="Implements old Non&#45;SASL (JEP&#45;0078) authentication used in jabberd1.4 and transport authentication" alt="" coords="1305,139,1537,178"/>
+<area shape="rect" id="node12" href="nbxmpp.auth_nb.NonBlockingBind-class.html" title="Bind some JID to the current connection to allow router know of our location. Must be plugged after successful SASL auth" alt="" coords="1567,139,1767,178"/>
+<area shape="rect" id="node4" href="nbxmpp.transports_nb.NonBlockingTCP-class.html" title="Non&#45;blocking TCP socket wrapper" alt="" coords="28,198,260,237"/>
+<area shape="rect" id="node8" href="nbxmpp.bosh.NonBlockingBOSH-class.html" title="nbxmpp.bosh.NonBlockingBOSH" alt="" coords="289,198,476,237"/>
+<area shape="rect" id="node13" href="nbxmpp.transports_nb.NonBlockingHTTP-class.html" title="Socket wrapper that creates HTTP message out of sent data and peels&#45;off HTTP headers from incoming messages" alt="" coords="24,257,264,295"/>
+<area shape="rect" id="node10" href="nbxmpp.dispatcher_nb.BOSHDispatcher-class.html" title="nbxmpp.dispatcher_nb.BOSHDispatcher" alt="" coords="635,198,872,237"/>
+<area shape="rect" id="node11" href="nbxmpp.transports_nb.NonBlockingHTTPBOSH-class.html" title="Class for BOSH HTTP connections. Slightly redefines HTTP transport by calling bosh bodytag generating callback before putting data on wire" alt="" coords="5,315,283,354"/>
 </map>
   <img src="uml_class_diagram_for_nbxmpp_p.gif" alt='' usemap="#uml_class_diagram_for_nbxmpp_p" ismap="ismap" class="graph-without-title" />
 </center>
@@ -341,7 +341,7 @@ mock objects.</p>
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue May  8 11:18:05 2012
+    Generated by Epydoc 3.0.1 on Fri Jul 26 11:25:12 2013
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
