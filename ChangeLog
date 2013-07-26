@@ -1,3 +1,9 @@
-python-nbxmpp 0.1 (XX)
+python-nbxmpp 0.2 (26 July 2013)
+
+  * Add some namespace
+  * do TLS handshake without blocking
+  * store all SSL errors instead of only last one
+
+python-nbxmpp 0.1 (05 August 2012)
 
   * Initial release
