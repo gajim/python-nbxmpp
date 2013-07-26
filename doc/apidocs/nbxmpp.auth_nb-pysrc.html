@@ -1164,13 +1164,14 @@ nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link
 <a name="L692"></a><tt class="py-lineno">692</tt>  <tt class="py-line">                <tt class="py-name">sm</tt> <tt class="py-op">=</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt class="py-name">_caller</tt><tt class="py-op">.</tt><tt class="py-name">sm</tt> </tt>
 <a name="L693"></a><tt class="py-lineno">693</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">supports_sm</tt><tt class="py-op">:</tt> </tt>
 <a name="L694"></a><tt class="py-lineno">694</tt>  <tt class="py-line">                    <tt class="py-comment"># starts negociation</tt> </tt>
-<a name="L695"></a><tt class="py-lineno">695</tt>  <tt class="py-line">                    <tt class="py-name">sm</tt><tt class="py-op">.</tt><tt id="link-296" class="py-name" targets="Method nbxmpp.smacks.Smacks.set_owner()=nbxmpp.smacks.Smacks-class.html#set_owner"><a title="nbxmpp.smacks.Smacks.set_owner" class="py-name" href="#" onclick="return doclink('link-296', 'set_owner', 'link-296');">set_owner</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">)</tt> </tt>
-<a name="L696"></a><tt class="py-lineno">696</tt>  <tt class="py-line">                    <tt class="py-name">sm</tt><tt class="py-op">.</tt><tt id="link-297" class="py-name" targets="Method nbxmpp.smacks.Smacks.negociate()=nbxmpp.smacks.Smacks-class.html#negociate"><a title="nbxmpp.smacks.Smacks.negociate" class="py-name" href="#" onclick="return doclink('link-297', 'negociate', 'link-297');">negociate</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
-<a name="L697"></a><tt class="py-lineno">697</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt id="link-298" class="py-name"><a title="nbxmpp.dispatcher_nb.Dispatcher" class="py-name" href="#" onclick="return doclink('link-298', 'Dispatcher', 'link-38');">Dispatcher</a></tt><tt class="py-op">.</tt><tt class="py-name">sm</tt> <tt class="py-op">=</tt> <tt class="py-name">sm</tt> </tt>
-<a name="L698"></a><tt class="py-lineno">698</tt>  <tt class="py-line"> </tt>
-<a name="L699"></a><tt class="py-lineno">699</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">hasattr</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-string">'session'</tt><tt class="py-op">)</tt> <tt class="py-keyword">and</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">session</tt> <tt class="py-op">==</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">:</tt> </tt>
-<a name="L700"></a><tt class="py-lineno">700</tt>  <tt class="py-line">                    <tt class="py-comment"># Server don't want us to initialize a session</tt> </tt>
-<a name="L701"></a><tt class="py-lineno">701</tt>  <tt class="py-line">                    <tt id="link-299" class="py-name"><a title="nbxmpp.auth_nb.log
+<a name="L695"></a><tt class="py-lineno">695</tt>  <tt class="py-line">                    <tt class="py-name">sm</tt><tt class="py-op">.</tt><tt class="py-name">supports_sm</tt> <tt class="py-op">=</tt> <tt class="py-name">True</tt> </tt>
+<a name="L696"></a><tt class="py-lineno">696</tt>  <tt class="py-line">                    <tt class="py-name">sm</tt><tt class="py-op">.</tt><tt id="link-296" class="py-name" targets="Method nbxmpp.smacks.Smacks.set_owner()=nbxmpp.smacks.Smacks-class.html#set_owner"><a title="nbxmpp.smacks.Smacks.set_owner" class="py-name" href="#" onclick="return doclink('link-296', 'set_owner', 'link-296');">set_owner</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">)</tt> </tt>
+<a name="L697"></a><tt class="py-lineno">697</tt>  <tt class="py-line">                    <tt class="py-name">sm</tt><tt class="py-op">.</tt><tt id="link-297" class="py-name" targets="Method nbxmpp.smacks.Smacks.negociate()=nbxmpp.smacks.Smacks-class.html#negociate"><a title="nbxmpp.smacks.Smacks.negociate" class="py-name" href="#" onclick="return doclink('link-297', 'negociate', 'link-297');">negociate</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
+<a name="L698"></a><tt class="py-lineno">698</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt id="link-298" class="py-name"><a title="nbxmpp.dispatcher_nb.Dispatcher" class="py-name" href="#" onclick="return doclink('link-298', 'Dispatcher', 'link-38');">Dispatcher</a></tt><tt class="py-op">.</tt><tt class="py-name">sm</tt> <tt class="py-op">=</tt> <tt class="py-name">sm</tt> </tt>
+<a name="L699"></a><tt class="py-lineno">699</tt>  <tt class="py-line"> </tt>
+<a name="L700"></a><tt class="py-lineno">700</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">hasattr</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt> <tt class="py-string">'session'</tt><tt class="py-op">)</tt> <tt class="py-keyword">and</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">session</tt> <tt class="py-op">==</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">:</tt> </tt>
+<a name="L701"></a><tt class="py-lineno">701</tt>  <tt class="py-line">                    <tt class="py-comment"># Server don't want us to initialize a session</tt> </tt>
+<a name="L702"></a><tt class="py-lineno">702</tt>  <tt class="py-line">                    <tt id="link-299" class="py-name"><a title="nbxmpp.auth_nb.log
 nbxmpp.bosh.log
 nbxmpp.client_nb.log
 nbxmpp.dispatcher_nb.log
@@ -1182,14 +1183,14 @@ nbxmpp.simplexml.log
 nbxmpp.smacks.log
 nbxmpp.tls_nb.log
 nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-299', 'log', 'link-20');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt><tt class="py-string">'No session required.'</tt><tt class="py-op">)</tt> </tt>
-<a name="L702"></a><tt class="py-lineno">702</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">on_bound</tt><tt class="py-op">(</tt><tt class="py-string">'ok'</tt><tt class="py-op">)</tt> </tt>
-<a name="L703"></a><tt class="py-lineno">703</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
-<a name="L704"></a><tt class="py-lineno">704</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt id="link-300" class="py-name"><a title="nbxmpp.dispatcher_nb.XMPPDispatcher.SendAndWaitForResponse" class="py-name" href="#" onclick="return doclink('link-300', 'SendAndWaitForResponse', 'link-216');">SendAndWaitForResponse</a></tt><tt class="py-op">(</tt><tt id="link-301" class="py-name"><a title="nbxmpp.protocol.Protocol" class="py-name" href="#" onclick="return doclink('link-301', 'Protocol', 'link-13');">Protocol</a></tt><tt class="py-op">(</tt><tt class="py-string">'iq'</tt><tt class="py-op">,</tt> <tt class="py-name">typ</tt><tt class="py-op">=</tt><tt class="py-string">'set'</tt><tt class="py-op">,</tt> </tt>
-<a name="L705"></a><tt class="py-lineno">705</tt>  <tt class="py-line">                        <tt class="py-name">payload</tt><tt class="py-op">=</tt><tt class="py-op">[</tt><tt id="link-302" class="py-name"><a title="nbxmpp.simplexml.Node" class="py-name" href="#" onclick="return doclink('link-302', 'Node', 'link-9');">Node</a></tt><tt class="py-op">(</tt><tt class="py-string">'session'</tt><tt class="py-op">,</tt> <tt class="py-name">attrs</tt><tt class="py-op">=</tt><tt class="py-op">{</tt><tt class="py-string">'xmlns'</tt><tt class="py-op">:</tt><tt id="link-303" class="py-name"><a title="nbxmpp.protocol.NS_SESSION" class="py-name" href="#" onclick="return doclink('link-303', 'NS_SESSION', 'link-2');">NS_SESSION</a></tt><tt class="py-op">}</tt><tt class="py-op">)</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
-<a name="L706"></a><tt class="py-lineno">706</tt>  <tt class="py-line">                        <tt class="py-name">func</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-304" class="py-name" targets="Method nbxmpp.auth_nb.NonBlockingBind._on_session()=nbxmpp.auth_nb.NonBlockingBind-class.html#_on_session"><a title="nbxmpp.auth_nb.NonBlockingBind._on_session" class="py-name" href="#" onclick="return doclink('link-304', '_on_session', 'link-304');">_on_session</a></tt><tt class="py-op">)</tt> </tt>
-<a name="L707"></a><tt class="py-lineno">707</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> </tt>
-<a name="L708"></a><tt class="py-lineno">708</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">resp</tt><tt class="py-op">:</tt> </tt>
-<a name="L709"></a><tt class="py-lineno">709</tt>  <tt class="py-line">            <tt id="link-305" class="py-name"><a title="nbxmpp.auth_nb.log
+<a name="L703"></a><tt class="py-lineno">703</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">on_bound</tt><tt class="py-op">(</tt><tt class="py-string">'ok'</tt><tt class="py-op">)</tt> </tt>
+<a name="L704"></a><tt class="py-lineno">704</tt>  <tt class="py-line">                <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L705"></a><tt class="py-lineno">705</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt id="link-300" class="py-name"><a title="nbxmpp.dispatcher_nb.XMPPDispatcher.SendAndWaitForResponse" class="py-name" href="#" onclick="return doclink('link-300', 'SendAndWaitForResponse', 'link-216');">SendAndWaitForResponse</a></tt><tt class="py-op">(</tt><tt id="link-301" class="py-name"><a title="nbxmpp.protocol.Protocol" class="py-name" href="#" onclick="return doclink('link-301', 'Protocol', 'link-13');">Protocol</a></tt><tt class="py-op">(</tt><tt class="py-string">'iq'</tt><tt class="py-op">,</tt> <tt class="py-name">typ</tt><tt class="py-op">=</tt><tt class="py-string">'set'</tt><tt class="py-op">,</tt> </tt>
+<a name="L706"></a><tt class="py-lineno">706</tt>  <tt class="py-line">                        <tt class="py-name">payload</tt><tt class="py-op">=</tt><tt class="py-op">[</tt><tt id="link-302" class="py-name"><a title="nbxmpp.simplexml.Node" class="py-name" href="#" onclick="return doclink('link-302', 'Node', 'link-9');">Node</a></tt><tt class="py-op">(</tt><tt class="py-string">'session'</tt><tt class="py-op">,</tt> <tt class="py-name">attrs</tt><tt class="py-op">=</tt><tt class="py-op">{</tt><tt class="py-string">'xmlns'</tt><tt class="py-op">:</tt><tt id="link-303" class="py-name"><a title="nbxmpp.protocol.NS_SESSION" class="py-name" href="#" onclick="return doclink('link-303', 'NS_SESSION', 'link-2');">NS_SESSION</a></tt><tt class="py-op">}</tt><tt class="py-op">)</tt><tt class="py-op">]</tt><tt class="py-op">)</tt><tt class="py-op">,</tt> </tt>
+<a name="L707"></a><tt class="py-lineno">707</tt>  <tt class="py-line">                        <tt class="py-name">func</tt><tt class="py-op">=</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-304" class="py-name" targets="Method nbxmpp.auth_nb.NonBlockingBind._on_session()=nbxmpp.auth_nb.NonBlockingBind-class.html#_on_session"><a title="nbxmpp.auth_nb.NonBlockingBind._on_session" class="py-name" href="#" onclick="return doclink('link-304', '_on_session', 'link-304');">_on_session</a></tt><tt class="py-op">)</tt> </tt>
+<a name="L708"></a><tt class="py-lineno">708</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> </tt>
+<a name="L709"></a><tt class="py-lineno">709</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">resp</tt><tt class="py-op">:</tt> </tt>
+<a name="L710"></a><tt class="py-lineno">710</tt>  <tt class="py-line">            <tt id="link-305" class="py-name"><a title="nbxmpp.auth_nb.log
 nbxmpp.bosh.log
 nbxmpp.client_nb.log
 nbxmpp.dispatcher_nb.log
@@ -1201,9 +1202,9 @@ nbxmpp.simplexml.log
 nbxmpp.smacks.log
 nbxmpp.tls_nb.log
 nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-305', 'log', 'link-20');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt><tt class="py-string">'Binding failed: %s.'</tt> <tt class="py-op">%</tt> <tt class="py-name">resp</tt><tt class="py-op">.</tt><tt id="link-306" class="py-name"><a title="nbxmpp.simplexml.Node.getTag" class="py-name" href="#" onclick="return doclink('link-306', 'getTag', 'link-65');">getTag</a></tt><tt class="py-op">(</tt><tt class="py-string">'error'</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
-<a name="L710"></a><tt class="py-lineno">710</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">on_bound</tt><tt class="py-op">(</tt><tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
-<a name="L711"></a><tt class="py-lineno">711</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
-<a name="L712"></a><tt class="py-lineno">712</tt>  <tt class="py-line">            <tt id="link-307" class="py-name"><a title="nbxmpp.auth_nb.log
+<a name="L711"></a><tt class="py-lineno">711</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">on_bound</tt><tt class="py-op">(</tt><tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+<a name="L712"></a><tt class="py-lineno">712</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L713"></a><tt class="py-lineno">713</tt>  <tt class="py-line">            <tt id="link-307" class="py-name"><a title="nbxmpp.auth_nb.log
 nbxmpp.bosh.log
 nbxmpp.client_nb.log
 nbxmpp.dispatcher_nb.log
@@ -1215,13 +1216,13 @@ nbxmpp.simplexml.log
 nbxmpp.smacks.log
 nbxmpp.tls_nb.log
 nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-307', 'log', 'link-20');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt><tt class="py-string">'Binding failed: timeout expired.'</tt><tt class="py-op">)</tt> </tt>
-<a name="L713"></a><tt class="py-lineno">713</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">on_bound</tt><tt class="py-op">(</tt><tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
-</div><a name="L714"></a><tt class="py-lineno">714</tt>  <tt class="py-line"> </tt>
-<a name="NonBlockingBind._on_session"></a><div id="NonBlockingBind._on_session-def"><a name="L715"></a><tt class="py-lineno">715</tt> <a class="py-toggle" href="#" id="NonBlockingBind._on_session-toggle" onclick="return toggle('NonBlockingBind._on_session');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.auth_nb.NonBlockingBind-class.html#_on_session">_on_session</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">resp</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="NonBlockingBind._on_session-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingBind._on_session-expanded"><a name="L716"></a><tt class="py-lineno">716</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt id="link-308" class="py-name"><a title="nbxmpp.bosh.NonBlockingBOSH.onreceive
+<a name="L714"></a><tt class="py-lineno">714</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">on_bound</tt><tt class="py-op">(</tt><tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+</div><a name="L715"></a><tt class="py-lineno">715</tt>  <tt class="py-line"> </tt>
+<a name="NonBlockingBind._on_session"></a><div id="NonBlockingBind._on_session-def"><a name="L716"></a><tt class="py-lineno">716</tt> <a class="py-toggle" href="#" id="NonBlockingBind._on_session-toggle" onclick="return toggle('NonBlockingBind._on_session');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="nbxmpp.auth_nb.NonBlockingBind-class.html#_on_session">_on_session</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt> <tt class="py-param">resp</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+</div><div id="NonBlockingBind._on_session-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NonBlockingBind._on_session-expanded"><a name="L717"></a><tt class="py-lineno">717</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">_owner</tt><tt class="py-op">.</tt><tt id="link-308" class="py-name"><a title="nbxmpp.bosh.NonBlockingBOSH.onreceive
 nbxmpp.transports_nb.NonBlockingTransport.onreceive" class="py-name" href="#" onclick="return doclink('link-308', 'onreceive', 'link-277');">onreceive</a></tt><tt class="py-op">(</tt><tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
-<a name="L717"></a><tt class="py-lineno">717</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt id="link-309" class="py-name"><a title="nbxmpp.protocol.isResultNode" class="py-name" href="#" onclick="return doclink('link-309', 'isResultNode', 'link-11');">isResultNode</a></tt><tt class="py-op">(</tt><tt class="py-name">resp</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-<a name="L718"></a><tt class="py-lineno">718</tt>  <tt class="py-line">            <tt id="link-310" class="py-name"><a title="nbxmpp.auth_nb.log
+<a name="L718"></a><tt class="py-lineno">718</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt id="link-309" class="py-name"><a title="nbxmpp.protocol.isResultNode" class="py-name" href="#" onclick="return doclink('link-309', 'isResultNode', 'link-11');">isResultNode</a></tt><tt class="py-op">(</tt><tt class="py-name">resp</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
+<a name="L719"></a><tt class="py-lineno">719</tt>  <tt class="py-line">            <tt id="link-310" class="py-name"><a title="nbxmpp.auth_nb.log
 nbxmpp.bosh.log
 nbxmpp.client_nb.log
 nbxmpp.dispatcher_nb.log
@@ -1233,10 +1234,10 @@ nbxmpp.simplexml.log
 nbxmpp.smacks.log
 nbxmpp.tls_nb.log
 nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-310', 'log', 'link-20');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">info</tt><tt class="py-op">(</tt><tt class="py-string">'Successfully opened session.'</tt><tt class="py-op">)</tt> </tt>
-<a name="L719"></a><tt class="py-lineno">719</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">session</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
-<a name="L720"></a><tt class="py-lineno">720</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">on_bound</tt><tt class="py-op">(</tt><tt class="py-string">'ok'</tt><tt class="py-op">)</tt> </tt>
-<a name="L721"></a><tt class="py-lineno">721</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
-<a name="L722"></a><tt class="py-lineno">722</tt>  <tt class="py-line">            <tt id="link-311" class="py-name"><a title="nbxmpp.auth_nb.log
+<a name="L720"></a><tt class="py-lineno">720</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">session</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
+<a name="L721"></a><tt class="py-lineno">721</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">on_bound</tt><tt class="py-op">(</tt><tt class="py-string">'ok'</tt><tt class="py-op">)</tt> </tt>
+<a name="L722"></a><tt class="py-lineno">722</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
+<a name="L723"></a><tt class="py-lineno">723</tt>  <tt class="py-line">            <tt id="link-311" class="py-name"><a title="nbxmpp.auth_nb.log
 nbxmpp.bosh.log
 nbxmpp.client_nb.log
 nbxmpp.dispatcher_nb.log
@@ -1248,9 +1249,9 @@ nbxmpp.simplexml.log
 nbxmpp.smacks.log
 nbxmpp.tls_nb.log
 nbxmpp.transports_nb.log" class="py-name" href="#" onclick="return doclink('link-311', 'log', 'link-20');">log</a></tt><tt class="py-op">.</tt><tt class="py-name">error</tt><tt class="py-op">(</tt><tt class="py-string">'Session open failed.'</tt><tt class="py-op">)</tt> </tt>
-<a name="L723"></a><tt class="py-lineno">723</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">session</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
-<a name="L724"></a><tt class="py-lineno">724</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">on_bound</tt><tt class="py-op">(</tt><tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
-</div></div><a name="L725"></a><tt class="py-lineno">725</tt>  <tt class="py-line"> </tt><script type="text/javascript">
+<a name="L724"></a><tt class="py-lineno">724</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">session</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
+<a name="L725"></a><tt class="py-lineno">725</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">on_bound</tt><tt class="py-op">(</tt><tt class="py-name">None</tt><tt class="py-op">)</tt> </tt>
+</div></div><a name="L726"></a><tt class="py-lineno">726</tt>  <tt class="py-line"> </tt><script type="text/javascript">
 <!--
 expandto(location.href);
 // -->
@@ -1288,7 +1289,7 @@ expandto(location.href);
 <table border="0" cellpadding="0" cellspacing="0" width="100%%">
   <tr>
     <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue May  8 11:18:08 2012
+    Generated by Epydoc 3.0.1 on Fri Jul 26 11:25:15 2013
     </td>
     <td align="right" class="footer">
       <a target="mainFrame" href="http://epydoc.sourceforge.net"
