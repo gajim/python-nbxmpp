@@ -25,10 +25,10 @@ log = logging.getLogger('nbxmpp.idlequeue')
 
 # needed for get_idleqeue
 try:
-    from gi.repository import GObject
-    HAVE_GOBJECT = True
+    from gi.repository import GLib
+    HAVE_GLIB = True
 except ImportError:
-    HAVE_GOBJECT = False
+    HAVE_GLIB = False
 
 # needed for idlecommand
 if os.name == 'nt':
@@ -36,10 +36,11 @@ if os.name == 'nt':
 elif os.name == 'posix':
     import fcntl
 
-FLAG_WRITE                      = 20 # write only
-FLAG_READ                       = 19 # read only
-FLAG_READ_WRITE = 23 # read and write
-FLAG_CLOSE                      = 16 # wait for close
+FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
+FLAG_READ = GLib.IOCondition.IN | GLib.IOCondition.PRI | GLib.IOCondition.HUP
+FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
+    GLib.IOCondition.PRI | GLib.IOCondition.HUP
+FLAG_CLOSE = GLib.IOCondition.HUP
 
 PENDING_READ            = 3 # waiting read event
 PENDING_WRITE           = 4 # waiting write event
@@ -54,7 +55,7 @@ def get_idlequeue():
         # gobject.io_add_watch does not work on windows
         return SelectIdleQueue()
     else:
-        if HAVE_GOBJECT:
+        if HAVE_GLIB:
             # Gajim's default Idlequeue
             return GlibIdleQueue()
         else:
@@ -516,15 +517,15 @@ class GlibIdleQueue(IdleQueue):
         self.events = {}
         # time() is already called in glib, we just get the last value
         # overrides IdleQueue.current_time()
-        self.current_time = GObject.get_current_time
+        self.current_time = GLib.get_current_time
 
     def _add_idle(self, fd, flags):
         """
         This method is called when we plug a new idle object. Start listening for
         events from fd
         """
-        res = GObject.io_add_watch(fd, flags, self._process_events,
-                priority=GObject.PRIORITY_LOW)
+        res = GLib.io_add_watch(fd, GLib.PRIORITY_LOW, flags,
+            self._process_events)
         # store the id of the watch, so that we can remove it on unplug
         self.events[fd] = res
 
@@ -543,7 +544,7 @@ class GlibIdleQueue(IdleQueue):
         """
         if not fd in self.events:
             return
-        GObject.source_remove(self.events[fd])
+        GLib.source_remove(self.events[fd])
         del(self.events[fd])
 
     def process(self):
