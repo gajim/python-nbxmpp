@@ -162,9 +162,10 @@ class IdleCommand(IdleObject):
         # if program is started from noninteraactive shells stdin is closed and
         # cannot be forwarded, so we have to keep it open
         self.pipe = Popen(self._compose_command_args(), stdout=PIPE,
-                bufsize = 1024, shell = True, stderr = STDOUT, stdin = PIPE)
+            bufsize=1024, shell=True, stderr=STDOUT, stdin=PIPE)
         if self.commandtimeout >= 0:
-            self.endtime = self.idlequeue.current_time() + self.commandtimeout
+            self.endtime = self.idlequeue.current_time() + \
+                (self.commandtimeout * 1e6)
             self.idlequeue.set_alarm(self.wait_child, 0.1)
 
     def _start_posix(self):
@@ -242,7 +243,7 @@ class IdleQueue:
         """
         Set up a new alarm. alarm_cb will be called after specified seconds.
         """
-        alarm_time = self.current_time() + seconds
+        alarm_time = self.current_time() + (seconds * 1e6)
         # almost impossible, but in case we have another alarm_cb at this time
         if alarm_time in self.alarms:
             self.alarms[alarm_time].append(alarm_cb)
@@ -295,7 +296,7 @@ class IdleQueue:
         if func:
             log_txt += ' with function ' + str(func)
         log.info(log_txt)
-        timeout = self.current_time() + seconds
+        timeout = self.current_time() + (seconds * 1e6)
         if fd in self.read_timeouts:
             self.read_timeouts[fd][timeout] = func
         else:
@@ -375,7 +376,7 @@ class IdleQueue:
 
     def current_time(self):
         from time import time
-        return time()
+        return time() * 1e6
 
     def _remove_idle(self, fd):
         """
@@ -515,9 +516,7 @@ class GlibIdleQueue(IdleQueue):
         Creates a dict, which maps file/pipe/sock descriptor to glib event id
         """
         self.events = {}
-        # time() is already called in glib, we just get the last value
-        # overrides IdleQueue.current_time()
-        self.current_time = GLib.get_current_time
+        self.current_time = GLib.get_real_time
 
     def _add_idle(self, fd, flags):
         """
