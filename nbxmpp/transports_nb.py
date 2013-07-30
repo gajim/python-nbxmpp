@@ -497,7 +497,10 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         """
         NonBlockingTransport.send(self, raw_data, now)
 
-        r = self.encode_stanza(raw_data)
+        if isinstance(raw_data, str):
+            r = self.encode_stanza(raw_data)
+        else:
+            r = raw_data
 
         if now:
             self.sendqueue.insert(0, r)
