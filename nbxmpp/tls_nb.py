@@ -400,6 +400,7 @@ class NonBlockingTLS(PlugIn):
         tcpsock.ssl_errnum = []
         tcpsock._sslContext.set_verify(OpenSSL.SSL.VERIFY_PEER,
             self._ssl_verify_callback)
+        tcpsock._sslContext.set_cipher_list('HIGH:!aNULL:!eNULL:RC4-SHA')
         store = tcpsock._sslContext.get_cert_store()
         self._load_cert_file(self.cacerts, store)
         self._load_cert_file(self.mycerts, store)
