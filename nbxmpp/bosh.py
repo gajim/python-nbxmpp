@@ -37,10 +37,10 @@ FAKE_DESCRIPTOR = -1337
 
 
 class NonBlockingBOSH(NonBlockingTransport):
-    def __init__(self, raise_event, on_disconnect, idlequeue, estabilish_tls, certs,
-                    xmpp_server, domain, bosh_dict, proxy_creds):
-        NonBlockingTransport.__init__(self, raise_event, on_disconnect, idlequeue,
-                estabilish_tls, certs)
+    def __init__(self, raise_event, on_disconnect, idlequeue, estabilish_tls,
+    certs, cipher_list, xmpp_server, domain, bosh_dict, proxy_creds):
+        NonBlockingTransport.__init__(self, raise_event, on_disconnect,
+            idlequeue, estabilish_tls, certs, cipher_list)
 
         self.bosh_sid = None
         if locale.getdefaultlocale()[0]:

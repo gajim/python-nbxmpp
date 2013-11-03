@@ -250,21 +250,21 @@ class NonBlockingTLS(PlugIn):
     PyOpenSSLWrapper.
     """
 
-    def __init__(self, cacerts, mycerts):
+    def __init__(self, cacerts, mycerts, cipher_list):
         """
         :param cacerts: path to pem file with certificates of known XMPP servers
-        :param mycerts: path to pem file with certificates of user trusted servers
+        :param mycerts: path to pem file with certificates of user trusted
+            servers
+        :param cipher_list: list of ciphers to use when connection to server. If
+            None is provided, a default list is used: HIGH:!aNULL:!eNULL:RC4-SHA
         """
         PlugIn.__init__(self)
         self.cacerts = cacerts
         self.mycerts = mycerts
-
-    # from ssl.h (partial extract)
-    ssl_h_bits = {  "SSL_ST_CONNECT": 0x1000, "SSL_ST_ACCEPT": 0x2000,
-                    "SSL_CB_LOOP": 0x01, "SSL_CB_EXIT": 0x02,
-                    "SSL_CB_READ": 0x04, "SSL_CB_WRITE": 0x08,
-                    "SSL_CB_ALERT": 0x4000,
-                    "SSL_CB_HANDSHAKE_START": 0x10, "SSL_CB_HANDSHAKE_DONE": 0x20}
+        if cipher_list is None:
+            self.cipher_list = 'HIGH:!aNULL:!eNULL:RC4-SHA'
+        else:
+            self.cipher_list = cipher_list
 
     def plugin(self, owner):
         """
@@ -403,7 +403,7 @@ class NonBlockingTLS(PlugIn):
         tcpsock.ssl_errnum = []
         tcpsock._sslContext.set_verify(OpenSSL.SSL.VERIFY_PEER,
             self._ssl_verify_callback)
-        tcpsock._sslContext.set_cipher_list('HIGH:!aNULL:!eNULL:RC4-SHA')
+        tcpsock._sslContext.set_cipher_list(self.cipher_list)
         store = tcpsock._sslContext.get_cert_store()
         self._load_cert_file(self.cacerts, store)
         self._load_cert_file(self.mycerts, store)

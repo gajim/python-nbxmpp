@@ -149,7 +149,7 @@ class NonBlockingClient:
 
     def connect(self, on_connect, on_connect_failure, hostname=None, port=5222,
     on_proxy_failure=None, on_stream_error_cb=None, proxy=None,
-    secure_tuple=('plain', None, None)):
+    secure_tuple=('tls', None, None, None)):
         """
         Open XMPP connection (open XML streams in both directions)
 
@@ -157,22 +157,25 @@ class NonBlockingClient:
         :param on_connect_failure: called when error occures during connection
         :param hostname: hostname of XMPP server from SRV request
         :param port: port number of XMPP server
-        :param on_proxy_failure: called if error occurres during TCP connection to
-                proxy server or during proxy connecting process
+        :param on_proxy_failure: called if error occurres during TCP connection
+            to proxy server or during proxy connecting process
         :param proxy: dictionary with proxy data. It should contain at least
-                values for keys 'host' and 'port' - connection details for proxy serve
-                and optionally keys 'user' and 'pass' as proxy credentials
-        :param secure_tuple: tuple of (desired connection type, cacerts, mycerts)
-                connection type can be 'ssl' - TLS established after TCP connection,
-                'tls' - TLS established after negotiation with starttls, or 'plain'.
-                cacerts, mycerts - see tls_nb.NonBlockingTLS constructor for more
-                details
+            values for keys 'host' and 'port' - connection details for proxy
+            serve and optionally keys 'user' and 'pass' as proxy credentials
+        :param secure_tuple: tuple of (desired connection type, cacerts,
+            mycerts, cipher_list)
+            connection type can be 'ssl' - TLS established after TCP connection,
+                'tls' - TLS established after negotiation with starttls, or
+                'plain'.
+            cacerts, mycerts, cipher_list - see tls_nb.NonBlockingTLS
+                constructor for more details
         """
         self.on_connect = on_connect
         self.on_connect_failure=on_connect_failure
         self.on_proxy_failure = on_proxy_failure
         self.on_stream_error_cb = on_stream_error_cb
-        self.desired_security, self.cacerts, self.mycerts = secure_tuple
+        self.desired_security, self.cacerts, self.mycerts, self.cipher_list = \
+            secure_tuple
         self.Connection = None
         self.Port = port
         self.proxy = proxy
@@ -209,6 +212,7 @@ class NonBlockingClient:
                         idlequeue=self.idlequeue,
                         estabilish_tls=establish_tls,
                         certs=certs,
+                        cipher_list = self.cipher_list,
                         proxy_creds=(proxy_user, proxy_pass),
                         xmpp_server=(self.xmpp_hostname, self.Port),
                         domain=self.Server,
@@ -230,6 +234,7 @@ class NonBlockingClient:
                     idlequeue=self.idlequeue,
                     estabilish_tls=establish_tls,
                     certs=certs,
+                    cipher_list = self.cipher_list,
                     proxy_dict=proxy_dict)
 
         # plug transport into client as self.Connection

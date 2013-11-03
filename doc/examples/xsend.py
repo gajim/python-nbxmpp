@@ -35,6 +35,8 @@ class Connection:
     def __init__(self):
         self.jid = nbxmpp.protocol.JID(jidparams['jid'])
         self.password = jidparams['password']
+        self.sm = nbxmpp.Smacks(self) # Stream Management
+        self.client_cert = None
 
     def on_auth(self, con, auth):
         if not auth:
@@ -59,7 +61,7 @@ class Connection:
     def connect(self):
         idle_queue = nbxmpp.idlequeue.get_idlequeue()
         self.client = nbxmpp.NonBlockingClient(self.jid.getDomain(), idle_queue, caller=self)
-        self.con = self.client.connect(self.on_connected, self.on_connection_failed, secure_tuple=('tls', '', ''))
+        self.con = self.client.connect(self.on_connected, self.on_connection_failed, secure_tuple=('tls', '', '', None))
 
     def send_message(self, to_jid, text):
         id_ = self.client.send(nbxmpp.protocol.Message(to_jid, text, typ='chat'))
