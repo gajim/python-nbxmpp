@@ -109,7 +109,7 @@ class NonBlockingTransport(PlugIn):
     """
 
     def __init__(self, raise_event, on_disconnect, idlequeue, estabilish_tls,
-                    certs):
+    certs, cipher_list):
         """
         Each trasport class can have different constructor but it has to have at
         least all the arguments of NonBlockingTransport constructor
@@ -117,10 +117,11 @@ class NonBlockingTransport(PlugIn):
         :param raise_event: callback for monitoring of sent and received data
         :param on_disconnect: callback called on disconnection during runtime
         :param idlequeue: processing idlequeue
-        :param estabilish_tls: boolean whether to estabilish TLS connection after
-                TCP connection is done
-        :param certs: tuple of (cacerts, mycerts) see constructor of
-                tls_nb.NonBlockingTLS for more details
+        :param estabilish_tls: boolean whether to estabilish TLS connection
+            after TCP connection is done
+        :param certs: tuple of (cacerts, mycerts) see constructor
+            of tls_nb.NonBlockingTLS for more details
+        :param cipher_list: list of ciphers used to connect to server
         """
         PlugIn.__init__(self)
         self.raise_event = raise_event
@@ -135,6 +136,7 @@ class NonBlockingTransport(PlugIn):
         self.set_state(DISCONNECTED)
         self.estabilish_tls = estabilish_tls
         self.certs = certs
+        self.cipher_list = cipher_list
         # type of used ssl lib (if any) will be assigned to this member var
         self.ssl_lib = None
         self._exported_methods=[self.onreceive, self.set_send_timeout,
@@ -293,12 +295,12 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
     estabilish TLS connection.
     """
     def __init__(self, raise_event, on_disconnect, idlequeue, estabilish_tls,
-                    certs, proxy_dict=None):
+    certs, cipher_list, proxy_dict=None):
         """
         :param proxy_dict: dictionary with proxy data as loaded from config file
         """
-        NonBlockingTransport.__init__(self, raise_event, on_disconnect, idlequeue,
-                estabilish_tls, certs)
+        NonBlockingTransport.__init__(self, raise_event, on_disconnect,
+            idlequeue, estabilish_tls, certs, cipher_list)
         IdleObject.__init__(self)
 
         # queue with messages to be send
@@ -409,7 +411,8 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         NonBlockingTLS module
         """
         cacerts, mycerts = self.certs
-        result = tls_nb.NonBlockingTLS.get_instance(cacerts, mycerts).PlugIn(self)
+        result = tls_nb.NonBlockingTLS.get_instance(cacerts, mycerts,
+            self.cipher_list).PlugIn(self)
         if result:
             on_succ()
         else:
@@ -630,8 +633,8 @@ class NonBlockingHTTP(NonBlockingTCP):
     """
 
     def __init__(self, raise_event, on_disconnect, idlequeue, estabilish_tls,
-                    certs, on_http_request_possible, on_persistent_fallback, http_dict,
-                    proxy_dict=None):
+    certs, cipher_list, on_http_request_possible, on_persistent_fallback,
+    http_dict, proxy_dict=None):
         """
         :param on_http_request_possible: method to call when HTTP request to
                 socket owned by transport is possible.
@@ -640,10 +643,10 @@ class NonBlockingHTTP(NonBlockingTCP):
         :param http_dict: dictionary with data for HTTP request and headers
         """
         NonBlockingTCP.__init__(self, raise_event, on_disconnect, idlequeue,
-                estabilish_tls, certs, proxy_dict)
+            estabilish_tls, certs, cipher_list, proxy_dict)
 
         self.http_protocol, self.http_host, self.http_port, self.http_path = \
-                urisplit(http_dict['http_uri'])
+            urisplit(http_dict['http_uri'])
         self.http_protocol = self.http_protocol or 'http'
         self.http_path = self.http_path or '/'
         self.http_version = http_dict['http_version']
