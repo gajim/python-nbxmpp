@@ -355,8 +355,11 @@ class NonBlockingTLS(PlugIn):
             conn = tcpsock._owner._caller
             # FIXME make a checkbox for Client Cert / SSLv23 / TLSv1
             # If we are going to use a client cert/key pair for authentication,
-            # we choose TLSv1 method.
-            tcpsock._sslContext = OpenSSL.SSL.Context(OpenSSL.SSL.TLSv1_METHOD)
+            # we choose TLSv1* method.
+            tcpsock._sslContext = OpenSSL.SSL.Context(OpenSSL.SSL.SSLv23_METHOD)
+            flags = (OpenSSL.SSL.OP_NO_SSLv2 | OpenSSL.SSL.OP_NO_SSLv3
+                | OpenSSL.SSL.OP_SINGLE_DH_USE)
+            tcpsock._sslContext.set_options(flags)
             log.debug('Using client cert and key from %s' % conn.client_cert)
             try:
                 p12 = OpenSSL.crypto.load_pkcs12(open(conn.client_cert).read(),
@@ -385,7 +388,7 @@ class NonBlockingTLS(PlugIn):
         else:
             # See http://docs.python.org/dev/library/ssl.html
             tcpsock._sslContext = OpenSSL.SSL.Context(OpenSSL.SSL.SSLv23_METHOD)
-            flags = OpenSSL.SSL.OP_NO_SSLv2
+            flags = OpenSSL.SSL.OP_NO_SSLv2 | OpenSSL.SSL.OP_SINGLE_DH_USE
             try:
                 flags |= OpenSSL.SSL.OP_NO_TICKET
             except AttributeError, e:
