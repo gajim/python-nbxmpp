@@ -68,6 +68,7 @@ class NonBlockingBOSH(NonBlockingTransport):
             self.bosh_secure = 'true'
         else:
             self.bosh_secure = 'false'
+        self.cipher_list = cipher_list
         self.use_proxy_auth = bosh_dict['useauth']
         self.proxy_creds = proxy_creds
         self.wait_cb_time = None
@@ -450,6 +451,7 @@ class NonBlockingBOSH(NonBlockingTransport):
                 on_disconnect=self.disconnect,
                 idlequeue = self.idlequeue,
                 estabilish_tls = self.estabilish_tls,
+                cipher_list = self.cipher_list,
                 certs = self.certs,
                 on_http_request_possible = self.on_http_request_possible,
                 http_dict = http_dict,
