@@ -95,7 +95,11 @@ class Smacks():
         number of stanzas received by the server. Pops stanzas that were
         handled by the server from the queue.
         '''
-        h = int(stanza.getAttr('h'))
+        h = stanza.getAttr('h')
+        if not h:
+            log.error('Server did not send h attribute')
+            return
+        h = int(h)
         diff = self.out_h - h
 
         if len(self.uqueue) < diff or diff < 0:
