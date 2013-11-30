@@ -256,13 +256,13 @@ class NonBlockingTLS(PlugIn):
         :param mycerts: path to pem file with certificates of user trusted
             servers
         :param cipher_list: list of ciphers to use when connection to server. If
-            None is provided, a default list is used: HIGH:!aNULL:!eNULL:RC4-SHA
+            None is provided, a default list is used: HIGH:!aNULL:RC4-SHA
         """
         PlugIn.__init__(self)
         self.cacerts = cacerts
         self.mycerts = mycerts
         if cipher_list is None:
-            self.cipher_list = 'HIGH:!aNULL:!eNULL:RC4-SHA'
+            self.cipher_list = 'HIGH:!aNULL:RC4-SHA'
         else:
             self.cipher_list = cipher_list
 
@@ -280,6 +280,10 @@ class NonBlockingTLS(PlugIn):
         return res
 
     def _dumpX509(self, cert, stream=sys.stderr):
+        try:
+            print("Digest (SHA-2 256):" + cert.digest("sha256"), file=stream)
+        except ValueError: # Old OpenSSL version
+            pass
         print("Digest (SHA-1):" + cert.digest("sha1"), file=stream)
         print("Digest (MD5):" + cert.digest("md5"), file=stream)
         print("Serial #:" + cert.get_serial_number(), file=stream)
@@ -353,17 +357,21 @@ class NonBlockingTLS(PlugIn):
     def _startSSL_pyOpenSSL(self):
         log.debug("_startSSL_pyOpenSSL called")
         tcpsock = self._owner
+        # See http://docs.python.org/dev/library/ssl.html
+        tcpsock._sslContext = OpenSSL.SSL.Context(OpenSSL.SSL.SSLv23_METHOD)
+        flags = OpenSSL.SSL.OP_NO_SSLv2 | OpenSSL.SSL.OP_NO_SSLv3 | \
+            OpenSSL.SSL.OP_SINGLE_DH_USE
+        try:
+            flags |= OpenSSL.SSL.OP_NO_TICKET
+        except AttributeError, e:
+            # py-OpenSSL < 0.9 or old OpenSSL
+            flags |= 16384
+        tcpsock._sslContext.set_options(flags)
+
         # NonBlockingHTTPBOSH instance has no attribute _owner
         if hasattr(tcpsock, '_owner') and tcpsock._owner._caller.client_cert \
         and os.path.exists(tcpsock._owner._caller.client_cert):
             conn = tcpsock._owner._caller
-            # FIXME make a checkbox for Client Cert / SSLv23 / TLSv1
-            # If we are going to use a client cert/key pair for authentication,
-            # we choose TLSv1* method.
-            tcpsock._sslContext = OpenSSL.SSL.Context(OpenSSL.SSL.SSLv23_METHOD)
-            flags = (OpenSSL.SSL.OP_NO_SSLv2 | OpenSSL.SSL.OP_NO_SSLv3
-                | OpenSSL.SSL.OP_SINGLE_DH_USE)
-            tcpsock._sslContext.set_options(flags)
             log.debug('Using client cert and key from %s' % conn.client_cert)
             try:
                 p12 = OpenSSL.crypto.load_pkcs12(open(conn.client_cert).read(),
@@ -389,16 +397,6 @@ class NonBlockingTLS(PlugIn):
                         'from file %s: %s' % (conn.client_cert, msg))
                 else:
                     log.info('client cert and key loaded OK')
-        else:
-            # See http://docs.python.org/dev/library/ssl.html
-            tcpsock._sslContext = OpenSSL.SSL.Context(OpenSSL.SSL.SSLv23_METHOD)
-            flags = OpenSSL.SSL.OP_NO_SSLv2 | OpenSSL.SSL.OP_SINGLE_DH_USE
-            try:
-                flags |= OpenSSL.SSL.OP_NO_TICKET
-            except AttributeError as e:
-                # py-OpenSSL < 0.9 or old OpenSSL
-                flags |= 16384
-            tcpsock._sslContext.set_options(flags)
 
         tcpsock.ssl_errnum = []
         tcpsock._sslContext.set_verify(OpenSSL.SSL.VERIFY_PEER,
