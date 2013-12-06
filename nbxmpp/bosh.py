@@ -90,10 +90,8 @@ class NonBlockingBOSH(NonBlockingTransport):
             self.proxy_dict['credentials'] = self.proxy_creds
 
         # ssl variables
-        self.ssl_fingerprint_sha1 = []
-        self.ssl_certificate = []
-        self.ssl_errnum = []
-        self.ssl_cert_pem = []
+        self.ssl_certificate = None
+        self.ssl_errnum = None
 
 
     def connect(self, conn_5tuple, on_connect, on_connect_failure):
