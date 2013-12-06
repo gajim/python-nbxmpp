@@ -313,10 +313,8 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         self.on_remote_disconnect = self.disconnect
 
         # ssl variables
-        self.ssl_fingerprint_sha1 = []
-        self.ssl_certificate = []
-        self.ssl_errnum = []
-        self.ssl_cert_pem = []
+        self.ssl_certificate = None
+        self.ssl_errnum = None
 
     # FIXME: transport should not be aware xmpp
     def start_disconnect(self):
