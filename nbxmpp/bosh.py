@@ -18,7 +18,7 @@
 ## along with Gajim.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import locale, random
+import locale
 from hashlib import sha1
 from .transports_nb import NonBlockingTransport, NonBlockingHTTPBOSH,\
         CONNECTED, CONNECTING, DISCONNECTED, DISCONNECTING,\
@@ -28,6 +28,8 @@ from .simplexml import Node
 
 import logging
 log = logging.getLogger('nbxmpp.bosh')
+
+import rndg
 
 KEY_COUNT = 10
 
@@ -486,9 +488,7 @@ def get_rand_number():
     # to 7881299347898368 messages to raise rid over 2**53
     # (see http://www.xmpp.org/extensions/xep-0124.html#rids)
     # it's also used for sequence key initialization
-    r = random.Random()
-    r.seed()
-    return r.getrandbits(50)
+    return rndg.getrandbits(50)
 
 
 

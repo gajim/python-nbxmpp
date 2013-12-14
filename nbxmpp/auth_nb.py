@@ -27,7 +27,6 @@ from .protocol import Node, NodeProcessed, isResultNode, Iq, Protocol, JID
 from .plugin import PlugIn
 from .smacks import Smacks
 import base64
-import random
 import itertools
 from . import dispatcher_nb
 import hashlib
@@ -36,6 +35,8 @@ import hashlib
 
 import logging
 log = logging.getLogger('nbxmpp.auth_nb')
+
+import rndg
 
 def HH(some): return hashlib.md5(some).hexdigest()
 def H(some): return hashlib.md5(some).digest()
@@ -440,8 +441,7 @@ class SASL(PlugIn):
             else:
                 self.resp['realm'] = self._owner.Server
             self.resp['nonce'] = chal['nonce']
-            self.resp['cnonce'] = ''.join("%x" % randint(0, 2**28) for randint \
-                in itertools.repeat(random.randint, 7))
+            self.resp['cnonce'] = '%x' % rngd.getrandbits(196)
             self.resp['nc'] = ('00000001')
             self.resp['qop'] = 'auth'
             self.resp['digest-uri'] = 'xmpp/' + self._owner.Server
@@ -471,8 +471,7 @@ class SASL(PlugIn):
     def set_password(self, password):
         self.password = '' if password is None else password
         if self.mechanism == 'SCRAM-SHA-1':
-            nonce = ''.join('%x' % randint(0, 2 ** 28) for randint in \
-                itertools.repeat(random.randint, 7))
+            nonce = '%x' % rndg.getrandbits(196)
             self.scram_soup = 'n=' + self.username + ',r=' + nonce
             self.scram_gs2 = 'n,,' # No CB yet.
             sasl_data = base64.b64encode((self.scram_gs2 + self.scram_soup).\
