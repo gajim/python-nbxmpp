@@ -25,11 +25,8 @@ from .protocol import NS_SASL, NS_SESSION, NS_STREAMS, NS_BIND, NS_AUTH
 from .protocol import NS_STREAM_MGMT
 from .protocol import Node, NodeProcessed, isResultNode, Iq, Protocol, JID
 from .plugin import PlugIn
-from .smacks import Smacks
 import base64
-import itertools
 from . import dispatcher_nb
-import hashlib
 import hmac
 import hashlib
 
@@ -441,7 +438,7 @@ class SASL(PlugIn):
             else:
                 self.resp['realm'] = self._owner.Server
             self.resp['nonce'] = chal['nonce']
-            self.resp['cnonce'] = '%x' % rngd.getrandbits(196)
+            self.resp['cnonce'] = '%x' % rndg.getrandbits(196)
             self.resp['nc'] = ('00000001')
             self.resp['qop'] = 'auth'
             self.resp['digest-uri'] = 'xmpp/' + self._owner.Server
