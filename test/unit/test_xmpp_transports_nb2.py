@@ -82,6 +82,7 @@ class TestNonBlockingTCP(AbstractTransportTest):
                     idlequeue=self.idlequeue,
                     estabilish_tls=establish_tls,
                     certs=('../data/other/cacerts.pem', 'tmp/cacerts.pem'),
+                    cipher_list=None,
                     proxy_dict=proxy_dict)
 
             self.socket.PlugIn(self)
@@ -215,6 +216,7 @@ class TestNonBlockingHTTP(AbstractTransportTest):
                 idlequeue=self.idlequeue_thread.iq,
                 estabilish_tls=False,
                 certs=None,
+                cipher_list=None,
                 on_http_request_possible=lambda: None,
                 on_persistent_fallback=None,
                 http_dict=http_dict,
