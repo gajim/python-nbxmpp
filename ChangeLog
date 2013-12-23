@@ -1,3 +1,9 @@
+python-nbxmpp 0.3 (23 December 2013)
+
+  * Improve security level
+  * Ability to configure cipher list
+  * Store only depth 0 SSL certificate
+
 python-nbxmpp 0.2 (26 July 2013)
 
   * Add some namespace
