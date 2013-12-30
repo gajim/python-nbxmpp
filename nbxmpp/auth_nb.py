@@ -25,6 +25,7 @@ from protocol import NS_SASL, NS_SESSION, NS_STREAMS, NS_BIND, NS_AUTH
 from protocol import NS_STREAM_MGMT
 from protocol import Node, NodeProcessed, isResultNode, Iq, Protocol, JID
 from plugin import PlugIn
+import re
 import base64
 import dispatcher_nb
 import hmac
@@ -53,9 +54,18 @@ SASL_SUCCESS = 'success'
 SASL_UNSUPPORTED = 'not-supported'
 SASL_IN_PROCESS = 'in-process'
 
-def challenge_splitter(data):
+# compile the search regex for _challenge_splitter
+_challenge_regex = re.compile("""
+    (\w+)      # keyword
+    =
+    ("[^"]+"|[^,]+)   # value
+    ,?         # optional comma separator
+""", re.VERBOSE)
+
+def _challenge_splitter(data):
     """
-    Helper function that creates a dict from challenge string
+    Helper function that creates a dict from challenge string. Used
+    for DIGEST-MD5 authentication.
 
     Sample challenge string:
       - username="example.org",realm="somerealm",
@@ -66,57 +76,19 @@ def challenge_splitter(data):
       - dict['qop'] = ('auth','auth-int','auth-conf')
       - dict['realm'] = 'somerealm'
     """
-    X_KEYWORD, X_VALUE, X_END = 0, 1, 2
-    quotes_open = False
-    keyword, value = '', ''
     dict_ = {}
-    arr = None
-
-    expecting = X_KEYWORD
-    for iter_ in range(len(data) + 1):
-        end = False
-        if iter_ == len(data):
-            expecting = X_END
-            end = True
-        else:
-            char = data[iter_]
-        if expecting == X_KEYWORD:
-            if char == '=':
-                expecting  = X_VALUE
-            elif char in (',', ' ', '\t'):
-                pass
-            else:
-                keyword = '%s%c' % (keyword, char)
-        elif expecting == X_VALUE:
-            if char == '"':
-                if quotes_open:
-                    end = True
-                else:
-                    quotes_open = True
-            elif char in (',', ' ', '\t'):
-                if quotes_open:
-                    if not arr:
-                        arr = [value]
-                    else:
-                        arr.append(value)
-                    value = ""
-                else:
-                    end = True
-            else:
-                value = '%s%c' % (value, char)
-        if end:
-            if arr:
-                arr.append(value)
-                dict_[keyword] = arr
-                arr = None
-            else:
-                dict_[keyword] = value
-            value, keyword = '', ''
-            expecting = X_KEYWORD
-            quotes_open = False
+    for match in _challenge_regex.finditer(data):
+        k = match.group(1)
+        v = match.group(2)
+        if v.startswith('"'):
+            v = v[1:-1] # Remove quote
+        if v.find(',') >= 0:
+            v = v.split(',') # Split using comma
+        dict_[k] = v
     return dict_
 
-def scram_parse(chatter):
+def _scram_parse(chatter):
+    """Helper function. Used for SCRAM-SHA-1 authentication"""
     return dict(s.split('=', 1) for s in chatter.split(','))
 
 class SASL(PlugIn):
@@ -313,7 +285,7 @@ class SASL(PlugIn):
         elif challenge.getName() == 'success':
             if self.mechanism == 'SCRAM-SHA-1':
                 # check data-with-success
-                data = scram_parse(data)
+                data = _scram_parse(data)
                 if data['v'] != scram_base64(self.scram_ServerSignature):
                     on_auth_fail('ServerSignature is wrong')
 
@@ -385,7 +357,7 @@ class SASL(PlugIn):
             if self.scram_step == 0:
                 self.scram_step = 1
                 self.scram_soup += ',' + data + ','
-                data = scram_parse(data)
+                data = _scram_parse(data)
                 # TODO: Should check cnonce here.
                 # TODO: Channel binding data goes in here too.
                 r = 'c=' + scram_base64(self.scram_gs2)
@@ -409,7 +381,7 @@ class SASL(PlugIn):
                 raise NodeProcessed
 
             if self.scram_step == 1:
-                data = scram_parse(data)
+                data = _scram_parse(data)
                 if data['v'].decode('base64') != self.scram_ServerSignature:
                     # TODO: Not clear what to do here - need to abort.
                     raise Exception
@@ -418,7 +390,7 @@ class SASL(PlugIn):
                 raise NodeProcessed
 
         # magic foo...
-        chal = challenge_splitter(data)
+        chal = _challenge_splitter(data)
         if not self.realm and 'realm' in chal:
             self.realm = chal['realm']
         if 'qop' in chal and ((isinstance(chal['qop'], str) and \
