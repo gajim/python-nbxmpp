@@ -363,7 +363,7 @@ class NonBlockingTLS(PlugIn):
             OpenSSL.SSL.OP_SINGLE_DH_USE
         try:
             flags |= OpenSSL.SSL.OP_NO_TICKET
-        except AttributeError, e:
+        except AttributeError as e:
             # py-OpenSSL < 0.9 or old OpenSSL
             flags |= 16384
         tcpsock._sslContext.set_options(flags)

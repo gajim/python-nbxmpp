@@ -29,7 +29,7 @@ from .simplexml import Node
 import logging
 log = logging.getLogger('nbxmpp.bosh')
 
-import rndg
+from . import rndg
 
 KEY_COUNT = 10
 

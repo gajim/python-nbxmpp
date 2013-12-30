@@ -33,7 +33,7 @@ import hashlib
 import logging
 log = logging.getLogger('nbxmpp.auth_nb')
 
-import rndg
+from . import rndg
 
 def HH(some): return hashlib.md5(some).hexdigest()
 def H(some): return hashlib.md5(some).digest()
