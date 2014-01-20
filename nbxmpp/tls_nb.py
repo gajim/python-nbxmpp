@@ -393,7 +393,7 @@ class NonBlockingTLS(PlugIn):
                 else:
                     log.info('client cert and key loaded OK')
 
-        tcpsock.ssl_errnum = []
+        tcpsock.ssl_errnum = 0
         tcpsock._sslContext.set_verify(OpenSSL.SSL.VERIFY_PEER,
             self._ssl_verify_callback)
         tcpsock._sslContext.set_cipher_list(self.cipher_list)
@@ -446,7 +446,7 @@ class NonBlockingTLS(PlugIn):
     def _ssl_verify_callback(self, sslconn, cert, errnum, depth, ok):
         # Exceptions can't propagate up through this callback, so print them here.
         try:
-            if depth == 0:
+            if not ok and depth == 0:
                 self._owner.ssl_certificate = cert
                 self._owner.ssl_errnum = errnum
             return True
