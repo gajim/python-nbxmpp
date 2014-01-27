@@ -40,9 +40,9 @@ FAKE_DESCRIPTOR = -1337
 
 class NonBlockingBOSH(NonBlockingTransport):
     def __init__(self, raise_event, on_disconnect, idlequeue, estabilish_tls,
-    certs, cipher_list, xmpp_server, domain, bosh_dict, proxy_creds):
+    certs, tls_version, cipher_list, xmpp_server, domain, bosh_dict, proxy_creds):
         NonBlockingTransport.__init__(self, raise_event, on_disconnect,
-            idlequeue, estabilish_tls, certs, cipher_list)
+            idlequeue, estabilish_tls, certs, tls_version, cipher_list)
 
         self.bosh_sid = None
         if locale.getdefaultlocale()[0]:
@@ -70,6 +70,7 @@ class NonBlockingBOSH(NonBlockingTransport):
             self.bosh_secure = 'true'
         else:
             self.bosh_secure = 'false'
+        self.tls_version = tls_version
         self.cipher_list = cipher_list
         self.use_proxy_auth = bosh_dict['useauth']
         self.proxy_creds = proxy_creds
@@ -451,6 +452,7 @@ class NonBlockingBOSH(NonBlockingTransport):
                 on_disconnect=self.disconnect,
                 idlequeue = self.idlequeue,
                 estabilish_tls = self.estabilish_tls,
+                tls_version = self.tls_version,
                 cipher_list = self.cipher_list,
                 certs = self.certs,
                 on_http_request_possible = self.on_http_request_possible,

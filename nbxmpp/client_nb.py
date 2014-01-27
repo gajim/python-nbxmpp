@@ -163,19 +163,19 @@ class NonBlockingClient:
             values for keys 'host' and 'port' - connection details for proxy
             serve and optionally keys 'user' and 'pass' as proxy credentials
         :param secure_tuple: tuple of (desired connection type, cacerts,
-            mycerts, cipher_list)
+            mycerts, tls_version, cipher_list)
             connection type can be 'ssl' - TLS established after TCP connection,
                 'tls' - TLS established after negotiation with starttls, or
                 'plain'.
-            cacerts, mycerts, cipher_list - see tls_nb.NonBlockingTLS
+            cacerts, mycerts, tls_version, cipher_list - see tls_nb.NonBlockingTLS
                 constructor for more details
         """
         self.on_connect = on_connect
         self.on_connect_failure=on_connect_failure
         self.on_proxy_failure = on_proxy_failure
         self.on_stream_error_cb = on_stream_error_cb
-        self.desired_security, self.cacerts, self.mycerts, self.cipher_list = \
-            secure_tuple
+        self.desired_security, self.cacerts, self.mycerts, self.tls_version, \
+            self.cipher_list = secure_tuple
         self.Connection = None
         self.Port = port
         self.proxy = proxy
@@ -212,6 +212,7 @@ class NonBlockingClient:
                         idlequeue=self.idlequeue,
                         estabilish_tls=establish_tls,
                         certs=certs,
+                        tls_version = self.tls_version,
                         cipher_list = self.cipher_list,
                         proxy_creds=(proxy_user, proxy_pass),
                         xmpp_server=(self.xmpp_hostname, self.Port),
@@ -234,6 +235,7 @@ class NonBlockingClient:
                     idlequeue=self.idlequeue,
                     estabilish_tls=establish_tls,
                     certs=certs,
+                    tls_version = self.tls_version,
                     cipher_list = self.cipher_list,
                     proxy_dict=proxy_dict)
 
