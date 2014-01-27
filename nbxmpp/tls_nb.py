@@ -247,11 +247,14 @@ class NonBlockingTLS(PlugIn):
     PyOpenSSLWrapper.
     """
 
-    def __init__(self, cacerts, mycerts, cipher_list):
+    def __init__(self, cacerts, mycerts, tls_version, cipher_list):
         """
         :param cacerts: path to pem file with certificates of known XMPP servers
         :param mycerts: path to pem file with certificates of user trusted
             servers
+        :param tls_version: The lowest supported TLS version. If None is
+            provided, version 1.0 is used. For example setting to 1.1 will
+            enable TLS 1.1, TLS 1.2 and all further protocols
         :param cipher_list: list of ciphers to use when connection to server. If
             None is provided, a default list is used: HIGH:!aNULL:RC4-SHA
         """
@@ -262,6 +265,10 @@ class NonBlockingTLS(PlugIn):
             self.cipher_list = 'HIGH:!aNULL:RC4-SHA'
         else:
             self.cipher_list = cipher_list
+        if tls_version is None:
+            self.tls_version = '1.0'
+        else:
+            self.tls_version = tls_version
 
     def plugin(self, owner):
         """
@@ -361,6 +368,19 @@ class NonBlockingTLS(PlugIn):
         except AttributeError, e:
             # py-OpenSSL < 0.9 or old OpenSSL
             flags |= 16384
+        
+        # OpenSSL 1.0.1d supports TLS 1.1 and TLS 1.2 and
+        # fixes renegotiation in TLS 1.1, 1.2 by using the correct TLS version. 
+        if OpenSSL.SSL.OPENSSL_VERSION_NUMBER >= 0x1000104f:
+            if self.tls_version != '1.0':
+                flags |= OpenSSL.SSL.OP_NO_TLSv1
+            if self.tls_version not in ('1.0', '1.1'):
+                try:
+                    flags |= OpenSSL.SSL.OP_NO_TLSv1_1
+                except AttributeError, e:
+                    # older py-OpenSSL
+                    flags |= 0x10000000 
+
         tcpsock._sslContext.set_options(flags)
 
         # NonBlockingHTTPBOSH instance has no attribute _owner
