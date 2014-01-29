@@ -374,17 +374,21 @@ class NonBlockingTLS(PlugIn):
             # py-OpenSSL < 0.9 or old OpenSSL
             flags |= 16384
         
-        # OpenSSL 1.0.1d supports TLS 1.1 and TLS 1.2 and
-        # fixes renegotiation in TLS 1.1, 1.2 by using the correct TLS version. 
-        if OpenSSL.SSL.OPENSSL_VERSION_NUMBER >= 0x1000104f:
-            if self.tls_version != '1.0':
-                flags |= OpenSSL.SSL.OP_NO_TLSv1
-            if self.tls_version not in ('1.0', '1.1'):
-                try:
-                    flags |= OpenSSL.SSL.OP_NO_TLSv1_1
-                except AttributeError, e:
-                    # older py-OpenSSL
-                    flags |= 0x10000000 
+        try:
+            # OpenSSL 1.0.1d supports TLS 1.1 and TLS 1.2 and
+            # fixes renegotiation in TLS 1.1, 1.2 by using the correct TLS version. 
+            if OpenSSL.SSL.OPENSSL_VERSION_NUMBER >= 0x1000104f:
+                if self.tls_version != '1.0':
+                    flags |= OpenSSL.SSL.OP_NO_TLSv1
+                if self.tls_version not in ('1.0', '1.1'):
+                    try:
+                        flags |= OpenSSL.SSL.OP_NO_TLSv1_1
+                    except AttributeError, e:
+                        # older py-OpenSSL
+                        flags |= 0x10000000
+        except AttributeError, e:
+            pass # much older py-OpenSSL
+ 
 
         tcpsock._sslContext.set_options(flags)
 
