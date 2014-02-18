@@ -582,7 +582,7 @@ class NonBlockingNonSASL(PlugIn):
             query.setTagData('hash', hash_)
             self._method='0k'
         else:
-            log.warn("Secure methods unsupported, performing plain text \
+            log.warning("Secure methods unsupported, performing plain text \
                 authentication")
             self._method = 'plain'
             self._owner._caller.get_password(self._on_password, self._method)

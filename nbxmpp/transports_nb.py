@@ -52,7 +52,7 @@ def urisplit(uri):
     try:
         port = splitted.port
     except ValueError:
-        log.warn('port cannot be extracted from BOSH URL %s, using default port' \
+        log.warning('port cannot be extracted from BOSH URL %s, using default port' \
                 % uri)
         port = ''
     if not port:
@@ -224,7 +224,7 @@ class NonBlockingTransport(PlugIn):
             if hasattr(self, '_owner') and hasattr(self._owner, 'Dispatcher'):
                 self.on_receive = self._owner.Dispatcher.ProcessNonBlocking
             else:
-                log.warn('No Dispatcher plugged. Received data will not be processed')
+                log.warning('No Dispatcher plugged. Received data will not be processed')
                 self.on_receive = None
             return
         self.on_receive = recv_handler
@@ -482,14 +482,14 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         if self.get_state() != DISCONNECTED and self.fd != -1:
             NonBlockingTransport.set_timeout(self, timeout)
         else:
-            log.warn('set_timeout: TIMEOUT NOT SET: state is %s, fd is %s' %
+            log.warning('set_timeout: TIMEOUT NOT SET: state is %s, fd is %s' %
                     (self.get_state(), self.fd))
 
     def remove_timeout(self):
         if self.fd:
             NonBlockingTransport.remove_timeout(self)
         else:
-            log.warn('remove_timeout: no self.fd state is %s' % self.get_state())
+            log.warning('remove_timeout: no self.fd state is %s' % self.get_state())
 
     def send(self, raw_data, now=False):
         """
@@ -542,7 +542,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         """
         if not self.sendbuff:
             if not self.sendqueue:
-                log.warn('calling send on empty buffer and queue')
+                log.warning('calling send on empty buffer and queue')
                 self._plug_idle(writable=False, readable=True)
                 return None
             self.sendbuff = self.sendqueue.pop(0)

@@ -129,7 +129,7 @@ class NonBlockingBOSH(NonBlockingTransport):
         if self.get_state() != DISCONNECTED and self.fd != -1:
             NonBlockingTransport.set_timeout(self, timeout)
         else:
-            log.warn('set_timeout: TIMEOUT NOT SET: state is %s, fd is %s' % (self.get_state(), self.fd))
+            log.warning('set_timeout: TIMEOUT NOT SET: state is %s, fd is %s' % (self.get_state(), self.fd))
 
     def on_http_request_possible(self):
         """
@@ -216,7 +216,7 @@ class NonBlockingBOSH(NonBlockingTransport):
         # sent after HTTP response from CM, exception is when we're disconnecting - then we
         # send anyway
         if total_pending_reqs >= self.bosh_requests and self.get_state()!=DISCONNECTING:
-            log.warn('attemp to make more requests than allowed by Connection Manager:\n%s' %
+            log.warning('attemp to make more requests than allowed by Connection Manager:\n%s' %
                     self.get_current_state())
             return
 
@@ -309,7 +309,7 @@ class NonBlockingBOSH(NonBlockingTransport):
         :param socket: disconnected transport object
         """
         if socket.http_persistent:
-            log.warn('Fallback to nonpersistent HTTP (no pipelining as well)')
+            log.warning('Fallback to nonpersistent HTTP (no pipelining as well)')
             socket.http_persistent = False
             self.http_persistent = False
             self.http_pipelining = False

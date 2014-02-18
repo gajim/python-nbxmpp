@@ -428,12 +428,12 @@ class XMPPDispatcher(PlugIn):
         # log.info('in dispatch, getting ns for %s, and the ns is %s'
         # % (stanza, xmlns))
         if xmlns not in self.handlers:
-            log.warn("Unknown namespace: " + xmlns)
+            log.warning("Unknown namespace: " + xmlns)
             xmlns = 'unknown'
         # features stanza has been handled before
         if name not in self.handlers[xmlns]:
             if name != 'features':
-                log.warn("Unknown stanza: " + name)
+                log.warning("Unknown stanza: " + name)
             else:
                 log.debug("Got %s/%s stanza" % (xmlns, name))
             name='unknown'
