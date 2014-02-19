@@ -81,6 +81,7 @@ NS_GAMING         = 'http://jabber.org/protocol/gaming'               # XEP-0196
 NS_GATEWAY        = 'jabber:iq:gateway'                               # XEP-0100
 NS_GEOLOC         = 'http://jabber.org/protocol/geoloc'               # XEP-0080
 NS_GROUPCHAT      = 'gc-1.0'
+NS_MSG_HINTS      = 'urn:xmpp:hints'                                  # XEP-0280
 NS_HTTP_AUTH      = 'http://jabber.org/protocol/http-auth'            # XEP-0070
 NS_HTTP_BIND      = 'http://jabber.org/protocol/httpbind'             # XEP-0124
 NS_IBB            = 'http://jabber.org/protocol/ibb'
