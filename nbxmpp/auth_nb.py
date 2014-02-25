@@ -391,7 +391,11 @@ class SASL(PlugIn):
                 self.scram_step = 1
                 self.scram_soup += ',' + data + ','
                 data = scram_parse(data)
-                # TODO: Should check cnonce here.
+                # Check server nonce here.
+                # The first part of server nonce muss be the nonce send by client.
+                if (data['r'][:len(self.client_nonce)] != self.client_nonce):
+                    on_auth_fail('Server nonce is incorrect')
+                    raise NodeProcessed
                 # TODO: Channel binding data goes in here too.
                 r = 'c=' + scram_base64(self.scram_gs2)
                 r += ',r=' + data['r']
@@ -424,6 +428,7 @@ class SASL(PlugIn):
                 self._owner.send(str(node))
                 raise NodeProcessed
 
+        # DIGEST-MD5
         # magic foo...
         chal = challenge_splitter(data)
         if not self.realm and 'realm' in chal:
@@ -468,8 +473,8 @@ class SASL(PlugIn):
     def set_password(self, password):
         self.password = '' if password is None else password
         if self.mechanism == 'SCRAM-SHA-1':
-            nonce = '%x' % rndg.getrandbits(196)
-            self.scram_soup = 'n=' + self.username + ',r=' + nonce
+            self.client_nonce = '%x' % rndg.getrandbits(196)
+            self.scram_soup = 'n=' + self.username + ',r=' + self.client_nonce
             self.scram_gs2 = 'n,,' # No CB yet.
             sasl_data = base64.b64encode((self.scram_gs2 + self.scram_soup).\
                 encode('utf-8')).decode('utf-8').replace('\n', '')
