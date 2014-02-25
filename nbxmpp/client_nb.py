@@ -17,7 +17,7 @@
 # $Id: client.py,v 1.52 2006/01/02 19:40:55 normanr Exp $
 
 """
-Client class establishs connection to XMPP Server and handles authentication
+Client class establishes connection to XMPP Server and handles authentication
 """
 
 import socket
@@ -32,7 +32,7 @@ class NonBlockingClient:
     """
     Client class is XMPP connection mountpoint. Objects for authentication,
     network communication, roster, xml parsing ... are plugged to client object.
-    Client implements the abstract behavior - mostly negotioation and callbacks
+    Client implements the abstract behavior - mostly negotiation and callbacks
     handling, whereas underlying modules take care of feature-specific logic
     """
 
@@ -154,10 +154,10 @@ class NonBlockingClient:
         Open XMPP connection (open XML streams in both directions)
 
         :param on_connect: called after stream is successfully opened
-        :param on_connect_failure: called when error occures during connection
+        :param on_connect_failure: called when error occurs during connection
         :param hostname: hostname of XMPP server from SRV request
         :param port: port number of XMPP server
-        :param on_proxy_failure: called if error occurres during TCP connection
+        :param on_proxy_failure: called if error occurs during TCP connection
             to proxy server or during proxy connecting process
         :param proxy: dictionary with proxy data. It should contain at least
             values for keys 'host' and 'port' - connection details for proxy
@@ -425,7 +425,7 @@ class NonBlockingClient:
 
     def _tls_negotiation_handler(self, con=None, tag=None):
         """
-        Take care of TLS negotioation with <starttls>
+        Take care of TLS negotiation with <starttls>
         """
         log.info('-------------tls_negotiaton_handler() >> tag: %s' % tag)
         if not con and not tag:
@@ -449,7 +449,7 @@ class NonBlockingClient:
             # because <starttls> negotiation with BOSH is forbidden
             self.Connection.tls_init(
                     on_succ = lambda: self._xmpp_connect(socket_type='tls'),
-                    on_fail = lambda: self.disconnect('error while etabilishing TLS'))
+                    on_fail = lambda: self.disconnect('error while establishing TLS'))
 
     def _on_connect(self):
         """
