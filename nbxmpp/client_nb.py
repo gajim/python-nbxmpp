@@ -485,6 +485,14 @@ class NonBlockingClient:
         """
         self._User, self._Password = user, password
         self._Resource, self._sasl = resource, sasl
+        self._channel_binding = None
+        if self.connected in ('ssl', 'tls'):
+            try:
+                self._channel_binding = self.Connection.NonBlockingTLS.get_channel_binding()
+                # TLS handshake is finished so channel binding data muss exist
+                assert (self._channel_binding != None)
+            except NotImplementedError:
+                pass
         self.on_auth = on_auth
         self._on_doc_attrs()
         return
@@ -516,7 +524,7 @@ class NonBlockingClient:
         """
         if self._sasl:
             auth_nb.SASL.get_instance(self._User, self._Password,
-                    self._on_start_sasl).PlugIn(self)
+                    self._on_start_sasl, self._channel_binding).PlugIn(self)
         if not hasattr(self, 'SASL'):
             return
         if not self._sasl or self.SASL.startsasl == 'not-supported':
