@@ -478,3 +478,13 @@ class NonBlockingTLS(PlugIn):
             log.error("Exception caught in _ssl_info_callback:", exc_info=True)
             # Make sure something is printed, even if log is disabled.
             traceback.print_exc()
+
+    def get_channel_binding(self):
+        """
+        Get channel binding data. RFC 5929
+        """
+        sslObj = self._owner._sslObj
+        try:       
+            return sslObj.get_channel_binding()
+        except AttributeError:
+            raise NotImplementedError

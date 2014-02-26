@@ -88,7 +88,7 @@ def _challenge_splitter(data):
     return dict_
 
 def _scram_parse(chatter):
-    """Helper function. Used for SCRAM-SHA-1 authentication"""
+    """Helper function. Used for SCRAM-SHA-1, SCRAM-SHA-1-PLUS authentication"""
     return dict(s.split('=', 1) for s in chatter.split(','))
 
 class SASL(PlugIn):
@@ -97,16 +97,19 @@ class SASL(PlugIn):
     to start authentication
     """
 
-    def __init__(self, username, password, on_sasl):
+    def __init__(self, username, password, on_sasl, channel_binding):
         """
         :param username: XMPP username
         :param password: XMPP password
         :param on_sasl: Callback, will be called after each SASL auth-step.
+        :param channel_binding: TLS channel binding data, None if the 
+               binding data is not available
         """
         PlugIn.__init__(self)
         self.username = username
         self.password = password
         self.on_sasl = on_sasl
+        self.channel_binding = channel_binding
         self.realm = None
 
     def plugin(self, owner):
@@ -213,6 +216,13 @@ class SASL(PlugIn):
                 raise NodeProcessed
             except kerberos.GSSError, e:
                 log.info('GSSAPI authentication failed: %s' % str(e))
+        if 'SCRAM-SHA-1-PLUS' in self.mecs and self.channel_binding != None:
+            self.mecs.remove('SCRAM-SHA-1-PLUS')
+            self.mechanism = 'SCRAM-SHA-1-PLUS'
+            self._owner._caller.get_password(self.set_password, self.mechanism)
+            self.scram_step = 0
+            self.startsasl = SASL_IN_PROCESS
+            raise NodeProcessed
         if 'SCRAM-SHA-1' in self.mecs:
             self.mecs.remove('SCRAM-SHA-1')
             self.mechanism = 'SCRAM-SHA-1'
@@ -241,8 +251,9 @@ class SASL(PlugIn):
             self.startsasl = SASL_IN_PROCESS
             raise NodeProcessed
         self.startsasl = SASL_FAILURE
-        log.info('I can only use EXTERNAL, SCRAM-SHA-1, DIGEST-MD5, GSSAPI and '
-            'PLAIN mecanisms.')
+        log.info('I can only use ANONYMOUS, EXTERNAL, GSSAPI, SCRAM-SHA-1-PLUS,'
+                 ' SCRAM-SHA-1, DIGEST-MD5, PLAIN and X-MESSENGER-OAUTH2'
+                 ' mechanisms.')
         if self.on_sasl:
             self.on_sasl()
         return
@@ -283,7 +294,7 @@ class SASL(PlugIn):
                 reason = challenge
             on_auth_fail(reason)
         elif challenge.getName() == 'success':
-            if self.mechanism == 'SCRAM-SHA-1':
+            if self.mechanism in ('SCRAM-SHA-1', 'SCRAM-SHA-1-PLUS'):
                 # check data-with-success
                 data = _scram_parse(data)
                 if data['v'] != scram_base64(self.scram_ServerSignature):
@@ -327,7 +338,7 @@ class SASL(PlugIn):
             self._owner.send(Node('response', attrs={'xmlns': NS_SASL},
                 payload=response).__str__())
             raise NodeProcessed
-        if self.mechanism == 'SCRAM-SHA-1':
+        if self.mechanism in ('SCRAM-SHA-1', 'SCRAM-SHA-1-PLUS'):
             hashfn = hashlib.sha1
 
             def HMAC(k, s):
@@ -363,8 +374,12 @@ class SASL(PlugIn):
                 if (data['r'][:len(self.client_nonce)] != self.client_nonce):
                     on_auth_fail('Server nonce is incorrect')
                     raise NodeProcessed
-                # TODO: Channel binding data goes in here too.
-                r = 'c=' + scram_base64(self.scram_gs2)
+                if self.mechanism == 'SCRAM-SHA-1':
+                    r = 'c=' + scram_base64(self.scram_gs2)
+                else:
+                    # Channel binding data goes in here too.
+                    r = 'c=' + scram_base64(self.scram_gs2
+                                             + self.channel_binding)                   
                 r += ',r=' + data['r']
                 self.scram_soup += r
                 salt = data['s'].decode('base64')
@@ -437,10 +452,13 @@ class SASL(PlugIn):
 
     def set_password(self, password):
         self.password = '' if password is None else password
-        if self.mechanism == 'SCRAM-SHA-1':
+        if self.mechanism in ('SCRAM-SHA-1', 'SCRAM-SHA-1-PLUS'):
             self.client_nonce = '%x' % rndg.getrandbits(196)
             self.scram_soup = 'n=' + self.username + ',r=' + self.client_nonce
-            self.scram_gs2 = 'n,,' # No CB yet.
+            if self.mechanism == 'SCRAM-SHA-1':
+                self.scram_gs2 = 'n,,' # No CB.
+            else:
+                self.scram_gs2 = 'p=tls-unique,,'
             sasl_data = (self.scram_gs2 + self.scram_soup).encode('base64').\
                 replace('\n', '')
             node = Node('auth', attrs={'xmlns': NS_SASL,
