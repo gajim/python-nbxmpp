@@ -463,7 +463,12 @@ class SASL(PlugIn):
             self.client_nonce = '%x' % rndg.getrandbits(196)
             self.scram_soup = 'n=' + self.username + ',r=' + self.client_nonce
             if self.mechanism == 'SCRAM-SHA-1':
-                self.scram_gs2 = 'n,,' # No CB yet.
+                if self.channel_binding == None:
+                    # Client doesn't support Channel Binding
+                    self.scram_gs2 = 'n,,' # No CB yet.
+                else:
+                    # Client supports CB, but server doesn't support CB
+                    self.scram_gs2 = 'y,,'
             else:
                 self.scram_gs2 = 'p=tls-unique,,'
             sasl_data = base64.b64encode((self.scram_gs2 + self.scram_soup).\
