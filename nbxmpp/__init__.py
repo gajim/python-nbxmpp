@@ -17,4 +17,4 @@ from client_nb import NonBlockingClient
 from plugin import PlugIn
 from smacks import Smacks
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
