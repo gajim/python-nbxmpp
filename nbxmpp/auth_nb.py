@@ -91,25 +91,35 @@ def _scram_parse(chatter):
     """Helper function. Used for SCRAM-SHA-1, SCRAM-SHA-1-PLUS authentication"""
     return dict(s.split('=', 1) for s in chatter.split(','))
 
+SASL_AUTHENTICATION_MECHANISMS = \
+    set(['ANONYMOUS', 'EXTERNAL', 'GSSAPI', 'SCRAM-SHA-1-PLUS', 'SCRAM-SHA-1',
+         'DIGEST-MD5', 'PLAIN', 'X-MESSENGER-OAUTH2'])
+
 class SASL(PlugIn):
     """
     Implements SASL authentication. Can be plugged into NonBlockingClient
     to start authentication
     """
 
-    def __init__(self, username, password, on_sasl, channel_binding):
+    def __init__(self, username, password, on_sasl, channel_binding,
+                 auth_mechs):
         """
         :param username: XMPP username
         :param password: XMPP password
         :param on_sasl: Callback, will be called after each SASL auth-step.
         :param channel_binding: TLS channel binding data, None if the 
                binding data is not available
+        :param auth_mechs: Set of valid authentication mechanisms.
+               Possible entries are:
+               'ANONYMOUS', 'EXTERNAL', 'GSSAPI', 'SCRAM-SHA-1-PLUS',
+               'SCRAM-SHA-1', 'DIGEST-MD5', 'PLAIN', 'X-MESSENGER-OAUTH2'
         """
         PlugIn.__init__(self)
         self.username = username
         self.password = password
         self.on_sasl = on_sasl
         self.channel_binding = channel_binding
+        self.enabled_auth_mechs = auth_mechs
         self.realm = None
 
     def plugin(self, owner):
@@ -146,7 +156,7 @@ class SASL(PlugIn):
         Start authentication. Result can be obtained via "SASL.startsasl"
         attribute and will be either SASL_SUCCESS or SASL_FAILURE
 
-        Note that successfull auth will take at least two Dispatcher.Process()
+        Note that successful auth will take at least two Dispatcher.Process()
         calls.
         """
         if self.startsasl:
@@ -169,10 +179,22 @@ class SASL(PlugIn):
             self.startsasl='not-supported'
             log.info('SASL not supported by server')
             return
-        self.mecs = []
-        for mec in feats.getTag('mechanisms', namespace=NS_SASL).getTags(
-        'mechanism'):
-            self.mecs.append(mec.getData())
+
+        self.mecs = set(
+            mec.getData() 
+            for mec 
+            in feats.getTag('mechanisms', namespace=NS_SASL).getTags('mechanism')
+        ) & self.enabled_auth_mechs
+       
+        # Password based authentication mechanism ordered by strength.
+        # If the server supports a mechanism disable all weaker mechanisms.
+        password_auth_mechs_strength = ('SCRAM-SHA-1-PLUS', 'SCRAM-SHA-1',
+            'DIGEST-MD5', 'PLAIN', 'X-MESSENGER-OAUTH2')
+        for i in range(0, len(password_auth_mechs_strength)):
+            if password_auth_mechs_strength[i] in self.mecs:
+                for m in password_auth_mechs_strength[i + 1:]:
+                    self.mecs.discard(m)
+                break
 
         self._owner.RegisterHandler('challenge', self.SASLHandler,
             xmlns=NS_SASL)
@@ -519,7 +541,7 @@ class SASL(PlugIn):
 
 class NonBlockingNonSASL(PlugIn):
     """
-    Implements old Non-SASL (JEP-0078) authentication used in jabberd1.4 and
+    Implements old Non-SASL (XEP-0078) authentication used in jabberd1.4 and
     transport authentication
     """
 
