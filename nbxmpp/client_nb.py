@@ -23,6 +23,7 @@ Client class establishes connection to XMPP Server and handles authentication
 import socket
 import transports_nb, dispatcher_nb, auth_nb, roster_nb, protocol, bosh
 from protocol import NS_TLS
+from nbxmpp.auth_nb import SASL_AUTHENTICATION_MECHANISMS
 
 import logging
 log = logging.getLogger('nbxmpp.client_nb')
@@ -472,7 +473,8 @@ class NonBlockingClient:
 ### follows code for authentication, resource bind, session and roster download
 ###############################################################################
 
-    def auth(self, user, password, resource='', sasl=True, on_auth=None):
+    def auth(self, user, password, resource='', sasl=True, on_auth=None, 
+             auth_mechs=None):
         """
         Authenticate connnection and bind resource. If resource is not provided
         random one or library name used
@@ -483,6 +485,11 @@ class NonBlockingClient:
         :param sasl: Boolean indicating if SASL shall be used. (default: True)
         :param on_auth: Callback, called after auth. On auth failure, argument
                 is None.
+        :param auth_mechs: Set of valid authentification mechanisms. If None all
+               authentification mechanisms will be allowed. Possible entries are:
+               'ANONYMOUS', 'EXTERNAL', 'GSSAPI', 'SCRAM-SHA-1-PLUS',
+               'SCRAM-SHA-1', 'DIGEST-MD5', 'PLAIN', 'X-MESSENGER-OAUTH2',
+               'XEP-0078'
         """
         self._User, self._Password = user, password
         self._Resource, self._sasl = resource, sasl
@@ -494,6 +501,10 @@ class NonBlockingClient:
                 assert (self._channel_binding != None)
             except NotImplementedError:
                 pass
+        if auth_mechs == None:
+            self._auth_mechs = SASL_AUTHENTICATION_MECHANISMS | set(['XEP-0078'])
+        else:
+            self._auth_mechs = auth_mechs
         self.on_auth = on_auth
         self._on_doc_attrs()
         return
@@ -525,10 +536,12 @@ class NonBlockingClient:
         """
         if self._sasl:
             auth_nb.SASL.get_instance(self._User, self._Password,
-                    self._on_start_sasl, self._channel_binding).PlugIn(self)
+                    self._on_start_sasl, self._channel_binding,
+                    self._auth_mechs).PlugIn(self)
         if not hasattr(self, 'SASL'):
             return
-        if not self._sasl or self.SASL.startsasl == 'not-supported':
+        if ('XEP-0078' in self._auth_mechs 
+            and (not self._sasl or self.SASL.startsasl == 'not-supported')):
             if not self._Resource:
                 self._Resource = 'xmpppy'
             auth_nb.NonBlockingNonSASL.get_instance(self._User, self._Password,
