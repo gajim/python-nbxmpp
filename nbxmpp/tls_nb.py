@@ -392,6 +392,12 @@ class NonBlockingTLS(PlugIn):
 
         tcpsock._sslContext.set_options(flags)
 
+        try: # Supported only pyOpenSSL >= 0.14
+            # Disable session resumption, protection against Triple Handshakes TLS attack
+            tcpsock._sslContext.set_session_cache_mode(OpenSSL.SSL.SESS_CACHE_OFF)
+        except AttributeError, e:
+            pass
+
         # NonBlockingHTTPBOSH instance has no attribute _owner
         if hasattr(tcpsock, '_owner') and tcpsock._owner._caller.client_cert \
         and os.path.exists(tcpsock._owner._caller.client_cert):
