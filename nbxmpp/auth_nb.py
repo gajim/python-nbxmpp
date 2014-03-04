@@ -188,8 +188,10 @@ class SASL(PlugIn):
        
         # Password based authentication mechanism ordered by strength.
         # If the server supports a mechanism disable all weaker mechanisms.
-        password_auth_mechs_strength = ('SCRAM-SHA-1-PLUS', 'SCRAM-SHA-1',
-            'DIGEST-MD5', 'PLAIN', 'X-MESSENGER-OAUTH2')
+        password_auth_mechs_strength = ['SCRAM-SHA-1-PLUS', 'SCRAM-SHA-1',
+            'DIGEST-MD5', 'PLAIN', 'X-MESSENGER-OAUTH2']
+        if self.channel_binding == None:
+            password_auth_mechs_strength.remove('SCRAM-SHA-1-PLUS')
         for i in range(0, len(password_auth_mechs_strength)):
             if password_auth_mechs_strength[i] in self.mecs:
                 for m in password_auth_mechs_strength[i + 1:]:
