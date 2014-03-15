@@ -1,3 +1,9 @@
+python-nbxmpp 0.4 (15 March 2014)
+
+  * Ability to configure TLS protocol version
+  * Add support for SCRAM-SHA-1-PLUS
+  * Security improvements
+
 python-nbxmpp 0.3 (23 December 2013)
 
   * Improve security level
