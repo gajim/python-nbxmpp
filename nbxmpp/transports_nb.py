@@ -320,7 +320,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
 
         # ssl variables
         self.ssl_certificate = None
-        self.ssl_errnum = None
+        self.ssl_errnum = 0
 
     # FIXME: transport should not be aware xmpp
     def start_disconnect(self):

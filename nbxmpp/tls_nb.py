@@ -383,10 +383,10 @@ class NonBlockingTLS(PlugIn):
                 if self.tls_version not in ('1.0', '1.1'):
                     try:
                         flags |= OpenSSL.SSL.OP_NO_TLSv1_1
-                    except AttributeError, e:
+                    except AttributeError as e:
                         # older py-OpenSSL
                         flags |= 0x10000000
-        except AttributeError, e:
+        except AttributeError as e:
             pass # much older py-OpenSSL
  
 
@@ -395,7 +395,7 @@ class NonBlockingTLS(PlugIn):
         try: # Supported only pyOpenSSL >= 0.14
             # Disable session resumption, protection against Triple Handshakes TLS attack
             tcpsock._sslContext.set_session_cache_mode(OpenSSL.SSL.SESS_CACHE_OFF)
-        except AttributeError, e:
+        except AttributeError as e:
             pass
 
         # NonBlockingHTTPBOSH instance has no attribute _owner

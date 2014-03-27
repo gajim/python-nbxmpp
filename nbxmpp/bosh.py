@@ -94,7 +94,7 @@ class NonBlockingBOSH(NonBlockingTransport):
 
         # ssl variables
         self.ssl_certificate = None
-        self.ssl_errnum = None
+        self.ssl_errnum = 0
 
 
     def connect(self, conn_5tuple, on_connect, on_connect_failure):
