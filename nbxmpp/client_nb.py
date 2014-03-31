@@ -495,9 +495,10 @@ class NonBlockingClient:
         self._channel_binding = None
         if self.connected in ('ssl', 'tls'):
             try:
-                self._channel_binding = self.Connection.NonBlockingTLS.get_channel_binding()
-                # TLS handshake is finished so channel binding data muss exist
-                assert (self._channel_binding != None)
+                if self.protocol_type != 'BOSH':
+                    self._channel_binding = self.Connection.NonBlockingTLS.get_channel_binding()
+                    # TLS handshake is finished so channel binding data muss exist
+                    assert (self._channel_binding != None)
             except NotImplementedError:
                 pass
         if auth_mechs == None:
