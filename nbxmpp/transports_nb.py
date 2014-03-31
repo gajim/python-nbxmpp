@@ -546,7 +546,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
                 return None
             self.sendbuff = self.sendqueue.pop(0)
         try:
-            send_count = self._send(self.sendbuff)
+            send_count = self._send(self.sendbuff.encode("utf-8"))
             if send_count:
                 sent_data = self.sendbuff[:send_count]
                 self.sendbuff = self.sendbuff[send_count:]

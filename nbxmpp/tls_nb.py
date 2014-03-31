@@ -491,7 +491,10 @@ class NonBlockingTLS(PlugIn):
         Get channel binding data. RFC 5929
         """
         sslObj = self._owner._sslObj
-        try:       
-            return sslObj.get_channel_binding()
+        try:
+            if USE_PYOPENSSL:
+                return sslObj.get_finished()
+            else:
+                return sslObj.get_channel_binding()
         except AttributeError:
             raise NotImplementedError
