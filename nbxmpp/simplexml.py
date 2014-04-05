@@ -20,6 +20,9 @@ nodes and XML streams. I'm personally using it in many other separate
 projects. It is designed to be as standalone as possible
 """
 
+from __future__ import unicode_literals
+
+import sys
 import xml.parsers.expat
 import logging
 log = logging.getLogger('nbxmpp.simplexml')
@@ -34,20 +37,37 @@ def XMLescape(txt):
 
 ENCODING='utf-8'
 
-def ustr(what):
-    """
-    Converts object "what" to unicode string using it's own __str__ method if
-    accessible or unicode method otherwise
-    """
-    if isinstance(what, str):
-        return what
-    try:
-        r = what.__str__()
-    except AttributeError:
-        r = str(what)
-    if not isinstance(r, str):
-        return str(r, ENCODING)
-    return r
+if sys.version_info[0] == 2:
+    def ustr(what):
+        """
+        Converts object "what" to unicode string using it's own __str__ method if
+        accessible or unicode method otherwise
+        """
+        if isinstance(what, unicode):
+            return what
+        try:
+            r = what.__str__()
+        except AttributeError:
+            r = unicode(what)
+        if not isinstance(r, unicode):
+            return unicode(r, ENCODING)
+        return r
+
+else:
+    def ustr(what):
+        """
+        Converts object "what" to unicode string using it's own __str__ method if
+        accessible or unicode method otherwise
+        """
+        if isinstance(what, str):
+            return what
+        try:
+            r = what.__str__()
+        except AttributeError:
+            r = str(what)
+        if not isinstance(r, str):
+            return str(r, ENCODING)
+        return r
 
 class Node(object):
     """

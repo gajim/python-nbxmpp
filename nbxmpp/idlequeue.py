@@ -18,13 +18,18 @@ Idlequeues are Gajim's network heartbeat. Transports can be plugged as idle
 objects and be informed about possible IO
 """
 
+from __future__ import unicode_literals
+
 import os
+import sys
 import select
 import logging
 log = logging.getLogger('nbxmpp.idlequeue')
 
 # needed for get_idleqeue
 try:
+    if sys.version_info[0] == 2:
+        raise ImportError
     from gi.repository import GLib
     HAVE_GLIB = True
 except ImportError:
@@ -36,11 +41,10 @@ if os.name == 'nt':
 elif os.name == 'posix':
     import fcntl
 
-FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
-FLAG_READ = GLib.IOCondition.IN | GLib.IOCondition.PRI | GLib.IOCondition.HUP
-FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
-    GLib.IOCondition.PRI | GLib.IOCondition.HUP
-FLAG_CLOSE = GLib.IOCondition.HUP
+FLAG_WRITE                      = 20 # write only
+FLAG_READ                       = 19 # read only
+FLAG_READ_WRITE = 23 # read and write
+FLAG_CLOSE                      = 16 # wait for close
 
 PENDING_READ            = 3 # waiting read event
 PENDING_WRITE           = 4 # waiting write event
@@ -309,11 +313,11 @@ class IdleQueue:
         """
         current_time = self.current_time()
 
-        for fd, timeouts in list(self.read_timeouts.items()):
+        for fd, timeouts in self.read_timeouts.items():
             if fd not in self.queue:
                 self.remove_timeout(fd)
                 continue
-            for timeout, func in list(timeouts.items()):
+            for timeout, func in timeouts.items():
                 if timeout > current_time:
                     continue
                 if func:
@@ -324,7 +328,7 @@ class IdleQueue:
                     self.queue[fd].read_timeout()
                 self.remove_timeout(fd, timeout)
 
-        times = list(self.alarms.keys())
+        times = self.alarms.keys()
         for alarm_time in times:
             if alarm_time > current_time:
                 continue
