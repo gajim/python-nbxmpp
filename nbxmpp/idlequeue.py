@@ -529,10 +529,6 @@ class GlibIdleQueue(IdleQueue):
         Creates a dict, which maps file/pipe/sock descriptor to glib event id
         """
         self.events = {}
-        if sys.version_info[0] == 2:
-            self.current_time = gobject.get_current_time
-        else:
-            self.current_time = GLib.get_real_time
 
     def _add_idle(self, fd, flags):
         """
@@ -571,3 +567,9 @@ class GlibIdleQueue(IdleQueue):
 
     def process(self):
         self._check_time_events()
+
+    if sys.version_info[0] == 2:
+        def current_time(self):
+            return gobject.get_current_time() * 1e6
+    else:
+        current_time = GLib.get_real_time
