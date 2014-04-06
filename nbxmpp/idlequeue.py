@@ -41,10 +41,17 @@ if os.name == 'nt':
 elif os.name == 'posix':
     import fcntl
 
-FLAG_WRITE                      = 20 # write only
-FLAG_READ                       = 19 # read only
-FLAG_READ_WRITE = 23 # read and write
-FLAG_CLOSE                      = 16 # wait for close
+if HAVE_GLIB:
+    FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
+    FLAG_READ = GLib.IOCondition.IN | GLib.IOCondition.PRI | GLib.IOCondition.HUP
+    FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
+            GLib.IOCondition.PRI | GLib.IOCondition.HUP
+    FLAG_CLOSE = GLib.IOCondition.HUP
+else:
+    FLAG_WRITE                      = 20 # write only
+    FLAG_READ                       = 19 # read only
+    FLAG_READ_WRITE = 23 # read and write
+    FLAG_CLOSE                      = 16 # wait for close
 
 PENDING_READ            = 3 # waiting read event
 PENDING_WRITE           = 4 # waiting write event
