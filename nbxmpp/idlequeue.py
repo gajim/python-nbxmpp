@@ -322,11 +322,11 @@ class IdleQueue:
         """
         current_time = self.current_time()
 
-        for fd, timeouts in self.read_timeouts.items():
+        for fd, timeouts in list(self.read_timeouts.items()):
             if fd not in self.queue:
                 self.remove_timeout(fd)
                 continue
-            for timeout, func in timeouts.items():
+            for timeout, func in list(timeouts.items()):
                 if timeout > current_time:
                     continue
                 if func:
@@ -337,7 +337,7 @@ class IdleQueue:
                     self.queue[fd].read_timeout()
                 self.remove_timeout(fd, timeout)
 
-        times = self.alarms.keys()
+        times = list(self.alarms.keys())
         for alarm_time in times:
             if alarm_time > current_time:
                 continue
