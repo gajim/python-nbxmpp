@@ -29,8 +29,9 @@ log = logging.getLogger('nbxmpp.idlequeue')
 # needed for get_idleqeue
 try:
     if sys.version_info[0] == 2:
-        raise ImportError
-    from gi.repository import GLib
+        import gobject
+    else:
+        from gi.repository import GLib
     HAVE_GLIB = True
 except ImportError:
     HAVE_GLIB = False
@@ -41,17 +42,18 @@ if os.name == 'nt':
 elif os.name == 'posix':
     import fcntl
 
-if HAVE_GLIB:
-    FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
-    FLAG_READ = GLib.IOCondition.IN | GLib.IOCondition.PRI | GLib.IOCondition.HUP
-    FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
-            GLib.IOCondition.PRI | GLib.IOCondition.HUP
-    FLAG_CLOSE = GLib.IOCondition.HUP
-else:
+if sys.version_info[0] == 2:
     FLAG_WRITE                      = 20 # write only
     FLAG_READ                       = 19 # read only
     FLAG_READ_WRITE = 23 # read and write
     FLAG_CLOSE                      = 16 # wait for close
+else:
+    FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
+    FLAG_READ = GLib.IOCondition.IN | GLib.IOCondition.PRI | \
+        GLib.IOCondition.HUP
+    FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
+        GLib.IOCondition.PRI | GLib.IOCondition.HUP
+    FLAG_CLOSE = GLib.IOCondition.HUP
 
 PENDING_READ            = 3 # waiting read event
 PENDING_WRITE           = 4 # waiting write event
@@ -527,15 +529,22 @@ class GlibIdleQueue(IdleQueue):
         Creates a dict, which maps file/pipe/sock descriptor to glib event id
         """
         self.events = {}
-        self.current_time = GLib.get_real_time
+        if sys.version_info[0] == 2:
+            self.current_time = gobject.get_current_time
+        else:
+            self.current_time = GLib.get_real_time
 
     def _add_idle(self, fd, flags):
         """
         This method is called when we plug a new idle object. Start listening for
         events from fd
         """
-        res = GLib.io_add_watch(fd, GLib.PRIORITY_LOW, flags,
-            self._process_events)
+        if sys.version_info[0] == 2:
+            res = gobject.io_add_watch(fd, flags, self._process_events,
+                priority=gobject.PRIORITY_LOW)
+        else:
+            res = GLib.io_add_watch(fd, GLib.PRIORITY_LOW, flags,
+                self._process_events)
         # store the id of the watch, so that we can remove it on unplug
         self.events[fd] = res
 
@@ -554,7 +563,10 @@ class GlibIdleQueue(IdleQueue):
         """
         if not fd in self.events:
             return
-        GLib.source_remove(self.events[fd])
+        if sys.version_info[0] == 2:
+            gobject.source_remove(self.events[fd])
+        else:
+            GLib.source_remove(self.events[fd])
         del(self.events[fd])
 
     def process(self):
