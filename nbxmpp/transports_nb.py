@@ -639,7 +639,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         except UnicodeDecodeError:
             for i in range(-1, -4, -1):
                 char = received[i]
-                if char & 0xc0 == 0xc0:
+                if ord(char) & 0xc0 == 0xc0:
                     self.received_bytes_buff = received[i:]
                     received = received[:i]
                     break
