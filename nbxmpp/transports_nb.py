@@ -24,6 +24,8 @@ Transports are not aware of XMPP stanzas and only responsible for low-level
 connection handling.
 """
 
+from __future__ import unicode_literals
+
 from .simplexml import ustr
 from .plugin import PlugIn
 from .idlequeue import IdleObject
@@ -35,7 +37,11 @@ import errno
 import time
 import traceback
 import base64
-from urllib.parse import urlparse
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 import logging
 log = logging.getLogger('nbxmpp.transports_nb')

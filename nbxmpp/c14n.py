@@ -50,7 +50,7 @@ def c14n(node, is_buggy):
         s=s[:-1]+' />'
     else:
         s = s + "</" + node.name + ">"
-    return s.encode('utf-8')
+    return s
 
 def normalise_attr(val):
     return val.replace('&', '&amp;').replace('<', '&lt;').replace('"', '&quot;').replace('\t', '&#x9;').replace('\n', '&#xA;').replace('\r', '&#xD;')

@@ -15,6 +15,8 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
+from __future__ import print_function
+
 import socket
 import ssl
 from .plugin import PlugIn
