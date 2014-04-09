@@ -10,11 +10,11 @@ Most of the xmpp classes are ancestors of PlugIn class to share a single set of 
 Thanks and credits to the xmpppy developers. See: http://xmpppy.sourceforge.net/
 """
 
-from protocol import *
-import simplexml, protocol, auth_nb, transports_nb, roster_nb
-import dispatcher_nb, features_nb, idlequeue, bosh, tls_nb, proxy_connectors
-from client_nb import NonBlockingClient
-from plugin import PlugIn
-from smacks import Smacks
+from .protocol import *
+from . import simplexml, protocol, auth_nb, transports_nb, roster_nb
+from . import dispatcher_nb, features_nb, idlequeue, bosh, tls_nb, proxy_connectors
+from .client_nb import NonBlockingClient
+from .plugin import PlugIn
+from .smacks import Smacks
 
 __version__ = "0.3.3"

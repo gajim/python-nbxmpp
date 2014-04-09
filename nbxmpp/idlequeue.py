@@ -18,17 +18,23 @@ Idlequeues are Gajim's network heartbeat. Transports can be plugged as idle
 objects and be informed about possible IO
 """
 
+from __future__ import unicode_literals
+
 import os
+import sys
 import select
 import logging
 log = logging.getLogger('nbxmpp.idlequeue')
 
 # needed for get_idleqeue
 try:
-    import gobject
-    HAVE_GOBJECT = True
+    if sys.version_info[0] == 2:
+        import gobject
+    else:
+        from gi.repository import GLib
+    HAVE_GLIB = True
 except ImportError:
-    HAVE_GOBJECT = False
+    HAVE_GLIB = False
 
 # needed for idlecommand
 if os.name == 'nt':
@@ -36,10 +42,18 @@ if os.name == 'nt':
 elif os.name == 'posix':
     import fcntl
 
-FLAG_WRITE                      = 20 # write only
-FLAG_READ                       = 19 # read only
-FLAG_READ_WRITE = 23 # read and write
-FLAG_CLOSE                      = 16 # wait for close
+if sys.version_info[0] == 2:
+    FLAG_WRITE                      = 20 # write only
+    FLAG_READ                       = 19 # read only
+    FLAG_READ_WRITE = 23 # read and write
+    FLAG_CLOSE                      = 16 # wait for close
+else:
+    FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
+    FLAG_READ = GLib.IOCondition.IN | GLib.IOCondition.PRI | \
+        GLib.IOCondition.HUP
+    FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
+        GLib.IOCondition.PRI | GLib.IOCondition.HUP
+    FLAG_CLOSE = GLib.IOCondition.HUP
 
 PENDING_READ            = 3 # waiting read event
 PENDING_WRITE           = 4 # waiting write event
@@ -54,7 +68,7 @@ def get_idlequeue():
         # gobject.io_add_watch does not work on windows
         return SelectIdleQueue()
     else:
-        if HAVE_GOBJECT:
+        if HAVE_GLIB:
             # Gajim's default Idlequeue
             return GlibIdleQueue()
         else:
@@ -128,8 +142,7 @@ class IdleCommand(IdleObject):
         """
         Return one line representation of command and its arguments
         """
-        return  reduce(lambda left, right: left + ' ' + right,
-                self._compose_command_args())
+        return ' '.join(self._compose_command_args())
 
     def wait_child(self):
         if self.pipe.poll() is None:
@@ -162,9 +175,10 @@ class IdleCommand(IdleObject):
         # if program is started from noninteraactive shells stdin is closed and
         # cannot be forwarded, so we have to keep it open
         self.pipe = Popen(self._compose_command_args(), stdout=PIPE,
-                bufsize = 1024, shell = True, stderr = STDOUT, stdin = PIPE)
+            bufsize=1024, shell=True, stderr=STDOUT, stdin=PIPE)
         if self.commandtimeout >= 0:
-            self.endtime = self.idlequeue.current_time() + self.commandtimeout
+            self.endtime = self.idlequeue.current_time() + \
+                (self.commandtimeout * 1e6)
             self.idlequeue.set_alarm(self.wait_child, 0.1)
 
     def _start_posix(self):
@@ -190,7 +204,7 @@ class IdleCommand(IdleObject):
     def pollin(self):
         try:
             res = self.pipe.read()
-        except Exception, e:
+        except Exception as e:
             res = ''
         if res == '':
             return self.pollend()
@@ -242,7 +256,7 @@ class IdleQueue:
         """
         Set up a new alarm. alarm_cb will be called after specified seconds.
         """
-        alarm_time = self.current_time() + seconds
+        alarm_time = self.current_time() + (seconds * 1e6)
         # almost impossible, but in case we have another alarm_cb at this time
         if alarm_time in self.alarms:
             self.alarms[alarm_time].append(alarm_cb)
@@ -295,7 +309,7 @@ class IdleQueue:
         if func:
             log_txt += ' with function ' + str(func)
         log.info(log_txt)
-        timeout = self.current_time() + seconds
+        timeout = self.current_time() + (seconds * 1e6)
         if fd in self.read_timeouts:
             self.read_timeouts[fd][timeout] = func
         else:
@@ -308,11 +322,11 @@ class IdleQueue:
         """
         current_time = self.current_time()
 
-        for fd, timeouts in self.read_timeouts.items():
+        for fd, timeouts in list(self.read_timeouts.items()):
             if fd not in self.queue:
                 self.remove_timeout(fd)
                 continue
-            for timeout, func in timeouts.items():
+            for timeout, func in list(timeouts.items()):
                 if timeout > current_time:
                     continue
                 if func:
@@ -323,7 +337,7 @@ class IdleQueue:
                     self.queue[fd].read_timeout()
                 self.remove_timeout(fd, timeout)
 
-        times = self.alarms.keys()
+        times = list(self.alarms.keys())
         for alarm_time in times:
             if alarm_time > current_time:
                 continue
@@ -375,7 +389,7 @@ class IdleQueue:
 
     def current_time(self):
         from time import time
-        return time()
+        return time() * 1e6
 
     def _remove_idle(self, fd):
         """
@@ -424,7 +438,7 @@ class IdleQueue:
             return True
         try:
             waiting_descriptors = self.selector.poll(0)
-        except select.error, e:
+        except select.error as e:
             waiting_descriptors = []
             if e[0] != 4: # interrupt
                 raise
@@ -478,9 +492,9 @@ class SelectIdleQueue(IdleQueue):
             self._check_time_events()
             return True
         try:
-            waiting_descriptors = select.select(self.read_fds.keys(),
-                    self.write_fds.keys(), self.error_fds.keys(), 0)
-        except select.error, e:
+            waiting_descriptors = select.select(list(self.read_fds.keys()),
+                    list(self.write_fds.keys()), list(self.error_fds.keys()), 0)
+        except select.error as e:
             waiting_descriptors = ((), (), ())
             if e[0] != 4: # interrupt
                 raise
@@ -515,17 +529,18 @@ class GlibIdleQueue(IdleQueue):
         Creates a dict, which maps file/pipe/sock descriptor to glib event id
         """
         self.events = {}
-        # time() is already called in glib, we just get the last value
-        # overrides IdleQueue.current_time()
-        self.current_time = gobject.get_current_time
 
     def _add_idle(self, fd, flags):
         """
         This method is called when we plug a new idle object. Start listening for
         events from fd
         """
-        res = gobject.io_add_watch(fd, flags, self._process_events,
+        if sys.version_info[0] == 2:
+            res = gobject.io_add_watch(fd, flags, self._process_events,
                 priority=gobject.PRIORITY_LOW)
+        else:
+            res = GLib.io_add_watch(fd, GLib.PRIORITY_LOW, flags,
+                self._process_events)
         # store the id of the watch, so that we can remove it on unplug
         self.events[fd] = res
 
@@ -544,8 +559,17 @@ class GlibIdleQueue(IdleQueue):
         """
         if not fd in self.events:
             return
-        gobject.source_remove(self.events[fd])
+        if sys.version_info[0] == 2:
+            gobject.source_remove(self.events[fd])
+        else:
+            GLib.source_remove(self.events[fd])
         del(self.events[fd])
 
     def process(self):
         self._check_time_events()
+
+    if sys.version_info[0] == 2:
+        def current_time(self):
+            return gobject.get_current_time() * 1e6
+    else:
+        current_time = GLib.get_real_time

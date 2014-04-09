@@ -20,15 +20,13 @@ data structures, including jabber-objects like JID or different stanzas and
 sub- stanzas) handling routines
 """
 
-from simplexml import Node, NodeBuilder
+from .simplexml import Node, NodeBuilder
 import time
 import string
 import hashlib
 
 def ascii_upper(s):
-    trans_table = string.maketrans(string.ascii_lowercase,
-        string.ascii_uppercase)
-    return s.translate(trans_table)
+    return s.upper()
 
 NS_ACTIVITY       = 'http://jabber.org/protocol/activity'             # XEP-0108
 NS_ADDRESS        = 'http://jabber.org/protocol/address'              # XEP-0033
@@ -768,7 +766,7 @@ class Protocol(Node):
         if self['from']:
             self.setFrom(self['from'])
         if node and type(self) == type(node) and \
-        self.__class__ == node.__class__ and self.attrs.has_key('id'):
+        self.__class__ == node.__class__ and 'id' in self.attrs:
             del self.attrs['id']
         self.timestamp = None
         for d in self.getTags('delay', namespace=NS_DELAY2):
@@ -908,7 +906,7 @@ class Protocol(Node):
             else:
                 error = ErrorNode(ERR_UNDEFINED_CONDITION, code=code,
                     typ='cancel', text=error)
-        elif type(error) in [type(''), type(u'')]:
+        elif type(error)  == str:
             error=ErrorNode(error)
         self.setType('error')
         self.addChild(node=error)
@@ -1021,8 +1019,8 @@ class Message(Protocol):
                 self.getTag('html').addChild(node=dom)
             else:
                 self.setTag('html', namespace=NS_XHTML_IM).addChild(node=dom)
-        except Exception, e:
-            print "Error", e
+        except Exception as e:
+            print("Error" + str(e))
             # FIXME: log. we could not set xhtml (parse error, whatever)
 
     def setSubject(self, val):
@@ -1557,7 +1555,7 @@ class DataField(Node):
         """
         Add one more label-option pair to this field
         """
-        if isinstance(opt, basestring):
+        if isinstance(opt, str):
             self.addChild('option').setTagData('value', opt)
         else:
             self.addChild('option', {'label': opt[0]}).setTagData('value',
@@ -1628,7 +1626,7 @@ class DataForm(Node):
                 newdata.append(DataField(name, data[name]))
             data = newdata
         for child in data:
-            if isinstance(child, basestring):
+            if isinstance(child, str):
                 self.addInstructions(child)
             elif child.__class__.__name__ == 'DataField':
                 self.kids.append(child)
@@ -1702,7 +1700,7 @@ class DataForm(Node):
         for field in self.getTags('field'):
             name = field.getAttr('var')
             typ = field.getType()
-            if isinstance(typ, basestring) and typ.endswith('-multi'):
+            if isinstance(typ, str) and typ.endswith('-multi'):
                 val = []
                 for i in field.getTags('value'):
                     val.append(i.getData())

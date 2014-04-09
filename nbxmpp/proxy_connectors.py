@@ -22,7 +22,8 @@ SOCKS5 proxy
 Authentication to NTLM (Microsoft implementation) proxies can be next.
 """
 
-import struct, socket, base64
+import struct, socket
+from base64 import b64encode
 import logging
 log = logging.getLogger('nbxmpp.proxy_connectors')
 
@@ -91,7 +92,8 @@ class HTTPCONNECTConnector(ProxyConnector):
                 'User-Agent: Gajim']
         if self.proxy_user and self.proxy_pass:
             credentials = '%s:%s' % (self.proxy_user, self.proxy_pass)
-            credentials = base64.encodestring(credentials).strip()
+            credentials = b64encode(credentials.encode('utf-8')).decode(
+                'utf-8').strip()
             connector.append('Proxy-Authorization: Basic '+credentials)
         connector.append('\r\n')
         self.onreceive(self._on_headers_sent)
@@ -108,7 +110,7 @@ class HTTPCONNECTConnector(ProxyConnector):
             #traceback.print_exc()
             self.on_failure('Invalid proxy reply')
             return
-        if code <> '200':
+        if code != '200':
             log.error('Invalid proxy reply: %s %s %s' % (proto, code, desc))
             self.on_failure('Invalid proxy reply')
             return
@@ -126,9 +128,9 @@ class SOCKS5Connector(ProxyConnector):
     def start_connecting(self):
         log.info('Proxy server contacted, performing authentification')
         if self.proxy_user and self.proxy_pass:
-            to_send = '\x05\x02\x00\x02'
+            to_send = b'\x05\x02\x00\x02'
         else:
-            to_send = '\x05\x01\x00'
+            to_send = b'\x05\x01\x00'
         self.onreceive(self._on_greeting_sent)
         self.send(to_send)
 
@@ -146,15 +148,15 @@ class SOCKS5Connector(ProxyConnector):
             return self._on_proxy_auth('\x01\x00')
         elif reply[1] == '\x02':
             to_send = '\x01' + chr(len(self.proxy_user)) + self.proxy_user +\
-                    chr(len(self.proxy_pass)) + self.proxy_pass
+                chr(len(self.proxy_pass)) + self.proxy_pass
             self.onreceive(self._on_proxy_auth)
             self.send(to_send)
         else:
             if reply[1] == '\xff':
                 log.error('Authentification to proxy impossible: no acceptable '
-                        'auth method')
+                    'auth method')
                 self.on_failure('Authentification to proxy impossible: no '
-                        'acceptable authentification method')
+                    'acceptable authentification method')
                 return
             log.error('Invalid proxy reply')
             self.on_failure('Invalid proxy reply')
@@ -177,18 +179,18 @@ class SOCKS5Connector(ProxyConnector):
             return
         log.info('Authentification successfull. Jabber server contacted.')
         # Request connection
-        req = "\x05\x01\x00"
+        req = b'\x05\x01\x00'
         # If the given destination address is an IP address, we'll
         # use the IPv4 address request even if remote resolving was specified.
         try:
             self.ipaddr = socket.inet_aton(self.xmpp_server[0])
-            req = req + "\x01" + self.ipaddr
+            req = req + b'\x01' + self.ipaddr
         except socket.error:
             # Well it's not an IP number,  so it's probably a DNS name.
 #                       if self.__proxy[3]==True:
             # Resolve remotely
             self.ipaddr = None
-            req = req + "\x03" + chr(len(self.xmpp_server[0])) + self.xmpp_server[0]
+            req = req + b'\x03' + (chr(len(self.xmpp_server[0])) + self.xmpp_server[0]).encode('utf-8')
 #                       else:
 #                               # Resolve locally
 #                               self.ipaddr = socket.inet_aton(socket.gethostbyname(self.xmpp_server[0]))
@@ -208,17 +210,17 @@ class SOCKS5Connector(ProxyConnector):
             log.error('Invalid proxy reply')
             self.on_failure('Invalid proxy reply')
             return
-        if reply[1] != "\x00":
+        if reply[1] != '\x00':
             # Connection failed
             if ord(reply[1])<9:
                 errors = ['general SOCKS server failure',
-                        'connection not allowed by ruleset',
-                        'Network unreachable',
-                        'Host unreachable',
-                        'Connection refused',
-                        'TTL expired',
-                        'Command not supported',
-                        'Address type not supported'
+                    'connection not allowed by ruleset',
+                    'Network unreachable',
+                    'Host unreachable',
+                    'Connection refused',
+                    'TTL expired',
+                    'Command not supported',
+                    'Address type not supported'
                 ]
                 txt = errors[ord(reply[1])-1]
             else:
@@ -227,9 +229,9 @@ class SOCKS5Connector(ProxyConnector):
             self.on_failure(txt)
             return
         # Get the bound address/port
-        elif reply[3] == "\x01":
+        elif reply[3] == '\x01':
             begin, end = 3, 7
-        elif reply[3] == "\x03":
+        elif reply[3] == '\x03':
             begin, end = 4, 4 + reply[4]
         else:
             log.error('Invalid proxy reply')

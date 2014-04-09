@@ -22,8 +22,8 @@ Simple roster implementation. Can be used though for different tasks like
 mass-renaming of contacts.
 """
 
-from protocol import JID, Iq, Presence, Node, NodeProcessed, NS_MUC_USER, NS_ROSTER
-from plugin import PlugIn
+from .protocol import JID, Iq, Presence, Node, NodeProcessed, NS_MUC_USER, NS_ROSTER
+from .plugin import PlugIn
 
 import logging
 log = logging.getLogger('nbxmpp.roster_nb')
@@ -86,16 +86,16 @@ class NonBlockingRoster(PlugIn):
             for item in query.getTags('item'):
                 jid=item.getAttr('jid')
                 if item.getAttr('subscription')=='remove':
-                    if self._data.has_key(jid): del self._data[jid]
+                    if jid in self._data: del self._data[jid]
                     # Looks like we have a workaround
                     # raise NodeProcessed # a MUST
                 log.info('Setting roster item %s...' % jid)
-                if not self._data.has_key(jid): self._data[jid]={}
+                if jid not in self._data: self._data[jid]={}
                 self._data[jid]['name']=item.getAttr('name')
                 self._data[jid]['ask']=item.getAttr('ask')
                 self._data[jid]['subscription']=item.getAttr('subscription')
                 self._data[jid]['groups']=[]
-                if not self._data[jid].has_key('resources'): self._data[jid]['resources']={}
+                if 'resources' not in self._data[jid]: self._data[jid]['resources']={}
                 for group in item.getTags('group'):
                     if group.getData() not in self._data[jid]['groups']:
                         self._data[jid]['groups'].append(group.getData())
@@ -116,7 +116,7 @@ class NonBlockingRoster(PlugIn):
             # If no from attribue, it's from server
             jid=self._owner.Server
         jid=JID(jid)
-        if not self._data.has_key(jid.getStripped()): self._data[jid.getStripped()]={'name':None,'ask':None,'subscription':'none','groups':['Not in roster'],'resources':{}}
+        if jid.getStripped() not in self._data: self._data[jid.getStripped()]={'name':None,'ask':None,'subscription':'none','groups':['Not in roster'],'resources':{}}
         if type(self._data[jid.getStripped()]['resources'])!=type(dict()):
             self._data[jid.getStripped()]['resources']={}
         item=self._data[jid.getStripped()]
@@ -130,7 +130,7 @@ class NonBlockingRoster(PlugIn):
             if pres.getTag('priority'): res['priority']=pres.getPriority()
             if not pres.getTimestamp(): pres.setTimestamp()
             res['timestamp']=pres.getTimestamp()
-        elif typ=='unavailable' and item['resources'].has_key(jid.getResource()): del item['resources'][jid.getResource()]
+        elif typ=='unavailable' and jid.getResource() in item['resources']: del item['resources'][jid.getResource()]
         # Need to handle type='error' also
 
     def _getItemData(self, jid, dataname):
@@ -147,11 +147,11 @@ class NonBlockingRoster(PlugIn):
         """
         if jid.find('/') + 1:
             jid, resource = jid.split('/', 1)
-            if self._data[jid]['resources'].has_key(resource):
+            if resource in self._data[jid]['resources']:
                 return self._data[jid]['resources'][resource][dataname]
-        elif self._data[jid]['resources'].keys():
+        elif list(self._data[jid]['resources'].keys()):
             lastpri = -129
-            for r in self._data[jid]['resources'].keys():
+            for r in list(self._data[jid]['resources'].keys()):
                 if int(self._data[jid]['resources'][r]['priority']) > lastpri:
                     resource, lastpri=r, int(self._data[jid]['resources'][r]['priority'])
             return self._data[jid]['resources'][resource][dataname]
@@ -222,7 +222,7 @@ class NonBlockingRoster(PlugIn):
         """
         Return list of connected resources of contact 'jid'
         """
-        return self._data[jid[:(jid+'/').find('/')]]['resources'].keys()
+        return list(self._data[jid[:(jid+'/').find('/')]]['resources'].keys())
 
     def setItem(self, jid, name=None, groups=[]):
         """
@@ -257,13 +257,13 @@ class NonBlockingRoster(PlugIn):
         """
         Return list of all [bare] JIDs that the roster is currently tracks
         """
-        return self._data.keys()
+        return list(self._data.keys())
 
     def keys(self):
         """
         Same as getItems. Provided for the sake of dictionary interface
         """
-        return self._data.keys()
+        return list(self._data.keys())
 
     def __getitem__(self, item):
         """
@@ -277,7 +277,7 @@ class NonBlockingRoster(PlugIn):
         Get the contact in the internal format (or None if JID 'item' is not in
         roster)
         """
-        if self._data.has_key(item):
+        if item in self._data:
             return self._data[item]
 
     def Subscribe(self, jid):

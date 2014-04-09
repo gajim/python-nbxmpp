@@ -20,13 +20,20 @@ Main xmpp decision making logic. Provides library with methods to assign
 different handlers to different XMPP stanzas and namespaces
 """
 
-import simplexml, sys, locale
+from __future__ import unicode_literals
+from . import simplexml
+import sys
+import locale
 import re
 from xml.parsers.expat import ExpatError
-from plugin import PlugIn
-from protocol import (NS_STREAMS, NS_XMPP_STREAMS, NS_HTTP_BIND, Iq, Presence,
+from .plugin import PlugIn
+from .protocol import (NS_STREAMS, NS_XMPP_STREAMS, NS_HTTP_BIND, Iq, Presence,
         Message, Protocol, Node, Error, ERR_FEATURE_NOT_IMPLEMENTED, StreamError)
 import logging
+
+if sys.version_info[0] == 2:
+    chr = unichr
+
 log = logging.getLogger('nbxmpp.dispatcher_nb')
 
 #: default timeout to wait for response for our id
@@ -95,20 +102,20 @@ class XMPPDispatcher(PlugIn):
         self.sm = None
 
         # \ufddo -> \ufdef range
-        c = u'\ufdd0'
-        r = c.encode('utf8')
-        while (c < u'\ufdef'):
-            c = unichr(ord(c) + 1)
-            r += '|' + c.encode('utf8')
+        c = '\ufdd0'
+        r = c
+        while (c < '\ufdef'):
+            c = chr(ord(c) + 1)
+            r += '|' + c
 
         # \ufffe-\uffff, \u1fffe-\u1ffff, ..., \u10fffe-\u10ffff
-        c = u'\ufffe'
-        r += '|' + c.encode('utf8')
-        r += '|' + unichr(ord(c) + 1).encode('utf8')
-        while (c < u'\U0010fffe'):
-            c = unichr(ord(c) + 0x10000)
-            r += '|' + c.encode('utf8')
-            r += '|' + unichr(ord(c) + 1).encode('utf8')
+        c = '\ufffe'
+        r += '|' + c
+        r += '|' + chr(ord(c) + 1)
+        while (c < '\U0010fffe'):
+            c = chr(ord(c) + 0x10000)
+            r += '|' + c
+            r += '|' + chr(ord(c) + 1)
 
         self.invalid_chars_re = re.compile(r)
 
@@ -198,7 +205,7 @@ class XMPPDispatcher(PlugIn):
                     % (tag, ns))
 
     def replace_non_character(self, data):
-        return re.sub(self.invalid_chars_re, u'\ufffd'.encode('utf-8'), data)
+        return re.sub(self.invalid_chars_re, '\ufffd', data)
 
     def ProcessNonBlocking(self, data):
         """
@@ -220,7 +227,8 @@ class XMPPDispatcher(PlugIn):
             handler(self)
         if len(self._pendingExceptions) > 0:
             _pendingException = self._pendingExceptions.pop()
-            raise _pendingException[0], _pendingException[1], _pendingException[2]
+            sys.excepthook(*_pendingException)
+            return
         try:
             self.Stream.Parse(data)
             # end stream:stream tag received
@@ -231,13 +239,14 @@ class XMPPDispatcher(PlugIn):
             log.error('Invalid XML received from server. Forcing disconnect.')
             self._owner.Connection.disconnect()
             return 0
-        except ValueError, e:
+        except ValueError as e:
             log.debug('ValueError: %s' % str(e))
             self._owner.Connection.pollend()
             return 0
         if len(self._pendingExceptions) > 0:
             _pendingException = self._pendingExceptions.pop()
-            raise _pendingException[0], _pendingException[1], _pendingException[2]
+            sys.excepthook(*_pendingException)
+            return
         if len(data) == 0:
             return '0'
         return len(data)
@@ -424,12 +433,12 @@ class XMPPDispatcher(PlugIn):
         # log.info('in dispatch, getting ns for %s, and the ns is %s'
         # % (stanza, xmlns))
         if xmlns not in self.handlers:
-            log.warn("Unknown namespace: " + xmlns)
+            log.warning("Unknown namespace: " + xmlns)
             xmlns = 'unknown'
         # features stanza has been handled before
         if name not in self.handlers[xmlns]:
             if name != 'features':
-                log.warn("Unknown stanza: " + name)
+                log.warning("Unknown stanza: " + name)
             else:
                 log.debug("Got %s/%s stanza" % (xmlns, name))
             name='unknown'
@@ -474,7 +483,7 @@ class XMPPDispatcher(PlugIn):
                         (cb, args))
                 try:
                     cb(session,stanza,**args)
-                except Exception, typ:
+                except Exception as typ:
                     if typ.__class__.__name__ != 'NodeProcessed':
                         raise
             else:
@@ -486,7 +495,7 @@ class XMPPDispatcher(PlugIn):
             if user or handler['system']:
                 try:
                     handler['func'](session, stanza)
-                except Exception, typ:
+                except Exception as typ:
                     if typ.__class__.__name__ != 'NodeProcessed':
                         self._pendingExceptions.insert(0, sys.exc_info())
                         return
@@ -505,7 +514,7 @@ class XMPPDispatcher(PlugIn):
         # we have released dispatcher, so self._owner has no methods
         if not res:
             return
-        for (_id, _iq) in self._expected.items():
+        for (_id, _iq) in list(self._expected.items()):
             if _iq is None:
                 # If the expected Stanza would have arrived, ProcessNonBlocking
                 # would have placed the reply stanza in there
@@ -552,7 +561,7 @@ class XMPPDispatcher(PlugIn):
         sure stanzas get ID and from tag.
         """
         ID = None
-        if type(stanza) not in [type(''), type(u'')]:
+        if type(stanza) != str:
             if isinstance(stanza, Protocol):
                 ID = stanza.getID()
                 if ID is None:

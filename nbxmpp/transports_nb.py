@@ -24,18 +24,24 @@ Transports are not aware of XMPP stanzas and only responsible for low-level
 connection handling.
 """
 
-from simplexml import ustr
-from plugin import PlugIn
-from idlequeue import IdleObject
-import proxy_connectors
-import tls_nb
+from __future__ import unicode_literals
+
+from .simplexml import ustr
+from .plugin import PlugIn
+from .idlequeue import IdleObject
+from . import proxy_connectors
+from . import tls_nb
 
 import socket
 import errno
 import time
 import traceback
 import base64
-import urlparse
+
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
 
 import logging
 log = logging.getLogger('nbxmpp.transports_nb')
@@ -47,12 +53,12 @@ def urisplit(uri):
     'httpcm.jabber.org', 123, '/webclient') return 443 as default port if proto
     is https else 80
     """
-    splitted =  urlparse.urlsplit(uri)
+    splitted =  urlparse(uri)
     proto, host, path = splitted.scheme, splitted.hostname, splitted.path
     try:
         port = splitted.port
     except ValueError:
-        log.warn('port cannot be extracted from BOSH URL %s, using default port' \
+        log.warning('port cannot be extracted from BOSH URL %s, using default port' \
                 % uri)
         port = ''
     if not port:
@@ -226,7 +232,7 @@ class NonBlockingTransport(PlugIn):
             if hasattr(self, '_owner') and hasattr(self._owner, 'Dispatcher'):
                 self.on_receive = self._owner.Dispatcher.ProcessNonBlocking
             else:
-                log.warn('No Dispatcher plugged. Received data will not be processed')
+                log.warning('No Dispatcher plugged. Received data will not be processed')
                 self.on_receive = None
             return
         self.on_receive = recv_handler
@@ -310,13 +316,17 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
 
         # bytes remained from the last send message
         self.sendbuff = ''
+        self.sent_bytes_buff = b''
+
+        # bytes remained from the last received message
+        self.received_bytes_buff = b''
 
         self.proxy_dict = proxy_dict
         self.on_remote_disconnect = self.disconnect
 
         # ssl variables
         self.ssl_certificate = None
-        self.ssl_errnum = None
+        self.ssl_errnum = 0
 
     # FIXME: transport should not be aware xmpp
     def start_disconnect(self):
@@ -332,9 +342,9 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
 
         try:
             self._sock = socket.socket(*conn_5tuple[:3])
-        except socket.error, (errnum, errstr):
+        except socket.error as e:
             self._on_connect_failure('NonBlockingTCP Connect: Error while creating\
-                    socket: %s %s' % (errnum, errstr))
+                    socket: %s' % atr(e))
             return
 
         self._send = self._sock.send
@@ -358,12 +368,8 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         try:
             self._sock.setblocking(False)
             self._sock.connect((self.server, self.port))
-        except Exception, exc:
-            if type(exc.args) == tuple:
-                errnum, errstr = exc.args
-            else:
-                errnum = 'unknown'
-                errstr = exc.args
+        except Exception as exc:
+            errnum, errstr = exc.errno, exc.strerror
 
         if errnum in (errno.EINPROGRESS, errno.EALREADY, errno.EWOULDBLOCK):
             # connecting in progress
@@ -465,8 +471,8 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         try:
             self._sock.shutdown(socket.SHUT_RDWR)
             self._sock.close()
-        except socket.error, (errnum, errstr):
-            log.info('Error while disconnecting socket: %s' % errstr)
+        except socket.error as e:
+            log.info('Error while disconnecting socket: %s' % str(e))
         self.fd = -1
         NonBlockingTransport.disconnect(self, do_callback)
 
@@ -484,14 +490,14 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         if self.get_state() != DISCONNECTED and self.fd != -1:
             NonBlockingTransport.set_timeout(self, timeout)
         else:
-            log.warn('set_timeout: TIMEOUT NOT SET: state is %s, fd is %s' %
+            log.warning('set_timeout: TIMEOUT NOT SET: state is %s, fd is %s' %
                     (self.get_state(), self.fd))
 
     def remove_timeout(self):
         if self.fd:
             NonBlockingTransport.remove_timeout(self)
         else:
-            log.warn('remove_timeout: no self.fd state is %s' % self.get_state())
+            log.warning('remove_timeout: no self.fd state is %s' % self.get_state())
 
     def send(self, raw_data, now=False):
         """
@@ -500,7 +506,10 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         """
         NonBlockingTransport.send(self, raw_data, now)
 
-        r = self.encode_stanza(raw_data)
+        if isinstance(raw_data, bytes):
+            r = raw_data
+        else:
+            r = self.encode_stanza(raw_data)
 
         if now:
             self.sendqueue.insert(0, r)
@@ -514,7 +523,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         """
         Encode str or unicode to utf-8
         """
-        if isinstance(stanza, unicode):
+        if isinstance(stanza, str):
             stanza = stanza.encode('utf-8')
         elif not isinstance(stanza, str):
             stanza = ustr(stanza).encode('utf-8')
@@ -541,7 +550,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         """
         if not self.sendbuff:
             if not self.sendqueue:
-                log.warn('calling send on empty buffer and queue')
+                log.warning('calling send on empty buffer and queue')
                 self._plug_idle(writable=False, readable=True)
                 return None
             self.sendbuff = self.sendqueue.pop(0)
@@ -550,9 +559,22 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             if send_count:
                 sent_data = self.sendbuff[:send_count]
                 self.sendbuff = self.sendbuff[send_count:]
-                self._plug_idle(
-                        writable=((self.sendqueue!=[]) or (self.sendbuff!='')),
-                        readable=True)
+                self._plug_idle(writable=(self.sendqueue != []), readable=True)
+
+                if self.sent_bytes_buff:
+                    sent_data = self.sent_bytes_buff + sent_data
+                    self.sent_bytes_buff = b''
+                # try to decode sent data
+                try:
+                    sent_data = sent_data.decode('utf-8')
+                except UnicodeDecodeError:
+                    for i in range(-1, -4, -1):
+                        char = sent_data[i]
+                        if char & 0xc0 == 0xc0:
+                            self.sent_bytes_buff = sent_data[i:]
+                            sent_data = sent_data[:i]
+                            break
+                    sent_data = sent_data.decode('utf-8')
                 self.raise_event(DATA_SENT, sent_data)
 
         except Exception:
@@ -572,9 +594,9 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         try:
             # get as many bites, as possible, but not more than RECV_BUFSIZE
             received = self._recv(RECV_BUFSIZE)
-        except socket.error, (errnum, errstr):
+        except socket.error as e:
             log.info("_do_receive: got %s:" % received, exc_info=True)
-        except tls_nb.SSLWrapper.Error, e:
+        except tls_nb.SSLWrapper.Error as e:
             log.info("_do_receive, caught SSL error, got %s:" % received,
                     exc_info=True)
             errnum, errstr = e.errno, e.strerror
@@ -606,6 +628,23 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         self.remove_timeout()
         self.renew_send_timeout()
         self.renew_send_timeout2()
+
+        if self.received_bytes_buff:
+            received = self.received_bytes_buff + received
+            self.received_bytes_buff = b''
+
+        # try to decode data
+        try:
+            received = received.decode('utf-8')
+        except UnicodeDecodeError:
+            for i in range(-1, -4, -1):
+                char = received[i]
+                if char & 0xc0 == 0xc0:
+                    self.received_bytes_buff = received[i:]
+                    received = received[:i]
+                    break
+            received = received.decode('utf-8')
+
         # pass received data to owner
         if self.on_receive:
             self.raise_event(DATA_RECEIVED, received)

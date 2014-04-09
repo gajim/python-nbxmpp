@@ -45,5 +45,5 @@ else:
         # Extract random bytes from OpenSSL PRNG
         random_str = OpenSSL.rand.bytes(bytes)
 
-        x = long(binascii.hexlify(random_str), 16)
+        x = int(binascii.hexlify(random_str), 16)
         return x >> (bytes * 8 - k)             # trim excess bits

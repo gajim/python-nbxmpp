@@ -21,9 +21,9 @@ Client class establishes connection to XMPP Server and handles authentication
 """
 
 import socket
-import transports_nb, dispatcher_nb, auth_nb, roster_nb, protocol, bosh
-from protocol import NS_TLS
-from nbxmpp.auth_nb import SASL_AUTHENTICATION_MECHANISMS
+from . import transports_nb, dispatcher_nb, auth_nb, roster_nb, protocol, bosh
+from .protocol import NS_TLS
+from .auth_nb import SASL_AUTHENTICATION_MECHANISMS
 
 import logging
 log = logging.getLogger('nbxmpp.client_nb')
@@ -257,13 +257,13 @@ class NonBlockingClient:
         try:
             self.ip_addresses = socket.getaddrinfo(hostname, port,
                     socket.AF_UNSPEC, socket.SOCK_STREAM)
-        except socket.gaierror, (errnum, errstr):
+        except socket.gaierror as exc:
             self.disconnect(message='Lookup failure for %s:%s, hostname: %s - %s' %
-                     (self.Server, self.Port, hostname, errstr))
-        except socket.error , (errnum, errstr):
-            # Catches an unexpected error with the socket
-            self.disconnect(message='General socket error for %s:%s, hostname: %s - %s' %
-                     (self.Server, self.Port, hostname, errstr))
+                     (self.Server, self.Port, hostname, str(exc)))
+        except socket.error as exc:
+            errnum, errstr = exc.errno, exc.strerror
+            self.disconnect(message='General socket error for %s:%s, hostname: '
+                '%s - %s' % (self.Server, self.Port, hostname, errstr))
         else:
             on_success()
 
@@ -332,7 +332,7 @@ class NonBlockingClient:
 
         if not mode:
             # starting state
-            if self.__dict__.has_key('Dispatcher'):
+            if 'Dispatcher' in self.__dict__:
                 self.Dispatcher.PlugOut()
                 self.got_features = False
             dispatcher_nb.Dispatcher.get_instance().PlugIn(self)
@@ -346,10 +346,9 @@ class NonBlockingClient:
                 self.Dispatcher.ProcessNonBlocking(data)
                 self.ip_addresses = []
             if not hasattr(self, 'Dispatcher') or \
-                    self.Dispatcher.Stream._document_attrs is None:
-                self._xmpp_connect_machine(
-                        mode='FAILURE',
-                        data='Error on stream open')
+            self.Dispatcher.Stream._document_attrs is None:
+                self._xmpp_connect_machine(mode='FAILURE',
+                    data='Error on stream open')
                 return
 
             # if terminating stanza was received after init request then client gets
@@ -597,7 +596,7 @@ class NonBlockingClient:
         """
         Plug in the roster
         """
-        if not self.__dict__.has_key('NonBlockingRoster'):
+        if 'NonBlockingRoster' not in self.__dict__:
             return roster_nb.NonBlockingRoster.get_instance(version=version).PlugIn(self)
 
     def getRoster(self, on_ready=None, force=False):
@@ -605,7 +604,7 @@ class NonBlockingClient:
         Return the Roster instance, previously plugging it in and requesting
         roster from server if needed
         """
-        if self.__dict__.has_key('NonBlockingRoster'):
+        if 'NonBlockingRoster' in self.__dict__:
             return self.NonBlockingRoster.getRoster(on_ready, force)
         return None
 

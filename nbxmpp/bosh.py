@@ -20,16 +20,16 @@
 
 import locale
 from hashlib import sha1
-from transports_nb import NonBlockingTransport, NonBlockingHTTPBOSH,\
+from .transports_nb import NonBlockingTransport, NonBlockingHTTPBOSH,\
         CONNECTED, CONNECTING, DISCONNECTED, DISCONNECTING,\
         urisplit, DISCONNECT_TIMEOUT_SECONDS
-from protocol import BOSHBody, Protocol, NS_CLIENT
-from simplexml import Node
+from .protocol import BOSHBody, Protocol, NS_CLIENT
+from .simplexml import Node
 
 import logging
 log = logging.getLogger('nbxmpp.bosh')
 
-import rndg
+from . import rndg
 
 KEY_COUNT = 10
 
@@ -94,7 +94,7 @@ class NonBlockingBOSH(NonBlockingTransport):
 
         # ssl variables
         self.ssl_certificate = None
-        self.ssl_errnum = None
+        self.ssl_errnum = 0
 
 
     def connect(self, conn_5tuple, on_connect, on_connect_failure):
@@ -130,7 +130,7 @@ class NonBlockingBOSH(NonBlockingTransport):
         if self.get_state() != DISCONNECTED and self.fd != -1:
             NonBlockingTransport.set_timeout(self, timeout)
         else:
-            log.warn('set_timeout: TIMEOUT NOT SET: state is %s, fd is %s' % (self.get_state(), self.fd))
+            log.warning('set_timeout: TIMEOUT NOT SET: state is %s, fd is %s' % (self.get_state(), self.fd))
 
     def on_http_request_possible(self):
         """
@@ -217,7 +217,7 @@ class NonBlockingBOSH(NonBlockingTransport):
         # sent after HTTP response from CM, exception is when we're disconnecting - then we
         # send anyway
         if total_pending_reqs >= self.bosh_requests and self.get_state()!=DISCONNECTING:
-            log.warn('attemp to make more requests than allowed by Connection Manager:\n%s' %
+            log.warning('attemp to make more requests than allowed by Connection Manager:\n%s' %
                     self.get_current_state())
             return
 
@@ -310,7 +310,7 @@ class NonBlockingBOSH(NonBlockingTransport):
         :param socket: disconnected transport object
         """
         if socket.http_persistent:
-            log.warn('Fallback to nonpersistent HTTP (no pipelining as well)')
+            log.warning('Fallback to nonpersistent HTTP (no pipelining as well)')
             socket.http_persistent = False
             self.http_persistent = False
             self.http_pipelining = False
@@ -329,27 +329,27 @@ class NonBlockingBOSH(NonBlockingTransport):
         self.remove_bosh_wait_timeout()
 
         if self.after_init:
-            if stanza_attrs.has_key('sid'):
+            if 'sid' in stanza_attrs:
                 # session ID should be only in init response
                 self.bosh_sid = stanza_attrs['sid']
 
-            if stanza_attrs.has_key('requests'):
+            if 'requests' in stanza_attrs:
                 self.bosh_requests = int(stanza_attrs['requests'])
 
-            if stanza_attrs.has_key('wait'):
+            if 'wait' in stanza_attrs:
                 self.bosh_wait = int(stanza_attrs['wait'])
             self.after_init = False
 
         ack = None
-        if stanza_attrs.has_key('ack'):
+        if 'ack' in stanza_attrs:
             ack = stanza_attrs['ack']
         self.ack_checker.process_incoming_ack(ack=ack,
                 socket=self.current_recv_socket)
 
-        if stanza_attrs.has_key('type'):
+        if 'type' in stanza_attrs:
             if stanza_attrs['type'] in ['terminate', 'terminal']:
                 condition = 'n/a'
-                if stanza_attrs.has_key('condition'):
+                if 'condition' in stanza_attrs:
                     condition = stanza_attrs['condition']
                 if condition == 'n/a':
                     log.info('Received sesion-ending terminating stanza')

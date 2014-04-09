@@ -20,6 +20,9 @@ nodes and XML streams. I'm personally using it in many other separate
 projects. It is designed to be as standalone as possible
 """
 
+from __future__ import unicode_literals
+
+import sys
 import xml.parsers.expat
 import logging
 log = logging.getLogger('nbxmpp.simplexml')
@@ -30,24 +33,41 @@ def XMLescape(txt):
     entities
     """
     # replace also FORM FEED and ESC, because they are not valid XML chars
-    return txt.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace(u'\x0C', "").replace(u'\x1B', "")
+    return txt.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace('\x0C', "").replace('\x1B', "")
 
 ENCODING='utf-8'
 
-def ustr(what):
-    """
-    Converts object "what" to unicode string using it's own __str__ method if
-    accessible or unicode method otherwise
-    """
-    if isinstance(what, unicode):
-        return what
-    try:
-        r = what.__str__()
-    except AttributeError:
-        r = str(what)
-    if not isinstance(r, unicode):
-        return unicode(r, ENCODING)
-    return r
+if sys.version_info[0] == 2:
+    def ustr(what):
+        """
+        Converts object "what" to unicode string using it's own __str__ method if
+        accessible or unicode method otherwise
+        """
+        if isinstance(what, unicode):
+            return what
+        try:
+            r = what.__str__()
+        except AttributeError:
+            r = unicode(what)
+        if not isinstance(r, unicode):
+            return unicode(r, ENCODING)
+        return r
+
+else:
+    def ustr(what):
+        """
+        Converts object "what" to unicode string using it's own __str__ method if
+        accessible or unicode method otherwise
+        """
+        if isinstance(what, str):
+            return what
+        try:
+            r = what.__str__()
+        except AttributeError:
+            r = str(what)
+        if not isinstance(r, str):
+            return str(r, ENCODING)
+        return r
 
 class Node(object):
     """
@@ -111,7 +131,7 @@ class Node(object):
             for k, v in nsp.items(): self.nsp_cache[k] = v
         for attr, val in attrs.items():
             if attr == 'xmlns':
-                self.nsd[u''] = val
+                self.nsd[''] = val
             elif attr.startswith('xmlns:'):
                 self.nsd[attr[6:]] = val
             self.attrs[attr]=attrs[attr]
@@ -124,7 +144,7 @@ class Node(object):
                     self.namespace, self.name = tag.split()
                 else:
                     self.name = tag
-        if isinstance(payload, basestring): payload=[payload]
+        if isinstance(payload, str): payload=[payload]
         for i in payload:
             if isinstance(i, Node):
                 self.addChild(node=i)
@@ -163,7 +183,7 @@ class Node(object):
             for a in self.kids:
                 if not fancy and (len(self.data)-1)>=cnt: s=s+XMLescape(self.data[cnt])
                 elif (len(self.data)-1)>=cnt: s=s+XMLescape(self.data[cnt].strip())
-                if isinstance(a, str) or isinstance(a, unicode):
+                if isinstance(a, str):
                     s = s + a.__str__()
                 else:
                     s = s + a.__str__(fancy and fancy+1)
@@ -384,7 +404,7 @@ class Node(object):
         replaces all node's previous content. If you wish just to add child or
         CDATA - use addData or addChild methods
         """
-        if isinstance(payload, basestring):
+        if isinstance(payload, str):
             payload = [payload]
         if add:
             self.kids += payload
@@ -566,7 +586,7 @@ class NodeBuilder:
         """
         self.check_data_buffer()
         self._inc_depth()
-        log.info("STARTTAG.. DEPTH -> %i , tag -> %s, attrs -> %s" % (self.__depth, tag, `attrs`))
+        log.info("STARTTAG.. DEPTH -> %i , tag -> %s, attrs -> %s" % (self.__depth, tag, attrs))
         if self.__depth == self._dispatch_depth:
             if not self._mini_dom :
                 self._mini_dom = Node(tag=tag, attrs=attrs, nsp = self._document_nsp, node_built=True)
@@ -582,7 +602,7 @@ class NodeBuilder:
             nsp, name = (['']+tag.split(':'))[-2:]
             for attr, val in attrs.items():
                 if attr == 'xmlns':
-                    self._document_nsp[u''] = val
+                    self._document_nsp[''] = val
                 elif attr.startswith('xmlns:'):
                     self._document_nsp[attr[6:]] = val
                 else:
@@ -590,7 +610,7 @@ class NodeBuilder:
             ns = self._document_nsp.get(nsp, 'http://www.gajim.org/xmlns/undeclared-root')
             try:
                 self.stream_header_received(ns, name, attrs)
-            except ValueError, e:
+            except ValueError as e:
                 self._document_attrs = None
                 raise ValueError(str(e))
         if not self.last_is_data and self._ptr.parent:
