@@ -144,7 +144,8 @@ class Node(object):
                     self.namespace, self.name = tag.split()
                 else:
                     self.name = tag
-        if isinstance(payload, str): payload=[payload]
+        if not isinstance(payload, list):
+            payload = [payload]
         for i in payload:
             if isinstance(i, Node):
                 self.addChild(node=i)
@@ -404,7 +405,7 @@ class Node(object):
         replaces all node's previous content. If you wish just to add child or
         CDATA - use addData or addChild methods
         """
-        if isinstance(payload, str):
+        if not isinstance(payload, list):
             payload = [payload]
         if add:
             self.kids += payload

@@ -1555,11 +1555,11 @@ class DataField(Node):
         """
         Add one more label-option pair to this field
         """
-        if isinstance(opt, str):
-            self.addChild('option').setTagData('value', opt)
-        else:
+        if isinstance(opt, list):
             self.addChild('option', {'label': opt[0]}).setTagData('value',
                 opt[1])
+        else:
+            self.addChild('option').setTagData('value', opt)
 
     def getType(self):
         """
@@ -1626,12 +1626,12 @@ class DataForm(Node):
                 newdata.append(DataField(name, data[name]))
             data = newdata
         for child in data:
-            if isinstance(child, str):
-                self.addInstructions(child)
-            elif child.__class__.__name__ == 'DataField':
+            if child.__class__.__name__ == 'DataField':
                 self.kids.append(child)
-            else:
+            elif isinstance(child, Node):
                 self.kids.append(DataField(node=child))
+            else: # Must be a string
+                self.addInstructions(child)
 
     def getType(self):
         """
@@ -1700,7 +1700,7 @@ class DataForm(Node):
         for field in self.getTags('field'):
             name = field.getAttr('var')
             typ = field.getType()
-            if isinstance(typ, str) and typ.endswith('-multi'):
+            if typ and typ.endswith('-multi'):
                 val = []
                 for i in field.getTags('value'):
                     val.append(i.getData())
