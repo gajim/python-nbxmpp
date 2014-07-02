@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='nbxmpp',
-      version='0.4',
+      version='0.5',
       description='Non blocking Jabber/XMPP module',
       author='Yann Leboulanger',
       author_email='asterix@lagaule.org',
