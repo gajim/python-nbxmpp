@@ -1,3 +1,7 @@
+python-nbxmpp 0.5.1 (04 October 2014)
+
+  * Fix printing network errors in a non-utf-8 console
+
 python-nbxmpp 0.5 (02 July 2014)
 
   * support both python2 and python3
