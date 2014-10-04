@@ -370,7 +370,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             self._sock.setblocking(False)
             self._sock.connect((self.server, self.port))
         except Exception as exc:
-            errnum, errstr = exc.errno,
+            errnum, errstr = exc.errno,\
                 exc.strerror.decode(locale.getpreferredencoding())
 
         if errnum in (errno.EINPROGRESS, errno.EALREADY, errno.EWOULDBLOCK):
@@ -602,7 +602,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         except tls_nb.SSLWrapper.Error as e:
             log.info("_do_receive, caught SSL error, got %s:" % received,
                     exc_info=True)
-            errnum, errstr = e.errno,
+            errnum, errstr = e.errno,\
                 e.strerror.decode(locale.getpreferredencoding())
 
         if received == '':
