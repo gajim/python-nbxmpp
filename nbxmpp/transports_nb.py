@@ -37,7 +37,6 @@ import errno
 import time
 import traceback
 import base64
-import locale
 
 try:
     from urllib.parse import urlparse
@@ -370,8 +369,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             self._sock.setblocking(False)
             self._sock.connect((self.server, self.port))
         except Exception as exc:
-            errnum, errstr = exc.errno,\
-                exc.strerror.decode(locale.getpreferredencoding())
+            errnum, errstr = exc.errno, exc.strerror
 
         if errnum in (errno.EINPROGRESS, errno.EALREADY, errno.EWOULDBLOCK):
             # connecting in progress
@@ -474,7 +472,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             self._sock.shutdown(socket.SHUT_RDWR)
             self._sock.close()
         except socket.error as e:
-            errstr = e.strerror.decode(locale.getpreferredencoding())
+            errstr = e.strerror
             log.info('Error while disconnecting socket: %s' % errstr)
         self.fd = -1
         NonBlockingTransport.disconnect(self, do_callback)
@@ -558,7 +556,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
                 return None
             self.sendbuff = self.sendqueue.pop(0)
         try:
-            send_count = self._send(self.sendbuff.encode("utf-8"))
+            send_count = self._send(self.sendbuff)
             if send_count:
                 sent_data = self.sendbuff[:send_count]
                 self.sendbuff = self.sendbuff[send_count:]
@@ -602,8 +600,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         except tls_nb.SSLWrapper.Error as e:
             log.info("_do_receive, caught SSL error, got %s:" % received,
                     exc_info=True)
-            errnum, errstr = e.errno,\
-                e.strerror.decode(locale.getpreferredencoding())
+            errnum, errstr = e.errno, e.strerror
 
         if received == '':
             errstr = 'zero bytes on recv'
@@ -766,9 +763,7 @@ class NonBlockingHTTP(NonBlockingTCP):
         Builds http message with given body. Values for headers and status line
         fields are taken from class variables
         """
-        absolute_uri = '%s://%s:%s%s' % (self.http_protocol, self.http_host,
-                self.http_port, self.http_path)
-        headers = ['%s %s %s' % (method, absolute_uri, self.http_version),
+        headers = ['%s %s %s' % (method, self.http_path, self.http_version),
                 'Host: %s:%s' % (self.http_host, self.http_port),
                 'User-Agent: Gajim',
                 'Content-Type: text/xml; charset=utf-8',
