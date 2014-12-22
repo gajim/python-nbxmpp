@@ -301,7 +301,11 @@ class SASL(PlugIn):
                 split('\n'))
 
         incoming_data = challenge.getData()
-        data=base64.b64decode(incoming_data.encode('utf-8')).decode('utf-8')
+        data=base64.b64decode(incoming_data.encode('utf-8'))
+
+        if self.mechanism != 'GSSAPI':
+            data=data.decode('utf-8')
+
         ### Handle Auth result
         def on_auth_fail(reason):
             log.info('Failed SASL authentification: %s' % reason)
@@ -352,7 +356,10 @@ class SASL(PlugIn):
             raise NodeProcessed
 
         ### Perform auth step
-        log.info('Got challenge:' + data)
+        if self.mechanism != 'GSSAPI':
+            log.info('Got challenge:' + data)
+        else:
+            log.info('Got challenge')
 
         if self.mechanism == 'GSSAPI':
             if self.gss_step == GSS_STATE_STEP:
