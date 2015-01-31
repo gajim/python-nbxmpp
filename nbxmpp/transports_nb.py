@@ -37,6 +37,7 @@ import errno
 import time
 import traceback
 import base64
+import sys
 
 try:
     from urllib.parse import urlparse
@@ -640,7 +641,9 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         except UnicodeDecodeError:
             for i in range(-1, -4, -1):
                 char = received[i]
-                if ord(char) & 0xc0 == 0xc0:
+                if sys.version_info[0] < 3: # with py2 we get a str
+                    char = ord(char)
+                if char & 0xc0 == 0xc0:
                     self.received_bytes_buff = received[i:]
                     received = received[:i]
                     break
