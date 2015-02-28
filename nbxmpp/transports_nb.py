@@ -38,6 +38,7 @@ import time
 import traceback
 import base64
 import sys
+import locale
 
 try:
     from urllib.parse import urlparse
@@ -370,7 +371,8 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             self._sock.setblocking(False)
             self._sock.connect((self.server, self.port))
         except Exception as exc:
-            errnum, errstr = exc.errno, exc.strerror
+            errnum, errstr = exc.errno,\
+                exc.strerror.decode(locale.getpreferredencoding())
 
         if errnum in (errno.EINPROGRESS, errno.EALREADY, errno.EWOULDBLOCK):
             # connecting in progress
@@ -473,7 +475,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             self._sock.shutdown(socket.SHUT_RDWR)
             self._sock.close()
         except socket.error as e:
-            errstr = e.strerror
+            errstr = e.strerror.decode(locale.getpreferredencoding())
             log.info('Error while disconnecting socket: %s' % errstr)
         self.fd = -1
         NonBlockingTransport.disconnect(self, do_callback)
@@ -601,7 +603,8 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         except tls_nb.SSLWrapper.Error as e:
             log.info("_do_receive, caught SSL error, got %s:" % received,
                     exc_info=True)
-            errnum, errstr = e.errno, e.strerror
+            errnum, errstr = e.errno,
+                e.strerror.decode(locale.getpreferredencoding())
 
         if received == '':
             errstr = 'zero bytes on recv'
