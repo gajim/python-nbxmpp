@@ -603,7 +603,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         except tls_nb.SSLWrapper.Error as e:
             log.info("_do_receive, caught SSL error, got %s:" % received,
                     exc_info=True)
-            errnum, errstr = e.errno,
+            errnum, errstr = e.errno,\
                 e.strerror.decode(locale.getpreferredencoding())
 
         if received == '':
