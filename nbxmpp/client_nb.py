@@ -150,7 +150,7 @@ class NonBlockingClient:
 
     def connect(self, on_connect, on_connect_failure, hostname=None, port=5222,
     on_proxy_failure=None, on_stream_error_cb=None, proxy=None,
-    secure_tuple=('tls', None, None, None)):
+    secure_tuple=('tls', None, None, None, None)):
         """
         Open XMPP connection (open XML streams in both directions)
 
