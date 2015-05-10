@@ -242,16 +242,16 @@ class NonBlockingRoster(PlugIn):
         """
         Rename multiple contacts and sets their group lists
         """
-        iq = Iq('set', NS_ROSTER)
-        query = iq.getTag('query')
         for i in items:
+            iq = Iq('set', NS_ROSTER)
+            query = iq.getTag('query')
             attrs = {'jid': i['jid']}
             if i['name']:
                 attrs['name'] = i['name']
             item = query.setTag('item', attrs)
             for group in i['groups']:
                 item.addChild(node=Node('group', payload=[group]))
-        self._owner.send(iq)
+            self._owner.send(iq)
 
     def getItems(self):
         """
