@@ -422,7 +422,7 @@ class SASL(PlugIn):
                     r = 'c=' + scram_base64(self.scram_gs2)
                 else:
                     # Channel binding data goes in here too.
-                    r = 'c=' + scram_base64(self.scram_gs2
+                    r = 'c=' + scram_base64(bytes(self.scram_gs2)
                                              + self.channel_binding)                   
                 r += ',r=' + data['r']
                 self.scram_soup += r
