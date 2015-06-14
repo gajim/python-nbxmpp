@@ -84,6 +84,13 @@ def get_proxy_data_from_dict(proxy):
         proxy_user, proxy_pass = proxy['user'], proxy['pass']
     return tcp_host, tcp_port, proxy_user, proxy_pass
 
+def decode_py2(string, encoding):
+    # decodes string into unicode if in py2
+    # py3 has unicode strings by default
+    if sys.version_info[0] < 3:
+        return string.decode(encoding)
+    return string
+
 #: timeout to connect to the server socket, it doesn't include auth
 CONNECT_TIMEOUT_SECONDS = 30
 
@@ -371,8 +378,8 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             self._sock.setblocking(False)
             self._sock.connect((self.server, self.port))
         except Exception as exc:
-            errnum, errstr = exc.errno,\
-                exc.strerror.decode(locale.getpreferredencoding())
+            errnum, errstr = exc.errno, \
+                    decode_py2(exc.strerror, locale.getpreferredencoding())
 
         if errnum in (errno.EINPROGRESS, errno.EALREADY, errno.EWOULDBLOCK):
             # connecting in progress
