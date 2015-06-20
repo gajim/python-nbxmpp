@@ -87,8 +87,10 @@ def get_proxy_data_from_dict(proxy):
 def decode_py2(string, encoding):
     # decodes string into unicode if in py2
     # py3 has unicode strings by default
-    if sys.version_info[0] < 3:
-        return string.decode(encoding)
+    try:
+        string = string.decode(encoding)
+    except AttributeError:
+        pass
     return string
 
 #: timeout to connect to the server socket, it doesn't include auth
@@ -482,7 +484,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             self._sock.shutdown(socket.SHUT_RDWR)
             self._sock.close()
         except socket.error as e:
-            errstr = e.strerror.decode(locale.getpreferredencoding())
+            errstr = decode_py2(e.strerror, locale.getpreferredencoding())
             log.info('Error while disconnecting socket: %s' % errstr)
         self.fd = -1
         NonBlockingTransport.disconnect(self, do_callback)
@@ -577,7 +579,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
                     self.sent_bytes_buff = b''
                 # try to decode sent data
                 try:
-                    sent_data = sent_data.decode('utf-8')
+                    sent_data = decode_py2(sent_data, 'utf-8')
                 except UnicodeDecodeError:
                     for i in range(-1, -4, -1):
                         char = sent_data[i]
@@ -585,7 +587,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
                             self.sent_bytes_buff = sent_data[i:]
                             sent_data = sent_data[:i]
                             break
-                    sent_data = sent_data.decode('utf-8')
+                    sent_data = decode_py2(sent_data, 'utf-8')
                 self.raise_event(DATA_SENT, sent_data)
 
         except Exception:
@@ -611,7 +613,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             log.info("_do_receive, caught SSL error, got %s:" % received,
                     exc_info=True)
             errnum, errstr = e.errno,\
-                e.strerror.decode(locale.getpreferredencoding())
+                decode_py2(e.strerror, locale.getpreferredencoding())
 
         if received == '':
             errstr = 'zero bytes on recv'
@@ -647,7 +649,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
 
         # try to decode data
         try:
-            received = received.decode('utf-8')
+            received = decode_py2(received, 'utf-8')
         except UnicodeDecodeError:
             for i in range(-1, -4, -1):
                 char = received[i]
@@ -657,7 +659,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
                     self.received_bytes_buff = received[i:]
                     received = received[:i]
                     break
-            received = received.decode('utf-8')
+            received = decode_py2(received, 'utf-8')
 
         # pass received data to owner
         if self.on_receive:
