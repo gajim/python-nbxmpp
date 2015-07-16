@@ -1,3 +1,9 @@
+python-nbxmpp 0.5.3 (13 July 2015)
+
+  * Fix receiving long utf8 strings under py3
+  * Fix issue with pyopenssl 0.15.1
+  * Fix decoding issues
+
 python-nbxmpp 0.5.2 (27 December 2014)
 
   * Fix BOSH HTTP requests
