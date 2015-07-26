@@ -11,7 +11,7 @@ Simply run 'python setup.py install' as root
 
    Usage
 
-You have to 'import xmpppy' in your program. Then look at examples in ths doc
+You have to 'import xmpppy' in your program. Then look at examples in the doc
 folder.
 
 2012-05-08       Yann Leboulanger
