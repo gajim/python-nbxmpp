@@ -110,7 +110,7 @@ class SASL(PlugIn):
         :param username: XMPP username
         :param password: XMPP password
         :param on_sasl: Callback, will be called after each SASL auth-step.
-        :param channel_binding: TLS channel binding data, None if the 
+        :param channel_binding: TLS channel binding data, None if the
                binding data is not available
         :param auth_mechs: Set of valid authentication mechanisms.
                Possible entries are:
@@ -184,11 +184,11 @@ class SASL(PlugIn):
             return
 
         self.mecs = set(
-            mec.getData() 
-            for mec 
+            mec.getData()
+            for mec
             in feats.getTag('mechanisms', namespace=NS_SASL).getTags('mechanism')
         ) & self.enabled_auth_mechs
-       
+
         # Password based authentication mechanism ordered by strength.
         # If the server supports a mechanism disable all weaker mechanisms.
         password_auth_mechs_strength = ['SCRAM-SHA-1-PLUS', 'SCRAM-SHA-1',
@@ -422,8 +422,8 @@ class SASL(PlugIn):
                     r = 'c=' + scram_base64(self.scram_gs2)
                 else:
                     # Channel binding data goes in here too.
-                    r = 'c=' + scram_base64(bytes(self.scram_gs2)
-                                             + self.channel_binding)                   
+                    r = 'c=' + scram_base64(self.scram_gs2.encode('utf-8')
+                        + self.channel_binding)
                 r += ',r=' + data['r']
                 self.scram_soup += r
                 self.scram_soup = self.scram_soup.encode('utf-8')
