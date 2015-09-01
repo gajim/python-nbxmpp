@@ -72,7 +72,7 @@ class TestNonBlockingTCP(AbstractTransportTest):
                 ips = socket.getaddrinfo('gajim.org', 5222,
                         socket.AF_UNSPEC, socket.SOCK_STREAM)
                 ip = ips[0]
-            except socket.error, e:
+            except socket.error as e:
                 self.testcase.fail(msg=str(e))
 
             self.socket = transports_nb.NonBlockingTCP(
@@ -175,7 +175,8 @@ class TestNonBlockingTCP(AbstractTransportTest):
         sock._do_send()
         sock._do_send()
         self.assertTrue(self.client.socket.state == 'CONNECTED')
-        self.assertTrue(data_part1 in outgoing and data_part2 in outgoing)
+        self.assertTrue(data_part1.encode('utf8') in outgoing)
+        self.assertTrue(data_part2.encode('utf8') in outgoing)
         self.assertFalse(sock.sendqueue and sock.sendbuff,
                 msg='There is still unsend data in buffers')
 

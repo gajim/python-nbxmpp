@@ -42,7 +42,7 @@ if os.name == 'nt':
 elif os.name == 'posix':
     import fcntl
 
-if sys.version_info[0] == 2:
+if sys.version_info[0] == 2 or not HAVE_GLIB:
     FLAG_WRITE                      = 20 # write only
     FLAG_READ                       = 19 # read only
     FLAG_READ_WRITE = 23 # read and write
@@ -568,7 +568,7 @@ class GlibIdleQueue(IdleQueue):
     def process(self):
         self._check_time_events()
 
-    if sys.version_info[0] == 2:
+    if sys.version_info[0] == 2 or not HAVE_GLIB:
         def current_time(self):
             return gobject.get_current_time() * 1e6
     else:

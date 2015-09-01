@@ -821,7 +821,7 @@ class NonBlockingHTTP(NonBlockingTCP):
             for dummy in header:
                 row = dummy.split(' ', 1)
                 headers[row[0][:-1]] = row[1]
-            body_size = headers['Content-Length']
+            body_size = int(headers['Content-Length'])
             rest_splitted = splitted[2:]
             while (len(httpbody) < body_size) and rest_splitted:
                 # Complete httpbody until it has the announced size
