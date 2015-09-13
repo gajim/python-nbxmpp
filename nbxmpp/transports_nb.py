@@ -752,11 +752,11 @@ class NonBlockingHTTP(NonBlockingTCP):
         if 'Connection' in headers and headers['Connection'].strip()=='close':
             self.close_current_connection = True
 
-        if self.expected_length > len(httpbody):
+        if self.expected_length > len(httpbody.encode('utf-8')):
             # If we haven't received the whole HTTP mess yet, let's end the thread.
             # It will be finnished from one of following recvs on plugged socket.
             log.info('not enough bytes in HTTP response - %d expected, got %d' %
-                    (self.expected_length, len(httpbody)))
+                    (self.expected_length, len(httpbody.encode('utf-8'))))
         else:
             # First part of buffer has been extraced and is going to be handled,
             # remove it from buffer
