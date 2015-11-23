@@ -350,7 +350,7 @@ class NonBlockingTLS(PlugIn):
                 cert = ''.join(lines[begin:i+2])
                 try:
                     x509cert = OpenSSL.crypto.load_certificate(
-                            OpenSSL.crypto.FILETYPE_PEM, cert)
+                            OpenSSL.crypto.FILETYPE_PEM, cert.encode('ascii', 'ignore'))
                     cert_store.add_cert(x509cert)
                 except OpenSSL.crypto.Error as exception_obj:
                     if logg:
