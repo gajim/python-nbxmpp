@@ -25,6 +25,7 @@ from . import simplexml
 import sys
 import locale
 import re
+import uuid
 from xml.parsers.expat import ExpatError
 from .plugin import PlugIn
 from .protocol import (NS_STREAMS, NS_XMPP_STREAMS, NS_HTTP_BIND, Iq, Presence,
@@ -38,7 +39,6 @@ log = logging.getLogger('nbxmpp.dispatcher_nb')
 
 #: default timeout to wait for response for our id
 DEFAULT_TIMEOUT_SECONDS = 25
-outgoingID = 0
 
 XML_DECLARATION = '<?xml version=\'1.0\'?>'
 
@@ -120,9 +120,7 @@ class XMPPDispatcher(PlugIn):
         self.invalid_chars_re = re.compile(r)
 
     def getAnID(self):
-        global outgoingID
-        outgoingID += 1
-        return repr(outgoingID)
+        return str(uuid.uuid4())
 
     def dumpHandlers(self):
         """
