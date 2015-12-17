@@ -17,6 +17,7 @@ class Smacks():
         self.out_h = 0 # Outgoing stanzas handled
         self.in_h = 0  # Incoming stanzas handled
         self.uqueue = [] # Unhandled stanzas queue
+        self.old_uqueue = [] # Unhandled stanzas queue of the last session
         self.session_id = None
         self.resumption = False # If server supports resume
         # Max number of stanzas in queue before making a request
@@ -38,7 +39,7 @@ class Smacks():
             xmlns=NS_STREAM_MGMT)
         owner.Dispatcher.RegisterHandler('a', self.check_ack,
             xmlns=NS_STREAM_MGMT)
-        owner.Dispatcher.RegisterHandler('resumed', self.check_ack,
+        owner.Dispatcher.RegisterHandler('resumed', self.check_resume,
             xmlns=NS_STREAM_MGMT)
         owner.Dispatcher.RegisterHandler('failed', self.error_handling,
             xmlns=NS_STREAM_MGMT)
@@ -61,6 +62,7 @@ class Smacks():
         # Every time we attempt to negociate, we must erase all previous info
         # about any previous session
         self.uqueue = []
+        self.old_uqueue = []
         self.in_h = 0
         self.out_h = 0
         self.session_id = None
@@ -75,6 +77,8 @@ class Smacks():
             self.resuming = False
             log.error('Attempted to resume without a valid session id ')
             return
+        self.old_uqueue = self.uqueue    #save old messages in an extra "queue" to avoid race conditions
+        self.uqueue = []
         resume = Acks()
         resume.buildResume(self.in_h, self.session_id)
         self._owner.Connection.send(resume, False)
@@ -102,19 +106,48 @@ class Smacks():
         h = int(h)
         diff = self.out_h - h
 
-        if len(self.uqueue) < diff or diff < 0:
-            log.error('Server and client number of stanzas handled mismatch ')
+        if diff < 0:
+            log.error('Server and client number of stanzas handled mismatch (our h: %d, server h: %d)' % (self.out_h, h))
+            while (len(self.uqueue)):        #don't accumulate all messages in this case (they would otherwise all be resent on the next reconnect)
+                self.uqueue.pop(0)
+        elif len(self.uqueue) < diff:
+            log.error('Server and client number of stanzas handled mismatch (our h: %d, server h: %d)' % (self.out_h, h))
         else:
+            log.debug('Got ack for outgoing stanzas (our h: %d, server h: %d), removing %d messages from queue...' % (self.out_h, h, len(self.uqueue) - diff))
             while (len(self.uqueue) > diff):
                 self.uqueue.pop(0)
+                    
+    def check_resume(self, disp, stanza):
+        '''
+        Checks if the number of stanzas sent are the same as the
+        number of stanzas received by the server. Resends stanzas not received
+        by the server in the last session.
+        '''
+        h = stanza.getAttr('h')
+        if not h:
+            log.error('Server did not send h attribute')
+            return
+        h = int(h)
+        diff = self.out_h - h
 
-        if stanza.getName() == 'resumed':
-            self.enabled = True
-            self.resuming = True
-            self.con.set_oldst()
-            if self.uqueue != []:
-                for i in self.uqueue:
-                    self._owner.Connection.send(i, False)
+        if diff < 0:
+            log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d)' % (self.out_h, h))
+            self.old_uqueue = []        #that's weird, but we don't resend this stanzas if the server says we don't need to
+        elif len(self.old_uqueue) < diff:
+            log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d)' % (self.out_h, h))
+        else:
+            log.info('Removing %d already received stanzas from old outgoing queue (our h: %d, server h: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, diff))
+            while (len(self.old_uqueue) > diff):
+                self.old_uqueue.pop(0)
+
+        self.enabled = True
+        self.resuming = True
+        self.con.set_oldst()
+        if self.old_uqueue != []:
+            log.info('Session resumed, replaying %s stanzas...' % len(self.old_uqueue))
+            for i in self.old_uqueue:
+                self._owner.Connection.send(i, False)
+            self.old_uqueue = []
 
     def error_handling(self, disp, stanza):
         # If the server doesn't recognize previd, forget about resuming
