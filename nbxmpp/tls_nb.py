@@ -267,9 +267,9 @@ class NonBlockingTLS(PlugIn):
         self.cacerts = cacerts
         self.mycerts = mycerts
         if cipher_list is None:
-            self.cipher_list = 'HIGH:!aNULL:RC4-SHA'
+            self.cipher_list = b'HIGH:!aNULL:RC4-SHA'
         else:
-            self.cipher_list = cipher_list
+            self.cipher_list = cipher_list.encode('ascii')
         if tls_version is None:
             self.tls_version = '1.0'
         else:
