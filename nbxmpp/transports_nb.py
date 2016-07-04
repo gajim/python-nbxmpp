@@ -355,7 +355,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             self._sock = socket.socket(*conn_5tuple[:3])
         except socket.error as e:
             self._on_connect_failure('NonBlockingTCP Connect: Error while creating\
-                    socket: %s' % atr(e))
+                    socket: %s' % str(e))
             return
 
         self._send = self._sock.send
