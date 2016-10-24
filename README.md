@@ -13,6 +13,6 @@ python-nbxmpp is a Python library that provides a way for Python applications to
 
 ## Starting Points
 
- * [Downloads](/tags)
+ * [Downloads](../tags)
  * You can also clone the git repository at http://gitlab.gajim.org/gajim/python-nbxmpp.git
- * [Example](/tree/master/doc/examples)
+ * [Example](../tree/master/doc/examples)
