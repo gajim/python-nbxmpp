@@ -7,6 +7,6 @@ setup(name='nbxmpp',
       description='Non blocking Jabber/XMPP module',
       author='Yann Leboulanger',
       author_email='asterix@lagaule.org',
-      url='http://python-nbxmpp.gajim.org',
+      url='http://dev.gajim.org/gajim/python-nbxmpp',
       packages=['nbxmpp'],
 )
