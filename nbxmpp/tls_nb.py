@@ -56,7 +56,7 @@ def gattr(obj, attr, default=None):
         return default
 
 
-class SSLWrapper:
+class SSLWrapper(object):
     """
     Abstract SSLWrapper base class
     """

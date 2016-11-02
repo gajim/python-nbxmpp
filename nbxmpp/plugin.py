@@ -21,7 +21,8 @@ Provides PlugIn class functionality to develop extentions for xmpppy
 import logging
 log = logging.getLogger('nbxmpp.plugin')
 
-class PlugIn:
+
+class PlugIn(object):
     """
     Abstract xmpppy plugin infrastructure code, providing plugging in/out and
     debugging functionality

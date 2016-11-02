@@ -3,14 +3,15 @@ from .protocol import NS_STREAM_MGMT
 import logging
 log = logging.getLogger('nbxmpp.smacks')
 
-class Smacks():
-    '''
+
+class Smacks(object):
+    """
     This is Smacks is the Stream Management class. It takes care of requesting
     and sending acks. Also, it keeps track of the unhandled outgoing stanzas.
 
     The dispatcher has to be able to access this class to increment the
     number of handled stanzas
-    '''
+    """
 
     def __init__(self, con):
         self.con = con # Connection object

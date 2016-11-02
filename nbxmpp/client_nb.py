@@ -29,7 +29,7 @@ import logging
 log = logging.getLogger('nbxmpp.client_nb')
 
 
-class NonBlockingClient:
+class NonBlockingClient(object):
     """
     Client class is XMPP connection mountpoint. Objects for authentication,
     network communication, roster, xml parsing ... are plugged to client object.

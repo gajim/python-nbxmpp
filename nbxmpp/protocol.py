@@ -605,7 +605,8 @@ stream_exceptions = {'bad-format': BadFormat,
                     'unsupported-version': UnsupportedVersion,
                     'xml-not-well-formed': XMLNotWellFormed}
 
-class JID:
+
+class JID(object):
     """
     JID can be built from string, modified, compared, serialised into string
     """

@@ -27,7 +27,8 @@ from base64 import b64encode
 import logging
 log = logging.getLogger('nbxmpp.proxy_connectors')
 
-class ProxyConnector:
+
+class ProxyConnector(object):
     """
     Interface for proxy-connecting object - when tunnneling XMPP over proxies,
     some connecting process usually has to be done before opening stream. Proxy

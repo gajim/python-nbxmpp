@@ -485,7 +485,8 @@ class Node(object):
             return self.NT
         raise AttributeError
 
-class T:
+
+class T(object):
     """
     Auxiliary class used to quick access to node's child nodes
     """
@@ -519,7 +520,8 @@ class NT(T):
         else:
             return self.node.addChild(attr, payload=[val])
 
-class NodeBuilder:
+
+class NodeBuilder(object):
     """
     Builds a Node class minidom from data parsed to it. This class used for two
     purposes:

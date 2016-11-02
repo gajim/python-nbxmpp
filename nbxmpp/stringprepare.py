@@ -25,7 +25,8 @@ import stringprep
 import unicodedata
 from encodings import idna
 
-class ILookupTable:
+
+class ILookupTable(object):
     """
     Interface for character lookup classes
     """
@@ -36,7 +37,8 @@ class ILookupTable:
         """
         pass
 
-class IMappingTable:
+
+class IMappingTable(object):
     """
     Interface for character mapping classes
     """
@@ -47,15 +49,15 @@ class IMappingTable:
         """
         pass
 
-class LookupTableFromFunction:
 
+class LookupTableFromFunction(object):
     __implements__ = ILookupTable
 
     def __init__(self, in_table_function):
         self.lookup = in_table_function
 
-class LookupTable:
 
+class LookupTable(object):
     __implements__ = ILookupTable
 
     def __init__(self, table):
@@ -64,15 +66,15 @@ class LookupTable:
     def lookup(self, c):
         return c in self._table
 
-class MappingTableFromFunction:
 
+class MappingTableFromFunction(object):
     __implements__ = IMappingTable
 
     def __init__(self, map_table_function):
         self.map = map_table_function
 
-class EmptyMappingTable:
 
+class EmptyMappingTable(object):
     __implements__ = IMappingTable
 
     def __init__(self, in_table_function):
@@ -149,7 +151,7 @@ class Profile:
             raise UnicodeError("Violation of BIDI Requirement 3")
 
 
-class NamePrep:
+class NamePrep(object):
     """
     Implements preparation of internationalized domain names
 

@@ -76,7 +76,7 @@ def get_idlequeue():
             return SelectIdleQueue()
 
 
-class IdleObject:
+class IdleObject(object):
     """
     Idle listener interface. Listed methods are called by IdleQueue.
     """
@@ -216,7 +216,7 @@ class IdleCommand(IdleObject):
         self._return_result()
 
 
-class IdleQueue:
+class IdleQueue(object):
     """
     IdleQueue provide three distinct time based features. Uses select.poll()
 
