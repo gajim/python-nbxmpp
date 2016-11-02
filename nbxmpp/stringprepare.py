@@ -86,12 +86,22 @@ class EmptyMappingTable(object):
         else:
             return c
 
-class Profile:
-    def __init__(self, mappings=[], normalize=True, prohibiteds=[],
-                    check_unassigneds=True, check_bidi=True):
-        self.mappings = mappings
+
+class Profile(object):
+    def __init__(self, mappings=None, normalize=True, prohibiteds=None,
+                 check_unassigneds=True, check_bidi=True):
+        if mappings is None:
+            self.mappings = []
+        else:
+            self.mappings = mappings
+
         self.normalize = normalize
-        self.prohibiteds = prohibiteds
+
+        if prohibiteds is None:
+            self.prohibiteds = []
+        else:
+            self.prohibiteds = prohibiteds
+
         self.do_check_unassigneds = check_unassigneds
         self.do_check_bidi = check_bidi
 

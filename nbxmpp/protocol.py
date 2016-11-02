@@ -727,7 +727,7 @@ class BOSHBody(Node):
     <body> tag that wraps usual XMPP stanzas in XMPP over BOSH
     """
 
-    def __init__(self, attrs={}, payload=[], node=None):
+    def __init__(self, attrs=None, payload=None, node=None):
         Node.__init__(self, tag='body', attrs=attrs, payload=payload, node=node)
         self.setNamespace(NS_HTTP_BIND)
 
@@ -738,8 +738,8 @@ class Protocol(Node):
     and messages
     """
 
-    def __init__(self, name=None, to=None, typ=None, frm=None, attrs={},
-                    payload=[], timestamp=None, xmlns=None, node=None):
+    def __init__(self, name=None, to=None, typ=None, frm=None, attrs=None,
+                    payload=None, timestamp=None, xmlns=None, node=None):
         """
         Constructor, name is the name of the stanza
         i.e. 'message' or 'presence'or 'iq'
@@ -947,7 +947,7 @@ class Message(Protocol):
     """
 
     def __init__(self, to=None, body=None, xhtml=None, typ=None, subject=None,
-        attrs={}, frm=None, payload=[], timestamp=None, xmlns=NS_CLIENT,
+        attrs=None, frm=None, payload=None, timestamp=None, xmlns=NS_CLIENT,
         node=None):
         """
         You can specify recipient, text of message, type of message any
@@ -1062,7 +1062,7 @@ class Message(Protocol):
 class Presence(Protocol):
 
     def __init__(self, to=None, typ=None, priority=None, show=None, status=None,
-        attrs={}, frm=None, timestamp=None, payload=[], xmlns=NS_CLIENT,
+        attrs=None, frm=None, timestamp=None, payload=None, xmlns=NS_CLIENT,
         node=None):
         """
         You can specify recipient, type of message, priority, show and status
@@ -1183,8 +1183,8 @@ class Iq(Protocol):
     XMPP Iq object - get/set dialog mechanism
     """
 
-    def __init__(self, typ=None, queryNS=None, attrs={}, to=None, frm=None,
-                    payload=[], xmlns=NS_CLIENT, node=None):
+    def __init__(self, typ=None, queryNS=None, attrs=None, to=None, frm=None,
+                    payload=None, xmlns=NS_CLIENT, node=None):
         """
         You can specify type, query namespace any additional attributes,
         recipient of the iq, sender of the iq, any additional payload (f.e.
@@ -1444,7 +1444,7 @@ class DataField(Node):
     """
 
     def __init__(self, name=None, value=None, typ=None, required=0, desc=None,
-                    options=[], node=None):
+                    options=None, node=None):
         """
         Create new data field of specified name,value and type
 
@@ -1593,7 +1593,7 @@ class DataForm(Node):
     Relevant XEPs: 0004, 0068, 0122. Can be used in disco, pub-sub and many
     other applications.
     """
-    def __init__(self, typ=None, data=[], title=None, node=None):
+    def __init__(self, typ=None, data=None, title=None, node=None):
         """
         Create new dataform of type 'typ'. 'data' is the list of DataField
         instances that this dataform contains, 'title' - the title string.  You
@@ -1621,18 +1621,19 @@ class DataForm(Node):
         self.setNamespace(NS_DATA)
         if title:
             self.setTitle(title)
-        if isinstance(data, dict):
-            newdata = []
-            for name in data.keys():
-                newdata.append(DataField(name, data[name]))
-            data = newdata
-        for child in data:
-            if child.__class__.__name__ == 'DataField':
-                self.kids.append(child)
-            elif isinstance(child, Node):
-                self.kids.append(DataField(node=child))
-            else: # Must be a string
-                self.addInstructions(child)
+        if data is not None:
+            if isinstance(data, dict):
+                newdata = []
+                for name in data.keys():
+                    newdata.append(DataField(name, data[name]))
+                data = newdata
+            for child in data:
+                if child.__class__.__name__ == 'DataField':
+                    self.kids.append(child)
+                elif isinstance(child, Node):
+                    self.kids.append(DataField(node=child))
+                else:  # Must be a string
+                    self.addInstructions(child)
 
     def getType(self):
         """

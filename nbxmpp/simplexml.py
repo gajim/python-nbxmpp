@@ -92,7 +92,7 @@ class Node(object):
 
     FORCE_NODE_RECREATION = 0
 
-    def __init__(self, tag=None, attrs={}, payload=[], parent=None, nsp=None,
+    def __init__(self, tag=None, attrs=None, payload=None, parent=None, nsp=None,
                     node_built=False, node=None):
         """
         Takes "tag" argument as the name of node (prepended by namespace, if
@@ -129,12 +129,15 @@ class Node(object):
         self.nsp_cache = {}
         if nsp:
             for k, v in nsp.items(): self.nsp_cache[k] = v
-        for attr, val in attrs.items():
-            if attr == 'xmlns':
-                self.nsd[''] = val
-            elif attr.startswith('xmlns:'):
-                self.nsd[attr[6:]] = val
-            self.attrs[attr]=attrs[attr]
+           
+        if attrs is not None:
+            for attr, val in attrs.items():
+                if attr == 'xmlns':
+                    self.nsd[''] = val
+                elif attr.startswith('xmlns:'):
+                    self.nsd[attr[6:]] = val
+                self.attrs[attr] = attrs[attr]
+
         if tag:
             if node_built:
                 pfx, self.name = (['']+tag.split(':'))[-2:]
@@ -144,13 +147,14 @@ class Node(object):
                     self.namespace, self.name = tag.split()
                 else:
                     self.name = tag
-        if not isinstance(payload, list):
-            payload = [payload]
-        for i in payload:
-            if isinstance(i, Node):
-                self.addChild(node=i)
-            else:
-                self.data.append(ustr(i))
+        if payload is not None:
+            if not isinstance(payload, list):
+                payload = [payload]
+            for i in payload:
+                if isinstance(i, Node):
+                    self.addChild(node=i)
+                else:
+                    self.data.append(ustr(i))
 
     def lookup_nsp(self, pfx=''):
         ns = self.nsd.get(pfx, None)
@@ -173,39 +177,53 @@ class Node(object):
         if self.namespace:
             if not self.parent or self.parent.namespace!=self.namespace:
                 if 'xmlns' not in self.attrs:
-                    s = s + ' xmlns="%s"'%self.namespace
+                    s += ' xmlns="%s"' % self.namespace
         for key in self.attrs.keys():
             val = ustr(self.attrs[key])
-            s = s + ' %s="%s"' % ( key, XMLescape(val) )
-        s = s + ">"
+            s += ' %s="%s"' % (key, XMLescape(val))
+
+        s += ">"
         cnt = 0
         if self.kids:
-            if fancy: s = s + "\n"
+            if fancy:
+                s += "\n"
             for a in self.kids:
-                if not fancy and (len(self.data)-1)>=cnt: s=s+XMLescape(self.data[cnt])
-                elif (len(self.data)-1)>=cnt: s=s+XMLescape(self.data[cnt].strip())
+                if not fancy and (len(self.data)-1) >= cnt:
+                    s += XMLescape(self.data[cnt])
+                elif (len(self.data)-1) >= cnt:
+                    s += XMLescape(self.data[cnt].strip())
                 if isinstance(a, str):
-                    s = s + a.__str__()
+                    s += a.__str__()
                 else:
-                    s = s + a.__str__(fancy and fancy+1)
-                cnt=cnt+1
-        if not fancy and (len(self.data)-1) >= cnt: s = s + XMLescape(self.data[cnt])
-        elif (len(self.data)-1) >= cnt: s = s + XMLescape(self.data[cnt].strip())
+                    s += a.__str__(fancy and fancy+1)
+                cnt += 1
+        if not fancy and (len(self.data)-1) >= cnt:
+            s += XMLescape(self.data[cnt])
+        elif (len(self.data)-1) >= cnt:
+            s += XMLescape(self.data[cnt].strip())
         if not self.kids and s.endswith('>'):
-            s=s[:-1]+' />'
-            if fancy: s = s + "\n"
+            s = s[:-1] + ' />'
+            if fancy:
+                s += "\n"
         else:
-            if fancy and not self.data: s = s + (fancy-1) * 2 * ' '
-            s = s + "</" + self.name + ">"
-            if fancy: s = s + "\n"
+            if fancy and not self.data:
+                s += (fancy-1) * 2 * ' '
+            s += "</" + self.name + ">"
+            if fancy:
+                s += "\n"
         return s
 
-    def addChild(self, name=None, attrs={}, payload=[], namespace=None, node=None):
+    def addChild(self, name=None, attrs=None, payload=None, namespace=None, node=None):
         """
         If "node" argument is provided, adds it as child node. Else creates new
         node from the other arguments' values and adds it as well
         """
-        if 'xmlns' in attrs:
+        if payload is None:
+            payload = []
+
+        if attrs is None:
+            attrs = {}
+        elif 'xmlns' in attrs:
             raise AttributeError("Use namespace=x instead of attrs={'xmlns':x}")
         if node:
             newnode=node
@@ -234,7 +252,7 @@ class Node(object):
         """
         del self.attrs[key]
 
-    def delChild(self, node, attrs={}):
+    def delChild(self, node, attrs=None):
         """
         Delete the "node" from the node's childs list, if "node" is an instance.
         Else delete the first node that have specified name and (optionally)
@@ -306,7 +324,7 @@ class Node(object):
                 pass
         return ret
 
-    def getTag(self, name, attrs={}, namespace=None):
+    def getTag(self, name, attrs=None, namespace=None):
         """
         Filter all child nodes using specified arguments as filter. Return the
         first found or None if not found
@@ -332,7 +350,7 @@ class Node(object):
         except Exception:
             return None
 
-    def getTags(self, name, attrs={}, namespace=None, one=0):
+    def getTags(self, name, attrs=None, namespace=None, one=0):
         """
         Filter all child nodes using specified arguments as filter. Returns the
         list of nodes found
@@ -342,6 +360,8 @@ class Node(object):
             if namespace and namespace != node.getNamespace():
                 continue
             if node.getName() == name:
+                if attrs is None:
+                    attrs = {}
                 for key in attrs.keys():
                     if key not in node.attrs or node.attrs[key]!=attrs[key]:
                         break
@@ -352,7 +372,7 @@ class Node(object):
         if not one:
             return nodes
 
-    def iterTags(self, name, attrs={}, namespace=None):
+    def iterTags(self, name, attrs=None, namespace=None):
         """
         Iterate over all children using specified arguments as filter
         """
@@ -360,6 +380,8 @@ class Node(object):
             if namespace is not None and namespace != node.getNamespace():
                 continue
             if node.getName() == name:
+                if attrs is None:
+                    attrs = {}
                 for key in attrs.keys():
                     if key not in node.attrs or \
                             node.attrs[key]!=attrs[key]:
@@ -412,7 +434,7 @@ class Node(object):
         else:
             self.kids = payload
 
-    def setTag(self, name, attrs={}, namespace=None):
+    def setTag(self, name, attrs=None, namespace=None):
         """
         Same as getTag but if the node with specified namespace/attributes not
         found, creates such node and returns it
@@ -433,7 +455,7 @@ class Node(object):
         except Exception:
             self.addChild(tag, attrs={attr: val})
 
-    def setTagData(self, tag, val, attrs={}):
+    def setTagData(self, tag, val, attrs=None):
         """
         Creates new node (if not already present) with name "tag" and
         (optionally) attributes "attrs" and sets it's CDATA to string "val"

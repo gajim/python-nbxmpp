@@ -224,7 +224,7 @@ class NonBlockingRoster(PlugIn):
         """
         return list(self._data[jid[:(jid+'/').find('/')]]['resources'].keys())
 
-    def setItem(self, jid, name=None, groups=[]):
+    def setItem(self, jid, name=None, groups=None):
         """
         Rename contact 'jid' and sets the groups list that it now belongs to
         """
@@ -234,8 +234,9 @@ class NonBlockingRoster(PlugIn):
         if name:
             attrs['name'] = name
         item = query.setTag('item', attrs)
-        for group in groups:
-            item.addChild(node=Node('group', payload=[group]))
+        if groups is not None:
+            for group in groups:
+                item.addChild(node=Node('group', payload=[group]))
         self._owner.send(iq)
 
     def setItemMulti(self, items):
