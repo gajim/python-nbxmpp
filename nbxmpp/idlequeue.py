@@ -269,7 +269,7 @@ class IdleQueue:
         Remove alarm callback alarm_cb scheduled on alarm_time. Returns True if
         it was removed sucessfully, otherwise False
         """
-        if not alarm_time in self.alarms:
+        if alarm_time not in self.alarms:
             return False
         i = -1
         for i in range(len(self.alarms[alarm_time])):
@@ -278,7 +278,7 @@ class IdleQueue:
                 break
         if i != -1:
             del self.alarms[alarm_time][i]
-            if self.alarms[alarm_time] == []:
+            if not self.alarms[alarm_time]:
                 del self.alarms[alarm_time]
             return True
         else:

@@ -74,7 +74,7 @@ class NonBlockingRoster(PlugIn):
         roster representation
         """
         sender = stanza.getAttr('from')
-        if not sender is None and not sender.bareMatch(
+        if sender is not None and not sender.bareMatch(
         self._owner.User + '@' + self._owner.Server):
             return
         query = stanza.getTag('query')

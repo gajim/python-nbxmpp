@@ -557,7 +557,7 @@ class NonBlockingClient:
         """
         if data:
             self.Dispatcher.ProcessNonBlocking(data)
-        if not 'SASL' in self.__dict__:
+        if 'SASL' not in self.__dict__:
             # SASL is pluged out, possible disconnect
             return
         if self.SASL.startsasl == 'in-process':
