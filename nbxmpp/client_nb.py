@@ -499,10 +499,10 @@ class NonBlockingClient:
                 if self.protocol_type != 'BOSH':
                     self._channel_binding = self.Connection.NonBlockingTLS.get_channel_binding()
                     # TLS handshake is finished so channel binding data muss exist
-                    assert (self._channel_binding != None)
+                    assert (self._channel_binding is not None)
             except NotImplementedError:
                 pass
-        if auth_mechs == None:
+        if auth_mechs is None:
             self._auth_mechs = SASL_AUTHENTICATION_MECHANISMS | set(['XEP-0078'])
         else:
             self._auth_mechs = auth_mechs

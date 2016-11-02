@@ -193,7 +193,7 @@ class SASL(PlugIn):
         # If the server supports a mechanism disable all weaker mechanisms.
         password_auth_mechs_strength = ['SCRAM-SHA-1-PLUS', 'SCRAM-SHA-1',
             'DIGEST-MD5', 'PLAIN', 'X-MESSENGER-OAUTH2']
-        if self.channel_binding == None:
+        if self.channel_binding is None:
             password_auth_mechs_strength.remove('SCRAM-SHA-1-PLUS')
         for i in range(0, len(password_auth_mechs_strength)):
             if password_auth_mechs_strength[i] in self.mecs:
@@ -243,7 +243,7 @@ class SASL(PlugIn):
                 raise NodeProcessed
             except kerberos.GSSError as e:
                 log.info('GSSAPI authentication failed: %s' % str(e))
-        if 'SCRAM-SHA-1-PLUS' in self.mecs and self.channel_binding != None:
+        if 'SCRAM-SHA-1-PLUS' in self.mecs and self.channel_binding is not None:
             self.mecs.remove('SCRAM-SHA-1-PLUS')
             self.mechanism = 'SCRAM-SHA-1-PLUS'
             self._owner._caller.get_password(self.set_password, self.mechanism)
@@ -501,7 +501,7 @@ class SASL(PlugIn):
             self.client_nonce = '%x' % rndg.getrandbits(196)
             self.scram_soup = 'n=' + self.username + ',r=' + self.client_nonce
             if self.mechanism == 'SCRAM-SHA-1':
-                if self.channel_binding == None:
+                if self.channel_binding is None:
                     # Client doesn't support Channel Binding
                     self.scram_gs2 = 'n,,' # No CB yet.
                 else:
