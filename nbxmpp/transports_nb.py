@@ -583,7 +583,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
                 except UnicodeDecodeError:
                     for i in range(-1, -4, -1):
                         char = sent_data[i]
-                        if char & 0xc0 == 0xc0:
+                        if ord(char) & 0xc0 == 0xc0:
                             self.sent_bytes_buff = sent_data[i:]
                             sent_data = sent_data[:i]
                             break
@@ -794,7 +794,7 @@ class NonBlockingHTTP(NonBlockingTCP):
             headers.append('Connection: Keep-Alive')
         headers.append('\r\n')
         headers = '\r\n'.join(headers)
-        return('%s%s' % (headers, httpbody))
+        return '%s%s' % (headers, httpbody)
 
     def parse_http_message(self, message):
         """

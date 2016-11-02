@@ -104,7 +104,7 @@ class XMPPDispatcher(PlugIn):
         # \ufddo -> \ufdef range
         c = '\ufdd0'
         r = c
-        while (c < '\ufdef'):
+        while c < '\ufdef':
             c = chr(ord(c) + 1)
             r += '|' + c
 
@@ -112,7 +112,7 @@ class XMPPDispatcher(PlugIn):
         c = '\ufffe'
         r += '|' + c
         r += '|' + chr(ord(c) + 1)
-        while (c < '\U0010fffe'):
+        while c < '\U0010fffe':
             c = chr(ord(c) + 0x10000)
             r += '|' + c
             r += '|' + chr(ord(c) + 1)

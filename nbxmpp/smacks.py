@@ -143,7 +143,7 @@ class Smacks():
         self.enabled = True
         self.resuming = True
         self.con.set_oldst()
-        if self.old_uqueue != []:
+        if self.old_uqueue:
             log.info('Session resumed, replaying %s stanzas...' % len(self.old_uqueue))
             for i in self.old_uqueue:
                 self._owner.Connection.send(i, False)

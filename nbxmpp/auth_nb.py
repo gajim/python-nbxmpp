@@ -461,18 +461,18 @@ class SASL(PlugIn):
             self.realm = chal['realm']
         if 'qop' in chal and ((chal['qop'] =='auth') or \
         (isinstance(chal['qop'], list) and 'auth' in chal['qop'])):
-            self.resp = {}
-            self.resp['username'] = self.username
+            self.resp = {'username': self.username,
+                'nonce': chal['nonce'],
+                'cnonce': '%x' % rndg.getrandbits(196),
+                'nc': ('00000001'),  # ToDo: Is this a tupel or only a string?
+                'qop': 'auth',
+                'digest-uri': 'xmpp/' + self._owner.Server,
+                'charset': 'utf-8'
+            }
             if self.realm:
                 self.resp['realm'] = self.realm
             else:
                 self.resp['realm'] = self._owner.Server
-            self.resp['nonce'] = chal['nonce']
-            self.resp['cnonce'] = '%x' % rndg.getrandbits(196)
-            self.resp['nc'] = ('00000001')
-            self.resp['qop'] = 'auth'
-            self.resp['digest-uri'] = 'xmpp/' + self._owner.Server
-            self.resp['charset'] = 'utf-8'
             # Password is now required
             self._owner._caller.get_password(self.set_password, self.mechanism)
         elif 'rspauth' in chal:
