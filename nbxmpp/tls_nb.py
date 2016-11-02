@@ -120,7 +120,8 @@ class SSLWrapper:
                 if self.exc_str:
                     if self.strerror:
                         s += "(%s)" % self.exc_str
-                    else: s += "(%s)" % str(self.exc_args)
+                    else:
+                        s += "(%s)" % str(self.exc_args)
             return s
 
     def __init__(self, sslobj, sock=None):

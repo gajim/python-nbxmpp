@@ -273,9 +273,9 @@ class NonBlockingClient:
         """
         if err_message:
             log.debug('While looping over DNS A records: %s' % err_message)
-        if self.ip_addresses == []:
+        if not self.ip_addresses:
             msg = 'Run out of hosts for name %s:%s.' % (self.Server, self.Port)
-            msg = msg + ' Error for last IP: %s' % err_message
+            msg += ' Error for last IP: %s' % err_message
             self.disconnect(msg)
         else:
             self.current_ip = self.ip_addresses.pop(0)

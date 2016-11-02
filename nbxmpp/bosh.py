@@ -101,7 +101,7 @@ class NonBlockingBOSH(NonBlockingTransport):
         NonBlockingTransport.connect(self, conn_5tuple, on_connect, on_connect_failure)
 
         global FAKE_DESCRIPTOR
-        FAKE_DESCRIPTOR = FAKE_DESCRIPTOR - 1
+        FAKE_DESCRIPTOR -= 1
         self.fd = FAKE_DESCRIPTOR
 
         self.stanza_buffer = []

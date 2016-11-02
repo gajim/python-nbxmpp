@@ -458,7 +458,7 @@ class XMPPDispatcher(PlugIn):
         stanza.getName() != 'a' and stanza.getName() != 'enabled' and
         stanza.getName() != 'resumed'):
             # increments the number of stanzas that has been handled
-            self.sm.in_h = self.sm.in_h + 1
+            self.sm.in_h += 1
         list_ = ['default'] # we will use all handlers:
         if typ in self.handlers[xmlns][name]:
             list_.append(typ) # from very common...
@@ -571,7 +571,7 @@ class XMPPDispatcher(PlugIn):
         # If no ID then it is a whitespace
         if self.sm and self.sm.enabled and ID:
             self.sm.uqueue.append(stanza)
-            self.sm.out_h = self.sm.out_h + 1
+            self.sm.out_h += 1
             if len(self.sm.uqueue) > self.sm.max_queue:
                 self.sm.request_ack()
 
