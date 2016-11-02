@@ -94,11 +94,11 @@ class Smacks():
         self._owner.Connection.send(r, False)
 
     def check_ack(self, disp, stanza):
-        '''
+        """
         Checks if the number of stanzas sent are the same as the
         number of stanzas received by the server. Pops stanzas that were
         handled by the server from the queue.
-        '''
+        """
         h = stanza.getAttr('h')
         if not h:
             log.error('Server did not send h attribute')
@@ -118,11 +118,11 @@ class Smacks():
                 self.uqueue.pop(0)
                     
     def check_resume(self, disp, stanza):
-        '''
+        """
         Checks if the number of stanzas sent are the same as the
         number of stanzas received by the server. Resends stanzas not received
         by the server in the last session.
-        '''
+        """
         h = stanza.getAttr('h')
         if not h:
             log.error('Server did not send h attribute')

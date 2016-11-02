@@ -158,7 +158,7 @@ class PyOpenSSLWrapper(SSLWrapper):
         self.parent.__init__(self, *args)
 
     def is_numtoolarge(self, e):
-        ''' Magic methods don't need documentation '''
+        """ Magic methods don't need documentation """
         t = ('asn1 encoding routines', 'a2d_ASN1_OBJECT', 'first num too large')
         return (isinstance(e.args, (list, tuple)) and len(e.args) == 1 and
                 isinstance(e.args[0], (list, tuple)) and len(e.args[0]) == 2 and

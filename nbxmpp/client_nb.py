@@ -160,6 +160,7 @@ class NonBlockingClient:
         :param port: port number of XMPP server
         :param on_proxy_failure: called if error occurs during TCP connection
             to proxy server or during proxy connecting process
+        :param on_stream_error_cb: called if error occurs
         :param proxy: dictionary with proxy data. It should contain at least
             values for keys 'host' and 'port' - connection details for proxy
             serve and optionally keys 'user' and 'pass' as proxy credentials

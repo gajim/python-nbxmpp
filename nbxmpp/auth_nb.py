@@ -663,7 +663,7 @@ class NonBlockingBind(PlugIn):
         self.resuming = False
 
     def plugin(self, owner):
-        ''' Start resource binding, if allowed at this time. Used internally. '''
+        """ Start resource binding, if allowed at this time. Used internally. """
         if self._owner.Dispatcher.Stream.features:
             try:
                 self.FeaturesHandler(self._owner.Dispatcher,

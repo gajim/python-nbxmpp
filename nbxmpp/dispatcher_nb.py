@@ -298,6 +298,7 @@ class XMPPDispatcher(PlugIn):
         :param typ: value of stanza's "type" attribute. If not specified any
                 value will match
         :param ns: namespace of child that stanza must contain.
+        :param xmlns: xml namespace
         :param makefirst: insert handler in the beginning of handlers list instead
                 of      adding it to the end. Note that more common handlers i.e. w/o "typ"
                 and " will be called first nevertheless.
