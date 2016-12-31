@@ -387,7 +387,7 @@ class XMPPDispatcher(PlugIn):
 
     def UnregisterCycleHandler(self, handler):
         """
-        Unregister handler that will is called on every Dispatcher.Process() call
+        Unregister handler that will be called on every Dispatcher.Process() call
         """
         if handler in self._cycleHandlers:
             self._cycleHandlers.remove(handler)
