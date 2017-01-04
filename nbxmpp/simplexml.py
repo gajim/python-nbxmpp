@@ -611,7 +611,7 @@ class NodeBuilder(object):
         """
         self.check_data_buffer()
         self._inc_depth()
-        log.info("STARTTAG.. DEPTH -> %i , tag -> %s, attrs -> %s" % (self.__depth, tag, attrs))
+        log.debug("STARTTAG.. DEPTH -> %i , tag -> %s, attrs -> %s" % (self.__depth, tag, attrs))
         if self.__depth == self._dispatch_depth:
             if not self._mini_dom :
                 self._mini_dom = Node(tag=tag, attrs=attrs, nsp = self._document_nsp, node_built=True)
@@ -646,7 +646,7 @@ class NodeBuilder(object):
         """
         XML Parser callback. Used internally
         """
-        log.info("DEPTH -> %i , tag -> %s" % (self.__depth, tag))
+        log.debug("DEPTH -> %i , tag -> %s" % (self.__depth, tag))
         self.check_data_buffer()
         if self.__depth == self._dispatch_depth:
             if self._mini_dom.getName() == 'error':
@@ -659,7 +659,7 @@ class NodeBuilder(object):
         elif self.__depth > self._dispatch_depth:
             self._ptr = self._ptr.parent
         else:
-            log.info("Got higher than dispatch level. Stream terminated?")
+            log.debug("Got higher than dispatch level. Stream terminated?")
         self._dec_depth()
         self.last_is_data = 0
         if self.__depth == 0: self.stream_footer_received()
