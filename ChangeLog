@@ -1,3 +1,8 @@
+python-nbxmpp 0.5.5 (30 January 2017)
+
+  * Some cleanup
+  * Add some namespaces
+
 python-nbxmpp 0.5.4 (04 September 2016)
 
   * Fix SCRAM authentication
