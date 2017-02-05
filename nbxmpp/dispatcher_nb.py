@@ -573,10 +573,12 @@ class XMPPDispatcher(PlugIn):
         if self.sm and self.sm.enabled and ID:
             self.sm.uqueue.append(stanza)
             self.sm.out_h += 1
-            if len(self.sm.uqueue) > self.sm.max_queue:
-                self.sm.request_ack()
 
         self._owner.Connection.send(stanza, now)
+
+        if self.sm and self.sm.enabled and ID and len(self.sm.uqueue) > self.sm.max_queue:
+            self.sm.request_ack()
+
         return ID
 
 
