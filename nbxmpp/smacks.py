@@ -22,7 +22,8 @@ class Smacks(object):
         self.session_id = None
         self.resumption = False # If server supports resume
         # Max number of stanzas in queue before making a request
-        self.max_queue = 5
+        #be more agressive here (every message must be acked), this creates fewer message duplicates on failed resume)
+        self.max_queue = 0
         self._owner = None
         self.resuming = False
         self.enabled = False # If SM is enabled
@@ -47,6 +48,7 @@ class Smacks(object):
 
     def _neg_response(self, disp, stanza):
         r = stanza.getAttr('resume')
+        log.info("Session resumption: %s" % r)
         if r == 'true' or r == 'True' or r == '1':
             self.resumption = True
             self.session_id = stanza.getAttr('id')
@@ -62,8 +64,8 @@ class Smacks(object):
     def negociate(self, resume=True):
         # Every time we attempt to negociate, we must erase all previous info
         # about any previous session
+        log.debug("Clearing smacks uqueue")
         self.uqueue = []
-        self.old_uqueue = []
         self.in_h = 0
         self.out_h = 0
         self.session_id = None
@@ -73,12 +75,26 @@ class Smacks(object):
         stanza.buildEnable(resume)
         self._owner.Connection.send(stanza, now=True)
 
+    def resend_queue(self):
+        """
+        Resends unsent stanzas when a new session is established.
+        This way there won't be any lost outgoing messages even on failed smacks resumes (but message duplicates are possible).
+        If your server supports revision 1.5 of smacks then even message duplicates are eliminated here :)
+        """
+        if self.old_uqueue:
+            log.info('Session resumption failed, replaying %s stanzas anyways...' % len(self.old_uqueue))
+            for i in self.old_uqueue:
+                self._owner.Dispatcher.send(i, False)   #use this send so that our stanzas actually increment out_h
+            self.old_uqueue = []
+        
     def resume_request(self):
         if not self.session_id:
             self.resuming = False
             log.error('Attempted to resume without a valid session id ')
             return
-        self.old_uqueue = self.uqueue    #save old messages in an extra "queue" to avoid race conditions
+        #save old messages in an extra "queue" to avoid race conditions and to make it possible to replay stanzas even when resuming fails
+        #add messages here (instead of overwriting) so that repeated connection errors don't delete unacked stanzas (uqueue should be empty in this case anyways)
+        self.old_uqueue += self.uqueue
         self.uqueue = []
         resume = Acks()
         resume.buildResume(self.in_h, self.session_id)
@@ -124,6 +140,7 @@ class Smacks(object):
         number of stanzas received by the server. Resends stanzas not received
         by the server in the last session.
         """
+        log.info("Session resumption succeeded")
         h = stanza.getAttr('h')
         if not h:
             log.error('Server did not send h attribute')
@@ -137,7 +154,7 @@ class Smacks(object):
         elif len(self.old_uqueue) < diff:
             log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d)' % (self.out_h, h))
         else:
-            log.info('Removing %d already received stanzas from old outgoing queue (our h: %d, server h: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, diff))
+            log.info('Removing %d already acked stanzas from old outgoing queue (our h: %d, server h: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, diff))
             while (len(self.old_uqueue) > diff):
                 self.old_uqueue.pop(0)
 
@@ -160,14 +177,33 @@ class Smacks(object):
             self._owner.NonBlockingBind.resuming = False
             self._owner._on_auth_bind(None)
             self.failed_resume = True
+            
+            h = stanza.getTag('item-not-found').getAttr('h')
+            log.info('Session resumption failed (item-not-found), server h: %s' % str(h))
+            if not h:
+                return
+            #prepare old_queue to contain only unacked stanzas for later resend (which is happening after our session is established properly)
+            h = int(h)
+            diff = self.out_h - h
+
+            if diff < 0:
+                log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d)' % (self.out_h, h))
+                self.old_uqueue = []        #that's weird, but we don't resend this stanzas if the server says we don't need to
+            elif len(self.old_uqueue) < diff:
+                log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d)' % (self.out_h, h))
+            else:
+                log.info('Removing %d already acked stanzas from old outgoing queue (our h: %d, server h: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, diff))
+                while (len(self.old_uqueue) > diff):
+                    self.old_uqueue.pop(0)
             return
 
         # Doesn't support resumption
         if stanza.getTag('feature-not-implemented'):
+            log.info('Session resumption failed (feature-not-implemented)')
             self.negociate(False)
             return
 
         if stanza.getTag('unexpected-request'):
-            self.enabled = False
             log.error('Gajim failed to negociate Stream Management')
+            self.enabled = False
             return

@@ -734,9 +734,9 @@ class NonBlockingBind(PlugIn):
                 self._owner.User = jid.getNode()
                 self._owner.Resource = jid.getResource()
                 # Only negociate stream management after bounded
-                sm = self._owner._caller.sm
                 if self.supports_sm:
                     # starts negociation
+                    sm = self._owner._caller.sm
                     sm.supports_sm = True
                     sm.set_owner(self._owner)
                     sm.negociate()
@@ -745,6 +745,7 @@ class NonBlockingBind(PlugIn):
                 if hasattr(self, 'session') and self.session == -1:
                     # Server don't want us to initialize a session
                     log.info('No session required.')
+                    self._owner._caller.sm.resend_queue()   #resend old messages still in the smacks queue
                     self.on_bound('ok')
                 else:
                     self._owner.SendAndWaitForResponse(Protocol('iq', typ='set',
@@ -763,6 +764,7 @@ class NonBlockingBind(PlugIn):
         if isResultNode(resp):
             log.info('Successfully opened session.')
             self.session = 1
+            self._owner._caller.sm.resend_queue()   #resend old messages still in the smacks queue
             self.on_bound('ok')
         else:
             log.error('Session open failed.')
