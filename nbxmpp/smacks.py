@@ -48,6 +48,7 @@ class Smacks(object):
 
     def _neg_response(self, disp, stanza):
         r = stanza.getAttr('resume')
+        log.info("Session resumption: %s" % r)
         if r == 'true' or r == 'True' or r == '1':
             self.resumption = True
             self.session_id = stanza.getAttr('id')
@@ -63,6 +64,7 @@ class Smacks(object):
     def negociate(self, resume=True):
         # Every time we attempt to negociate, we must erase all previous info
         # about any previous session
+        log.debug("Clearing smacks uqueue")
         self.uqueue = []
         self.in_h = 0
         self.out_h = 0
@@ -138,6 +140,7 @@ class Smacks(object):
         number of stanzas received by the server. Resends stanzas not received
         by the server in the last session.
         """
+        log.info("Session resumption succeeded")
         h = stanza.getAttr('h')
         if not h:
             log.error('Server did not send h attribute')
@@ -151,7 +154,7 @@ class Smacks(object):
         elif len(self.old_uqueue) < diff:
             log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d)' % (self.out_h, h))
         else:
-            log.info('Removing %d already received stanzas from old outgoing queue (our h: %d, server h: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, diff))
+            log.info('Removing %d already acked stanzas from old outgoing queue (our h: %d, server h: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, diff))
             while (len(self.old_uqueue) > diff):
                 self.old_uqueue.pop(0)
 
@@ -176,6 +179,7 @@ class Smacks(object):
             self.failed_resume = True
             
             h = stanza.getTag('item-not-found').getAttr('h')
+            log.info('Session resumption failed (item-not-found), server h: %s' % str(h))
             if not h:
                 return
             #prepare old_queue to contain only unacked stanzas for later resend (which is happening after our session is established properly)
@@ -188,17 +192,18 @@ class Smacks(object):
             elif len(self.old_uqueue) < diff:
                 log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d)' % (self.out_h, h))
             else:
-                log.info('Removing %d already received stanzas from old outgoing queue (our h: %d, server h: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, diff))
+                log.info('Removing %d already acked stanzas from old outgoing queue (our h: %d, server h: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, diff))
                 while (len(self.old_uqueue) > diff):
                     self.old_uqueue.pop(0)
             return
 
         # Doesn't support resumption
         if stanza.getTag('feature-not-implemented'):
+            log.info('Session resumption failed (feature-not-implemented)')
             self.negociate(False)
             return
 
         if stanza.getTag('unexpected-request'):
-            self.enabled = False
             log.error('Gajim failed to negociate Stream Management')
+            self.enabled = False
             return

@@ -23,12 +23,13 @@ different handlers to different XMPP stanzas and namespaces
 from __future__ import unicode_literals
 from . import simplexml
 import sys
+import time
 import locale
 import re
 import uuid
 from xml.parsers.expat import ExpatError
 from .plugin import PlugIn
-from .protocol import (NS_STREAMS, NS_XMPP_STREAMS, NS_HTTP_BIND, Iq, Presence,
+from .protocol import (NS_DELAY2, NS_STREAMS, NS_XMPP_STREAMS, NS_HTTP_BIND, Iq, Presence,
         Message, Protocol, Node, Error, ERR_FEATURE_NOT_IMPLEMENTED, StreamError)
 import logging
 
@@ -571,6 +572,13 @@ class XMPPDispatcher(PlugIn):
 
         # If no ID then it is a whitespace
         if self.sm and self.sm.enabled and ID:
+            # add timestamp to message stanza in queue
+            if stanza.getName == 'message'
+            and (stanza.getType() == 'chat' or stanza.getType() == 'groupchat'):
+                our_jid = stanza.getAttr('from')
+                timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(None))
+                stanza.addChild('delay', namespace=NS_DELAY2,
+                        attrs={'from': our_jid, 'stamp': timestamp})
             self.sm.uqueue.append(stanza)
             self.sm.out_h += 1
 
