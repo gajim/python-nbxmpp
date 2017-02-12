@@ -731,6 +731,7 @@ class NonBlockingBind(PlugIn):
                 self.bound.append(resp.getTag('bind').getTagData('jid'))
                 log.info('Successfully bound %s.' % self.bound[-1])
                 jid = JID(resp.getTag('bind').getTagData('jid'))
+                self._owner._registered_name = jid
                 self._owner.User = jid.getNode()
                 self._owner.Resource = jid.getResource()
                 # Only negociate stream management after bounded
