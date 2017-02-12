@@ -27,6 +27,7 @@ import time
 import locale
 import re
 import uuid
+import copy
 from xml.parsers.expat import ExpatError
 from .plugin import PlugIn
 from .protocol import (NS_DELAY2, NS_STREAMS, NS_XMPP_STREAMS, NS_HTTP_BIND, Iq, Presence,
@@ -572,14 +573,15 @@ class XMPPDispatcher(PlugIn):
 
         # If no ID then it is a whitespace
         if self.sm and self.sm.enabled and ID:
+            stanza_copy = copy.deepcopy(stanza)
             # add timestamp to message stanza in queue
-            if stanza.getName() == 'message' and \
-            (stanza.getType() == 'chat' or stanza.getType() == 'groupchat'):
-                our_jid = stanza.getAttr('from')
+            if stanza_copy.getName() == 'message' and \
+            (stanza_copy.getType() == 'chat' or stanza_copy.getType() == 'groupchat'):
+                our_jid = stanza_copy.getAttr('from')
                 timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(None))
-                stanza.addChild('delay', namespace=NS_DELAY2,
-                        attrs={'from': our_jid, 'stamp': timestamp})
-            self.sm.uqueue.append(stanza)
+                stanza_copy.addChild('delay', namespace=NS_DELAY2,
+                        attrs={'from': our_jid or "Gajim", 'stamp': timestamp})
+            self.sm.uqueue.append(stanza_copy)
             self.sm.out_h += 1
 
         self._owner.Connection.send(stanza, now)
