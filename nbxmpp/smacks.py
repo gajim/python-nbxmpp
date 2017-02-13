@@ -1,5 +1,6 @@
 from .protocol import Acks
 from .protocol import NS_STREAM_MGMT
+from .transports_nb import CONNECTED, CONNECTING, DISCONNECTED, DISCONNECTING
 import logging
 log = logging.getLogger('nbxmpp.smacks')
 
@@ -104,6 +105,14 @@ class Smacks(object):
         ack = Acks()
         ack.buildAnswer(self.in_h)
         self._owner.Connection.send(ack, False)
+    
+    def send_closing_ack(self):
+        if self._owner.Connection.get_state() != DISCONNECTING:
+            log.error("Not allowed to send closing smacks ack when not disconnecting!")
+            return
+        ack = Acks()
+        ack.buildAnswer(self.in_h)
+        self._owner.Connection.send(ack, True)
 
     def request_ack(self):
         r = Acks()
