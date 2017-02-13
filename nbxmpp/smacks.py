@@ -124,13 +124,13 @@ class Smacks(object):
         diff = self.out_h - h
 
         if diff < 0:
-            log.error('Server and client number of stanzas handled mismatch (our h: %d, server h: %d)' % (self.out_h, h))
+            log.error('Server and client number of stanzas handled mismatch (our h: %d, server h: %d, #queue: %d)' % (self.out_h, h, len(self.uqueue)))
             while (len(self.uqueue)):        #don't accumulate all messages in this case (they would otherwise all be resent on the next reconnect)
                 self.uqueue.pop(0)
         elif len(self.uqueue) < diff:
-            log.error('Server and client number of stanzas handled mismatch (our h: %d, server h: %d)' % (self.out_h, h))
+            log.error('Server and client number of stanzas handled mismatch (our h: %d, server h: %d, #queue: %d)' % (self.out_h, h, len(self.uqueue)))
         else:
-            log.debug('Got ack for outgoing stanzas (our h: %d, server h: %d), removing %d messages from queue...' % (self.out_h, h, len(self.uqueue) - diff))
+            log.debug('Got ack for outgoing stanzas (our h: %d, server h: %d, #queue: %d), removing %d messages from queue...' % (self.out_h, h, len(self.uqueue), len(self.uqueue) - diff))
             while (len(self.uqueue) > diff):
                 self.uqueue.pop(0)
                     
@@ -149,12 +149,12 @@ class Smacks(object):
         diff = self.out_h - h
 
         if diff < 0:
-            log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d)' % (self.out_h, h))
+            log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d. #queue: %d)' % (self.out_h, h, len(self.old_uqueue)))
             self.old_uqueue = []        #that's weird, but we don't resend this stanzas if the server says we don't need to
         elif len(self.old_uqueue) < diff:
-            log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d)' % (self.out_h, h))
+            log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d, #queue: %d)' % (self.out_h, h, len(self.old_uqueue)))
         else:
-            log.info('Removing %d already acked stanzas from old outgoing queue (our h: %d, server h: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, diff))
+            log.info('Removing %d already acked stanzas from old outgoing queue (our h: %d, server h: %d, #queue: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, len(self.old_uqueue), diff))
             while (len(self.old_uqueue) > diff):
                 self.old_uqueue.pop(0)
 
@@ -178,7 +178,7 @@ class Smacks(object):
             self._owner._on_auth_bind(None)
             self.failed_resume = True
             
-            h = stanza.getTag('item-not-found').getAttr('h')
+            h = stanza.getAttr('h')
             log.info('Session resumption failed (item-not-found), server h: %s' % str(h))
             if not h:
                 return
@@ -187,12 +187,12 @@ class Smacks(object):
             diff = self.out_h - h
 
             if diff < 0:
-                log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d)' % (self.out_h, h))
+                log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d, #queue: %d)' % (self.out_h, h, len(self.old_uqueue)))
                 self.old_uqueue = []        #that's weird, but we don't resend this stanzas if the server says we don't need to
             elif len(self.old_uqueue) < diff:
-                log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d)' % (self.out_h, h))
+                log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d, #queue: %d)' % (self.out_h, h, len(self.old_uqueue)))
             else:
-                log.info('Removing %d already acked stanzas from old outgoing queue (our h: %d, server h: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, diff))
+                log.info('Removing %d already acked stanzas from old outgoing queue (our h: %d, server h: %d, #queue: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, len(self.old_uqueue), diff))
                 while (len(self.old_uqueue) > diff):
                     self.old_uqueue.pop(0)
             return
