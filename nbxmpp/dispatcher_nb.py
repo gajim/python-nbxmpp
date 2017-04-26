@@ -576,17 +576,18 @@ class XMPPDispatcher(PlugIn):
         # If no ID then it is a whitespace
         if self.sm and self.sm.enabled and ID:
             # add timestamp to message stanza in queue
-            if stanza.getName() == 'message' and \
-            (stanza.getType() == 'chat' or stanza.getType() == 'groupchat'):
+            if (stanza.getName() == 'message' and
+                    stanza.getType() in ('chat', 'groupchat')):
                 our_jid = stanza.getAttr('from')
-                timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(None))
+                timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
                 stanza.addChild('delay', namespace=NS_DELAY2,
-                        attrs={'from': our_jid or "Gajim", 'stamp': timestamp})
+                                attrs={'from': our_jid or 'Gajim',
+                                       'stamp': timestamp})
             self.sm.uqueue.append(stanza)
             self.sm.out_h += 1
 
-        if self.sm and self.sm.enabled and ID and len(self.sm.uqueue) > self.sm.max_queue:
-            self.sm.request_ack()
+            if len(self.sm.uqueue) > self.sm.max_queue:
+                self.sm.request_ack()
 
         return ID
 
