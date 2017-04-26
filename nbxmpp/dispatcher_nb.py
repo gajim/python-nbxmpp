@@ -571,23 +571,23 @@ class XMPPDispatcher(PlugIn):
                 if self._owner._registered_name and not stanza.getAttr('from'):
                     stanza.setAttr('from', self._owner._registered_name)
 
-        # If no ID then it is a whitespace
-        if self.sm and self.sm.enabled and ID:
-            stanza_copy = copy.deepcopy(stanza)
-            # add timestamp to message stanza in queue
-            if stanza_copy.getName() == 'message' and \
-            (stanza_copy.getType() == 'chat' or stanza_copy.getType() == 'groupchat'):
-                our_jid = stanza_copy.getAttr('from')
-                timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(None))
-                stanza_copy.addChild('delay', namespace=NS_DELAY2,
-                        attrs={'from': our_jid or "Gajim", 'stamp': timestamp})
-            self.sm.uqueue.append(stanza_copy)
-            self.sm.out_h += 1
-
         self._owner.Connection.send(stanza, now)
 
-        if self.sm and self.sm.enabled and ID and len(self.sm.uqueue) > self.sm.max_queue:
-            self.sm.request_ack()
+        # If no ID then it is a whitespace
+        if self.sm and self.sm.enabled and ID:
+            # add timestamp to message stanza in queue
+            if (stanza.getName() == 'message' and
+                    stanza.getType() in ('chat', 'groupchat')):
+                our_jid = stanza.getAttr('from')
+                timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+                stanza.addChild('delay', namespace=NS_DELAY2,
+                                attrs={'from': our_jid or 'Gajim',
+                                       'stamp': timestamp})
+            self.sm.uqueue.append(stanza)
+            self.sm.out_h += 1
+
+            if len(self.sm.uqueue) > self.sm.max_queue:
+                self.sm.request_ack()
 
         return ID
 
