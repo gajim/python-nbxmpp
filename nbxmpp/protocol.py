@@ -95,7 +95,8 @@ NS_JINGLE_ERRORS  = 'urn:xmpp:jingle:errors:1'                        # XEP-0166
 NS_JINGLE_RTP     = 'urn:xmpp:jingle:apps:rtp:1'                      # XEP-0167
 NS_JINGLE_RTP_AUDIO = 'urn:xmpp:jingle:apps:rtp:audio'                # XEP-0167
 NS_JINGLE_RTP_VIDEO = 'urn:xmpp:jingle:apps:rtp:video'                # XEP-0167
-NS_JINGLE_FILE_TRANSFER ='urn:xmpp:jingle:apps:file-transfer:3'        # XEP-0234
+NS_JINGLE_FILE_TRANSFER = 'urn:xmpp:jingle:apps:file-transfer:3'      # XEP-0234
+NS_JINGLE_FILE_TRANSFER_5 = 'urn:xmpp:jingle:apps:file-transfer:5'    # XEP-0234
 NS_JINGLE_XTLS='urn:xmpp:jingle:security:xtls:0'                      # XTLS: EXPERIMENTAL security layer of jingle
 NS_JINGLE_RAW_UDP = 'urn:xmpp:jingle:transports:raw-udp:1'            # XEP-0177
 NS_JINGLE_ICE_UDP = 'urn:xmpp:jingle:transports:ice-udp:1'            # XEP-0176
@@ -173,10 +174,15 @@ NS_PUBKEY_REVOKE  = 'urn:xmpp:revoke:2'
 NS_PUBKEY_ATTEST  = 'urn:xmpp:attest:2'
 NS_STREAM_MGMT    = 'urn:xmpp:sm:3'                                   # XEP-198
 NS_HASHES         = 'urn:xmpp:hashes:1'                               # XEP-300
+NS_HASHES_2       = 'urn:xmpp:hashes:2'                               # XEP-300
 NS_HASHES_MD5     = 'urn:xmpp:hash-function-text-names:md5'
 NS_HASHES_SHA1    = 'urn:xmpp:hash-function-text-names:sha-1'
 NS_HASHES_SHA256  = 'urn:xmpp:hash-function-text-names:sha-256'
 NS_HASHES_SHA512  = 'urn:xmpp:hash-function-text-names:sha-512'
+NS_HASHES_SHA3_256 = 'urn:xmpp:hash-function-text-names:sha3-256'
+NS_HASHES_SHA3_512 = 'urn:xmpp:hash-function-text-names:sha3-512'
+NS_HASHES_BLAKE2B_256 = 'urn:xmpp:hash-function-text-names:id-blake2b256'
+NS_HASHES_BLAKE2B_512 = 'urn:xmpp:hash-function-text-names:id-blake2b512'
 
 #xmpp_stream_error_conditions = '''
 #bad-format --  --  -- The entity has sent XML that cannot be processed.
