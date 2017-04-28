@@ -24,6 +24,7 @@ from .simplexml import Node, NodeBuilder
 import time
 import string
 import hashlib
+from base64 import b64encode
 
 def ascii_upper(s):
     return s.upper()
@@ -1351,6 +1352,62 @@ class Hashes(Node):
                 for line in file_string:
                     hl.update(line)
                 hash_ = hl.hexdigest()
+        return hash_
+
+class Hashes2(Node):
+    """
+    Hash elements for various XEPs as defined in XEP-300
+    """
+
+    """
+    RECOMENDED HASH USE:
+    Algorithm     Support
+    MD2           MUST NOT
+    MD4           MUST NOT
+    MD5           MUST NOT
+    SHA-1         SHOULD NOT
+    SHA-256       MUST
+    SHA-512       SHOULD
+    SHA3-256      MUST
+    SHA3-512      SHOULD
+    BLAKE2b256    MUST
+    BLAKE2b512    SHOULD
+    """
+
+    supported = ('sha-256', 'sha-512', 'sha3-256', 'sha3-512', 'blake2b-256', 'blake2b-512')
+
+    def __init__(self, nsp=NS_HASHES):
+        Node.__init__(self, None, {}, [], None, None, False, None)
+        self.setNamespace(nsp)
+        self.setName('hash')
+
+    def calculateHash(self, algo, file_string):
+        """
+        Calculate the hash and add it. It is preferable doing it here
+        instead of doing it all over the place in Gajim.
+        """
+        hl = None
+        hash_ = None
+        if algo == 'sha-256':
+            hl = hashlib.sha256()
+        elif algo == 'sha-512':
+            hl = hashlib.sha512()
+        elif algo == 'sha3-256':
+            hl = hashlib.sha3_256()
+        elif algo == 'sha3-512':
+            hl = hashlib.sha3_512()
+        elif algo == 'blake2b-256':
+            hl = hashlib.blake2b(digest_size=32)
+        elif algo == 'blake2b-512':
+            hl = hashlib.blake2b(digest_size=64)
+        # file_string can be a string or a file
+        if hl is not None:
+            if isinstance(file_string, bytes):
+                hl.update(file_string)
+            else: # if it is a file
+                for line in file_string:
+                    hl.update(line)
+            hash_ = b64encode(hl.digest()).decode('ascii')
         return hash_
 
     def addHash(self, hash_, algo):
