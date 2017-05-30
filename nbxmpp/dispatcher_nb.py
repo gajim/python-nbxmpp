@@ -578,11 +578,12 @@ class XMPPDispatcher(PlugIn):
             # add timestamp to message stanza in queue
             if (stanza.getName() == 'message' and
                     stanza.getType() in ('chat', 'groupchat')):
-                our_jid = stanza.getAttr('from')
                 timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-                stanza.addChild('delay', namespace=NS_DELAY2,
-                                attrs={'from': our_jid or 'Gajim',
-                                       'stamp': timestamp})
+                attrs = {'stamp': timestamp}
+                if stanza.getType() != 'groupchat':
+                    # Dont leak our JID to Groupchats
+                    attrs['from'] = stanza.getAttr('from')
+                stanza.addChild('delay', namespace=NS_DELAY2, attrs=attrs)
             self.sm.uqueue.append(stanza)
             self.sm.out_h += 1
 
