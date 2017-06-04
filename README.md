@@ -9,7 +9,7 @@ python-nbxmpp is a Python library that provides a way for Python applications to
  * Supports connection via proxies
  * Suppors TLS
  * Supports [BOSH (XEP-0124)](https://xmpp.org/extensions/xep-0124.html)
- * Support [Stream Managemen (XEP-0198)](https://xmpp.org/extensions/xep-0198.html)
+ * Support [Stream Management (XEP-0198)](https://xmpp.org/extensions/xep-0198.html)
 
 ## Starting Points
 
