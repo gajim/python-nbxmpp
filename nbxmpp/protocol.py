@@ -24,6 +24,7 @@ from .simplexml import Node, NodeBuilder
 import time
 import string
 import hashlib
+from base64 import b64encode
 
 def ascii_upper(s):
     return s.upper()
@@ -95,7 +96,8 @@ NS_JINGLE_ERRORS  = 'urn:xmpp:jingle:errors:1'                        # XEP-0166
 NS_JINGLE_RTP     = 'urn:xmpp:jingle:apps:rtp:1'                      # XEP-0167
 NS_JINGLE_RTP_AUDIO = 'urn:xmpp:jingle:apps:rtp:audio'                # XEP-0167
 NS_JINGLE_RTP_VIDEO = 'urn:xmpp:jingle:apps:rtp:video'                # XEP-0167
-NS_JINGLE_FILE_TRANSFER ='urn:xmpp:jingle:apps:file-transfer:3'        # XEP-0234
+NS_JINGLE_FILE_TRANSFER = 'urn:xmpp:jingle:apps:file-transfer:3'      # XEP-0234
+NS_JINGLE_FILE_TRANSFER_5 = 'urn:xmpp:jingle:apps:file-transfer:5'    # XEP-0234
 NS_JINGLE_XTLS='urn:xmpp:jingle:security:xtls:0'                      # XTLS: EXPERIMENTAL security layer of jingle
 NS_JINGLE_RAW_UDP = 'urn:xmpp:jingle:transports:raw-udp:1'            # XEP-0177
 NS_JINGLE_ICE_UDP = 'urn:xmpp:jingle:transports:ice-udp:1'            # XEP-0176
@@ -173,10 +175,15 @@ NS_PUBKEY_REVOKE  = 'urn:xmpp:revoke:2'
 NS_PUBKEY_ATTEST  = 'urn:xmpp:attest:2'
 NS_STREAM_MGMT    = 'urn:xmpp:sm:3'                                   # XEP-198
 NS_HASHES         = 'urn:xmpp:hashes:1'                               # XEP-300
-NS_HASHES_MD5     = 'urn:xmpp:hash-function-textual-names:md5'
-NS_HASHES_SHA1    = 'urn:xmpp:hash-function-textual-names:sha-1'
-NS_HASHES_SHA256  = 'urn:xmpp:hash-function-textual-names:sha-256'
-NS_HASHES_SHA512  = 'urn:xmpp:hash-function-textual-names:sha-512'
+NS_HASHES_2       = 'urn:xmpp:hashes:2'                               # XEP-300
+NS_HASHES_MD5     = 'urn:xmpp:hash-function-text-names:md5'
+NS_HASHES_SHA1    = 'urn:xmpp:hash-function-text-names:sha-1'
+NS_HASHES_SHA256  = 'urn:xmpp:hash-function-text-names:sha-256'
+NS_HASHES_SHA512  = 'urn:xmpp:hash-function-text-names:sha-512'
+NS_HASHES_SHA3_256 = 'urn:xmpp:hash-function-text-names:sha3-256'
+NS_HASHES_SHA3_512 = 'urn:xmpp:hash-function-text-names:sha3-512'
+NS_HASHES_BLAKE2B_256 = 'urn:xmpp:hash-function-text-names:id-blake2b256'
+NS_HASHES_BLAKE2B_512 = 'urn:xmpp:hash-function-text-names:id-blake2b512'
 
 #xmpp_stream_error_conditions = '''
 #bad-format --  --  -- The entity has sent XML that cannot be processed.
@@ -1345,6 +1352,62 @@ class Hashes(Node):
                 for line in file_string:
                     hl.update(line)
                 hash_ = hl.hexdigest()
+        return hash_
+
+class Hashes2(Node):
+    """
+    Hash elements for various XEPs as defined in XEP-300
+    """
+
+    """
+    RECOMENDED HASH USE:
+    Algorithm     Support
+    MD2           MUST NOT
+    MD4           MUST NOT
+    MD5           MUST NOT
+    SHA-1         SHOULD NOT
+    SHA-256       MUST
+    SHA-512       SHOULD
+    SHA3-256      MUST
+    SHA3-512      SHOULD
+    BLAKE2b256    MUST
+    BLAKE2b512    SHOULD
+    """
+
+    supported = ('sha-256', 'sha-512', 'sha3-256', 'sha3-512', 'blake2b-256', 'blake2b-512')
+
+    def __init__(self, nsp=NS_HASHES):
+        Node.__init__(self, None, {}, [], None, None, False, None)
+        self.setNamespace(nsp)
+        self.setName('hash')
+
+    def calculateHash(self, algo, file_string):
+        """
+        Calculate the hash and add it. It is preferable doing it here
+        instead of doing it all over the place in Gajim.
+        """
+        hl = None
+        hash_ = None
+        if algo == 'sha-256':
+            hl = hashlib.sha256()
+        elif algo == 'sha-512':
+            hl = hashlib.sha512()
+        elif algo == 'sha3-256':
+            hl = hashlib.sha3_256()
+        elif algo == 'sha3-512':
+            hl = hashlib.sha3_512()
+        elif algo == 'blake2b-256':
+            hl = hashlib.blake2b(digest_size=32)
+        elif algo == 'blake2b-512':
+            hl = hashlib.blake2b(digest_size=64)
+        # file_string can be a string or a file
+        if hl is not None:
+            if isinstance(file_string, bytes):
+                hl.update(file_string)
+            else: # if it is a file
+                for line in file_string:
+                    hl.update(line)
+            hash_ = b64encode(hl.digest()).decode('ascii')
         return hash_
 
     def addHash(self, hash_, algo):
