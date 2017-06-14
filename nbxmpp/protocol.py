@@ -173,10 +173,10 @@ NS_PUBKEY_REVOKE  = 'urn:xmpp:revoke:2'
 NS_PUBKEY_ATTEST  = 'urn:xmpp:attest:2'
 NS_STREAM_MGMT    = 'urn:xmpp:sm:3'                                   # XEP-198
 NS_HASHES         = 'urn:xmpp:hashes:1'                               # XEP-300
-NS_HASHES_MD5     = 'urn:xmpp:hash-function-textual-names:md5'
-NS_HASHES_SHA1    = 'urn:xmpp:hash-function-textual-names:sha-1'
-NS_HASHES_SHA256  = 'urn:xmpp:hash-function-textual-names:sha-256'
-NS_HASHES_SHA512  = 'urn:xmpp:hash-function-textual-names:sha-512'
+NS_HASHES_MD5     = 'urn:xmpp:hash-function-text-names:md5'
+NS_HASHES_SHA1    = 'urn:xmpp:hash-function-text-names:sha-1'
+NS_HASHES_SHA256  = 'urn:xmpp:hash-function-text-names:sha-256'
+NS_HASHES_SHA512  = 'urn:xmpp:hash-function-text-names:sha-512'
 
 #xmpp_stream_error_conditions = '''
 #bad-format --  --  -- The entity has sent XML that cannot be processed.
