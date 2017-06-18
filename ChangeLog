@@ -1,3 +1,7 @@
+python-nbxmpp 0.x.x (tbd)
+
+ * Add new XEP Namespaces for Jingle and Hashes
+
 python-nbxmpp 0.5.6 (03 June 2017)
 
   * Support XEP-0198 Version 1.5.2
