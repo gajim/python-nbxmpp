@@ -946,6 +946,16 @@ class Protocol(Node):
                 props.append(prop)
         return props
 
+    def getTag(self, name, attrs=None, namespace=None):
+        """
+        Return at least a Protocol instance, so we dont fall back to simplexml level
+        """
+        tag = super().getTag(name, attrs, namespace)
+        if not tag:
+            return None
+
+        return Protocol(node=tag)
+
     def __setitem__(self, item, val):
         """
         Set the item 'item' to the value 'val'
@@ -1072,6 +1082,18 @@ class Message(Protocol):
             for child in xtag.getTags('status'):
                 attrs.append(child.getAttr('code'))
         return attrs
+
+    def getTag(self, name, attrs=None, namespace=None):
+        """
+        Return Message instance, fallback to Protocol
+        """
+        tag = super().getTag(name, attrs, namespace)
+        if not tag:
+            return tag
+
+        if name == 'message':
+            return Message(node=tag)
+        return tag
 
 class Presence(Protocol):
 
