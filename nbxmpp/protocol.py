@@ -834,6 +834,15 @@ class Protocol(Node):
             return self.timestamp
         return time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
 
+    def getJid(self):
+        """
+        Return the value of the 'jid' attribute
+        """
+        attr = self.getAttr('jid')
+        if attr:
+            return JID(attr)
+        return attr
+
     def getID(self):
         """
         Return the value of the 'id' attribute
