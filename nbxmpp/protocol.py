@@ -144,6 +144,7 @@ NS_SERVER         = 'jabber:server'
 NS_SESSION        = 'urn:ietf:params:xml:ns:xmpp-session'
 NS_SI             = 'http://jabber.org/protocol/si'                   # XEP-0096
 NS_SI_PUB         = 'http://jabber.org/protocol/sipub'                # XEP-0137
+NS_SID            = 'urn:xmpp:sid:0'                                  # XEP-0359
 NS_SIGNED         = 'jabber:x:signed'                                 # XEP-0027
 NS_SIMS           = 'urn:xmpp:sims:1'                                 # XEP-0385
 NS_SSN            = 'urn:xmpp:ssn'                                    # XEP-0155
