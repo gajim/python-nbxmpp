@@ -1,6 +1,7 @@
 python-nbxmpp 0.x.x (tbd)
 
- * Add new XEP Namespaces for Jingle and Hashes
+ * Return Protocol instances when using certain Node methods
+ * Add new XEP Namespaces
 
 python-nbxmpp 0.5.6 (03 June 2017)
 
