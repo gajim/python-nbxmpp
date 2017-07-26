@@ -89,6 +89,7 @@ NS_HTTP_AUTH      = 'http://jabber.org/protocol/http-auth'            # XEP-0070
 NS_HTTP_BIND      = 'http://jabber.org/protocol/httpbind'             # XEP-0124
 NS_HTTPUPLOAD     = 'urn:xmpp:http:upload'                            # XEP-0363
 NS_IBB            = 'http://jabber.org/protocol/ibb'
+NS_IDLE           = 'urn:xmpp:idle:1'                                 # XEP-0319
 NS_INVISIBLE      = 'presence-invisible'                              # Jabberd2
 NS_IQ             = 'iq'                                              # Jabberd2
 NS_JINGLE         ='urn:xmpp:jingle:1'                                # XEP-0166
