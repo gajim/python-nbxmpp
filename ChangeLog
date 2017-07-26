@@ -1,5 +1,6 @@
-python-nbxmpp 0.x.x (tbd)
+python-nbxmpp 0.5.7 (26 Juli 2017)
 
+ * Add new getJid() method for Protocol
  * Return Protocol instances when using certain Node methods
  * Add new XEP Namespaces
 
