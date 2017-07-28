@@ -1034,6 +1034,12 @@ class Message(Protocol):
         """
         return self.getTagData('thread')
 
+    def getOriginID(self):
+        """
+        Return origin-id of the message
+        """
+        return self.getTagAttr('origin-id', namespace=NS_SID, attr='id')
+
     def setBody(self, val):
         """
         Set the text of the message"""
@@ -1070,6 +1076,12 @@ class Message(Protocol):
         Set the thread of the message
         """
         self.setTagData('thread', val)
+
+    def setOriginID(self, val):
+        """
+        Sets the origin-id of the message
+        """
+        self.setTag('origin-id', namespace=NS_SID, attrs={'id': val})
 
     def buildReply(self, text=None):
         """
