@@ -961,7 +961,7 @@ class Protocol(Node):
         """
         Return at least a Protocol instance, so we dont fall back to simplexml level
         """
-        tag = super().getTag(name, attrs, namespace)
+        tag = super(Protocol, self).getTag(name, attrs, namespace)
         if not tag:
             return None
 
@@ -1098,7 +1098,7 @@ class Message(Protocol):
         """
         Return Message instance, fallback to Protocol
         """
-        tag = super().getTag(name, attrs, namespace)
+        tag = super(Message, self).getTag(name, attrs, namespace)
         if not tag:
             return tag
 
