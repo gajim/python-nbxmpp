@@ -2,12 +2,9 @@ python-nbxmpp 0.6.0 (tba)
 
  * Add new getOriginID/SetOriginID method for Messages
  * Add new getJid() method for Protocol
- * getTagAttr() accepts now a Namespace to filter
- * Return Protocol/Message instance when using getTag()
+ * getTagAttr() accepts now a namespace argument
+ * Add new `protocol` argument for getTag()
  * Add new XEP Namespaces
-
- Attention:
- The API for getTag() changed in the way that it always returns a Protocol or Message instance now instead of a Node instance before. This means 'to' and 'from' attributes return now a JID instance instead of a string
 
 python-nbxmpp 0.5.6 (03 June 2017)
 
