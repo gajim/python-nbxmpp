@@ -44,16 +44,16 @@ class TestDispatcherNB(unittest.TestCase):
             "xmlns:stream='http://etherx.jabber.org/streams' "
             "xmlns='jabber:client'>")
         self.dispatcher.ProcessNonBlocking("<stream:features> "
-            "<sm xmlns='urn:xmpp:sm:2'> <optional/> </sm> </stream:features>")
+            "<sm xmlns='urn:xmpp:sm:3'> <optional/> </sm> </stream:features>")
         self.con.sm.negociate()
-        self.dispatcher.ProcessNonBlocking("<enabled xmlns='urn:xmpp:sm:2' "
+        self.dispatcher.ProcessNonBlocking("<enabled xmlns='urn:xmpp:sm:3' "
             "id='some-long-sm-id' resume='true'/>")
         assert(self.con.sm.enabled)
 
     def _simulate_resume(self):
         self.con.sm.resume_request()
         # Resuming acknowledging 5 stanzas
-        self.dispatcher.ProcessNonBlocking("<resumed xmlns='urn:xmpp:sm:2' "
+        self.dispatcher.ProcessNonBlocking("<resumed xmlns='urn:xmpp:sm:3' "
             "id='some-long-sm-id' h='5'/>")
         assert(self.con.sm.resuming)
 
@@ -104,7 +104,7 @@ class TestDispatcherNB(unittest.TestCase):
         self.assertEqual(len(uqueue), 10)
 
         # The server acknowledges that it recieved 5 stanzas
-        self.dispatcher.ProcessNonBlocking("<a xmlns='urn:xmpp:sm:2' h='5'/>")
+        self.dispatcher.ProcessNonBlocking("<a xmlns='urn:xmpp:sm:3' h='5'/>")
         # 5 stanzas are removed from the queue, only 5 stanzas are left
 
         self.assertEqual(len(uqueue), 5)
