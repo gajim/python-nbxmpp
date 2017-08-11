@@ -1,0 +1,25 @@
+before_script:
+  - sudo apt-get update -qq && sudo apt-get build-dep -y -qq python-nbxmpp-nightly
+
+stages:
+  - test
+  - build
+
+run-test:
+  stage: test
+  script:
+    - ./test/runtests.py
+
+run-build:
+  stage: build
+  script:
+    - rm -rf dist
+    - export FN="nbxmpp-"$(date +%F)
+    - python setup.py sdist
+    - scp dist/nbxmpp-*.tar.gz panoramix:/var/www/gajim/downloads/snap/ci/$FN-$CI_COMMIT_SHA.tar.gz
+
+  artifacts:
+    name: "nbxmpp-$CI_COMMIT_SHA"
+    expire_in: 1 week
+    paths:
+      - dist/nbxmpp-*.tar.gz
