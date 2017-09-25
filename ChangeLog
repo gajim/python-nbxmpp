@@ -1,4 +1,4 @@
-python-nbxmpp 0.6.0 (tba)
+python-nbxmpp 0.6.0 (25 September 2017)
 
  * Add new getOriginID/SetOriginID method for Messages
  * Add new getJid() method for Protocol
