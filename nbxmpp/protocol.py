@@ -1043,6 +1043,16 @@ class Message(Protocol):
         """
         return self.getTagAttr('origin-id', namespace=NS_SID, attr='id')
 
+    def getStanzaIDAttrs(self):
+        """
+        Return the stanza-id attributes of the message
+        """
+        try:
+            attrs = self.getTag('stanza-id', namespace=NS_SID).getAttrs()
+        except Exception:
+            return None, None
+        return attrs['id'], attrs['by']
+
     def setBody(self, val):
         """
         Set the text of the message"""
