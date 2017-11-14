@@ -231,9 +231,9 @@ class TestNonBlockingHTTP(AbstractTransportTest):
         transport = self._get_transport(self.bosh_http_dict)
 
         data = "<test>Please don't fail!</test>"
-        http_message = transport.build_http_message(data)
-        statusline, headers, http_body, buffer_rest = transport.parse_http_message(
-                http_message)
+        http_message = transport.build_http_message(data.encode('utf-8'))
+        statusline, headers, http_body, buffer_rest = \
+            transport.parse_http_message(http_message.decode('utf-8'))
 
         self.assertFalse(bool(buffer_rest))
         self.assertTrue(statusline and isinstance(statusline, list))
