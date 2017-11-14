@@ -784,7 +784,7 @@ class NonBlockingHTTP(NonBlockingTCP):
                 'Host: %s:%s' % (self.http_host, self.http_port),
                 'User-Agent: Gajim',
                 'Content-Type: text/xml; charset=utf-8',
-                'Content-Length: %s' % len(str(httpbody))]
+                'Content-Length: %s' % len(httpbody)]
         if self.add_proxy_headers:
             headers.append('Proxy-Connection: keep-alive')
             headers.append('Pragma: no-cache')
@@ -796,7 +796,7 @@ class NonBlockingHTTP(NonBlockingTCP):
             headers.append('Connection: Keep-Alive')
         headers.append('\r\n')
         headers = '\r\n'.join(headers)
-        return '%s%s' % (headers, httpbody)
+        return b'%s%s' % (headers.encode('utf-8'), httpbody)
 
     def parse_http_message(self, message):
         """

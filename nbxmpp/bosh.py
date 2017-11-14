@@ -547,10 +547,10 @@ class KeyStack(object):
         self.first_call = True
 
     def reset(self):
-        seed = str(get_rand_number())
+        seed = str(get_rand_number()).encode('utf-8')
         self.keys = [sha1(seed).hexdigest()]
         for i in range(self.count-1):
-            curr_seed = self.keys[i]
+            curr_seed = self.keys[i].encode('utf-8')
             self.keys.append(sha1(curr_seed).hexdigest())
 
     def get(self):
