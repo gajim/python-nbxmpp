@@ -18,6 +18,7 @@ class Smacks(object):
         self.con = con # Connection object
         self.out_h = 0 # Outgoing stanzas handled
         self.in_h = 0  # Incoming stanzas handled
+        self.last_sent_in_h = 0 # Last acked stanza.
         self.uqueue = [] # Unhandled stanzas queue
         self.old_uqueue = [] # Unhandled stanzas queue of the last session
         self.session_id = None
@@ -68,6 +69,7 @@ class Smacks(object):
         log.debug("Clearing smacks uqueue")
         self.uqueue = []
         self.in_h = 0
+        self.last_sent_in_h = 0
         self.out_h = 0
         self.session_id = None
         self.enabled = True
@@ -99,11 +101,13 @@ class Smacks(object):
         self.uqueue = []
         resume = Acks()
         resume.buildResume(self.in_h, self.session_id)
+        self.last_sent_in_h = self.in_h
         self._owner.Connection.send(resume, False)
 
-    def send_ack(self, disp, stanza):
+    def send_ack(self, disp=None, stanza=None):
         ack = Acks()
         ack.buildAnswer(self.in_h)
+        self.last_sent_in_h = self.in_h
         self._owner.Connection.send(ack, False)
     
     def send_closing_ack(self):
@@ -112,6 +116,7 @@ class Smacks(object):
             return
         ack = Acks()
         ack.buildAnswer(self.in_h)
+        self.last_sent_in_h = self.in_h
         self._owner.Connection.send(ack, True)
 
     def request_ack(self):
