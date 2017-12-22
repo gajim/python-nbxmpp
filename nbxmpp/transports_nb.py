@@ -609,13 +609,13 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         try:
             # get as many bites, as possible, but not more than RECV_BUFSIZE
             received = self._recv(RECV_BUFSIZE)
-        except socket.error as e:
-            log.info("_do_receive: got %s:" % received, exc_info=True)
         except tls_nb.SSLWrapper.Error as e:
             log.info("_do_receive, caught SSL error, got %s:" % received,
                     exc_info=True)
             errnum, errstr = e.errno,\
                 decode_py2(e.strerror, locale.getpreferredencoding())
+        except socket.error as e:
+            log.info("_do_receive: got %s:" % received, exc_info=True)
 
         if received == '':
             errstr = 'zero bytes on recv'
