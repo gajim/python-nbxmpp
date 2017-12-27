@@ -494,13 +494,13 @@ class NonBlockingTLS(PlugIn):
     def _ssl_verify_callback(self, sslconn, cert, errnum, depth, ok):
         # Exceptions can't propagate up through this callback, so print them here.
         try:
+            if not self._owner.ssl_errnum:
+                self._owner.ssl_errnum = errnum
             if depth == 0:
                 self._owner.ssl_certificate = cert
-                if not ok:
-                    self._owner.ssl_errnum = errnum
             return True
-        except:
-            log.error("Exception caught in _ssl_info_callback:", exc_info=True)
+        except Exception:
+            log.exception("Exception caught in _ssl_info_callback:")
             # Make sure something is printed, even if log is disabled.
             traceback.print_exc()
 
