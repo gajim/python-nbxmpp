@@ -1,3 +1,9 @@
+python-nbxmpp 0.6.2 (27 December 2017)
+
+ * Correctly load client certs
+ * Warn on any error in the certificate chain
+ * Fixed a traceback loop
+
 python-nbxmpp 0.6.1 (29 November 2017)
 
  * Add new getStanzaIDAttrs method
