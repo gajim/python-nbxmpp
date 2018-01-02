@@ -316,7 +316,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
     estabilish TLS connection.
     """
     def __init__(self, raise_event, on_disconnect, idlequeue, estabilish_tls,
-    certs, tls_version, cipher_list, proxy_dict=None):
+    certs, tls_version, cipher_list, alpn, proxy_dict=None):
         """
         :param proxy_dict: dictionary with proxy data as loaded from config file
         """
@@ -340,6 +340,8 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         # ssl variables
         self.ssl_certificate = None
         self.ssl_errnum = 0
+
+        self.alpn = alpn
 
     # FIXME: transport should not be aware xmpp
     def start_disconnect(self):
@@ -432,7 +434,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         """
         cacerts, mycerts = self.certs
         result = tls_nb.NonBlockingTLS.get_instance(cacerts, mycerts,
-            self.tls_version, self.cipher_list).PlugIn(self)
+            self.tls_version, self.cipher_list, self.alpn).PlugIn(self)
         if result:
             on_succ()
         else:

@@ -253,7 +253,7 @@ class NonBlockingTLS(PlugIn):
     PyOpenSSLWrapper.
     """
 
-    def __init__(self, cacerts, mycerts, tls_version, cipher_list):
+    def __init__(self, cacerts, mycerts, tls_version, cipher_list, alpn):
         """
         :param cacerts: path to pem file with certificates of known XMPP servers
         :param mycerts: path to pem file with certificates of user trusted
@@ -275,6 +275,7 @@ class NonBlockingTLS(PlugIn):
             self.tls_version = '1.0'
         else:
             self.tls_version = tls_version
+        self.alpn = alpn
 
     def plugin(self, owner):
         """
@@ -377,6 +378,10 @@ class NonBlockingTLS(PlugIn):
             # py-OpenSSL < 0.9 or old OpenSSL
             flags |= 16384
         
+        if self.alpn:
+            # XEP-0368 set ALPN Protocol
+            tcpsock._sslContext.set_alpn_protos([b'xmpp-client'])
+
         try:
             # OpenSSL 1.0.1d supports TLS 1.1 and TLS 1.2 and
             # fixes renegotiation in TLS 1.1, 1.2 by using the correct TLS version. 
