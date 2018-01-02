@@ -21,7 +21,6 @@ objects and be informed about possible IO
 from __future__ import unicode_literals
 
 import os
-import errno
 import sys
 import select
 import logging
@@ -60,6 +59,7 @@ PENDING_READ            = 3 # waiting read event
 PENDING_WRITE           = 4 # waiting write event
 IS_CLOSED                       = 16 # channel closed
 
+
 def get_idlequeue():
     """
     Get an appropriate idlequeue
@@ -71,7 +71,6 @@ def get_idlequeue():
         if HAVE_GLIB:
             # Gajim's default Idlequeue
             return GlibIdleQueue()
-            #return SelectIdleQueue()
         else:
             # GUI less implementation
             return SelectIdleQueue()
@@ -354,7 +353,7 @@ class IdleQueue(object):
 
         :param obj: the IdleObject
         :param writable: True if obj has data to sent
-        :param readable: True if obj expects data to be received
+        :param readable: True if obj expects data to be reiceived
         """
         if obj.fd == -1:
             return
@@ -439,14 +438,15 @@ class IdleQueue(object):
             return True
         try:
             waiting_descriptors = self.selector.poll(0)
-        except OSError as e:
+        except select.error as e:
             waiting_descriptors = []
-            if e.errno != errno.EINTR:
+            if e[0] != 4: # interrupt
                 raise
         for fd, flags in waiting_descriptors:
             self._process_events(fd, flags)
         self._check_time_events()
         return True
+
 
 class SelectIdleQueue(IdleQueue):
     """
@@ -455,32 +455,6 @@ class SelectIdleQueue(IdleQueue):
     This class exisists for the sake of gtk2.8 on windows, which doesn't seem to
     support io_add_watch properly (yet)
     """
-
-    def checkQueue(self):
-        """
-        Iterates through all known file descriptors and uses os.stat to check if they're valid.
-        Greatly improves performance if the caller hands us and expects notification on an invalid file handle.
-        """
-        bad_fds=[]
-        union={}
-        union.update(self.write_fds)
-        union.update(self.read_fds)
-        union.update(self.error_fds)
-        for fd in (union.keys()):
-            try:
-                status = os.stat(fd)
-                print("Status of "+str(fd)+" is: " + str(status))
-            except OSError as e:
-                # This file descriptor is invalid. Add to list for closure.
-                bad_fds.append(fd)
-
-        for fd in (bad_fds):
-            obj = self.queue.get(fd)
-            if obj is None:
-                self.unplug_idle(fd)
-                return
-            self.remove_timeout(fd)
-            self.unplug_idle(fd)
 
     def _init_idle(self):
         """
@@ -492,7 +466,7 @@ class SelectIdleQueue(IdleQueue):
 
     def _add_idle(self, fd, flags):
         """
-        This method is called when we plug a new idle object. Add descriptor
+        This method is called when we plug a new idle object. Remove descriptor
         to read/write/error lists, according flags
         """
         if flags & 3:
@@ -519,11 +493,10 @@ class SelectIdleQueue(IdleQueue):
             return True
         try:
             waiting_descriptors = select.select(list(self.read_fds.keys()),
-                    list(self.write_fds.keys()), list(self.error_fds.keys()),0)
-        except OSError as e:
+                    list(self.write_fds.keys()), list(self.error_fds.keys()), 0)
+        except select.error as e:
             waiting_descriptors = ((), (), ())
-            if e.errno != errno.EINTR:
-                self.checkQueue()
+            if e[0] != 4: # interrupt
                 raise
         for fd in waiting_descriptors[0]:
             q = self.queue.get(fd)
