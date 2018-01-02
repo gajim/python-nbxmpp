@@ -84,6 +84,7 @@ class TestNonBlockingTCP(AbstractTransportTest):
                     certs=('../data/other/cacerts.pem', 'tmp/cacerts.pem'),
                     tls_version=None,
                     cipher_list=None,
+                    alpn=True,
                     proxy_dict=proxy_dict)
 
             self.socket.PlugIn(self)
