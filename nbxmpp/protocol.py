@@ -1400,6 +1400,10 @@ class Hashes(Node):
                 hash_ = hl.hexdigest()
         return hash_
 
+    def addHash(self, hash_, algo):
+        self.setAttr('algo', algo)
+        self.setData(hash_)
+
 class Hashes2(Node):
     """
     Hash elements for various XEPs as defined in XEP-300
