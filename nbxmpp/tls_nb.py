@@ -377,7 +377,7 @@ class NonBlockingTLS(PlugIn):
         except AttributeError as e:
             # py-OpenSSL < 0.9 or old OpenSSL
             flags |= 16384
-        
+
         if self.alpn:
             # XEP-0368 set ALPN Protocol
             tcpsock._sslContext.set_alpn_protos([b'xmpp-client'])
@@ -453,6 +453,11 @@ class NonBlockingTLS(PlugIn):
         tcpsock._sslObj = OpenSSL.SSL.Connection(tcpsock._sslContext,
                 tcpsock._sock)
         tcpsock._sslObj.set_connect_state() # set to client mode
+
+        if self.alpn:
+            # Set SNI EXT on the SSL Connection object, see XEP-0368
+            tcpsock._sslObj.set_tlsext_host_name(tcpsock._owner.Server.encode())
+
         wrapper = PyOpenSSLWrapper(tcpsock._sslObj)
         tcpsock._recv = wrapper.recv
         tcpsock._send = wrapper.send
