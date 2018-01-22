@@ -16,7 +16,7 @@ class IdleQueueThread(threading.Thread):
     Thread for regular processing of idlequeue.
     '''
     def __init__(self):
-        self.iq = idlequeue.IdleQueue()
+        self.iq = idlequeue.SelectIdleQueue()
         self.stop = threading.Event() # Event to stop the thread main loop.
         self.stop.clear()
         threading.Thread.__init__(self)
