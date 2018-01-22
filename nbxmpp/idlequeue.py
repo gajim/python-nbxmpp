@@ -474,10 +474,8 @@ class SelectIdleQueue(IdleQueue):
 
         for fd in (bad_fds):
             obj = self.queue.get(fd)
-            if obj is None:
-                self.unplug_idle(fd)
-                return
-            self.remove_timeout(fd)
+            if obj is not None:
+                self.remove_timeout(fd)
             self.unplug_idle(fd)
 
     def _init_idle(self):
