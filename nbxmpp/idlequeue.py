@@ -426,26 +426,15 @@ class IdleQueue(object):
 
     def process(self):
         """
+        This function must be overridden by an implementation of the IdleQueue.
+
         Process idlequeue. Check for any pending timeout or alarm events.  Call
         IdleObjects on possible and requested read, write and error events on
         their file descriptors
 
         Call this in regular intervals.
         """
-        if not self.queue:
-            # check for timeouts/alert also when there are no active fds
-            self._check_time_events()
-            return True
-        try:
-            waiting_descriptors = self.selector.poll(0)
-        except OSError as e:
-            waiting_descriptors = []
-            if e.errno != errno.EINTR:
-                raise
-        for fd, flags in waiting_descriptors:
-            self._process_events(fd, flags)
-        self._check_time_events()
-        return True
+        raise NotImplementedError("You need to define a process() method.")
 
 class SelectIdleQueue(IdleQueue):
     """
