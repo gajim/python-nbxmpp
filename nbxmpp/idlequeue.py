@@ -48,6 +48,9 @@ if sys.version_info[0] == 2 or not HAVE_GLIB:
     FLAG_READ                       = 19 # read only
     FLAG_READ_WRITE = 23 # read and write
     FLAG_CLOSE                      = 16 # wait for close
+    PENDING_READ    =  3 # waiting read event      11
+    PENDING_WRITE   =  4 # waiting write event    100
+    IS_CLOSED       = 16 # channel closed       10000
 else:
     FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
     FLAG_READ = GLib.IOCondition.IN | GLib.IOCondition.PRI | \
@@ -55,10 +58,9 @@ else:
     FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
         GLib.IOCondition.PRI | GLib.IOCondition.HUP
     FLAG_CLOSE = GLib.IOCondition.HUP
-
-PENDING_READ            = 3 # waiting read event
-PENDING_WRITE           = 4 # waiting write event
-IS_CLOSED                       = 16 # channel closed
+    PENDING_READ   = GLib.IOCondition.IN  # There is data to read.
+    PENDING_WRITE  = GLib.IOCondition.OUT # Data CAN be written without blocking.
+    IS_CLOSED      = GLib.IOCondition.HUP # Hung up (connection broken)
 
 def get_idlequeue():
     """
