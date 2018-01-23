@@ -44,21 +44,23 @@ elif os.name == 'posix':
     import fcntl
 
 if sys.version_info[0] == 2 or not HAVE_GLIB:
-    FLAG_WRITE                      = 20 # write only
-    FLAG_READ                       = 19 # read only
-    FLAG_READ_WRITE = 23 # read and write
-    FLAG_CLOSE                      = 16 # wait for close
+    FLAG_WRITE      = 20 # write only           10100
+    FLAG_READ       = 19 # read only            10011
+    FLAG_READ_WRITE = 23 # read and write       10111
+    FLAG_CLOSE      = 16 # wait for close       10000
+    PENDING_READ    =  3 # waiting read event      11
+    PENDING_WRITE   =  4 # waiting write event    100
+    IS_CLOSED       = 16 # channel closed       10000
 else:
     FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
-    FLAG_READ = GLib.IOCondition.IN | GLib.IOCondition.PRI | \
-        GLib.IOCondition.HUP
+    FLAG_READ  = GLib.IOCondition.IN  | GLib.IOCondition.PRI | \
+                 GLib.IOCondition.HUP
     FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
-        GLib.IOCondition.PRI | GLib.IOCondition.HUP
-    FLAG_CLOSE = GLib.IOCondition.HUP
-
-PENDING_READ            = 3 # waiting read event
-PENDING_WRITE           = 4 # waiting write event
-IS_CLOSED                       = 16 # channel closed
+                      GLib.IOCondition.PRI | GLib.IOCondition.HUP
+    FLAG_CLOSE     = GLib.IOCondition.HUP
+    PENDING_READ   = GLib.IOCondition.IN  # There is data to read.
+    PENDING_WRITE  = GLib.IOCondition.OUT # Data CAN be written without blocking.
+    IS_CLOSED      = GLib.IOCondition.HUP # Hung up (connection broken)
 
 def get_idlequeue():
     """
@@ -426,26 +428,15 @@ class IdleQueue(object):
 
     def process(self):
         """
+        This function must be overridden by an implementation of the IdleQueue.
+
         Process idlequeue. Check for any pending timeout or alarm events.  Call
         IdleObjects on possible and requested read, write and error events on
         their file descriptors
 
         Call this in regular intervals.
         """
-        if not self.queue:
-            # check for timeouts/alert also when there are no active fds
-            self._check_time_events()
-            return True
-        try:
-            waiting_descriptors = self.selector.poll(0)
-        except OSError as e:
-            waiting_descriptors = []
-            if e.errno != errno.EINTR:
-                raise
-        for fd, flags in waiting_descriptors:
-            self._process_events(fd, flags)
-        self._check_time_events()
-        return True
+        raise NotImplementedError("You need to define a process() method.")
 
 class SelectIdleQueue(IdleQueue):
     """
@@ -474,10 +465,8 @@ class SelectIdleQueue(IdleQueue):
 
         for fd in (bad_fds):
             obj = self.queue.get(fd)
-            if obj is None:
-                self.unplug_idle(fd)
-                return
-            self.remove_timeout(fd)
+            if obj is not None:
+                self.remove_timeout(fd)
             self.unplug_idle(fd)
 
     def _init_idle(self):
