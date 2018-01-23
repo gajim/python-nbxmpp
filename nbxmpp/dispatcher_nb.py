@@ -589,6 +589,8 @@ class XMPPDispatcher(PlugIn):
 
             if len(self.sm.uqueue) > self.sm.max_queue:
                 self.sm.request_ack()
+            if (self.sm.in_h - self.sm.last_sent_in_h) > 100:
+                self.sm.send_ack()
 
         return ID
 
