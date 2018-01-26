@@ -1,4 +1,4 @@
-python-nbxmpp 0.6.3 (TBA)
+python-nbxmpp 0.6.3 (26 January 2018)
 
  * Add ALPN and SNI support for when using DirectTLS
  * Bugfixes
