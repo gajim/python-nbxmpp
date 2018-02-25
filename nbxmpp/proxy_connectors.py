@@ -234,7 +234,8 @@ class SOCKS5Connector(ProxyConnector):
         elif reply[3] == '\x01':
             begin, end = 3, 7
         elif reply[3] == '\x03':
-            begin, end = 4, 4 + reply[4]
+            # Socks5 is bound to domain name
+            pass
         else:
             log.error('Invalid proxy reply')
             self.on_failure('Invalid proxy reply')

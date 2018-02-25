@@ -655,6 +655,12 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         try:
             received = decode_py2(received, 'utf-8')
         except UnicodeDecodeError:
+            if received.startswith(str('\x05\x00\x00\x03')):
+                # Received Socks5 reply with bind domain name
+                # Changing last 2 bytes (port) to \x00 to decode it correctly,
+                # since Socks5 bind address and port are not used elsewhere
+                received = received[:-2] + str('\x00\x00')
+
             for i in range(-1, -4, -1):
                 char = received[i]
                 if sys.version_info[0] < 3: # with py2 we get a str
