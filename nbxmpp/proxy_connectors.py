@@ -135,25 +135,30 @@ class SOCKS5Connector(ProxyConnector):
         self.onreceive(self._on_greeting_sent)
         self.send(to_send)
 
+    def _to_int(self, c):
+        if type(c) == str: # py2
+            return ord(c)
+        return c # py3
+
     def _on_greeting_sent(self, reply):
         if reply is None:
             return
         if len(reply) != 2:
             self.on_failure('Invalid proxy reply')
             return
-        if reply[0] != '\x05':
+        if self._to_int(reply[0]) != 5:
             log.info('Invalid proxy reply')
             self.on_failure('Invalid proxy reply')
             return
-        if reply[1] == '\x00':
+        if self._to_int(reply[1]) == 0:
             return self._on_proxy_auth('\x01\x00')
-        elif reply[1] == '\x02':
+        elif self._to_int(reply[1]) == 2:
             to_send = '\x01' + chr(len(self.proxy_user)) + self.proxy_user +\
                 chr(len(self.proxy_pass)) + self.proxy_pass
             self.onreceive(self._on_proxy_auth)
             self.send(to_send)
         else:
-            if reply[1] == '\xff':
+            if self._to_int(reply[1]) == 255:
                 log.error('Authentification to proxy impossible: no acceptable '
                     'auth method')
                 self.on_failure('Authentification to proxy impossible: no '
@@ -208,13 +213,13 @@ class SOCKS5Connector(ProxyConnector):
             log.error('Invalid proxy reply')
             self.on_failure('Invalid proxy reply')
             return
-        if reply[0] != '\x05':
+        if self._to_int(reply[0]) != 5:
             log.error('Invalid proxy reply')
             self.on_failure('Invalid proxy reply')
             return
-        if reply[1] != '\x00':
+        if self._to_int(reply[1]) != 0:
             # Connection failed
-            if ord(reply[1])<9:
+            if self._to_int(reply[1]) < 9:
                 errors = ['general SOCKS server failure',
                     'connection not allowed by ruleset',
                     'Network unreachable',
@@ -224,18 +229,19 @@ class SOCKS5Connector(ProxyConnector):
                     'Command not supported',
                     'Address type not supported'
                 ]
-                txt = errors[ord(reply[1])-1]
+                txt = errors[self._to_int(reply[1])-1]
             else:
                 txt = 'Invalid proxy reply'
             log.error(txt)
             self.on_failure(txt)
             return
         # Get the bound address/port
-        elif reply[3] == '\x01':
+        elif self._to_int(reply[3]) == 1:
             begin, end = 3, 7
-        elif reply[3] == '\x03':
-            # Socks5 is bound to domain name
-            pass
+        elif self._to_int(reply[3]) == 3:
+            begin, end = 4, 4 + self._to_int(reply[4])
+        elif self._to_int(reply[3]) == 4:
+            begin, end = 3, 19
         else:
             log.error('Invalid proxy reply')
             self.on_failure('Invalid proxy reply')

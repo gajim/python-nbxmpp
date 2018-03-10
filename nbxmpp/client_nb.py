@@ -470,7 +470,10 @@ class NonBlockingClient(object):
         Raise event to connection instance. DATA_SENT and DATA_RECIVED events
         are used in XML console to show XMPP traffic
         """
-        log.info('raising event from transport: :::::%s::::\n_____________\n%s\n_____________\n' % (event_type, data))
+        e_t = event_type
+        if type(event_type) != str:
+            e_t = event_type.encode('utf-8')
+        log.info('raising event from transport: :::::%s::::\n_____________\n%s\n_____________\n' % (e_t, data))
         if hasattr(self, 'Dispatcher'):
             self.Dispatcher.Event('', event_type, data)
 
