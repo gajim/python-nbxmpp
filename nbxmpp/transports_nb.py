@@ -651,25 +651,21 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             received = self.received_bytes_buff + received
             self.received_bytes_buff = b''
 
-        # try to decode data
-        try:
-            received = decode_py2(received, 'utf-8')
-        except UnicodeDecodeError:
-            if received.startswith(str('\x05\x00\x00\x03')):
-                # Received Socks5 reply with bind domain name
-                # Changing last 2 bytes (port) to \x00 to decode it correctly,
-                # since Socks5 bind address and port are not used elsewhere
-                received = received[:-2] + str('\x00\x00')
-
-            for i in range(-1, -4, -1):
-                char = received[i]
-                if sys.version_info[0] < 3: # with py2 we get a str
-                    char = ord(char)
-                if char & 0xc0 == 0xc0:
-                    self.received_bytes_buff = received[i:]
-                    received = received[:i]
-                    break
-            received = decode_py2(received, 'utf-8')
+        if self.state != PROXY_CONNECTING or self.proxy_dict['type'] != \
+        'socks5':
+            # try to decode data
+            try:
+                received = decode_py2(received, 'utf-8')
+            except UnicodeDecodeError:
+                for i in range(-1, -4, -1):
+                    char = received[i]
+                    if sys.version_info[0] < 3: # with py2 we get a str
+                        char = ord(char)
+                    if char & 0xc0 == 0xc0:
+                        self.received_bytes_buff = received[i:]
+                        received = received[:i]
+                        break
+                received = decode_py2(received, 'utf-8')
 
         # pass received data to owner
         if self.on_receive:
