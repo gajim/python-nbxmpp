@@ -693,10 +693,13 @@ class NonBlockingBind(PlugIn):
             #self.bound='failure'
             self.bound = []
             return
-        if feats.getTag('session', namespace=NS_SESSION):
-            self.session = 1
-        else:
-            self.session = -1
+
+        self.session = -1
+        session = feats.getTag('session', namespace=NS_SESSION):
+        if session is not None:
+            if session.getTag('optional') is None:
+                self.session = 1
+
         self.bound = []
 
     def plugout(self):
