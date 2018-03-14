@@ -695,7 +695,7 @@ class NonBlockingBind(PlugIn):
             return
 
         self.session = -1
-        session = feats.getTag('session', namespace=NS_SESSION):
+        session = feats.getTag('session', namespace=NS_SESSION)
         if session is not None:
             if session.getTag('optional') is None:
                 self.session = 1
