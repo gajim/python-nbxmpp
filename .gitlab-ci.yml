@@ -1,5 +1,5 @@
 before_script:
-  - sudo apt-get update -qq && sudo apt-get build-dep -y -qq python-nbxmpp-nightly
+  - sudo apt-get update -qq && sudo apt-get build-dep -y -qq python3-nbxmpp-nightly
 
 stages:
   - test
@@ -15,7 +15,7 @@ run-build:
   script:
     - rm -rf dist
     - export FN="nbxmpp-"$(date +%F)
-    - python setup.py sdist
+    - python3 setup.py sdist
     - scp dist/nbxmpp-*.tar.gz panoramix:/var/www/gajim/downloads/snap/ci/$FN-$CI_COMMIT_SHA.tar.gz
 
   artifacts:
