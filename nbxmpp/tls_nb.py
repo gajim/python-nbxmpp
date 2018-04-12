@@ -24,6 +24,7 @@ from .plugin import PlugIn
 import sys
 import os
 import time
+import io
 
 import traceback
 
@@ -337,7 +338,10 @@ class NonBlockingTLS(PlugIn):
         if not os.path.isfile(cert_path):
             return
         try:
-            f = open(cert_path)
+            if sys.version_info[0] > 2:
+                f = open(cert_path, encoding='utf-8')
+            else:
+                f = io.open(cert_path, encoding='utf-8')
         except IOError as e:
             log.warning('Unable to open certificate file %s: %s' % \
                     (cert_path, str(e)))
