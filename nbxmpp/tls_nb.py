@@ -342,7 +342,7 @@ class NonBlockingTLS(PlugIn):
                 f = open(cert_path, encoding='utf-8')
             else:
                 f = io.open(cert_path, encoding='utf-8')
-        except IOError as e:
+        except (IOError, UnicodeError) as e:
             log.warning('Unable to open certificate file %s: %s' % \
                     (cert_path, str(e)))
             return
