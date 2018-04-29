@@ -704,7 +704,7 @@ class NonBlockingHTTP(NonBlockingTCP):
         :param http_dict: dictionary with data for HTTP request and headers
         """
         NonBlockingTCP.__init__(self, raise_event, on_disconnect, idlequeue,
-            estabilish_tls, certs, tls_version, cipher_list, proxy_dict)
+            estabilish_tls, certs, tls_version, cipher_list, False, proxy_dict)
 
         self.http_protocol, self.http_host, self.http_port, self.http_path = \
             urisplit(http_dict['http_uri'])
