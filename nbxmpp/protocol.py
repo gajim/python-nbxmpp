@@ -88,6 +88,7 @@ NS_MSG_HINTS      = 'urn:xmpp:hints'                                  # XEP-0280
 NS_HTTP_AUTH      = 'http://jabber.org/protocol/http-auth'            # XEP-0070
 NS_HTTP_BIND      = 'http://jabber.org/protocol/httpbind'             # XEP-0124
 NS_HTTPUPLOAD     = 'urn:xmpp:http:upload'                            # XEP-0363
+NS_HTTPUPLOAD_0   = 'urn:xmpp:http:upload:0'						  # XEP-0363
 NS_IBB            = 'http://jabber.org/protocol/ibb'
 NS_IDLE           = 'urn:xmpp:idle:1'                                 # XEP-0319
 NS_INVISIBLE      = 'presence-invisible'                              # Jabberd2
@@ -186,6 +187,7 @@ NS_HASHES_SHA3_256 = 'urn:xmpp:hash-function-text-names:sha3-256'
 NS_HASHES_SHA3_512 = 'urn:xmpp:hash-function-text-names:sha3-512'
 NS_HASHES_BLAKE2B_256 = 'urn:xmpp:hash-function-text-names:id-blake2b256'
 NS_HASHES_BLAKE2B_512 = 'urn:xmpp:hash-function-text-names:id-blake2b512'
+NS_OPENPGP = 'urn:xmpp:openpgp:0'
 
 #xmpp_stream_error_conditions = '''
 #bad-format --  --  -- The entity has sent XML that cannot be processed.
