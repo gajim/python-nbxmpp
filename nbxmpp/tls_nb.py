@@ -508,7 +508,13 @@ class NonBlockingTLS(PlugIn):
     def _ssl_verify_callback(self, sslconn, cert, errnum, depth, ok):
         # Exceptions can't propagate up through this callback, so print them here.
         try:
+            if errnum:
+                self._owner.ssl_errors.append(errnum)
+                # This stores all ssl errors that are encountered while
+                # the chain is verifyed
             if not self._owner.ssl_errnum:
+                # This records the first ssl error that is encountered
+                # we keep this because of backwards compatibility
                 self._owner.ssl_errnum = errnum
             if depth == 0:
                 self._owner.ssl_certificate = cert

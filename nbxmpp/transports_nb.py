@@ -339,7 +339,10 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
 
         # ssl variables
         self.ssl_certificate = None
+        # first ssl error
         self.ssl_errnum = 0
+        # all ssl errors
+        self.ssl_errors = []
 
         self.alpn = alpn
 
