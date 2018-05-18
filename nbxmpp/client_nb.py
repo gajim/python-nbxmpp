@@ -601,12 +601,13 @@ class NonBlockingClient(object):
         self.NonBlockingBind.NonBlockingBind(self._Resource, self._on_sasl_auth)
         return True
 
-    def initRoster(self, version=''):
+    def initRoster(self, version='', request=True):
         """
         Plug in the roster
         """
         if 'NonBlockingRoster' not in self.__dict__:
-            return roster_nb.NonBlockingRoster.get_instance(version=version).PlugIn(self)
+            return roster_nb.NonBlockingRoster.get_instance(
+                version=version).PlugIn(self, request=request)
 
     def getRoster(self, on_ready=None, force=False):
         """
