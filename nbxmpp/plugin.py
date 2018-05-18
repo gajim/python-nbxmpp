@@ -37,7 +37,7 @@ class PlugIn(object):
     def __init__(self):
         self._exported_methods=[]
 
-    def PlugIn(self, owner):
+    def PlugIn(self, owner, *args, **kwargs):
         """
         Attach to owner and register ourself and our _exported_methods in it.
         If defined by a subclass, call self.plugin(owner) to execute hook
@@ -62,9 +62,9 @@ class PlugIn(object):
 
         # Execute hook
         if hasattr(self, 'plugin'):
-            return self.plugin(owner)
+            return self.plugin(owner, *args, **kwargs)
 
-    def PlugOut(self):
+    def PlugOut(self, *args, **kwargs):
         """
         Unregister our _exported_methods from owner and detach from it.
         If defined by a subclass, call self.plugout() after unplugging to execute
@@ -82,7 +82,7 @@ class PlugIn(object):
             del self._owner.__dict__[self.__class__.__name__]
         # Execute hook
         if hasattr(self, 'plugout'):
-            return self.plugout()
+            return self.plugout(*args, **kwargs)
         del self._owner
 
     @classmethod
