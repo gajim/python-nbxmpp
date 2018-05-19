@@ -1,3 +1,9 @@
+python-nbxmpp 0.6.6 (20 May 2018)
+
+ * Record all SSL errors instead of only the first
+ * Pass arguments to plugin/plugout methods
+ * Allow the Roster to be initalized without requesting it from the server
+
 python-nbxmpp 0.6.5 (30 April 2018)
 
  * Fix BOSH usage (don't set ALPN)
