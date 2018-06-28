@@ -96,7 +96,7 @@ def _scram_parse(chatter):
 
 SASL_AUTHENTICATION_MECHANISMS = \
     set(['ANONYMOUS', 'EXTERNAL', 'GSSAPI', 'SCRAM-SHA-1-PLUS', 'SCRAM-SHA-1',
-         'DIGEST-MD5', 'PLAIN', 'X-MESSENGER-OAUTH2'])
+         'PLAIN', 'X-MESSENGER-OAUTH2'])
 
 class SASL(PlugIn):
     """
