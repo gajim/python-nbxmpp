@@ -417,6 +417,9 @@ class XMPPDispatcher(PlugIn):
 
         #log.info('dispatch called: stanza = %s, session = %s, direct= %s'
         #       % (stanza, session, direct))
+
+        self.Event('', 'STANZA_RECEIVED', stanza)
+
         if not session:
             session = self
         session.Stream._mini_dom = None
@@ -570,6 +573,8 @@ class XMPPDispatcher(PlugIn):
                     ID = stanza.getID()
                 if self._owner._registered_name and not stanza.getAttr('from'):
                     stanza.setAttr('from', self._owner._registered_name)
+
+        self.Event('', 'STANZA_SENT', stanza)
 
         self._owner.Connection.send(stanza, now)
 
