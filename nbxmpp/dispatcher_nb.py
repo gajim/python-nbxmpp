@@ -437,27 +437,29 @@ class XMPPDispatcher(PlugIn):
         # log.info('in dispatch, getting ns for %s, and the ns is %s'
         # % (stanza, xmlns))
         if xmlns not in self.handlers:
-            log.warning("Unknown namespace: " + xmlns)
+            log.warning('Unknown namespace: %s', xmlns)
             xmlns = 'unknown'
         # features stanza has been handled before
         if name not in self.handlers[xmlns]:
             if name != 'features':
-                log.warning("Unknown stanza: " + name)
+                log.warning('Unknown stanza: %s', stanza)
             else:
-                log.debug("Got %s/%s stanza" % (xmlns, name))
-            name='unknown'
+                log.debug('Got %s/%s stanza' % (xmlns, name))
+            name = 'unknown'
         else:
-            log.debug("Got %s/%s stanza" % (xmlns, name))
+            log.debug('Got %s/%s stanza' % (xmlns, name))
 
         if stanza.__class__.__name__ == 'Node':
             # FIXME: this cannot work
-            stanza=self.handlers[xmlns][name][type](node=stanza)
+            stanza = self.handlers[xmlns][name][type](node=stanza)
 
         typ = stanza.getType()
         if not typ:
             typ = ''
         stanza.props = stanza.getProperties()
         ID = stanza.getID()
+
+        log.debug('type: %s, properties: %s', typ, stanza.props)
 
         # If server supports stream management
         if self.sm and self.sm.enabled and (stanza.getName() != 'r' and
@@ -498,6 +500,7 @@ class XMPPDispatcher(PlugIn):
         for handler in chain:
             if user or handler['system']:
                 try:
+                    log.debug('Call handler: %s', handler['func'])
                     handler['func'](session, stanza)
                 except Exception as typ:
                     if typ.__class__.__name__ != 'NodeProcessed':
