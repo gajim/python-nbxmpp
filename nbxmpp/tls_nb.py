@@ -448,12 +448,15 @@ class NonBlockingTLS(PlugIn):
         store = tcpsock._sslContext.get_cert_store()
         self._load_cert_file(self.cacerts, store)
         self._load_cert_file(self.mycerts, store)
-        if os.path.isdir('/etc/ssl/certs'):
-            for f in os.listdir('/etc/ssl/certs'):
-                # We don't logg because there is a lot a duplicated certs in this
-                # folder
-                self._load_cert_file(os.path.join('/etc/ssl/certs', f), store,
-                        logg=False)
+        paths = ['/etc/ssl/certs',
+                 '/etc/ssl']  # FreeBSD uses this
+        for path in paths:
+            if not os.path.isdir(path):
+                continue
+            for f in os.listdir(path):
+                # We don't logg because there is a lot a duplicated certs
+                # in this folder
+                self._load_cert_file(os.path.join(path, f), store, logg=False)
 
         tcpsock._sslObj = OpenSSL.SSL.Connection(tcpsock._sslContext,
                 tcpsock._sock)
