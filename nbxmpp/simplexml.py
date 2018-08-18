@@ -634,6 +634,9 @@ class NodeBuilder(object):
                     self._document_attrs[attr] = val
             ns = self._document_nsp.get(nsp, 'http://www.gajim.org/xmlns/undeclared-root')
             try:
+                header = Node(tag=tag, attrs=attrs,
+                              nsp=self._document_nsp, node_built=True)
+                self.dispatch(header)
                 self.stream_header_received(ns, name, attrs)
             except ValueError as e:
                 self._document_attrs = None

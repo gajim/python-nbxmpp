@@ -441,7 +441,7 @@ class XMPPDispatcher(PlugIn):
             xmlns = 'unknown'
         # features stanza has been handled before
         if name not in self.handlers[xmlns]:
-            if name != 'features':
+            if name not in ('features', 'stream'):
                 log.warning('Unknown stanza: %s', stanza)
             else:
                 log.debug('Got %s/%s stanza' % (xmlns, name))
