@@ -1,3 +1,10 @@
+python-nbxmpp 0.6.7 (19 August 2018)
+
+ * Raise default TLS version to 1.2
+ * Remove DIGEST-MD5 from the default auth mechs
+ * Add STANZA RECEIVED Event (Some servers send more than one stanza in one packet)
+ * Add alternative locations to load TLS certs from
+
 python-nbxmpp 0.6.6 (20 May 2018)
 
  * Record all SSL errors instead of only the first
