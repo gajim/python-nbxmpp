@@ -418,7 +418,7 @@ class XMPPDispatcher(PlugIn):
         #log.info('dispatch called: stanza = %s, session = %s, direct= %s'
         #       % (stanza, session, direct))
 
-        self.Event('', 'STANZA_RECEIVED', stanza)
+        self.Event('', 'STANZA RECEIVED', stanza)
 
         if not session:
             session = self
