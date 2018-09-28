@@ -12,8 +12,6 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-# $Id: simplexml.py,v 1.27 2005/04/30 07:20:27 snakeru Exp $
-
 """
 Simplexml module provides xmpppy library with all needed tools to handle XML
 nodes and XML streams. I'm personally using it in many other separate

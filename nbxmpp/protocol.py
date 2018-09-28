@@ -12,8 +12,6 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-# $Id: protocol.py,v 1.52 2006/01/09 22:08:57 normanr Exp $
-
 """
 Protocol module contains tools that are needed for processing of xmpp-related
 data structures, including jabber-objects like JID or different stanzas and

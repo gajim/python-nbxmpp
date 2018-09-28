@@ -13,8 +13,6 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-# $Id: features.py,v 1.22 2005/09/30 20:13:04 mikealbon Exp $
-
 """
 Different stuff that wasn't worth separating it into modules
 (Registration, Privacy Lists, ...)

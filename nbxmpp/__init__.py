@@ -1,5 +1,3 @@
-# $Id: __init__.py,v 1.9 2005/03/07 09:34:51 snakeru Exp $
-
 """
 This is a fork of the xmpppy jabber python library. Most of the code is
 inherited but has been extended by implementation of non-blocking transports
