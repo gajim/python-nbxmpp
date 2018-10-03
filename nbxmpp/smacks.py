@@ -50,6 +50,8 @@ class Smacks(object):
 
     def _neg_response(self, disp, stanza):
         r = stanza.getAttr('resume')
+        # When we receive enabled from the server, reset the IN count
+        self.in_h = 0
         log.info("Session resumption: %s" % r)
         if r == 'true' or r == 'True' or r == '1':
             self.resumption = True
