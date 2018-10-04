@@ -19,11 +19,18 @@ Client class establishes connection to XMPP Server and handles authentication
 """
 
 import socket
+import logging
+
 from . import transports_nb, dispatcher_nb, auth_nb, roster_nb, protocol, bosh
 from .protocol import NS_TLS
+from .protocol import JID
 from .auth_nb import SASL_AUTHENTICATION_MECHANISMS
+from .auth_nb import NonBlockingBind
+from .smacks import Smacks
+from .const import Realm
+from .const import Event
 
-import logging
+
 log = logging.getLogger('nbxmpp.client_nb')
 
 
@@ -57,7 +64,7 @@ class NonBlockingClient(object):
         # the EventDispatcher
         self._caller = caller
         self._owner = self
-        self._registered_name = None # our full jid, set after successful auth
+        self._registered_name = None # our full jid, set after successful bind
         self.connected = ''
         self.ip_addresses = []
         self.socket = None
@@ -71,6 +78,45 @@ class NonBlockingClient(object):
         self.disconnecting = False
         self.protocol_type = 'XMPP'
         self.alpn = False
+
+        # Smacks must retain data over multiple connects/disconnects
+        Smacks.get_instance().PlugIn(self)
+
+    def set_resume_data(self, data):
+        '''
+        Dict with values we pass to Smacks for session resumption
+        This is only needed if between reconnects a new NonBlockingClient
+        instance is created
+        '''
+        self.Smacks.set_resume_data(data)
+
+    def get_resume_data(self):
+        '''
+        returns a dict with values that are necessary to resume a stream
+        see set_resume_data()
+        '''
+        if not self.sm_enabled or not self.resume_supported:
+            return {}
+        return self.Smacks.get_resume_data()
+
+    @property
+    def sm_enabled(self):
+        return self.Smacks.enabled
+
+    @property
+    def resume_supported(self):
+        return self.Smacks.resume_supported
+
+    def set_bound_jid(self, jid):
+        if jid is None:
+            return
+        jid = JID(jid)
+        self._registered_name = jid
+        self.User = jid.getNode()
+        self.Resource = jid.getResource()
+
+    def get_bound_jid(self):
+        return self._registered_name
 
     def disconnect(self, message=''):
         """
@@ -88,10 +134,6 @@ class NonBlockingClient(object):
         sasl_failed = False
         if 'NonBlockingRoster' in self.__dict__:
             self.NonBlockingRoster.PlugOut()
-        if 'NonBlockingBind' in self.__dict__:
-            self.NonBlockingBind.PlugOut()
-        if 'NonBlockingNonSASL' in self.__dict__:
-            self.NonBlockingNonSASL.PlugOut()
         if 'SASL' in self.__dict__:
             if 'startsasl' in self.SASL.__dict__ and \
             self.SASL.startsasl == 'failure-in-process':
@@ -479,8 +521,7 @@ class NonBlockingClient(object):
 ### follows code for authentication, resource bind, session and roster download
 ###############################################################################
 
-    def auth(self, user, password, resource='', sasl=True, on_auth=None, 
-             auth_mechs=None):
+    def auth(self, user, password, resource='', sasl=True, auth_mechs=None):
         """
         Authenticate connnection and bind resource. If resource is not provided
         random one or library name used
@@ -489,8 +530,6 @@ class NonBlockingClient(object):
         :param password: XMPP password
         :param resource: resource that shall be used for auth/connecting
         :param sasl: Boolean indicating if SASL shall be used. (default: True)
-        :param on_auth: Callback, called after auth. On auth failure, argument
-                is None.
         :param auth_mechs: Set of valid authentification mechanisms. If None all
                authentification mechanisms will be allowed. Possible entries are:
                'ANONYMOUS', 'EXTERNAL', 'GSSAPI', 'SCRAM-SHA-1-PLUS',
@@ -509,33 +548,11 @@ class NonBlockingClient(object):
             except NotImplementedError:
                 pass
         if auth_mechs is None:
-            self._auth_mechs = SASL_AUTHENTICATION_MECHANISMS | set(['XEP-0078'])
+            self._auth_mechs = SASL_AUTHENTICATION_MECHANISMS
         else:
             self._auth_mechs = auth_mechs
-        self.on_auth = on_auth
+
         self._on_doc_attrs()
-        return
-
-    def _on_old_auth(self, res):
-        """
-        Callback used by NON-SASL auth. On auth failure, res is None
-        """
-        if res:
-            self.connected += '+old_auth'
-            self.on_auth(self, 'old_auth')
-        else:
-            self.on_auth(self, None)
-
-    def _on_sasl_auth(self, res):
-        """
-        Used internally. On auth failure, res is None
-        """
-        self.onreceive(None)
-        if res:
-            self.connected += '+sasl'
-            self.on_auth(self, 'sasl')
-        else:
-            self.on_auth(self, None)
 
     def _on_doc_attrs(self):
         """
@@ -547,13 +564,7 @@ class NonBlockingClient(object):
                     self._auth_mechs).PlugIn(self)
         if not hasattr(self, 'SASL'):
             return
-        if ('XEP-0078' in self._auth_mechs 
-            and (not self._sasl or self.SASL.startsasl == 'not-supported')):
-            if not self._Resource:
-                self._Resource = 'xmpppy'
-            auth_nb.NonBlockingNonSASL.get_instance(self._User, self._Password,
-                    self._Resource, self._on_old_auth).PlugIn(self)
-            return
+
         self.SASL.auth()
         return True
 
@@ -561,43 +572,30 @@ class NonBlockingClient(object):
         """
         Callback used by SASL, called on each auth step
         """
-        if data:
-            self.Dispatcher.ProcessNonBlocking(data)
-        if 'SASL' not in self.__dict__:
-            # SASL is pluged out, possible disconnect
-            return
         if self.SASL.startsasl == 'in-process':
             return
         self.onreceive(None)
+
         if self.SASL.startsasl == 'failure':
             # wrong user/pass, stop auth
             if 'SASL' in self.__dict__:
                 self.SASL.PlugOut()
             self.connected = None # FIXME: is this intended? We use ''elsewhere
-            self._on_sasl_auth(None)
+            self.Dispatcher.Event(Realm.CONNECTING, Event.AUTH_FAILED, data)
+
         elif self.SASL.startsasl == 'success':
-            nb_bind = auth_nb.NonBlockingBind.get_instance()
-            sm = self._caller.sm
-            if  sm._owner and sm.resumption:
-                nb_bind.resuming = True
-                sm.set_owner(self)
-                self.Dispatcher.sm = sm
-                nb_bind.PlugIn(self)
-                self.on_auth(self, 'sasl')
-                return
+            self.connected += '+sasl'
+            self.Dispatcher.Event(Realm.CONNECTING, Event.AUTH_SUCCESSFUL)
 
-            nb_bind.PlugIn(self)
-            self.onreceive(self._on_auth_bind)
-        return True
+    def bind(self):
+        self._owner.Smacks.register_handlers()
 
-    def _on_auth_bind(self, data):
-        # FIXME: Why use this callback and not bind directly?
-        if data:
-            self.Dispatcher.ProcessNonBlocking(data)
-        if self.NonBlockingBind.bound is None:
-            return
-        self.NonBlockingBind.NonBlockingBind(self._Resource, self._on_sasl_auth)
-        return True
+        # Check if we can resume
+        if self._owner.Smacks.resume_supported:
+            self._owner.Smacks.resume_request()
+        else:
+            # If we cant resume we bind and enable sm afterwards
+            NonBlockingBind.get_instance().PlugIn(self)
 
     def initRoster(self, version='', request=True):
         """

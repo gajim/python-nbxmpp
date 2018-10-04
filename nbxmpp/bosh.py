@@ -145,7 +145,7 @@ class NonBlockingBOSH(NonBlockingTransport):
 
         #Hack for making the non-secure warning dialog work
         if self._owner.got_features:
-            if (hasattr(self._owner, 'NonBlockingNonSASL') or hasattr(self._owner, 'SASL')):
+            if hasattr(self._owner, 'SASL'):
                 self.send_BOSH(None)
             else:
                 # If we already got features and no auth module was plugged yet, we are

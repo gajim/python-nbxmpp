@@ -100,9 +100,6 @@ class XMPPDispatcher(PlugIn):
                 self.SendAndWaitForResponse, self.SendAndCallForResponse,
                 self.getAnID, self.Event, self.send]
 
-        # Let the dispatcher know if there is support for stream management
-        self.sm = None
-
         # \ufddo -> \ufdef range
         c = '\ufdd0'
         r = c
@@ -395,7 +392,7 @@ class XMPPDispatcher(PlugIn):
         if handler in self._cycleHandlers:
             self._cycleHandlers.remove(handler)
 
-    def Event(self, realm, event, data):
+    def Event(self, realm, event, data=None):
         """
         Raise some event
 
@@ -463,11 +460,9 @@ class XMPPDispatcher(PlugIn):
         log.debug('type: %s, properties: %s', typ, stanza.props)
 
         # If server supports stream management
-        if self.sm and self.sm.enabled and (stanza.getName() != 'r' and
-        stanza.getName() != 'a' and stanza.getName() != 'enabled' and
-        stanza.getName() != 'resumed'):
-            # increments the number of stanzas that has been handled
-            self.sm.in_h += 1
+        if hasattr(self._owner, 'Smacks'):
+            self._owner.Smacks.count_incoming(stanza.getName())
+
         list_ = ['default'] # we will use all handlers:
         if typ in self.handlers[xmlns][name]:
             list_.append(typ) # from very common...
@@ -581,23 +576,8 @@ class XMPPDispatcher(PlugIn):
         self._owner.Connection.send(stanza, now)
 
         # If no ID then it is a whitespace
-        if self.sm and self.sm.enabled and ID:
-            # add timestamp to message stanza in queue
-            if (stanza.getName() == 'message' and
-                    stanza.getType() in ('chat', 'groupchat')):
-                timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-                attrs = {'stamp': timestamp}
-                if stanza.getType() != 'groupchat':
-                    # Dont leak our JID to Groupchats
-                    attrs['from'] = stanza.getAttr('from')
-                stanza.addChild('delay', namespace=NS_DELAY2, attrs=attrs)
-            self.sm.uqueue.append(stanza)
-            self.sm.out_h += 1
-
-            if len(self.sm.uqueue) > self.sm.max_queue:
-                self.sm.request_ack()
-            if (self.sm.in_h - self.sm.last_sent_in_h) > 100:
-                self.sm.send_ack()
+        if hasattr(self._owner, 'Smacks') and ID:
+            self._owner.Smacks.save_in_queue(stanza)
 
         return ID
 

@@ -304,8 +304,8 @@ class NonBlockingTransport(PlugIn):
     # FIXME: where and why does this need to be called
     def start_disconnect(self):
         self.set_state(DISCONNECTING)
-        if self._owner._caller.sm and self._owner._caller.sm.enabled:
-            self._owner._caller.sm.send_closing_ack()
+        if hasattr(self._owner, 'Smacks'):
+            self._owner.Smacks.send_closing_ack()
 
 
 class NonBlockingTCP(NonBlockingTransport, IdleObject):
