@@ -191,6 +191,7 @@ class Smacks(object):
             self.enabled = False
             # we need to bind a resource
             self._owner.NonBlockingBind.resuming = False
+            self._owner.Dispatcher.Event(NS_STREAM_MGMT, 'RESUME FAILED', None)
             self._owner._on_auth_bind(None)
             self.failed_resume = True
             
