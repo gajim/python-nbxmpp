@@ -1,3 +1,8 @@
+python-nbxmpp 0.6.8 (07 October 2018)
+
+ * Reset SM counter after receiving <enabled>
+ * Issue event when SM resume fails
+
 python-nbxmpp 0.6.7 (19 August 2018)
 
  * Raise default TLS version to 1.2
