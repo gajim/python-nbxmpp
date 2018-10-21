@@ -14,9 +14,6 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-# $Id: roster.py,v 1.17 2005/05/02 08:38:49 snakeru Exp $
-
-
 """
 Simple roster implementation. Can be used though for different tasks like
 mass-renaming of contacts.

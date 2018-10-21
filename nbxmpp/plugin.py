@@ -12,8 +12,6 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-# $Id: client.py,v 1.52 2006/01/02 19:40:55 normanr Exp $
-
 """
 Provides PlugIn class functionality to develop extentions for xmpppy
 """
