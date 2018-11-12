@@ -38,6 +38,7 @@ modules = ( 'unit.test_xmpp_dispatcher_nb',
             'unit.test_xmpp_smacks',
             #'unit.test_xmpp_client_nb', gajim.org only supports TLS/SSL connections
             'unit.test_xmpp_transports_nb2',
+            'unit.test_xml_vulnerability',
           )
 
 nb_errors = 0

@@ -22,6 +22,7 @@ from __future__ import unicode_literals
 
 import sys
 import xml.parsers.expat
+from xml.parsers.expat import ExpatError
 import logging
 log = logging.getLogger('nbxmpp.simplexml')
 
@@ -566,10 +567,17 @@ class NodeBuilder(object):
         """
         log.debug("Preparing to handle incoming XML stream.")
         self._parser = xml.parsers.expat.ParserCreate()
+        self._parser.UseForeignDTD(False)
         self._parser.StartElementHandler = self.starttag
         self._parser.EndElementHandler = self.endtag
         self._parser.StartNamespaceDeclHandler = self.handle_namespace_start
         self._parser.CharacterDataHandler = self.handle_cdata
+        self._parser.StartDoctypeDeclHandler = self.handle_invalid_xmpp_element
+        self._parser.EntityDeclHandler = self.handle_invalid_xmpp_element
+        self._parser.CommentHandler = self.handle_invalid_xmpp_element
+        self._parser.ExternalEntityRefHandler = self.handle_invalid_xmpp_element
+        self._parser.AttlistDeclHandler = self.handle_invalid_xmpp_element
+        self._parser.ProcessingInstructionHandler = self.handle_invalid_xmpp_element
         self._parser.buffer_text = True
         self.Parse = self._parser.Parse
 
@@ -672,6 +680,10 @@ class NodeBuilder(object):
         elif self._ptr:
             self.data_buffer = [data]
             self.last_is_data = 1
+
+    @staticmethod
+    def handle_invalid_xmpp_element(*args):
+        raise ExpatError('Found invalid xmpp stream element: %s' % str(args))
 
     def handle_namespace_start(self, prefix, uri):
         """
