@@ -58,12 +58,12 @@ SASL_UNSUPPORTED = 'not-supported'
 SASL_IN_PROCESS = 'in-process'
 
 # compile the search regex for _challenge_splitter
-_challenge_regex = re.compile("""
-    (\w+)      # keyword
-    =
-    ("[^"]+"|[^,]+)   # value
-    ,?         # optional comma separator
-""", re.VERBOSE)
+_challenge_regex = re.compile(
+    r'(\w+)='               # keyword
+    r'("[^"]+"|[^,]+)'      # value
+    r',?',                  # optional comma separator
+    re.VERBOSE
+)
 
 def _challenge_splitter(data):
     """
