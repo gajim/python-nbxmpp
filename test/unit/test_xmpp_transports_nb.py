@@ -4,9 +4,6 @@ Unit test for tranports classes.
 
 import unittest
 
-import lib
-lib.setup_env()
-
 from nbxmpp import transports_nb
 
 

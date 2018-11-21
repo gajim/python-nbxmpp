@@ -6,10 +6,7 @@ unit tests of this module.
 import unittest
 import socket
 
-import lib
-lib.setup_env()
-
-from xmpp_mocks import IdleQueueThread, IdleMock
+from test.lib.xmpp_mocks import IdleQueueThread, IdleMock
 from nbxmpp import transports_nb
 
 
