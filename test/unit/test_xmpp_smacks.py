@@ -3,10 +3,7 @@ Tests for smacks.py Stream Management
 '''
 import unittest
 
-import lib
-lib.setup_env()
-
-from mock import Mock
+from test.lib.mock import Mock
 
 from nbxmpp import dispatcher_nb
 from nbxmpp import protocol

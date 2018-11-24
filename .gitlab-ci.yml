@@ -8,7 +8,7 @@ stages:
 run-test:
   stage: test
   script:
-    - ./test/runtests.py
+    - python3 setup.py test
 
 run-build:
   stage: build
