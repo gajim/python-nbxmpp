@@ -4,7 +4,7 @@ Module with dummy classes for unit testing of XMPP and related code.
 
 import threading, time
 
-from test.lib.mock import Mock
+from unittest.mock import Mock
 
 from nbxmpp import idlequeue
 

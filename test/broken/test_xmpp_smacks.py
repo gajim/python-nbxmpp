@@ -18,7 +18,6 @@ class TestDispatcherNB(unittest.TestCase):
 
         # Setup mock client
         self.client = Mock()
-        self.client._caller = Mock()
         self.client.defaultNamespace = protocol.NS_CLIENT
         self.client.Connection = Mock() # mock transport
         self.con = self.client.Connection

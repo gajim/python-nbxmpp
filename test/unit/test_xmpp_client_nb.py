@@ -5,9 +5,10 @@ It actually connects to a xmpp server.
 '''
 
 import unittest
+from unittest.mock import Mock
 
 from test.lib.xmpp_mocks import MockConnection, IdleQueueThread
-from test.lib.mock import Mock
+
 from nbxmpp import client_nb
 
 # (XMPP server hostname, c2s port). Script will connect to the machine.
@@ -56,7 +57,7 @@ class TestNonBlockingClient(unittest.TestCase):
         self.client = client_nb.NonBlockingClient(
                 domain=server_port[0],
                 idlequeue=self.idlequeue_thread.iq,
-                caller=Mock(realClass=TempConnection))
+                caller=Mock(spec=TempConnection))
 
         self.client.connect(
                 hostname=server_port[0],
