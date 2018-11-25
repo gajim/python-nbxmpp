@@ -19,10 +19,12 @@ Simple roster implementation. Can be used though for different tasks like
 mass-renaming of contacts.
 """
 
-from .protocol import JID, Iq, Presence, Node, NodeProcessed, NS_MUC_USER, NS_ROSTER
+import logging
+
+from .protocol import JID, Iq, Presence, Node, NS_MUC_USER, NS_ROSTER
 from .plugin import PlugIn
 
-import logging
+
 log = logging.getLogger('nbxmpp.roster_nb')
 
 

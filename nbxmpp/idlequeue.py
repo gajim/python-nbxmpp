@@ -20,7 +20,6 @@ objects and be informed about possible IO
 
 import os
 import errno
-import sys
 import select
 import logging
 log = logging.getLogger('nbxmpp.idlequeue')

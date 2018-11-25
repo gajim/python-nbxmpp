@@ -21,23 +21,24 @@ Can be used both for client and transport authentication
 See client_nb.py
 """
 
-from .protocol import NS_SASL, NS_SESSION, NS_STREAMS, NS_BIND, NS_AUTH
-from .protocol import NS_STREAM_MGMT
-from .protocol import Node, NodeProcessed, isResultNode, Iq, Protocol, JID
-from .protocol import SASL_ERROR_CONDITIONS
-from .plugin import PlugIn
-from .const import Realm
-from .const import Event
-import sys
 import re
 import os
 import binascii
 import base64
-from . import dispatcher_nb
 import hmac
 import hashlib
-
 import logging
+
+from .protocol import NS_SASL, NS_SESSION, NS_STREAMS, NS_BIND
+from .protocol import NS_STREAM_MGMT
+from .protocol import Node, NodeProcessed, isResultNode, Protocol
+from .protocol import SASL_ERROR_CONDITIONS
+from .plugin import PlugIn
+from .const import Realm
+from .const import Event
+
+from . import dispatcher_nb
+
 log = logging.getLogger('nbxmpp.auth_nb')
 
 def HH(some): return hashlib.md5(some).hexdigest()

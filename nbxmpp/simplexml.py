@@ -18,10 +18,10 @@ nodes and XML streams. I'm personally using it in many other separate
 projects. It is designed to be as standalone as possible
 """
 
-import sys
+import logging
 import xml.parsers.expat
 from xml.parsers.expat import ExpatError
-import logging
+
 log = logging.getLogger('nbxmpp.simplexml')
 
 def XMLescape(txt):

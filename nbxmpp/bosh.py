@@ -20,14 +20,15 @@
 import os
 import binascii
 import locale
+import logging
 from hashlib import sha1
+
 from .transports_nb import NonBlockingTransport, NonBlockingHTTPBOSH,\
         CONNECTED, CONNECTING, DISCONNECTED, DISCONNECTING,\
         urisplit, DISCONNECT_TIMEOUT_SECONDS
 from .protocol import BOSHBody, Protocol, NS_CLIENT
-from .simplexml import Node
 
-import logging
+
 log = logging.getLogger('nbxmpp.bosh')
 
 KEY_COUNT = 10

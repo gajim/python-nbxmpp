@@ -20,18 +20,17 @@ Main xmpp decision making logic. Provides library with methods to assign
 different handlers to different XMPP stanzas and namespaces
 """
 
-from . import simplexml
 import sys
-import time
 import locale
 import re
 import uuid
-import copy
-from xml.parsers.expat import ExpatError
-from .plugin import PlugIn
-from .protocol import (NS_DELAY2, NS_STREAMS, NS_XMPP_STREAMS, NS_HTTP_BIND, Iq, Presence,
-        Message, Protocol, Node, Error, ERR_FEATURE_NOT_IMPLEMENTED, StreamError)
 import logging
+from xml.parsers.expat import ExpatError
+
+from . import simplexml
+from .plugin import PlugIn
+from .protocol import (NS_STREAMS, NS_HTTP_BIND, Iq, Presence,
+        Message, Protocol, Node, Error, ERR_FEATURE_NOT_IMPLEMENTED)
 
 
 log = logging.getLogger('nbxmpp.dispatcher_nb')

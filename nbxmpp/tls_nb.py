@@ -15,18 +15,15 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-import socket
 import ssl
-from .plugin import PlugIn
-
 import sys
 import os
 import time
-import io
-
 import traceback
-
 import logging
+
+from .plugin import PlugIn
+
 log = logging.getLogger('nbxmpp.tls_nb')
 
 USE_PYOPENSSL = False

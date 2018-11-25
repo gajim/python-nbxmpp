@@ -18,11 +18,11 @@ data structures, including jabber-objects like JID or different stanzas and
 sub- stanzas) handling routines
 """
 
-from .simplexml import Node, NodeBuilder
 import time
-import string
 import hashlib
 from base64 import b64encode
+
+from .simplexml import Node, NodeBuilder
 
 def ascii_upper(s):
     return s.upper()

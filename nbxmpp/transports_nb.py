@@ -24,12 +24,6 @@ Transports are not aware of XMPP stanzas and only responsible for low-level
 connection handling.
 """
 
-from .simplexml import ustr
-from .plugin import PlugIn
-from .idlequeue import IdleObject
-from . import proxy_connectors
-from . import tls_nb
-
 import socket
 import errno
 import time
@@ -37,13 +31,19 @@ import traceback
 import base64
 import sys
 import locale
+import logging
 
 try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
 
-import logging
+from .simplexml import ustr
+from .plugin import PlugIn
+from .idlequeue import IdleObject
+from . import proxy_connectors
+from . import tls_nb
+
 log = logging.getLogger('nbxmpp.transports_nb')
 
 def urisplit(uri):
