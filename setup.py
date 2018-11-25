@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name='nbxmpp',
-      version='0.6.8',
+      version='0.9.90',
       description='Non blocking Jabber/XMPP module',
       author='Yann Leboulanger',
       author_email='asterix@lagaule.org',
