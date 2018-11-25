@@ -24,8 +24,6 @@ Transports are not aware of XMPP stanzas and only responsible for low-level
 connection handling.
 """
 
-from __future__ import unicode_literals
-
 from .simplexml import ustr
 from .plugin import PlugIn
 from .idlequeue import IdleObject
@@ -662,8 +660,6 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             except UnicodeDecodeError:
                 for i in range(-1, -4, -1):
                     char = received[i]
-                    if sys.version_info[0] < 3: # with py2 we get a str
-                        char = ord(char)
                     if char & 0xc0 == 0xc0:
                         self.received_bytes_buff = received[i:]
                         received = received[:i]

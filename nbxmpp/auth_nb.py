@@ -21,8 +21,6 @@ Can be used both for client and transport authentication
 See client_nb.py
 """
 
-from __future__ import unicode_literals
-
 from .protocol import NS_SASL, NS_SESSION, NS_STREAMS, NS_BIND, NS_AUTH
 from .protocol import NS_STREAM_MGMT
 from .protocol import Node, NodeProcessed, isResultNode, Iq, Protocol, JID
@@ -394,14 +392,9 @@ class SASL(PlugIn):
             def HMAC(k, s):
                 return hmac.new(key=k, msg=s, digestmod=hashfn).digest()
 
-            if sys.version_info[0] == 2:
-                def XOR(x, y):
-                    r = (chr(ord(px) ^ ord(py)) for px, py in zip(x, y))
-                    return bytes(b''.join(r))
-            else:
-                def XOR(x, y):
-                    r = [px ^ py for px, py in zip(x, y)]
-                    return bytes(r)
+            def XOR(x, y):
+                r = [px ^ py for px, py in zip(x, y)]
+                return bytes(r)
 
             def Hi(s, salt, iters):
                 ii = 1

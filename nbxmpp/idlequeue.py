@@ -18,8 +18,6 @@ Idlequeues are Gajim's network heartbeat. Transports can be plugged as idle
 objects and be informed about possible IO
 """
 
-from __future__ import unicode_literals
-
 import os
 import errno
 import sys
@@ -29,10 +27,7 @@ log = logging.getLogger('nbxmpp.idlequeue')
 
 # needed for get_idleqeue
 try:
-    if sys.version_info[0] == 2:
-        import gobject
-    else:
-        from gi.repository import GLib
+    from gi.repository import GLib
     HAVE_GLIB = True
 except ImportError:
     HAVE_GLIB = False
@@ -43,24 +38,15 @@ if os.name == 'nt':
 elif os.name == 'posix':
     import fcntl
 
-if sys.version_info[0] == 2 or not HAVE_GLIB:
-    FLAG_WRITE      = 20 # write only           10100
-    FLAG_READ       = 19 # read only            10011
-    FLAG_READ_WRITE = 23 # read and write       10111
-    FLAG_CLOSE      = 16 # wait for close       10000
-    PENDING_READ    =  3 # waiting read event      11
-    PENDING_WRITE   =  4 # waiting write event    100
-    IS_CLOSED       = 16 # channel closed       10000
-else:
-    FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
-    FLAG_READ  = GLib.IOCondition.IN  | GLib.IOCondition.PRI | \
-                 GLib.IOCondition.HUP
-    FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
-                      GLib.IOCondition.PRI | GLib.IOCondition.HUP
-    FLAG_CLOSE     = GLib.IOCondition.HUP
-    PENDING_READ   = GLib.IOCondition.IN  # There is data to read.
-    PENDING_WRITE  = GLib.IOCondition.OUT # Data CAN be written without blocking.
-    IS_CLOSED      = GLib.IOCondition.HUP # Hung up (connection broken)
+FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
+FLAG_READ  = GLib.IOCondition.IN  | GLib.IOCondition.PRI | \
+             GLib.IOCondition.HUP
+FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
+                  GLib.IOCondition.PRI | GLib.IOCondition.HUP
+FLAG_CLOSE     = GLib.IOCondition.HUP
+PENDING_READ   = GLib.IOCondition.IN  # There is data to read.
+PENDING_WRITE  = GLib.IOCondition.OUT # Data CAN be written without blocking.
+IS_CLOSED      = GLib.IOCondition.HUP # Hung up (connection broken)
 
 def get_idlequeue():
     """
@@ -549,12 +535,9 @@ class GlibIdleQueue(IdleQueue):
         This method is called when we plug a new idle object. Start listening for
         events from fd
         """
-        if sys.version_info[0] == 2:
-            res = gobject.io_add_watch(fd, flags, self._process_events,
-                priority=gobject.PRIORITY_LOW)
-        else:
-            res = GLib.io_add_watch(fd, GLib.PRIORITY_LOW, flags,
-                self._process_events)
+        res = GLib.io_add_watch(fd, GLib.PRIORITY_LOW, flags,
+            self._process_events)
+
         # store the id of the watch, so that we can remove it on unplug
         self.events[fd] = res
 
@@ -573,17 +556,11 @@ class GlibIdleQueue(IdleQueue):
         """
         if not fd in self.events:
             return
-        if sys.version_info[0] == 2:
-            gobject.source_remove(self.events[fd])
-        else:
-            GLib.source_remove(self.events[fd])
+
+        GLib.source_remove(self.events[fd])
         del(self.events[fd])
 
     def process(self):
         self._check_time_events()
 
-    if sys.version_info[0] == 2 or not HAVE_GLIB:
-        def current_time(self):
-            return gobject.get_current_time() * 1e6
-    else:
-        current_time = GLib.get_real_time
+    current_time = GLib.get_real_time

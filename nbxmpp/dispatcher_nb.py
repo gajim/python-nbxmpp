@@ -20,7 +20,6 @@ Main xmpp decision making logic. Provides library with methods to assign
 different handlers to different XMPP stanzas and namespaces
 """
 
-from __future__ import unicode_literals
 from . import simplexml
 import sys
 import time
@@ -34,8 +33,6 @@ from .protocol import (NS_DELAY2, NS_STREAMS, NS_XMPP_STREAMS, NS_HTTP_BIND, Iq,
         Message, Protocol, Node, Error, ERR_FEATURE_NOT_IMPLEMENTED, StreamError)
 import logging
 
-if sys.version_info[0] == 2:
-    chr = unichr
 
 log = logging.getLogger('nbxmpp.dispatcher_nb')
 
