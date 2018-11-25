@@ -2,10 +2,9 @@
 Tests for dispatcher_nb.py
 '''
 import unittest
+from unittest.mock import Mock
 
 from test import lib
-
-from test.lib.mock import Mock
 
 from nbxmpp import dispatcher_nb
 from nbxmpp import protocol
@@ -20,7 +19,6 @@ class TestDispatcherNB(unittest.TestCase):
 
         # Setup mock client
         self.client = Mock()
-        self.client.__str__ = lambda: 'Mock' # FIXME: why do I need this one?
         self.client._caller = Mock()
         self.client.defaultNamespace = protocol.NS_CLIENT
         self.client.Connection = Mock() # mock transport
@@ -53,8 +51,8 @@ class TestDispatcherNB(unittest.TestCase):
         self.dispatcher.ProcessNonBlocking('<message><x:y/></message>')
         self.assertEqual(2, len(msgs))
         # we should not have been disconnected after that message
-        self.assertEqual(0, len(self.con.mockGetNamedCalls('pollend')))
-        self.assertEqual(0, len(self.con.mockGetNamedCalls('disconnect')))
+        self.con.pollend.assert_not_called()
+        self.con.disconnect.assert_not_called()
 
         # we should be able to keep parsing
         self.dispatcher.ProcessNonBlocking('<message><body>still here?</body></message>')
@@ -73,12 +71,13 @@ class TestDispatcherNB(unittest.TestCase):
         # no data processed, link shall still be active
         result = process('')
         self.assertEqual(result, '0')
-        self.assertEqual(0, len(self.con.mockGetNamedCalls('pollend')) +
-                len(self.con.mockGetNamedCalls('disconnect')))
+
+        self.con.pollend.assert_not_called()
+        self.con.disconnect.assert_not_called()
 
         # simulate disconnect
         result = process('</stream:stream>')
-        self.assertEqual(1, len(self.client.mockGetNamedCalls('disconnect')))
+        self.client.disconnect.assert_called_once()
 
     def test_return_stanza_handler(self):
         ''' Test sasl_error_conditions transformation in protocol.py '''
