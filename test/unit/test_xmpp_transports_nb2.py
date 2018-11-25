@@ -117,9 +117,9 @@ class TestNonBlockingTCP(AbstractTransportTest):
     def test_connect_disconnect_plain(self):
         ''' Establish plain connection '''
         self.client.do_connect(establish_tls=False)
-        self.assertEquals(self.client.socket.state, 'CONNECTED')
+        self.assertEqual(self.client.socket.state, 'CONNECTED')
         self.client.do_disconnect()
-        self.assertEquals(self.client.socket.state, 'DISCONNECTED')
+        self.assertEqual(self.client.socket.state, 'DISCONNECTED')
 
 #       def test_connect_disconnect_ssl(self):
 #               ''' Establish SSL (not TLS) connection '''
@@ -139,19 +139,19 @@ class TestNonBlockingTCP(AbstractTransportTest):
         sock.onreceive(self.expect_receive(data))
         sock._do_receive()
         self.assertTrue(self.have_received_expected(), msg='Did not receive data')
-        self.assert_(self.client.socket.state == 'CONNECTED')
+        self.assertEqual(self.client.socket.state, 'CONNECTED')
 
         # transport shall do nothing as an non-fatal SSL is simulated
         sock._recv = lambda buffer: None
         sock.onreceive(self.assertFalse) # we did not receive anything...
         sock._do_receive()
-        self.assert_(self.client.socket.state == 'CONNECTED')
+        self.assertEqual(self.client.socket.state, 'CONNECTED')
 
         # transport shall disconnect as remote side closed the connection
         sock._recv = lambda buffer: ''
         sock.onreceive(self.assertFalse) # we did not receive anything...
         sock._do_receive()
-        self.assert_(self.client.socket.state == 'DISCONNECTED')
+        self.assertEqual(self.client.socket.state, 'DISCONNECTED')
 
     def test_do_send(self):
         ''' Test _do_send method by overwriting socket.send '''

@@ -22,9 +22,11 @@ SOCKS5 proxy
 Authentication to NTLM (Microsoft implementation) proxies can be next.
 """
 
-import struct, socket
-from base64 import b64encode
+import struct
+import socket
 import logging
+from base64 import b64encode
+
 log = logging.getLogger('nbxmpp.proxy_connectors')
 
 

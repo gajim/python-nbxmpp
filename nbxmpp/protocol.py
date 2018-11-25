@@ -18,11 +18,11 @@ data structures, including jabber-objects like JID or different stanzas and
 sub- stanzas) handling routines
 """
 
-from .simplexml import Node, NodeBuilder
 import time
-import string
 import hashlib
 from base64 import b64encode
+
+from .simplexml import Node, NodeBuilder
 
 def ascii_upper(s):
     return s.upper()
@@ -266,6 +266,20 @@ NS_OPENPGP = 'urn:xmpp:openpgp:0'
 #pprint.pprint(_errorcodes)
 #for (k, v) in loc.items():
      #print('%s = \'%s\'' % (k, v))
+
+SASL_ERROR_CONDITIONS = [
+    'aborted',
+    'account-disabled',
+    'credentials-expired',
+    'encryption-required',
+    'incorrect-encoding',
+    'invalid-authzid',
+    'invalid-mechanism',
+    'mechanism-too-weak',
+    'malformed-request',
+    'not-authorized',
+    'temporary-auth-failure',
+]
 
 ERRORS = {
     'urn:ietf:params:xml:ns:xmpp-sasl aborted': ['',
@@ -1466,33 +1480,6 @@ class Hashes2(Node):
         self.setAttr('algo', algo)
         self.setData(hash_)
 
-class Acks(Node):
-    """
-    Acknowledgement elements for Stream Management
-    """
-    def __init__(self, nsp=NS_STREAM_MGMT):
-        Node.__init__(self, None, {}, [], None, None, False, None)
-        self.setNamespace(nsp)
-
-    def buildAnswer(self, handled):
-        """
-        handled is the number of stanzas handled
-        """
-        self.setName('a')
-        self.setAttr('h', handled)
-
-    def buildRequest(self):
-        self.setName('r')
-
-    def buildEnable(self, resume=False):
-        self.setName('enable')
-        if resume:
-            self.setAttr('resume', 'true')
-
-    def buildResume(self, handled, previd):
-        self.setName('resume')
-        self.setAttr('h', handled)
-        self.setAttr('previd', previd)
 
 class ErrorNode(Node):
     """

@@ -15,20 +15,15 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-from __future__ import print_function
-
-import socket
 import ssl
-from .plugin import PlugIn
-
 import sys
 import os
 import time
-import io
-
 import traceback
-
 import logging
+
+from .plugin import PlugIn
+
 log = logging.getLogger('nbxmpp.tls_nb')
 
 USE_PYOPENSSL = False
@@ -338,10 +333,7 @@ class NonBlockingTLS(PlugIn):
         if not os.path.isfile(cert_path):
             return
         try:
-            if sys.version_info[0] > 2:
-                f = open(cert_path, encoding='utf-8')
-            else:
-                f = io.open(cert_path, encoding='utf-8')
+            f = open(cert_path, encoding='utf-8')
             lines = f.readlines()
         except (IOError, UnicodeError) as e:
             log.warning('Unable to open certificate file %s: %s' % \

@@ -21,22 +21,24 @@ Can be used both for client and transport authentication
 See client_nb.py
 """
 
-from __future__ import unicode_literals
-
-from .protocol import NS_SASL, NS_SESSION, NS_STREAMS, NS_BIND, NS_AUTH
-from .protocol import NS_STREAM_MGMT
-from .protocol import Node, NodeProcessed, isResultNode, Iq, Protocol, JID
-from .plugin import PlugIn
-import sys
 import re
 import os
 import binascii
 import base64
-from . import dispatcher_nb
 import hmac
 import hashlib
-
 import logging
+
+from .protocol import NS_SASL, NS_SESSION, NS_STREAMS, NS_BIND
+from .protocol import NS_STREAM_MGMT
+from .protocol import Node, NodeProcessed, isResultNode, Protocol
+from .protocol import SASL_ERROR_CONDITIONS
+from .plugin import PlugIn
+from .const import Realm
+from .const import Event
+
+from . import dispatcher_nb
+
 log = logging.getLogger('nbxmpp.auth_nb')
 
 def HH(some): return hashlib.md5(some).hexdigest()
@@ -307,8 +309,8 @@ class SASL(PlugIn):
             data=data.decode('utf-8')
 
         ### Handle Auth result
-        def on_auth_fail(reason):
-            log.info('Failed SASL authentification: %s' % reason)
+        def on_auth_fail(reason, text=None):
+            log.info('Failed SASL authentification: %s %s', reason, text)
             self._owner.send(str(Node('abort', attrs={'xmlns': NS_SASL})))
             if len(self.mecs) > 0:
                 # There are other mechanisms to test, but wait for <failure>
@@ -316,7 +318,7 @@ class SASL(PlugIn):
                 self.startsasl = SASL_FAILURE_IN_PROGRESS
                 raise NodeProcessed
             if self.on_sasl:
-                self.on_sasl()
+                self.on_sasl((reason, text))
             raise NodeProcessed
 
         if challenge.getName() == 'failure':
@@ -324,11 +326,19 @@ class SASL(PlugIn):
                 self.MechanismHandler()
                 raise NodeProcessed
             self.startsasl = SASL_FAILURE
-            try:
-                reason = challenge.getChildren()[0]
-            except Exception:
-                reason = challenge
-            on_auth_fail(reason)
+
+            text = challenge.getTagData('text')
+            reason = 'not-authorized'
+            childs = challenge.getChildren()
+            for child in childs:
+                name = child.getName()
+                if name == 'text':
+                    continue
+                if name in SASL_ERROR_CONDITIONS:
+                    reason = name
+                    break
+            on_auth_fail(reason, text)
+
         elif challenge.getName() == 'success':
             if self.mechanism in ('SCRAM-SHA-1', 'SCRAM-SHA-1-PLUS'):
                 # check data-with-success
@@ -383,14 +393,9 @@ class SASL(PlugIn):
             def HMAC(k, s):
                 return hmac.new(key=k, msg=s, digestmod=hashfn).digest()
 
-            if sys.version_info[0] == 2:
-                def XOR(x, y):
-                    r = (chr(ord(px) ^ ord(py)) for px, py in zip(x, y))
-                    return bytes(b''.join(r))
-            else:
-                def XOR(x, y):
-                    r = [px ^ py for px, py in zip(x, y)]
-                    return bytes(r)
+            def XOR(x, y):
+                r = [px ^ py for px, py in zip(x, y)]
+                return bytes(r)
 
             def Hi(s, salt, iters):
                 ii = 1
@@ -555,101 +560,6 @@ class SASL(PlugIn):
         self._owner.send(str(node))
 
 
-class NonBlockingNonSASL(PlugIn):
-    """
-    Implements old Non-SASL (XEP-0078) authentication used in jabberd1.4 and
-    transport authentication
-    """
-
-    def __init__(self, user, password, resource, on_auth):
-        """
-        Caches username, password and resource for auth
-        """
-        PlugIn.__init__(self)
-        self.user = user
-        if password is None:
-            self.password = ''
-        else:
-            self.password = password
-        self.resource = resource
-        self.on_auth = on_auth
-
-    def plugin(self, owner):
-        """
-        Determine the best auth method (digest/0k/plain) and use it for auth.
-        Returns used method name on success. Used internally
-        """
-        log.info('Querying server about possible auth methods')
-        self.owner = owner
-
-        owner.Dispatcher.SendAndWaitForResponse(
-            Iq('get', NS_AUTH, payload=[Node('username', payload=[self.user])]),
-            func=self._on_username)
-
-    def _on_username(self, resp):
-        if not isResultNode(resp):
-            log.info('No result node arrived! Aborting...')
-            return self.on_auth(None)
-
-        iq=Iq(typ='set', node=resp)
-        query = iq.getTag('query')
-        query.setTagData('username', self.user)
-        query.setTagData('resource', self.resource)
-
-        if query.getTag('digest'):
-            log.info("Performing digest authentication")
-            query.setTagData('digest',
-                hashlib.sha1(self.owner.Dispatcher.Stream._document_attrs['id']
-                + self.password).hexdigest())
-            if query.getTag('password'):
-                query.delChild('password')
-            self._method = 'digest'
-        elif query.getTag('token'):
-            token = query.getTagData('token')
-            seq = query.getTagData('sequence')
-            log.info("Performing zero-k authentication")
-
-            def hasher(s):
-                return hashlib.sha1(s).hexdigest()
-
-            def hash_n_times(s, count):
-                return count and hasher(hash_n_times(s, count-1)) or s
-
-            hash_ = hash_n_times(hasher(hasher(self.password) + token),
-                int(seq))
-            query.setTagData('hash', hash_)
-            self._method='0k'
-        else:
-            log.warning("Secure methods unsupported, performing plain text \
-                authentication")
-            self._method = 'plain'
-            self._owner._caller.get_password(self._on_password, self._method)
-            return
-        resp = self.owner.Dispatcher.SendAndWaitForResponse(iq,
-            func=self._on_auth)
-
-    def _on_password(self, password):
-        self.password = '' if password is None else password
-        iq=Iq('set', NS_AUTH)
-        query = iq.getTag('query')
-        query.setTagData('username', self.user)
-        query.setTagData('resource', self.resource)
-        query.setTagData('password', self.password)
-        resp = self.owner.Dispatcher.SendAndWaitForResponse(iq,
-            func=self._on_auth)
-
-    def _on_auth(self, resp):
-        if isResultNode(resp):
-            log.info('Sucessfully authenticated with remote host.')
-            self.owner.User = self.user
-            self.owner.Resource = self.resource
-            self.owner._registered_name = self.owner.User + '@' + \
-                self.owner.Server+ '/' + self.owner.Resource
-            return self.on_auth(self._method)
-        log.info('Authentication failed!')
-        return self.on_auth(None)
-
-
 class NonBlockingBind(PlugIn):
     """
     Bind some JID to the current connection to allow router know of our
@@ -658,119 +568,91 @@ class NonBlockingBind(PlugIn):
 
     def __init__(self):
         PlugIn.__init__(self)
-        self.bound = None
-        self.supports_sm = False
-        self.resuming = False
+        self._session_required = False
 
-    def plugin(self, owner):
-        """ Start resource binding, if allowed at this time. Used internally. """
-        if self._owner.Dispatcher.Stream.features:
-            try:
-                self.FeaturesHandler(self._owner.Dispatcher,
-                    self._owner.Dispatcher.Stream.features)
-            except NodeProcessed:
-                pass
-        else:
-            self._owner.RegisterHandler('features', self.FeaturesHandler,
-                xmlns=NS_STREAMS)
+    def plugin(self, _owner):
+        self._owner.RegisterHandler(
+            'features', self.FeaturesHandler, xmlns=NS_STREAMS)
+        # Execute the Handler manually, maybe we registered the features
+        # handler to late. This can happen when the client does not call
+        # bind() immediately
+        self.FeaturesHandler(None, self._owner.Dispatcher.Stream.features)
 
-    def FeaturesHandler(self, conn, feats):
+    def FeaturesHandler(self, con, feats):
         """
         Determine if server supports resource binding and set some internal
         attributes accordingly.
-
-        It also checks if server supports stream management
         """
-
-        if feats.getTag('sm', namespace=NS_STREAM_MGMT):
-            self.supports_sm = True # server supports stream management
-            if self.resuming:
-                self._owner._caller.sm.resume_request()
-
-        if not feats.getTag('bind', namespace=NS_BIND):
-            log.info('Server does not requested binding.')
-            # we try to bind resource anyway
-            #self.bound='failure'
-            self.bound = []
+        if not feats or not feats.getTag('bind', namespace=NS_BIND):
             return
 
-        self.session = -1
         session = feats.getTag('session', namespace=NS_SESSION)
         if session is not None:
             if session.getTag('optional') is None:
-                self.session = 1
+                self._session_required = True
 
-        self.bound = []
+        self.NonBlockingBind()
 
     def plugout(self):
         """
         Remove Bind handler from owner's dispatcher. Used internally
         """
-        self._owner.UnregisterHandler('features', self.FeaturesHandler,
-            xmlns=NS_STREAMS)
+        self._owner.UnregisterHandler(
+            'features', self.FeaturesHandler, xmlns=NS_STREAMS)
 
-    def NonBlockingBind(self, resource=None, on_bound=None):
+    def NonBlockingBind(self):
         """
         Perform binding. Use provided resource name or random (if not provided).
         """
-        if self.resuming: # We don't bind if we resume the stream
-            return
-        self.on_bound = on_bound
-        self._resource = resource
-        if self._resource:
-            self._resource = [Node('resource', payload=[self._resource])]
-        else:
-            self._resource = []
 
-        self._owner.onreceive(None)
+        resource = []
+        if self._owner._Resource:
+            resource = [Node('resource', payload=[self._owner._Resource])]
+
         self._owner.Dispatcher.SendAndWaitForResponse(
             Protocol('iq', typ='set', payload=[Node('bind',
-            attrs={'xmlns': NS_BIND}, payload=self._resource)]),
+            attrs={'xmlns': NS_BIND}, payload=resource)]),
             func=self._on_bound)
 
     def _on_bound(self, resp):
         if isResultNode(resp):
-            if resp.getTag('bind') and resp.getTag('bind').getTagData('jid'):
-                self.bound.append(resp.getTag('bind').getTagData('jid'))
-                log.info('Successfully bound %s.' % self.bound[-1])
-                jid = JID(resp.getTag('bind').getTagData('jid'))
-                self._owner._registered_name = jid
-                self._owner.User = jid.getNode()
-                self._owner.Resource = jid.getResource()
-                # Only negociate stream management after bounded
-                if self.supports_sm:
-                    # starts negociation
-                    sm = self._owner._caller.sm
-                    sm.supports_sm = True
-                    sm.set_owner(self._owner)
-                    sm.negociate()
-                    self._owner.Dispatcher.sm = sm
+            bind = resp.getTag('bind')
+            if bind is not None:
+                jid = bind.getTagData('jid')
+                log.info('Successfully bound %s', jid)
+                self._owner.set_bound_jid(jid)
 
-                if hasattr(self, 'session') and self.session == -1:
+                if not self._session_required:
                     # Server don't want us to initialize a session
-                    log.info('No session required.')
-                    self._owner._caller.sm.resend_queue()   #resend old messages still in the smacks queue
-                    self.on_bound('ok')
+                    log.info('No session required')
+                    self._on_bind_successful()
                 else:
-                    self._owner.SendAndWaitForResponse(Protocol('iq', typ='set',
-                        payload=[Node('session', attrs={'xmlns':NS_SESSION})]),
-                        func=self._on_session)
+                    node = Node('session', attrs={'xmlns':NS_SESSION})
+                    iq = Protocol('iq', typ='set', payload=[node])
+                    self._owner.SendAndWaitForResponse(
+                        iq, func=self._on_session)
+                self.PlugOut()
                 return
         if resp:
-            log.info('Binding failed: %s.' % resp.getTag('error'))
-            self.on_bound(None)
+            log.error('Binding failed: %s.', resp.getTag('error'))
         else:
-            log.info('Binding failed: timeout expired.')
-            self.on_bound(None)
+            log.error('Binding failed: timeout expired')
+        self._owner.Connection.start_disconnect()
+        self._owner.Dispatcher.Event(Realm.CONNECTING, Event.BIND_FAILED)
+        self.PlugOut()
 
     def _on_session(self, resp):
-        self._owner.onreceive(None)
         if isResultNode(resp):
-            log.info('Successfully opened session.')
-            self.session = 1
-            self._owner._caller.sm.resend_queue()   #resend old messages still in the smacks queue
-            self.on_bound('ok')
+            log.info('Successfully started session')
+            self._on_bind_successful()
         else:
-            log.error('Session open failed.')
-            self.session = 0
-            self.on_bound(None)
+            log.error('Session open failed')
+        self._owner.Connection.start_disconnect()
+        self._owner.Dispatcher.Event(Realm.CONNECTING, Event.SESSION_FAILED)
+        self.PlugOut()
+
+    def _on_bind_successful(self):
+        feats = self._owner.Dispatcher.Stream.features
+        if feats.getTag('sm', namespace=NS_STREAM_MGMT):
+            self._owner.Smacks.send_enable()
+        self._owner.Dispatcher.Event(Realm.CONNECTING, Event.CONNECTION_ACTIVE)

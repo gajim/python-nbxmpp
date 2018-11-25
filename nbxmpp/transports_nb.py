@@ -24,14 +24,6 @@ Transports are not aware of XMPP stanzas and only responsible for low-level
 connection handling.
 """
 
-from __future__ import unicode_literals
-
-from .simplexml import ustr
-from .plugin import PlugIn
-from .idlequeue import IdleObject
-from . import proxy_connectors
-from . import tls_nb
-
 import socket
 import errno
 import time
@@ -39,13 +31,19 @@ import traceback
 import base64
 import sys
 import locale
+import logging
 
 try:
     from urllib.parse import urlparse
 except ImportError:
     from urlparse import urlparse
 
-import logging
+from .simplexml import ustr
+from .plugin import PlugIn
+from .idlequeue import IdleObject
+from . import proxy_connectors
+from . import tls_nb
+
 log = logging.getLogger('nbxmpp.transports_nb')
 
 def urisplit(uri):
@@ -304,8 +302,8 @@ class NonBlockingTransport(PlugIn):
     # FIXME: where and why does this need to be called
     def start_disconnect(self):
         self.set_state(DISCONNECTING)
-        if self._owner._caller.sm and self._owner._caller.sm.enabled:
-            self._owner._caller.sm.send_closing_ack()
+        if hasattr(self._owner, 'Smacks'):
+            self._owner.Smacks.send_closing_ack()
 
 
 class NonBlockingTCP(NonBlockingTransport, IdleObject):
@@ -662,8 +660,6 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             except UnicodeDecodeError:
                 for i in range(-1, -4, -1):
                     char = received[i]
-                    if sys.version_info[0] < 3: # with py2 we get a str
-                        char = ord(char)
                     if char & 0xc0 == 0xc0:
                         self.received_bytes_buff = received[i:]
                         received = received[:i]

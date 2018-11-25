@@ -2,8 +2,7 @@
 Tests for smacks.py Stream Management
 '''
 import unittest
-
-from test.lib.mock import Mock
+from unittest.mock import Mock
 
 from nbxmpp import dispatcher_nb
 from nbxmpp import protocol
@@ -19,12 +18,11 @@ class TestDispatcherNB(unittest.TestCase):
 
         # Setup mock client
         self.client = Mock()
-        self.client.__str__ = lambda: 'Mock' # FIXME: why do I need this one?
         self.client._caller = Mock()
         self.client.defaultNamespace = protocol.NS_CLIENT
         self.client.Connection = Mock() # mock transport
         self.con = self.client.Connection
-        self.con.sm = smacks.Smacks(self.con)
+        self.con.sm = smacks.Smacks()
 
     def tearDown(self):
         # Unplug if needed
@@ -33,8 +31,8 @@ class TestDispatcherNB(unittest.TestCase):
 
     def _simulate_connect(self):
         self.dispatcher.PlugIn(self.client) # client is owner
-        self.con.sm.set_owner(self.client)
-        self.dispatcher.sm = self.con.sm
+        self.con.sm.PlugIn(self.client)
+
         # Simulate that we have established a connection
         self.dispatcher.StreamInit()
         self.dispatcher.ProcessNonBlocking("<stream:stream "
