@@ -268,6 +268,17 @@ NS_BOOKMARK_CONVERSION = 'urn:xmpp:bookmarks-conversion:0'
 #for (k, v) in loc.items():
      #print('%s = \'%s\'' % (k, v))
 
+SASL_AUTH_MECHS = [
+    'SCRAM-SHA-256-PLUS',
+    'SCRAM-SHA-256',
+    'SCRAM-SHA-1-PLUS',
+    'SCRAM-SHA-1',
+    'PLAIN',
+    'GSSAPI',
+    'EXTERNAL',
+    'ANONYMOUS',
+]
+
 SASL_ERROR_CONDITIONS = [
     'aborted',
     'account-disabled',

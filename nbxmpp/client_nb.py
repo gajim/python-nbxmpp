@@ -21,11 +21,11 @@ Client class establishes connection to XMPP Server and handles authentication
 import socket
 import logging
 
-from . import transports_nb, dispatcher_nb, auth_nb, roster_nb, protocol, bosh
+from . import transports_nb, dispatcher_nb, roster_nb, protocol, bosh
 from .protocol import NS_TLS
 from .protocol import JID
-from .auth_nb import SASL_AUTHENTICATION_MECHANISMS
-from .auth_nb import NonBlockingBind
+from .auth import SASL
+from .bind import NonBlockingBind
 from .smacks import Smacks
 from .const import Realm
 from .const import Event
@@ -135,13 +135,7 @@ class NonBlockingClient:
         if 'NonBlockingRoster' in self.__dict__:
             self.NonBlockingRoster.PlugOut()
         if 'SASL' in self.__dict__:
-            if 'startsasl' in self.SASL.__dict__ and \
-            self.SASL.startsasl == 'failure-in-process':
-                sasl_failed = True
-                self.SASL.startsasl = 'failure'
-                self._on_start_sasl()
-            else:
-                self.SASL.PlugOut()
+            self.SASL.PlugOut()
         if 'NonBlockingTCP' in self.__dict__:
             self.NonBlockingTCP.PlugOut()
         if 'NonBlockingHTTP' in self.__dict__:
@@ -521,77 +515,52 @@ class NonBlockingClient:
 ### follows code for authentication, resource bind, session and roster download
 ###############################################################################
 
-    def auth(self, user, password, resource='', sasl=True, auth_mechs=None):
+    def auth(self, user, get_password=None, resource='', auth_mechs=None):
         """
         Authenticate connnection and bind resource. If resource is not provided
         random one or library name used
 
         :param user: XMPP username
-        :param password: XMPP password
+        :param get_password: Callback that must return the password for the
+                             chosen mechanism
         :param resource: resource that shall be used for auth/connecting
-        :param sasl: Boolean indicating if SASL shall be used. (default: True)
         :param auth_mechs: Set of valid authentification mechanisms. If None all
-               authentification mechanisms will be allowed. Possible entries are:
-               'ANONYMOUS', 'EXTERNAL', 'GSSAPI', 'SCRAM-SHA-1-PLUS',
-               'SCRAM-SHA-1', 'DIGEST-MD5', 'PLAIN', 'X-MESSENGER-OAUTH2',
-               'XEP-0078'
+                           authentification mechanisms will be allowed.
+                           See the auth module for possible values
         """
-        self._User, self._Password = user, password
-        self._Resource, self._sasl = resource, sasl
-        self._channel_binding = None
-        if self.connected in ('ssl', 'tls'):
-            try:
-                if self.protocol_type != 'BOSH':
-                    self._channel_binding = self.Connection.NonBlockingTLS.get_channel_binding()
-                    # TLS handshake is finished so channel binding data muss exist
-                    assert (self._channel_binding is not None)
-            except NotImplementedError:
-                pass
-        if auth_mechs is None:
-            self._auth_mechs = SASL_AUTHENTICATION_MECHANISMS
-        else:
-            self._auth_mechs = auth_mechs
-
-        self._on_doc_attrs()
-
-    def _on_doc_attrs(self):
-        """
-        Plug authentication objects and start auth
-        """
-        if self._sasl:
-            auth_nb.SASL.get_instance(self._User, self._Password,
-                    self._on_start_sasl, self._channel_binding,
-                    self._auth_mechs).PlugIn(self)
-        if not hasattr(self, 'SASL'):
+        if 'SASL' in self.__dict__:
+            log.error('Auth not possible while another auth is in progress')
             return
 
-        self.SASL.auth()
-        return True
+        self._User = user
+        self._Resource = resource
 
-    def _on_start_sasl(self, data=None):
-        """
-        Callback used by SASL, called on each auth step
-        """
-        if self.SASL.startsasl == 'in-process':
-            return
         self.onreceive(None)
+        SASL.get_instance(self._User,
+                          auth_mechs,
+                          get_password,
+                          self._on_sasl_finished).PlugIn(self)
 
-        if self.SASL.startsasl == 'failure':
-            # wrong user/pass, stop auth
-            if 'SASL' in self.__dict__:
-                self.SASL.PlugOut()
-            self.connected = None # FIXME: is this intended? We use ''elsewhere
-            self.Dispatcher.Event(Realm.CONNECTING, Event.AUTH_FAILED, data)
+    def _on_sasl_finished(self, success, reason, text):
+        if success:
+            self.SASL.PlugOut()
+            if self.protocol_type == 'BOSH':
+                self.Dispatcher.after_SASL = True
+            self.Dispatcher.StreamInit()
 
-        elif self.SASL.startsasl == 'success':
             self.connected += '+sasl'
-            self.Dispatcher.Event(Realm.CONNECTING, Event.AUTH_SUCCESSFUL)
+            self.Dispatcher.Event(Realm.CONNECTING,
+                                  Event.AUTH_SUCCESSFUL)
             self._owner.Smacks.register_handlers()
+        else:
+            self.Dispatcher.Event(Realm.CONNECTING,
+                                  Event.AUTH_FAILED,
+                                  (reason, text))
 
     def bind(self):
         # Check if we can resume
-        if self._owner.Smacks.resume_supported:
-            self._owner.Smacks.resume_request()
+        if self.Smacks.resume_supported:
+            self.Smacks.resume_request()
         else:
             # If we cant resume we bind and enable sm afterwards
             NonBlockingBind.get_instance().PlugIn(self)
