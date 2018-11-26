@@ -38,7 +38,6 @@ try:
 except ImportError:
     from urlparse import urlparse
 
-from .simplexml import ustr
 from .plugin import PlugIn
 from .idlequeue import IdleObject
 from . import proxy_connectors
@@ -544,7 +543,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         if isinstance(stanza, str):
             stanza = stanza.encode('utf-8')
         elif not isinstance(stanza, str):
-            stanza = ustr(stanza).encode('utf-8')
+            stanza = str(stanza).encode('utf-8')
         return stanza
 
     def _plug_idle(self, writable, readable):
