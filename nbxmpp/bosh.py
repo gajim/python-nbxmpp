@@ -493,7 +493,7 @@ def get_rand_number():
     return int(binascii.hexlify(os.urandom(6)), 16)
 
 
-class AckChecker(object):
+class AckChecker:
     """
     Class for generating rids and generating and checking acknowledgements in
     BOSH messages
@@ -536,7 +536,7 @@ class AckChecker(object):
         return self.rid
 
 
-class KeyStack(object):
+class KeyStack:
     """
     Class implementing key sequences for BOSH messages
     """

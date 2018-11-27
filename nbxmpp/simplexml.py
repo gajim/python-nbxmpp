@@ -32,7 +32,7 @@ def XMLescape(txt):
     # replace also FORM FEED and ESC, because they are not valid XML chars
     return txt.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace('\x0C', "").replace('\x1B', "")
 
-class Node(object):
+class Node:
     """
     Node class describes syntax of separate XML Node. It have a constructor that
     permits node creation from set of "namespace name", attributes and payload
@@ -471,7 +471,7 @@ class Node(object):
         raise AttributeError
 
 
-class T(object):
+class T:
     """
     Auxiliary class used to quick access to node's child nodes
     """
@@ -506,7 +506,7 @@ class NT(T):
             return self.node.addChild(attr, payload=[val])
 
 
-class NodeBuilder(object):
+class NodeBuilder:
     """
     Builds a Node class minidom from data parsed to it. This class used for two
     purposes:

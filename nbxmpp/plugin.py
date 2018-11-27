@@ -20,7 +20,7 @@ import logging
 log = logging.getLogger('nbxmpp.plugin')
 
 
-class PlugIn(object):
+class PlugIn:
     """
     Abstract xmpppy plugin infrastructure code, providing plugging in/out and
     debugging functionality

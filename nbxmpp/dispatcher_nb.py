@@ -41,7 +41,7 @@ DEFAULT_TIMEOUT_SECONDS = 25
 XML_DECLARATION = '<?xml version=\'1.0\'?>'
 
 # FIXME: ugly
-class Dispatcher(object):
+class Dispatcher:
     """
     Why is this here - I needed to redefine Dispatcher for BOSH and easiest way
     was to inherit original Dispatcher (now renamed to XMPPDispatcher). Trouble
