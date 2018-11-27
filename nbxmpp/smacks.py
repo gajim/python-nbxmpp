@@ -279,7 +279,7 @@ class Smacks(PlugIn):
             self._owner.Dispatcher.Event(Realm.CONNECTING, Event.RESUME_FAILED)
             # We failed while resuming
             self.resume_supported = False
-            self._owner.start_bind()
+            self._owner.bind()
         self._reset_state()
 
     def _reset_state(self):

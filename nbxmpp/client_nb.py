@@ -586,10 +586,9 @@ class NonBlockingClient(object):
         elif self.SASL.startsasl == 'success':
             self.connected += '+sasl'
             self.Dispatcher.Event(Realm.CONNECTING, Event.AUTH_SUCCESSFUL)
+            self._owner.Smacks.register_handlers()
 
     def bind(self):
-        self._owner.Smacks.register_handlers()
-
         # Check if we can resume
         if self._owner.Smacks.resume_supported:
             self._owner.Smacks.resume_request()
