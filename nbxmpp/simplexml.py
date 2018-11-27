@@ -32,23 +32,6 @@ def XMLescape(txt):
     # replace also FORM FEED and ESC, because they are not valid XML chars
     return txt.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace('\x0C', "").replace('\x1B', "")
 
-ENCODING='utf-8'
-
-def ustr(what):
-    """
-    Converts object "what" to unicode string using it's own __str__ method if
-    accessible or unicode method otherwise
-    """
-    if isinstance(what, str):
-        return what
-    try:
-        r = what.__str__()
-    except AttributeError:
-        r = str(what)
-    if not isinstance(r, str):
-        return str(r, ENCODING)
-    return r
-
 class Node(object):
     """
     Node class describes syntax of separate XML Node. It have a constructor that
@@ -134,7 +117,7 @@ class Node(object):
                 if isinstance(i, Node):
                     self.addChild(node=i)
                 else:
-                    self.data.append(ustr(i))
+                    self.data.append(str(i))
 
     def lookup_nsp(self, pfx=''):
         ns = self.nsd.get(pfx, None)
@@ -159,7 +142,7 @@ class Node(object):
                 if 'xmlns' not in self.attrs:
                     s += ' xmlns="%s"' % self.namespace
         for key in self.attrs.keys():
-            val = ustr(self.attrs[key])
+            val = str(self.attrs[key])
             s += ' %s="%s"' % (key, XMLescape(val))
 
         s += ">"
@@ -218,7 +201,7 @@ class Node(object):
         """
         Add some CDATA to node
         """
-        self.data.append(ustr(data))
+        self.data.append(str(data))
 
     def clearData(self):
         """
@@ -379,7 +362,7 @@ class Node(object):
         """
         Set node's CDATA to provided string. Resets all previous CDATA!
         """
-        self.data = [ustr(data)]
+        self.data = [str(data)]
 
     def setName(self, val):
         """
@@ -441,9 +424,9 @@ class Node(object):
         (optionally) attributes "attrs" and sets it's CDATA to string "val"
         """
         try:
-            self.getTag(tag, attrs).setData(ustr(val))
+            self.getTag(tag, attrs).setData(str(val))
         except Exception:
-            self.addChild(tag, attrs, payload = [ustr(val)])
+            self.addChild(tag, attrs, payload = [str(val)])
 
     def has_attr(self, key):
         """
