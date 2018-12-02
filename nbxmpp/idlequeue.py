@@ -37,15 +37,25 @@ if os.name == 'nt':
 elif os.name == 'posix':
     import fcntl
 
-FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
-FLAG_READ  = GLib.IOCondition.IN  | GLib.IOCondition.PRI | \
-             GLib.IOCondition.HUP
-FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
-                  GLib.IOCondition.PRI | GLib.IOCondition.HUP
-FLAG_CLOSE     = GLib.IOCondition.HUP
-PENDING_READ   = GLib.IOCondition.IN  # There is data to read.
-PENDING_WRITE  = GLib.IOCondition.OUT # Data CAN be written without blocking.
-IS_CLOSED      = GLib.IOCondition.HUP # Hung up (connection broken)
+if HAVE_GLIB:
+    FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
+    FLAG_READ  = GLib.IOCondition.IN  | GLib.IOCondition.PRI | \
+                 GLib.IOCondition.HUP
+    FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
+                      GLib.IOCondition.PRI | GLib.IOCondition.HUP
+    FLAG_CLOSE     = GLib.IOCondition.HUP
+    PENDING_READ   = GLib.IOCondition.IN  # There is data to read.
+    PENDING_WRITE  = GLib.IOCondition.OUT # Data CAN be written without blocking.
+    IS_CLOSED      = GLib.IOCondition.HUP # Hung up (connection broken)
+else:
+    FLAG_WRITE      = 20 # write only           10100
+    FLAG_READ       = 19 # read only            10011
+    FLAG_READ_WRITE = 23 # read and write       10111
+    FLAG_CLOSE      = 16 # wait for close       10000
+    PENDING_READ    =  3 # waiting read event      11
+    PENDING_WRITE   =  4 # waiting write event    100
+    IS_CLOSED       = 16 # channel closed       10000
+
 
 def get_idlequeue():
     """
