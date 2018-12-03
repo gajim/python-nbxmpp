@@ -631,7 +631,6 @@ class NonBlockingBind(PlugIn):
                     iq = Protocol('iq', typ='set', payload=[node])
                     self._owner.SendAndWaitForResponse(
                         iq, func=self._on_session)
-                self.PlugOut()
                 return
         if resp:
             log.error('Binding failed: %s.', resp.getTag('error'))
@@ -649,10 +648,11 @@ class NonBlockingBind(PlugIn):
             log.error('Session open failed')
             self._owner.Connection.start_disconnect()
             self._owner.Dispatcher.Event(Realm.CONNECTING, Event.SESSION_FAILED)
-        self.PlugOut()
+            self.PlugOut()
 
     def _on_bind_successful(self):
         feats = self._owner.Dispatcher.Stream.features
         if feats.getTag('sm', namespace=NS_STREAM_MGMT):
             self._owner.Smacks.send_enable()
         self._owner.Dispatcher.Event(Realm.CONNECTING, Event.CONNECTION_ACTIVE)
+        self.PlugOut()
