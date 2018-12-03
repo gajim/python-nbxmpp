@@ -647,8 +647,8 @@ class NonBlockingBind(PlugIn):
             self._on_bind_successful()
         else:
             log.error('Session open failed')
-        self._owner.Connection.start_disconnect()
-        self._owner.Dispatcher.Event(Realm.CONNECTING, Event.SESSION_FAILED)
+            self._owner.Connection.start_disconnect()
+            self._owner.Dispatcher.Event(Realm.CONNECTING, Event.SESSION_FAILED)
         self.PlugOut()
 
     def _on_bind_successful(self):
