@@ -188,6 +188,7 @@ NS_HASHES_SHA3_512 = 'urn:xmpp:hash-function-text-names:sha3-512'
 NS_HASHES_BLAKE2B_256 = 'urn:xmpp:hash-function-text-names:id-blake2b256'
 NS_HASHES_BLAKE2B_512 = 'urn:xmpp:hash-function-text-names:id-blake2b512'
 NS_OPENPGP = 'urn:xmpp:openpgp:0'
+NS_BOOKMARK_CONVERSION = 'urn:xmpp:bookmarks-conversion:0'
 
 #xmpp_stream_error_conditions = '''
 #bad-format --  --  -- The entity has sent XML that cannot be processed.
