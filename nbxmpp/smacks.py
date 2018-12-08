@@ -60,7 +60,6 @@ class Smacks(PlugIn):
 
         self._session_id = None
         self._location = None
-        self._enable_sent = False
 
     def get_resume_data(self):
         if self.resume_supported:
@@ -128,7 +127,7 @@ class Smacks(PlugIn):
         self._in_h += 1
 
     def save_in_queue(self, stanza):
-        if not self._enable_sent:
+        if not self._enable_sent and not self.resumed:
             # We did not yet sent 'enable' so the server
             # will not count our stanzas
             return
