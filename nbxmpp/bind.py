@@ -47,6 +47,12 @@ class NonBlockingBind(PlugIn):
         self._owner.RegisterHandler(
             'features', self._on_features, xmlns=NS_STREAMS)
 
+        feats = self._owner.Dispatcher.Stream.features
+        if feats is not None:
+            if feats.getTag('bind', namespace=NS_BIND) is not None:
+                # We already received the features
+                self._on_features(None, feats)
+
     def _on_features(self, _con, feats):
         """
         Determine if server supports resource binding and set some internal
