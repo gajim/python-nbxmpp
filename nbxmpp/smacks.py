@@ -260,10 +260,10 @@ class Smacks(PlugIn):
         This can be called after 'enable' and 'resume'
         '''
 
-        log.error('StreamManagement negotiation failed')
+        log.info('Stream Management negotiation failed')
         error_text = stanza.getTagData('text')
         if error_text is not None:
-            log.error(error_text)
+            log.info(error_text)
 
         if stanza.getTag('item-not-found') is not None:
             log.info('Session timed out, last server h: %s',
@@ -272,7 +272,7 @@ class Smacks(PlugIn):
         else:
             for tag in stanza.getTags():
                 if tag.getName() != 'text':
-                    log.error(tag.getName())
+                    log.info(tag.getName())
 
         if self.resume_in_progress:
             self._owner.Dispatcher.Event(Realm.CONNECTING, Event.RESUME_FAILED)

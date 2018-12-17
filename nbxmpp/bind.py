@@ -79,6 +79,7 @@ class NonBlockingBind(PlugIn):
         """
         Perform binding. Use provided resource name or random (if not provided).
         """
+        log.info('Send bind')
         resource = []
         if self._owner._Resource:
             resource = [Node('resource', payload=[self._owner._Resource])]
