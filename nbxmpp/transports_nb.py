@@ -462,7 +462,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
                 self._connect_to_proxy()
             else:
                 self._on_connect()
-        else:
+        elif self.get_state() != DISCONNECTED:
             self._do_send()
 
     def pollend(self):
