@@ -448,7 +448,9 @@ class XMPPDispatcher(PlugIn):
             stanza = self.handlers[xmlns][name][type](node=stanza)
 
         typ = stanza.getType()
-        if not typ:
+        if name == 'message' and not typ:
+            typ = 'normal'
+        elif not typ:
             typ = ''
         stanza.props = stanza.getProperties()
         ID = stanza.getID()
@@ -472,6 +474,7 @@ class XMPPDispatcher(PlugIn):
         for key in list_:
             if key:
                 chain = chain + self.handlers[xmlns][name][key]
+        log.debug('Chain: %s', [key for key in list_ if key])
 
         if ID in session._expected:
             user = 0
