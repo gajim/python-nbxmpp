@@ -57,7 +57,7 @@ NS_CHATMARKERS    = 'urn:xmpp:chat-markers:0'                         # XEP-0333
 NS_CHATSTATES     = 'http://jabber.org/protocol/chatstates'           # XEP-0085
 NS_CHATTING       = 'http://jabber.org/protocol/chatting'             # XEP-0194
 NS_CLIENT         = 'jabber:client'
-NS_CONDITIONS     = 'urn:xmpp:muc:conditions:0'                       # XEP-0306
+NS_CONDITIONS     = 'urn:xmpp:muc:conditions:1'                       # XEP-0306
 NS_COMMANDS       = 'http://jabber.org/protocol/commands'
 NS_COMPONENT_ACCEPT = 'jabber:component:accept'
 NS_COMPONENT_1    = 'http://jabberd.jabberstudio.org/ns/component/1.0'
@@ -471,6 +471,28 @@ _errorcodes = {
     '503': 'service-unavailable',
     '504': 'remote-server-timeout',
     'cancel': 'invalid-from'
+}
+
+_status_conditions = {
+    'realjid-public': 100,
+    'affiliation-changed': 101,
+    'unavailable-shown': 102,
+    'unavailable-not-shown': 103,
+    'configuration-changed': 104,
+    'self-presence': 110,
+    'logging-enabled': 170,
+    'logging-disabled': 171,
+    'non-anonymous': 172,
+    'semi-anonymous': 173,
+    'fully-anonymous': 174,
+    'room-created': 201,
+    'nick-assigned': 210,
+    'banned': 301,
+    'new-nick': 303,
+    'kicked': 307,
+    'removed-affiliation': 321,
+    'removed-membership': 322,
+    'removed-shutdown': 332,
 }
 
 STREAM_NOT_AUTHORIZED = 'urn:ietf:params:xml:ns:xmpp-streams not-authorized'
@@ -939,16 +961,21 @@ class Protocol(Node):
         """
         return self.getTagAttr('error', 'code')
 
-    def getStatusConditions(self):
+    def getStatusConditions(self, as_code=False):
         """
         Return the status conditions list as defined in XEP-0306.
         """
-        conds = []
-        condtag = self.getTag('conditions', namespace=NS_CONDITIONS)
-        if condtag:
-            for tag in condtag.getChildren():
-                conds.append(tag.getName())
-        return conds
+        result = set()
+        status_tags = self.getTags('status')
+        for status in status_tags:
+            if as_code:
+                code = status.getAttr('code')
+                if code is not None:
+                    result.add(code)
+            else:
+                for condition in status.getChildren():
+                    result.add(condition.getName())
+        return list(result)
 
     def setError(self, error, code=None):
         """
