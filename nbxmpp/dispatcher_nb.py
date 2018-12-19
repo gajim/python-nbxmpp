@@ -27,10 +27,18 @@ import uuid
 import logging
 from xml.parsers.expat import ExpatError
 
-from . import simplexml
-from .plugin import PlugIn
-from .protocol import (NS_STREAMS, NS_HTTP_BIND, Iq, Presence,
-        Message, Protocol, Node, Error, ERR_FEATURE_NOT_IMPLEMENTED)
+from nbxmpp.simplexml import NodeBuilder
+from nbxmpp.plugin import PlugIn
+from nbxmpp.protocol import NS_STREAMS
+from nbxmpp.protocol import NS_HTTP_BIND
+from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import Presence
+from nbxmpp.protocol import Message
+from nbxmpp.protocol import Protocol
+from nbxmpp.protocol import Node
+from nbxmpp.protocol import Error
+from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
 
 
 log = logging.getLogger('nbxmpp.dispatcher_nb')
@@ -177,7 +185,7 @@ class XMPPDispatcher(PlugIn):
         Send an initial stream header
         """
         self._owner.Connection.sendqueue = []
-        self.Stream = simplexml.NodeBuilder()
+        self.Stream = NodeBuilder()
         self.Stream.dispatch = self.dispatch
         self.Stream._dispatch_depth = 2
         self.Stream.stream_header_received = self._check_stream_start
@@ -258,7 +266,7 @@ class XMPPDispatcher(PlugIn):
         self.RegisterProtocol('unknown', Protocol, xmlns=xmlns)
         self.RegisterProtocol('default', Protocol, xmlns=xmlns)
 
-    def RegisterProtocol(self, tag_name, Proto, xmlns=None, order='info'):
+    def RegisterProtocol(self, tag_name, proto, xmlns=None, order='info'):
         """
         Used to declare some top-level stanza name to dispatcher
 
@@ -266,20 +274,18 @@ class XMPPDispatcher(PlugIn):
         presence protocols are registered by default.
         """
         if not xmlns:
-            xmlns=self._owner.defaultNamespace
-        log.debug('Registering protocol "%s" as %s(%s)' %(tag_name, Proto, xmlns))
-        self.handlers[xmlns][tag_name] = {type:Proto, 'default':[]}
+            xmlns = self._owner.defaultNamespace
+        log.debug('Registering protocol "%s" as %s(%s)', tag_name, proto, xmlns)
+        self.handlers[xmlns][tag_name] = {'type': proto, 'default': []}
 
-    def RegisterNamespaceHandler(self, xmlns, handler, typ='', ns='',
-                    makefirst=0, system=0):
+    def RegisterNamespaceHandler(self, xmlns, handler, typ='', ns='', system=0):
         """
         Register handler for processing all stanzas for specified namespace
         """
-        self.RegisterHandler('default', handler, typ, ns, xmlns, makefirst,
-                system)
+        self.RegisterHandler('default', handler, typ, ns, xmlns, system)
 
     def RegisterHandler(self, name, handler, typ='', ns='', xmlns=None,
-                    makefirst=False, system=False):
+                        system=False, priority=50):
         """
         Register user callback as stanzas handler of declared type
 
@@ -295,40 +301,44 @@ class XMPPDispatcher(PlugIn):
                 value will match
         :param ns: namespace of child that stanza must contain.
         :param xmlns: xml namespace
-        :param makefirst: insert handler in the beginning of handlers list instead
-                of      adding it to the end. Note that more common handlers i.e. w/o "typ"
-                and " will be called first nevertheless.
         :param system: call handler even if NodeProcessed Exception were raised
-                already.
+                       already.
+        :param priority: The priority of the handler, higher get called later
         """
         if not xmlns:
-            xmlns=self._owner.defaultNamespace
-        log.debug('Registering handler %s for "%s" type->%s ns->%s(%s)' %
-                (handler, name, typ, ns, xmlns))
+            xmlns = self._owner.defaultNamespace
+
         if not typ and not ns:
-            typ='default'
+            typ = 'default'
+
+        log.debug(
+            'Registering handler %s for "%s" type->%s ns->%s(%s) priority->%s',
+            handler, name, typ, ns, xmlns, priority)
+
         if xmlns not in self.handlers:
             self.RegisterNamespace(xmlns, 'warn')
         if name not in self.handlers[xmlns]:
             self.RegisterProtocol(name, Protocol, xmlns, 'warn')
-        if typ+ns not in self.handlers[xmlns][name]:
-            self.handlers[xmlns][name][typ+ns]=[]
-        if makefirst:
-            self.handlers[xmlns][name][typ+ns].insert(0, {'func':handler,
-                    'system':system})
-        else:
-            self.handlers[xmlns][name][typ+ns].append({'func':handler,
-                    'system':system})
+
+        specific = typ + ns
+        if specific not in self.handlers[xmlns][name]:
+            self.handlers[xmlns][name][specific] = []
+
+        self.handlers[xmlns][name][specific].append(
+            {'func': handler,
+             'system': system,
+             'priority': priority,
+             'specific': specific})
 
     def RegisterHandlerOnce(self, name, handler, typ='', ns='', xmlns=None,
-                    makefirst=0, system=0):
+                            system=0):
         """
         Unregister handler after first call (not implemented yet)
         """
         # FIXME Drop or implement
         if not xmlns:
             xmlns = self._owner.defaultNamespace
-        self.RegisterHandler(name, handler, typ, ns, xmlns, makefirst, system)
+        self.RegisterHandler(name, handler, typ, ns, xmlns, system)
 
     def UnregisterHandler(self, name, handler, typ='', ns='', xmlns=None):
         """
@@ -338,18 +348,26 @@ class XMPPDispatcher(PlugIn):
         if not xmlns:
             xmlns = self._owner.defaultNamespace
         if not typ and not ns:
-            typ='default'
+            typ = 'default'
         if xmlns not in self.handlers:
             return
         if name not in self.handlers[xmlns]:
             return
-        if typ+ns not in self.handlers[xmlns][name]:
+
+        specific = typ + ns
+        if specific not in self.handlers[xmlns][name]:
             return
-        for pack in self.handlers[xmlns][name][typ+ns]:
-            if pack['func'] == handler:
+        for handler_dict in self.handlers[xmlns][name][specific]:
+            if handler_dict['func'] == handler:
                 try:
-                    self.handlers[xmlns][name][typ+ns].remove(pack)
+                    self.handlers[xmlns][name][specific].remove(handler_dict)
+                    log.debug(
+                        'Unregister handler %s for "%s" type->%s ns->%s(%s)',
+                        handler, name, typ, ns, xmlns)
                 except ValueError:
+                    log.warning(
+                        'Unregister failed: %s for "%s" type->%s ns->%s(%s)',
+                        handler, name, typ, ns, xmlns)
                     pass
 
     def RegisterDefaultHandler(self, handler):
@@ -401,16 +419,11 @@ class XMPPDispatcher(PlugIn):
         else:
             log.warning('Received unhandled event: %s' % event)
 
-    def dispatch(self, stanza, session=None, direct=0):
+    def dispatch(self, stanza, session=None):
         """
         Main procedure that performs XMPP stanza recognition and calling
         apppropriate handlers for it. Called by simplexml
         """
-        # FIXME: Where do we set session and direct. Why? What are those intended
-        # to do?
-
-        #log.info('dispatch called: stanza = %s, session = %s, direct= %s'
-        #       % (stanza, session, direct))
 
         self.Event('', 'STANZA RECEIVED', stanza)
 
@@ -428,8 +441,6 @@ class XMPPDispatcher(PlugIn):
 
         xmlns = stanza.getNamespace()
 
-        # log.info('in dispatch, getting ns for %s, and the ns is %s'
-        # % (stanza, xmlns))
         if xmlns not in self.handlers:
             log.warning('Unknown namespace: %s', xmlns)
             xmlns = 'unknown'
@@ -438,14 +449,13 @@ class XMPPDispatcher(PlugIn):
             if name not in ('features', 'stream'):
                 log.warning('Unknown stanza: %s', stanza)
             else:
-                log.debug('Got %s/%s stanza' % (xmlns, name))
+                log.debug('Got %s / %s stanza' % (xmlns, name))
             name = 'unknown'
         else:
-            log.debug('Got %s/%s stanza' % (xmlns, name))
+            log.debug('Got %s / %s stanza' % (xmlns, name))
 
-        if stanza.__class__.__name__ == 'Node':
-            # FIXME: this cannot work
-            stanza = self.handlers[xmlns][name][type](node=stanza)
+        # Convert simplexml to Protocol object
+        stanza = self.handlers[xmlns][name]['type'](node=stanza)
 
         typ = stanza.getType()
         if name == 'message' and not typ:
@@ -461,48 +471,55 @@ class XMPPDispatcher(PlugIn):
         if hasattr(self._owner, 'Smacks'):
             self._owner.Smacks.count_incoming(stanza.getName())
 
-        list_ = ['default'] # we will use all handlers:
-        if typ in self.handlers[xmlns][name]:
-            list_.append(typ) # from very common...
-        for prop in stanza.props:
-            if prop in self.handlers[xmlns][name]:
-                list_.append(prop)
-            if typ and typ+prop in self.handlers[xmlns][name]:
-                list_.append(typ+prop)  # ...to very particular
-
-        chain = self.handlers[xmlns]['default']['default']
-        for key in list_:
-            if key:
-                chain = chain + self.handlers[xmlns][name][key]
-        log.debug('Chain: %s', [key for key in list_ if key])
-
+        processed = False
         if ID in session._expected:
-            user = 0
             if isinstance(session._expected[ID], tuple):
                 cb, args = session._expected[ID]
-                log.debug("Expected stanza arrived. Callback %s(%s) found!" %
-                        (cb, args))
+                log.debug('Expected stanza arrived. Callback %s(%s) found',
+                          cb, args)
                 try:
                     cb(session,stanza,**args)
-                except Exception as typ:
-                    if typ.__class__.__name__ != 'NodeProcessed':
-                        raise
+                except NodeProcessed:
+                    pass
+                except Exception:
+                    raise
             else:
-                log.debug("Expected stanza arrived!")
+                log.debug('Expected stanza arrived')
                 session._expected[ID] = stanza
-        else:
-            user = 1
+            processed = True
+
+        # Gather specifics depending on stanza properties
+        specifics = ['default']
+        if typ and typ in self.handlers[xmlns][name]:
+            specifics.append(typ)
+        for prop in stanza.props:
+            if prop in self.handlers[xmlns][name]:
+                specifics.append(prop)
+            if typ and typ + prop in self.handlers[xmlns][name]:
+                specifics.append(typ + prop)
+
+        # Create the handler chain
+        chain = []
+        chain += self.handlers[xmlns]['default']['default']
+        for specific in specifics:
+            chain += self.handlers[xmlns][name][specific]
+
+        # Sort chain with priority
+        chain.sort(key=lambda x: x['priority'])
+
         for handler in chain:
-            if user or handler['system']:
+            if not processed or handler['system']:
                 try:
-                    log.debug('Call handler: %s', handler['func'])
+                    log.info('Call handler: %s', handler['func'].__qualname__)
                     handler['func'](session, stanza)
-                except Exception as typ:
-                    if typ.__class__.__name__ != 'NodeProcessed':
-                        self._pendingExceptions.insert(0, sys.exc_info())
-                        return
-                    user=0
-        if user and self._defaultHandler:
+                except NodeProcessed:
+                    processed = True
+                except Exception:
+                    self._pendingExceptions.insert(0, sys.exc_info())
+                    return
+
+        # Stanza was not processed call default handler
+        if not processed and self._defaultHandler:
             self._defaultHandler(session, stanza)
 
     def _WaitForData(self, data):
@@ -592,7 +609,7 @@ class BOSHDispatcher(XMPPDispatcher):
         """
         Send an initial stream header
         """
-        self.Stream = simplexml.NodeBuilder()
+        self.Stream = NodeBuilder()
         self.Stream.dispatch = self.dispatch
         self.Stream._dispatch_depth = 2
         self.Stream.stream_header_received = self._check_stream_start
@@ -625,7 +642,7 @@ class BOSHDispatcher(XMPPDispatcher):
             self.restart = False
         return XMPPDispatcher.ProcessNonBlocking(self, data)
 
-    def dispatch(self, stanza, session=None, direct=0):
+    def dispatch(self, stanza, session=None):
         if stanza.getName() == 'body' and stanza.getNamespace() == NS_HTTP_BIND:
 
             stanza_attrs = stanza.getAttrs()
@@ -643,6 +660,6 @@ class BOSHDispatcher(XMPPDispatcher):
                     # rewrite it to jabber:client
                     if child.getNamespace() == NS_HTTP_BIND:
                         child.setNamespace(self._owner.defaultNamespace)
-                    XMPPDispatcher.dispatch(self, child, session, direct)
+                    XMPPDispatcher.dispatch(self, child, session)
         else:
-            XMPPDispatcher.dispatch(self, stanza, session, direct)
+            XMPPDispatcher.dispatch(self, stanza, session)

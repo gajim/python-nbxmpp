@@ -331,7 +331,7 @@ class NonBlockingRoster(PlugIn):
         Also request roster from server if the 'request' argument is set. Used
         internally
         """
-        self._owner.RegisterHandler('iq', self.RosterIqHandler, 'result', NS_ROSTER, makefirst = 1)
+        self._owner.RegisterHandler('iq', self.RosterIqHandler, 'result', NS_ROSTER)
         self._owner.RegisterHandler('iq', self.RosterIqHandler, 'set', NS_ROSTER)
         self._owner.RegisterHandler('presence', self.PresenceHandler)
         if request:
