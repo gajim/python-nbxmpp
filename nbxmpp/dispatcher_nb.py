@@ -25,6 +25,7 @@ import locale
 import re
 import uuid
 import logging
+import inspect
 from xml.parsers.expat import ExpatError
 
 from nbxmpp.simplexml import NodeBuilder
@@ -32,6 +33,7 @@ from nbxmpp.plugin import PlugIn
 from nbxmpp.protocol import NS_STREAMS
 from nbxmpp.protocol import NS_HTTP_BIND
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import InvalidFrom
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Presence
 from nbxmpp.protocol import Message
@@ -39,6 +41,8 @@ from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import Error
 from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
+from nbxmpp.misc import unwrap_carbon
+from nbxmpp.util import PropertyDict
 
 
 log = logging.getLogger('nbxmpp.dispatcher_nb')
@@ -430,8 +434,11 @@ class XMPPDispatcher(PlugIn):
         if not session:
             session = self
         session.Stream._mini_dom = None
-        name = stanza.getName()
 
+        # Count stanza
+        self._owner.Smacks.count_incoming(stanza.getName())
+
+        name = stanza.getName()
         if name == 'features':
             self._owner.got_features = True
             session.Stream.features = stanza
@@ -449,43 +456,63 @@ class XMPPDispatcher(PlugIn):
             if name not in ('features', 'stream'):
                 log.warning('Unknown stanza: %s', stanza)
             else:
-                log.debug('Got %s / %s stanza' % (xmlns, name))
+                log.debug('Got %s / %s stanza', xmlns, name)
             name = 'unknown'
         else:
-            log.debug('Got %s / %s stanza' % (xmlns, name))
+            log.debug('Got %s / %s stanza', xmlns, name)
 
         # Convert simplexml to Protocol object
         stanza = self.handlers[xmlns][name]['type'](node=stanza)
+
+        properties = PropertyDict()
+        if stanza.getName() == 'message':
+            # https://tools.ietf.org/html/rfc6120#section-8.1.1.1
+            # If the stanza does not include a 'to' address then the client MUST
+            # treat it as if the 'to' address were included with a value of the
+            # client's full JID.
+
+            own_jid = self._owner.get_bound_jid()
+            to = stanza.getTo()
+            if to is None:
+                stanza.setTo(own_jid)
+            elif not to.bareMatch(own_jid):
+                log.warning('Message addressed to someone else: %s', stanza)
+                return
+
+            try:
+                stanza, properties.carbon_type = unwrap_carbon(stanza, own_jid)
+            except InvalidFrom as exc:
+                log.warning(exc)
+                return
+            except NodeProcessed as exc:
+                log.info(exc)
+                return
 
         typ = stanza.getType()
         if name == 'message' and not typ:
             typ = 'normal'
         elif not typ:
             typ = ''
-        stanza.props = stanza.getProperties()
-        ID = stanza.getID()
 
+        stanza.props = stanza.getProperties()
         log.debug('type: %s, properties: %s', typ, stanza.props)
 
-        # If server supports stream management
-        if hasattr(self._owner, 'Smacks'):
-            self._owner.Smacks.count_incoming(stanza.getName())
-
+        _id = stanza.getID()
         processed = False
-        if ID in session._expected:
-            if isinstance(session._expected[ID], tuple):
-                cb, args = session._expected[ID]
+        if _id in session._expected:
+            if isinstance(session._expected[_id], tuple):
+                cb, args = session._expected[_id]
                 log.debug('Expected stanza arrived. Callback %s(%s) found',
                           cb, args)
                 try:
-                    cb(session,stanza,**args)
+                    cb(session, stanza, **args)
                 except NodeProcessed:
                     pass
                 except Exception:
                     raise
             else:
                 log.debug('Expected stanza arrived')
-                session._expected[ID] = stanza
+                session._expected[_id] = stanza
             processed = True
 
         # Gather specifics depending on stanza properties
@@ -511,7 +538,13 @@ class XMPPDispatcher(PlugIn):
             if not processed or handler['system']:
                 try:
                     log.info('Call handler: %s', handler['func'].__qualname__)
-                    handler['func'](session, stanza)
+                    # Backwards compatibility until all handlers support
+                    # properties
+                    signature = inspect.signature(handler['func'])
+                    if 'properties' in signature.parameters:
+                        handler['func'](session, stanza, properties)
+                    else:
+                        handler['func'](session, stanza)
                 except NodeProcessed:
                     processed = True
                 except Exception:

@@ -647,6 +647,9 @@ class UnsupportedVersion(StreamError):
 class XMLNotWellFormed(StreamError):
     pass
 
+class InvalidStanza(Exception):
+    pass
+
 stream_exceptions = {'bad-format': BadFormat,
                     'bad-namespace-prefix': BadNamespacePrefix,
                     'conflict': Conflict,
@@ -742,6 +745,12 @@ class JID:
         self.resource = resource
 
     def getStripped(self):
+        """
+        Return the bare representation of JID. I.e. string value w/o resource
+        """
+        return self.__str__(0)
+
+    def getBare(self):
         """
         Return the bare representation of JID. I.e. string value w/o resource
         """

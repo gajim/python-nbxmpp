@@ -17,6 +17,7 @@
 
 import base64
 
+
 def b64decode(data, return_type=str):
     if isinstance(data, str):
         data = data.encode()
@@ -25,6 +26,7 @@ def b64decode(data, return_type=str):
         return result
     return result.decode()
 
+
 def b64encode(data, return_type=str):
     if isinstance(data, str):
         data = data.encode()
@@ -32,3 +34,17 @@ def b64encode(data, return_type=str):
     if return_type == bytes:
         return result
     return result.decode()
+
+
+class PropertyDict:
+    def __init__(self):
+        self.__data = {}
+
+    def __getattr__(self, key):
+        return self.__data[key]
+
+    def __setattr__(self, key, value):
+        if '__' in key:
+            super().__setattr__(key, value)
+        else:
+            self.__data[key] = value
