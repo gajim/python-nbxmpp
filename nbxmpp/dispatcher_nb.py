@@ -41,6 +41,7 @@ from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import Error
 from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
+from nbxmpp.modules.eme import EME
 from nbxmpp.misc import unwrap_carbon
 from nbxmpp.util import PropertyDict
 
@@ -96,6 +97,7 @@ class XMPPDispatcher(PlugIn):
     def __init__(self):
         PlugIn.__init__(self)
         self.handlers = {}
+        self._modules = {}
         self._expected = {}
         self._defaultHandler = None
         self._pendingExceptions = []
@@ -144,6 +146,13 @@ class XMPPDispatcher(PlugIn):
         """
         self.handlers = handlers
 
+    def _register_modules(self):
+        self._modules['EME'] = EME(self._owner)
+
+        for instance in self._modules.values():
+            for handler in instance.handlers:
+                self.RegisterHandler(*handler)
+
     def _init(self):
         """
         Register default namespaces/protocols/handlers. Used internally
@@ -158,6 +167,7 @@ class XMPPDispatcher(PlugIn):
         self.RegisterProtocol('message', Message)
         self.RegisterDefaultHandler(self.returnStanzaHandler)
         self.RegisterEventHandler(self._owner._caller._event_dispatcher)
+        self._register_modules()
         self.on_responses = {}
 
     def plugin(self, owner):
@@ -178,6 +188,7 @@ class XMPPDispatcher(PlugIn):
         """
         Prepare instance to be destructed
         """
+        self._modules = {}
         self.Stream.dispatch = None
         self.Stream.features = None
         self.Stream.destroy()

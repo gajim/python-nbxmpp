@@ -8,5 +8,5 @@ setup(name='nbxmpp',
       author='Yann Leboulanger',
       author_email='asterix@lagaule.org',
       url='http://dev.gajim.org/gajim/python-nbxmpp',
-      packages=['nbxmpp'],
+      packages=['nbxmpp', 'nbxmpp.modules'],
       )

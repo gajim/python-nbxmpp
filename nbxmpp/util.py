@@ -16,6 +16,10 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 import base64
+from collections import namedtuple
+
+StanzaHandler = namedtuple('StanzaHandler', 'name callback typ ns xmlns system priority')
+StanzaHandler.__new__.__defaults__ = ('', '', None, False, 50)
 
 
 def b64decode(data, return_type=str):
