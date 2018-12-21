@@ -8,6 +8,8 @@ from test import lib
 
 from nbxmpp import dispatcher_nb
 from nbxmpp import protocol
+from nbxmpp.protocol import JID
+
 
 class TestDispatcherNB(unittest.TestCase):
     '''
@@ -19,6 +21,7 @@ class TestDispatcherNB(unittest.TestCase):
 
         # Setup mock client
         self.client = Mock()
+        self.client.get_bound_jid.return_value = JID('test@test.test')
         self.client.defaultNamespace = protocol.NS_CLIENT
         self.client.Connection = Mock() # mock transport
         self.con = self.client.Connection
