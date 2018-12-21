@@ -40,15 +40,47 @@ def b64encode(data, return_type=str):
     return result.decode()
 
 
-class PropertyDict:
+class PropertyBase:
     def __init__(self):
-        self.__data = {}
+        self._data = {}
 
     def __getattr__(self, key):
-        return self.__data[key]
+        return self._data[key]
 
     def __setattr__(self, key, value):
-        if '__' in key:
+        if '_data' in key:
             super().__setattr__(key, value)
         else:
-            self.__data[key] = value
+            self._data[key] = value
+
+
+class MessagePropertyDict(PropertyBase):
+    def __init__(self):
+        self._data = {
+            'carbon_type': None,
+            'eme': None,
+            'http_auth': None,
+        }
+
+    @property
+    def is_http_auth(self):
+        return self._data['http_auth'] is not None
+
+
+class IqPropertyDict(PropertyBase):
+    def __init__(self):
+        self._data = {
+            'http_auth': None,
+        }
+
+    @property
+    def is_http_auth(self):
+        return self._data['http_auth'] is not None
+
+
+def get_property_dict(name):
+    if name == 'message':
+        return MessagePropertyDict()
+    if name == 'iq':
+        return IqPropertyDict()
+    return PropertyBase()

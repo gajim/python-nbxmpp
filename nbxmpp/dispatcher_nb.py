@@ -42,8 +42,9 @@ from nbxmpp.protocol import Node
 from nbxmpp.protocol import Error
 from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
 from nbxmpp.modules.eme import EME
+from nbxmpp.modules.http_auth import HTTPAuth
 from nbxmpp.misc import unwrap_carbon
-from nbxmpp.util import PropertyDict
+from nbxmpp.util import get_property_dict
 
 
 log = logging.getLogger('nbxmpp.dispatcher_nb')
@@ -148,6 +149,7 @@ class XMPPDispatcher(PlugIn):
 
     def _register_modules(self):
         self._modules['EME'] = EME(self._owner)
+        self._modules['HTTPAuth'] = HTTPAuth(self._owner)
 
         for instance in self._modules.values():
             for handler in instance.handlers:
@@ -475,8 +477,8 @@ class XMPPDispatcher(PlugIn):
         # Convert simplexml to Protocol object
         stanza = self.handlers[xmlns][name]['type'](node=stanza)
 
-        properties = PropertyDict()
-        if stanza.getName() == 'message':
+        properties = get_property_dict(name)
+        if name == 'message':
             # https://tools.ietf.org/html/rfc6120#section-8.1.1.1
             # If the stanza does not include a 'to' address then the client MUST
             # treat it as if the 'to' address were included with a value of the
