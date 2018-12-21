@@ -43,6 +43,9 @@ from nbxmpp.protocol import Error
 from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
 from nbxmpp.modules.eme import EME
 from nbxmpp.modules.http_auth import HTTPAuth
+from nbxmpp.modules.presence import BasePresence
+from nbxmpp.modules.nickname import Nickname
+from nbxmpp.modules.muc import MUC
 from nbxmpp.misc import unwrap_carbon
 from nbxmpp.util import get_property_dict
 
@@ -148,8 +151,11 @@ class XMPPDispatcher(PlugIn):
         self.handlers = handlers
 
     def _register_modules(self):
+        self._modules['BasePresence'] = BasePresence(self._owner)
         self._modules['EME'] = EME(self._owner)
         self._modules['HTTPAuth'] = HTTPAuth(self._owner)
+        self._modules['Nickname'] = Nickname(self._owner)
+        self._modules['MUC'] = MUC(self._owner)
 
         for instance in self._modules.values():
             for handler in instance.handlers:

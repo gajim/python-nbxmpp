@@ -70,6 +70,7 @@ class MessagePropertyDict(PropertyBase):
             'carbon_type': None,
             'eme': None,
             'http_auth': None,
+            'nickname': None,
         }
 
     @property
@@ -88,11 +89,31 @@ class IqPropertyDict(PropertyBase):
         return self._data['http_auth'] is not None
 
 
+class PresencePropertyDict(PropertyBase):
+    def __init__(self):
+        self._data = {
+            'type': None,
+            'priority': None,
+            'show': None,
+            'jid': None,
+            'resource': None,
+            'id': None,
+            'nickname': None,
+            'self_presence': False,
+            'from_muc': False,
+            'status': '',
+            'error_message': '',
+            'error_code': ''
+        }
+
+
 def get_property_dict(name):
     if name == 'message':
         return MessagePropertyDict()
     if name == 'iq':
         return IqPropertyDict()
+    if name == 'presence':
+        return PresencePropertyDict()
     return PropertyBase()
 
 
