@@ -50,71 +50,55 @@ def b64encode(data, return_type=str):
     return result.decode()
 
 
-class PropertyBase:
+class Properties:
+    pass
+
+
+class MessageProperties:
     def __init__(self):
-        self._data = {}
-
-    def __getattr__(self, key):
-        return self._data[key]
-
-    def __setattr__(self, key, value):
-        if '_data' in key:
-            super().__setattr__(key, value)
-        else:
-            self._data[key] = value
-
-
-class MessagePropertyDict(PropertyBase):
-    def __init__(self):
-        self._data = {
-            'carbon_type': None,
-            'eme': None,
-            'http_auth': None,
-            'nickname': None,
-        }
+        self.carbon_type = None
+        self.eme = None
+        self.http_auth = None
+        self.nickname = None
 
     @property
     def is_http_auth(self):
-        return self._data['http_auth'] is not None
+        return self.http_auth is not None
 
 
-class IqPropertyDict(PropertyBase):
+class IqProperties:
     def __init__(self):
-        self._data = {
-            'http_auth': None,
-        }
+        self.http_auth = None
 
     @property
     def is_http_auth(self):
-        return self._data['http_auth'] is not None
+        return self.http_auth is not None
 
 
-class PresencePropertyDict(PropertyBase):
+class PresenceProperties:
     def __init__(self):
-        self._data = {
-            'type': None,
-            'priority': None,
-            'show': None,
-            'jid': None,
-            'resource': None,
-            'id': None,
-            'nickname': None,
-            'self_presence': False,
-            'from_muc': False,
-            'status': '',
-            'error_message': '',
-            'error_code': ''
-        }
+        self.type = None
+        self.priority = None
+        self.show = None
+        self.jid = None
+        self.resource = None
+        self.id = None
+        self.nickname = None
+        self.self_presence = False
+        self.from_muc = False
+        self.status = ''
+        self.error_message = ''
+        self.error_code = ''
 
 
-def get_property_dict(name):
+def get_properties_struct(name):
     if name == 'message':
-        return MessagePropertyDict()
+        return MessageProperties()
     if name == 'iq':
-        return IqPropertyDict()
+        return IqProperties()
     if name == 'presence':
-        return PresencePropertyDict()
-    return PropertyBase()
+        return PresenceProperties()
+    return Properties()
 
 
 def validate_jid(jid_string):

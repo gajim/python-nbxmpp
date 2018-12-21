@@ -47,7 +47,7 @@ from nbxmpp.modules.presence import BasePresence
 from nbxmpp.modules.nickname import Nickname
 from nbxmpp.modules.muc import MUC
 from nbxmpp.misc import unwrap_carbon
-from nbxmpp.util import get_property_dict
+from nbxmpp.util import get_properties_struct
 
 
 log = logging.getLogger('nbxmpp.dispatcher_nb')
@@ -483,7 +483,7 @@ class XMPPDispatcher(PlugIn):
         # Convert simplexml to Protocol object
         stanza = self.handlers[xmlns][name]['type'](node=stanza)
 
-        properties = get_property_dict(name)
+        properties = get_properties_struct(name)
         if name == 'message':
             # https://tools.ietf.org/html/rfc6120#section-8.1.1.1
             # If the stanza does not include a 'to' address then the client MUST
