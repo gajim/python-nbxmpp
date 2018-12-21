@@ -5,7 +5,7 @@ python-nbxmpp is a Python library that provides a way for Python applications to
 ## Features
 
  * Asynchronous
- * Supports ANONYMOUS, EXTERNAL, GSSAPI, SCRAM-SHA-1, DIGEST-MD5, PLAIN, and X-MESSENGER-OAUTH2 authentication mechanisms.
+ * Supports ANONYMOUS, EXTERNAL, GSSAPI, SCRAM-SHA-1(PLUS), SCRAM-SHA-256(PLUS) and PLAIN authentication mechanisms.
  * Supports connection via proxies
  * Suppors TLS
  * Supports [BOSH (XEP-0124)](https://xmpp.org/extensions/xep-0124.html)
