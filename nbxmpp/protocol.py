@@ -650,6 +650,9 @@ class XMLNotWellFormed(StreamError):
 class InvalidStanza(Exception):
     pass
 
+class InvalidJid(Exception):
+    pass
+
 stream_exceptions = {'bad-format': BadFormat,
                     'bad-namespace-prefix': BadNamespacePrefix,
                     'conflict': Conflict,
