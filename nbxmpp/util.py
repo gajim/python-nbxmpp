@@ -25,6 +25,7 @@ import precis_i18n.codec
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import InvalidJid
 from nbxmpp.stringprepare import nameprep
+from nbxmpp.const import MessageType
 
 log = logging.getLogger('nbxmpp.util')
 
@@ -57,13 +58,28 @@ class Properties:
 class MessageProperties:
     def __init__(self):
         self.carbon_type = None
+        self.type = MessageType.NORMAL
+        self.id = None
+        self.jid = None
+        self.subject = None
+        self.body = None
+        self.thread = None
+        self.error_code = None
+        self.error_message = None
         self.eme = None
         self.http_auth = None
         self.nickname = None
+        self.from_muc = False
 
     @property
     def is_http_auth(self):
         return self.http_auth is not None
+
+    @property
+    def is_muc_subject(self):
+        return (self.from_muc and
+                self.body is None and
+                self.subject is not None)
 
 
 class IqProperties:

@@ -36,6 +36,10 @@ class MUC:
                           callback=self._process_muc_user_presence,
                           ns=NS_MUC_USER,
                           priority=11),
+            StanzaHandler(name='message',
+                          callback=self._process_groupchat_message,
+                          typ='groupchat',
+                          priority=11),
         ]
 
     def _process_muc_presence(self, _con, stanza, properties):
@@ -48,4 +52,7 @@ class MUC:
         muc = stanza.getTag('x', namespace=NS_MUC_USER)
         if muc is None:
             return
+        properties.from_muc = True
+
+    def _process_groupchat_message(self, _con, stanza, properties):
         properties.from_muc = True

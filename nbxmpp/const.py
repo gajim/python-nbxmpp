@@ -19,6 +19,7 @@ from enum import Enum
 from enum import IntEnum
 from enum import unique
 
+
 @unique
 class Realm(Enum):
     CONNECTING = 'Connecting'
@@ -40,6 +41,34 @@ class Event(Enum):
     def __str__(self):
         return self.value
 
+
 class GSSAPIState(IntEnum):
     STEP = 0
     WRAP = 1
+
+
+class MessageType(Enum):
+    NORMAL = 'normal'
+    CHAT = 'chat'
+    GROUPCHAT = 'groupchat'
+    HEADLINE = 'headline'
+    ERROR = 'error'
+
+
+class PresenceType(Enum):
+    PROBE = 'probe'
+    SUBSCRIBE = 'subscribe'
+    SUBSCRIBED = 'subscribed'
+    AVAILABLE = None
+    UNAVAILABLE = 'unavailable'
+    UNSUBSCRIBE = 'unsubscribe'
+    UNSUBSCRIBED = 'unsubscribed'
+    ERROR = 'error'
+
+
+class PresenceShow(Enum):
+    ONLINE = None
+    CHAT = 'chat'
+    AWAY = 'away'
+    XA = 'xa'
+    DND = 'dnd'

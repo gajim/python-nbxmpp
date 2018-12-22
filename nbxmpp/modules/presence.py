@@ -20,8 +20,9 @@ import logging
 from nbxmpp.protocol import Error
 from nbxmpp.protocol import ERR_BAD_REQUEST
 from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import presence_types
 from nbxmpp.util import StanzaHandler
+from nbxmpp.const import PresenceType
+from nbxmpp.const import PresenceShow
 
 log = logging.getLogger('nbxmpp.m.presence')
 
@@ -43,7 +44,7 @@ class BasePresence:
         properties.id = stanza.getID()
         properties.status = stanza.getStatus()
 
-        if properties.type == 'error':
+        if properties.type == PresenceType.ERROR:
             properties.error_code = stanza.getErrorCode()
             properties.error_message = stanza.getErrorMsg()
 
@@ -73,19 +74,19 @@ class BasePresence:
 
     def _parse_type(self, stanza):
         type_ = stanza.getType()
-        if type_ is None:
-            return
-
-        if type_ not in presence_types:
+        try:
+            return PresenceType(type_)
+        except ValueError:
             log.warning('Presence with invalid type received')
             log.warning(stanza)
             self._client.send(Error(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
-        return type_
 
     @staticmethod
     def _parse_show(stanza):
         show = stanza.getShow()
-        if show not in ('chat', 'away', 'xa', 'dnd'):
-            return
-        return show
+        try:
+            return PresenceShow(show)
+        except ValueError:
+            log.warning('Presence with invalid show')
+            log.warning(stanza)

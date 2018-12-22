@@ -496,15 +496,6 @@ _status_conditions = {
     'removed-shutdown': 332,
 }
 
-presence_types = [
-    'error',
-    'probe',
-    'subscribe',
-    'subscribed',
-    'unavailable',
-    'unsubscribe',
-    'unsubscribed'
-]
 
 STREAM_NOT_AUTHORIZED = 'urn:ietf:params:xml:ns:xmpp-streams not-authorized'
 STREAM_REMOTE_CONNECTION_FAILED = 'urn:ietf:params:xml:ns:xmpp-streams remote-connection-failed'

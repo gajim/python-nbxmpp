@@ -19,6 +19,7 @@ import logging
 
 from nbxmpp.protocol import NS_NICK
 from nbxmpp.util import StanzaHandler
+from nbxmpp.const import PresenceType
 
 log = logging.getLogger('nbxmpp.m.nickname')
 
@@ -45,7 +46,8 @@ class Nickname:
             # the nickname MUST NOT be included in presence broadcasts
             # (i.e., <presence/> stanzas with no 'type' attribute or
             # of type "unavailable").
-            if properties.type in (None, 'unavailable'):
+            if properties.type in (PresenceType.AVAILABLE,
+                                   PresenceType.UNAVAILABLE):
                 return
             properties.nickname = self._parse_nickname(stanza)
 
