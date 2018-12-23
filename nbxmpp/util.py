@@ -70,6 +70,8 @@ class MessageProperties:
         self.http_auth = None
         self.nickname = None
         self.from_muc = False
+        self.muc_status_codes = None
+        self.muc_private_message = False
 
     @property
     def is_http_auth(self):
@@ -80,6 +82,14 @@ class MessageProperties:
         return (self.from_muc and
                 self.body is None and
                 self.subject is not None)
+
+    @property
+    def is_muc_config_change(self):
+        return self.body is None and self.muc_status_codes
+
+    @property
+    def is_muc_pm(self):
+        return self.muc_private_message
 
 
 class IqProperties:

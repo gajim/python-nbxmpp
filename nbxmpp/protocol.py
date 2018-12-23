@@ -760,6 +760,10 @@ class JID:
         """
         return self.__str__(0)
 
+    @property
+    def isBare(self):
+        return self.node and self.domain and not self.resource
+
     def __eq__(self, other):
         """
         Compare the JID to another instance or to string for equality

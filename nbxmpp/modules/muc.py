@@ -20,6 +20,8 @@ import logging
 from nbxmpp.protocol import NS_MUC_USER
 from nbxmpp.protocol import NS_MUC
 from nbxmpp.util import StanzaHandler
+from nbxmpp.const import MessageType
+from nbxmpp.const import StatusCode
 
 log = logging.getLogger('nbxmpp.m.presence')
 
@@ -40,6 +42,10 @@ class MUC:
                           callback=self._process_groupchat_message,
                           typ='groupchat',
                           priority=11),
+            StanzaHandler(name='message',
+                          callback=self._process_message,
+                          ns=NS_MUC_USER,
+                          priority=11),
         ]
 
     def _process_muc_presence(self, _con, stanza, properties):
@@ -56,3 +62,44 @@ class MUC:
 
     def _process_groupchat_message(self, _con, stanza, properties):
         properties.from_muc = True
+
+    def _process_message(self, _con, stanza, properties):
+        muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
+        if muc_user is None:
+            return
+
+        if properties.type == MessageType.CHAT:
+            properties.muc_private_message = True
+            return
+
+        if not properties.jid.isBare:
+            return
+
+        properties.from_muc = True
+
+        # https://xmpp.org/extensions/xep-0045.html#registrar-statuscodes
+        message_status_codes = [
+            StatusCode.SHOWING_UNAVAILABLE,
+            StatusCode.NOT_SHOWING_UNAVAILABLE,
+            StatusCode.CONFIG_NON_PRIVACY_RELATED,
+            StatusCode.CONFIG_ROOM_LOGGING,
+            StatusCode.CONFIG_NO_ROOM_LOGGING,
+            StatusCode.CONFIG_NON_ANONYMOUS,
+            StatusCode.CONFIG_SEMI_ANONYMOUS,
+            StatusCode.CONFIG_FULL_ANONYMOUS
+        ]
+
+        codes = set()
+        for status in muc_user.getTags('status'):
+            try:
+                code = StatusCode(status.getAttr('code'))
+            except ValueError:
+                log.warning('Received invalid status code: %s',
+                            status.getAttr('code'))
+                log.warning(stanza)
+                continue
+            if code in message_status_codes:
+                codes.add(code)
+
+        if codes:
+            properties.muc_status_codes = codes
