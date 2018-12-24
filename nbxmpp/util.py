@@ -79,7 +79,7 @@ class MessageProperties:
 
     @property
     def is_muc_subject(self):
-        return (self.from_muc and
+        return (self.type == MessageType.GROUPCHAT and
                 self.body is None and
                 self.subject is not None)
 
