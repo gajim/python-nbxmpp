@@ -46,6 +46,7 @@ from nbxmpp.modules.http_auth import HTTPAuth
 from nbxmpp.modules.presence import BasePresence
 from nbxmpp.modules.message import BaseMessage
 from nbxmpp.modules.nickname import Nickname
+from nbxmpp.modules.delay import Delay
 from nbxmpp.modules.muc import MUC
 from nbxmpp.misc import unwrap_carbon
 from nbxmpp.util import get_properties_struct
@@ -158,6 +159,7 @@ class XMPPDispatcher(PlugIn):
         self._modules['HTTPAuth'] = HTTPAuth(self._owner)
         self._modules['Nickname'] = Nickname(self._owner)
         self._modules['MUC'] = MUC(self._owner)
+        self._modules['Delay'] = Delay(self._owner)
 
         for instance in self._modules.values():
             for handler in instance.handlers:

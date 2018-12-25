@@ -18,6 +18,7 @@
 import logging
 import socket
 import base64
+import time
 from collections import namedtuple
 
 import precis_i18n.codec
@@ -64,12 +65,15 @@ class MessageProperties:
         self.subject = None
         self.body = None
         self.thread = None
+        self.user_timestamp = None
+        self.timestamp = time.time()
         self.error_code = None
         self.error_message = None
         self.eme = None
         self.http_auth = None
         self.nickname = None
         self.from_muc = False
+        self.muc_nickname = None
         self.muc_status_codes = None
         self.muc_private_message = False
 

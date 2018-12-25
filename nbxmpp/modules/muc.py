@@ -60,8 +60,9 @@ class MUC:
             return
         properties.from_muc = True
 
-    def _process_groupchat_message(self, _con, stanza, properties):
+    def _process_groupchat_message(self, _con, _stanza, properties):
         properties.from_muc = True
+        properties.muc_nickname = properties.jid.getResource() or None
 
     def _process_message(self, _con, stanza, properties):
         muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
