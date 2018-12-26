@@ -18,7 +18,7 @@
 import logging
 
 from nbxmpp.protocol import NodeProcessed
-from nbxmpp.util import StanzaHandler
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import MessageType
 
 log = logging.getLogger('nbxmpp.m.message')

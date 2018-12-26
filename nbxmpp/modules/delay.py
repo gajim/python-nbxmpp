@@ -18,7 +18,7 @@
 import logging
 
 from nbxmpp.protocol import NS_DELAY2
-from nbxmpp.util import StanzaHandler
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.modules.date_and_time import parse_datetime
 
 log = logging.getLogger('nbxmpp.m.delay')

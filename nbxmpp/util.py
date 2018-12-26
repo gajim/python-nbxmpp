@@ -18,20 +18,18 @@
 import logging
 import socket
 import base64
-import time
-from collections import namedtuple
 
 import precis_i18n.codec
 
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import InvalidJid
 from nbxmpp.stringprepare import nameprep
-from nbxmpp.const import MessageType
+from nbxmpp.structs import Properties
+from nbxmpp.structs import IqProperties
+from nbxmpp.structs import MessageProperties
+from nbxmpp.structs import PresenceProperties
 
 log = logging.getLogger('nbxmpp.util')
-
-StanzaHandler = namedtuple('StanzaHandler', 'name callback typ ns xmlns system priority')
-StanzaHandler.__new__.__defaults__ = ('', '', None, False, 50)
 
 
 def b64decode(data, return_type=str):
@@ -50,75 +48,6 @@ def b64encode(data, return_type=str):
     if return_type == bytes:
         return result
     return result.decode()
-
-
-class Properties:
-    pass
-
-
-class MessageProperties:
-    def __init__(self):
-        self.carbon_type = None
-        self.type = MessageType.NORMAL
-        self.id = None
-        self.jid = None
-        self.subject = None
-        self.body = None
-        self.thread = None
-        self.user_timestamp = None
-        self.timestamp = time.time()
-        self.error_code = None
-        self.error_message = None
-        self.eme = None
-        self.http_auth = None
-        self.nickname = None
-        self.from_muc = False
-        self.muc_nickname = None
-        self.muc_status_codes = None
-        self.muc_private_message = False
-
-    @property
-    def is_http_auth(self):
-        return self.http_auth is not None
-
-    @property
-    def is_muc_subject(self):
-        return (self.type == MessageType.GROUPCHAT and
-                self.body is None and
-                self.subject is not None)
-
-    @property
-    def is_muc_config_change(self):
-        return self.body is None and self.muc_status_codes
-
-    @property
-    def is_muc_pm(self):
-        return self.muc_private_message
-
-
-class IqProperties:
-    def __init__(self):
-        self.http_auth = None
-
-    @property
-    def is_http_auth(self):
-        return self.http_auth is not None
-
-
-class PresenceProperties:
-    def __init__(self):
-        self.type = None
-        self.priority = None
-        self.show = None
-        self.jid = None
-        self.resource = None
-        self.id = None
-        self.nickname = None
-        self.self_presence = False
-        self.from_muc = False
-        self.status = ''
-        self.error_message = ''
-        self.error_code = ''
 
 
 def get_properties_struct(name):

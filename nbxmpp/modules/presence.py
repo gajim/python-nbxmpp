@@ -20,7 +20,7 @@ import logging
 from nbxmpp.protocol import Error
 from nbxmpp.protocol import ERR_BAD_REQUEST
 from nbxmpp.protocol import NodeProcessed
-from nbxmpp.util import StanzaHandler
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import PresenceType
 from nbxmpp.const import PresenceShow
 

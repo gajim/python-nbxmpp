@@ -94,3 +94,8 @@ class StatusCode(Enum):
     REMOVED_NONMEMBER_IN_MEMBERS_ONLY = '322'
     REMOVED_SERVICE_SHUTDOWN = '332'
     REMOVED_ERROR = '333'
+
+
+class InviteType(Enum):
+    MEDIATED = 'mediated'
+    DIRECT = 'direct'

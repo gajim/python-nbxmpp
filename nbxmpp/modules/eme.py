@@ -18,7 +18,7 @@
 import logging
 
 from nbxmpp.protocol import NS_EME
-from nbxmpp.util import StanzaHandler
+from nbxmpp.structs import StanzaHandler
 
 log = logging.getLogger('nbxmpp.m.eme')
 
