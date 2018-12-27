@@ -29,12 +29,16 @@ class Delay:
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
-                          callback=self._process_delay,
+                          callback=self._process_message_delay,
+                          ns=NS_DELAY2,
+                          priority=15),
+            StanzaHandler(name='presence',
+                          callback=self._process_presence_delay,
                           ns=NS_DELAY2,
                           priority=15)
         ]
 
-    def _process_delay(self, _con, stanza, properties):
+    def _process_message_delay(self, _con, stanza, properties):
         if properties.is_muc_subject:
             # MUC Subjects can have a delay timestamp
             # to indicate when the user has set the subject,
@@ -50,6 +54,10 @@ class Delay:
                 properties.timestamp = timestamp
 
             properties.user_timestamp = parse_delay(stanza, not_from=[jid])
+
+    @staticmethod
+    def _process_presence_delay(_con, stanza, properties):
+        properties.user_timestamp = parse_delay(stanza)
 
 
 def parse_delay(stanza, epoch=True, convert='utc', from_=None, not_from=None):

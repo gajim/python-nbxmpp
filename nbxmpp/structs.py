@@ -118,6 +118,8 @@ class PresenceProperties:
         self.self_presence = False
         self.from_muc = False
         self.status = ''
+        self.timestamp = time.time()
+        self.user_timestamp = None
         self.idle_timestamp = None
         self.signed = None
         self.error_message = ''
