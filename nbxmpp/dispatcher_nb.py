@@ -48,6 +48,7 @@ from nbxmpp.modules.message import BaseMessage
 from nbxmpp.modules.nickname import Nickname
 from nbxmpp.modules.delay import Delay
 from nbxmpp.modules.muc import MUC
+from nbxmpp.modules.idle import Idle
 from nbxmpp.modules.captcha import Captcha
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.util import get_properties_struct
@@ -165,6 +166,7 @@ class XMPPDispatcher(PlugIn):
         self._modules['MUC'] = MUC(self._owner)
         self._modules['Delay'] = Delay(self._owner)
         self._modules['Captcha'] = Captcha(self._owner)
+        self._modules['Idle'] = Idle(self._owner)
 
         for instance in self._modules.values():
             for handler in instance.handlers:

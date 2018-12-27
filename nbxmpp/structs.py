@@ -118,6 +118,7 @@ class PresenceProperties:
         self.self_presence = False
         self.from_muc = False
         self.status = ''
+        self.idle_timestamp = None
         self.error_message = ''
         self.error_code = ''
 
