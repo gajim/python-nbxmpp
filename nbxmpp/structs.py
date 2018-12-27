@@ -29,6 +29,10 @@ InviteData = namedtuple('InviteData',
 
 DeclineData = namedtuple('DeclineData', 'muc from_ reason')
 
+CaptchaData = namedtuple('CaptchaData', 'form bob_data')
+
+BobData = namedtuple('BobData', 'algo hash_ max_age data cid type')
+
 
 class Properties:
     pass
@@ -56,6 +60,7 @@ class MessageProperties:
         self.muc_private_message = False
         self.muc_invite = None
         self.muc_decline = None
+        self.captcha = None
 
     @property
     def is_http_auth(self):
@@ -79,6 +84,10 @@ class MessageProperties:
     def is_muc_invite_or_decline(self):
         return (self.muc_invite is not None or
                 self.muc_decline is not None)
+
+    @property
+    def is_captcha_challenge(self):
+        return self.captcha is not None
 
 
 class IqProperties:

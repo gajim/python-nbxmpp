@@ -24,7 +24,8 @@ from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import InvalidFrom
 from nbxmpp.protocol import Message
 
-log = logging.getLogger('nbxmpp.misc')
+
+log = logging.getLogger('nbxmpp.m.misc')
 
 
 def unwrap_carbon(stanza, own_jid):
