@@ -18,6 +18,8 @@
 import logging
 import socket
 import base64
+import weakref
+from functools import wraps
 
 import precis_i18n.codec
 
@@ -62,9 +64,9 @@ def get_properties_struct(name):
 
 def validate_jid(jid_string):
     jid = JID(jid_string)
-    return prep(jid.getNode(),
-                jid.getDomain(),
-                jid.getResource())
+    return prep(jid.getNode() or None,
+                jid.getDomain() or None,
+                jid.getResource() or None)
 
 
 def prep(user, server, resource):
@@ -129,3 +131,39 @@ def prep(user, server, resource):
     if resource:
         return '%s/%s' % (server, resource)
     return server
+
+
+def call_on_response(cb):
+    def response_decorator(func):
+        @wraps(func)
+        def func_wrapper(self, *args, **kwargs):
+            callback_ = kwargs.pop('callback', None)
+
+            stanza = func(self, *args, **kwargs)
+            if isinstance(stanza, tuple):
+                stanza, attrs = stanza
+            else:
+                stanza, attrs = stanza, {}
+
+            if callback_ is not None:
+                attrs['callback'] = weakref.WeakMethod(callback_)
+
+            self._client.SendAndCallForResponse(stanza,
+                                                getattr(self, cb),
+                                                attrs)
+        return func_wrapper
+    return response_decorator
+
+
+def callback(func):
+    @wraps(func)
+    def func_wrapper(self, _con, stanza, **kwargs):
+        cb = kwargs.pop('callback', None)
+        if cb is None:
+            return
+
+        if cb() is not None:
+            result = func(self, stanza, **kwargs)
+            cb()(result)
+
+    return func_wrapper

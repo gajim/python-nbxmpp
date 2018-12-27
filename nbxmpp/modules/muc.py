@@ -20,15 +20,35 @@ import logging
 from nbxmpp.protocol import NS_MUC_USER
 from nbxmpp.protocol import NS_MUC
 from nbxmpp.protocol import NS_CONFERENCE
+from nbxmpp.protocol import NS_DATA
+from nbxmpp.protocol import NS_MUC_REQUEST
+from nbxmpp.protocol import NS_MUC_ADMIN
+from nbxmpp.protocol import NS_MUC_OWNER
+from nbxmpp.protocol import NS_CAPTCHA
 from nbxmpp.protocol import JID
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import Message
+from nbxmpp.protocol import DataForm
+from nbxmpp.protocol import DataField
+from nbxmpp.protocol import isResultNode
+from nbxmpp.protocol import InvalidJid
+from nbxmpp.simplexml import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import InviteType
 from nbxmpp.const import MessageType
 from nbxmpp.const import StatusCode
 from nbxmpp.structs import DeclineData
 from nbxmpp.structs import InviteData
+from nbxmpp.structs import VoiceRequest
+from nbxmpp.structs import AffiliationResult
+from nbxmpp.structs import CommonResult
+from nbxmpp.structs import MucConfigResult
+from nbxmpp.util import validate_jid
+from nbxmpp.util import call_on_response
+from nbxmpp.util import callback
+from nbxmpp.modules.dataforms import extend_form
 
-log = logging.getLogger('nbxmpp.m.presence')
+log = logging.getLogger('nbxmpp.m.muc')
 
 
 class MUC:
@@ -56,6 +76,10 @@ class MUC:
                           callback=self._process_direct_invite,
                           typ='normal',
                           ns=NS_CONFERENCE,
+                          priority=11),
+            StanzaHandler(name='message',
+                          callback=self._process_voice_request,
+                          ns=NS_DATA,
                           priority=11),
             StanzaHandler(name='message',
                           callback=self._process_message,
@@ -189,3 +213,225 @@ class MUC:
             data['reason'] = decline.getTagData('reason')
             properties.muc_decline = DeclineData(**data)
             return
+
+    @staticmethod
+    def _process_voice_request(_con, stanza, properties):
+        data_form = stanza.getTag('x', namespace=NS_DATA)
+        if data_form is None:
+            return
+
+        data_form = extend_form(data_form)
+        try:
+            if data_form['FORM_TYPE'].value != NS_MUC_REQUEST:
+                return
+        except KeyError:
+            return
+
+        properties.voice_request = VoiceRequest(form=data_form)
+
+    @call_on_response('_affiliation_received')
+    def get_affiliation(self, jid, affiliation):
+        iq = Iq(typ='get', to=jid, queryNS=NS_MUC_ADMIN)
+        item = iq.setQuery().setTag('item')
+        item.setAttr('affiliation', affiliation)
+        return iq, {'affiliation': affiliation}
+
+    @callback
+    def _affiliation_received(self, stanza, affiliation):
+        if not isResultNode(stanza):
+            log.info('Affiliation error: %s %s %s',
+                     stanza.getFrom(),
+                     stanza.getError(),
+                     affiliation)
+            return AffiliationResult(jid=stanza.getFrom(),
+                                     affiliation=affiliation,
+                                     error=stanza.getError())
+
+        room_jid = stanza.getFrom()
+        query = stanza.getTag('query', namespace=NS_MUC_ADMIN)
+        items = query.getTags('item')
+        users_dict = {}
+        for item in items:
+            try:
+                jid = validate_jid(item.getAttr('jid'))
+            except InvalidJid as error:
+                log.exception(error)
+                continue
+
+            users_dict[jid] = {}
+            if item.has_attr('nick'):
+                users_dict[jid]['nick'] = item.getAttr('nick')
+            if item.has_attr('role'):
+                users_dict[jid]['role'] = item.getAttr('role')
+            reason = item.getTagData('reason')
+            if reason:
+                users_dict[jid]['reason'] = reason
+
+        log.info('%s affiliations received from %s: %s',
+                 affiliation, room_jid, users_dict)
+
+        return AffiliationResult(jid=room_jid,
+                                 affiliation=affiliation,
+                                 users=users_dict)
+
+    @call_on_response('_default_response')
+    def destroy(self, room_jid, reason='', jid=''):
+        iq = Iq(typ='set', queryNS=NS_MUC_OWNER, to=room_jid)
+        destroy = iq.setQuery().setTag('destroy')
+        if reason:
+            destroy.setTagData('reason', reason)
+        if jid:
+            destroy.setAttr('jid', jid)
+        log.info('Destroy room: %s, reason: %s, alternate: %s',
+                 room_jid, reason, jid)
+        return iq
+
+    @call_on_response('_default_response')
+    def set_config(self, room_jid, form):
+        iq = Iq(typ='set', to=room_jid, queryNS=NS_MUC_OWNER)
+        query = iq.setQuery()
+        form.setAttr('type', 'submit')
+        query.addChild(node=form)
+        log.info('Set config for %s', room_jid)
+        return iq
+
+    @call_on_response('_config_received')
+    def request_config(self, room_jid, lang):
+        iq = Iq(typ='get',
+                queryNS=NS_MUC_OWNER,
+                to=room_jid)
+        iq.setAttr('xml:lang', lang)
+        log.info('Request config for %s', room_jid)
+        return iq
+
+    @callback
+    def _config_received(self, stanza):
+        if not isResultNode(stanza):
+            log.info('Error: %s', stanza.getError())
+            return MucConfigResult(jid=stanza.getFrom(),
+                                   error=stanza.getError())
+
+        jid = stanza.getFrom()
+        payload = stanza.getQueryPayload()
+
+        for form in payload:
+            if form.getNamespace() == NS_DATA:
+                dataform = extend_form(node=form)
+                log.info('Config form received for %s', jid)
+                return MucConfigResult(jid=jid,
+                                       form=dataform)
+        return MucConfigResult(jid=jid)
+
+    @call_on_response('_default_response')
+    def cancel_config(self, room_jid):
+        cancel = Node(tag='x', attrs={'xmlns': NS_DATA, 'type': 'cancel'})
+        iq = Iq(typ='set',
+                queryNS=NS_MUC_OWNER,
+                payload=cancel,
+                to=room_jid)
+        log.info('Cancel config for %s', room_jid)
+        return iq
+
+    @call_on_response('_default_response')
+    def set_affiliation(self, room_jid, users_dict):
+        iq = Iq(typ='set', to=room_jid, queryNS=NS_MUC_ADMIN)
+        item = iq.setQuery()
+        for jid in users_dict:
+            affiliation = users_dict[jid].get('affiliation')
+            reason = users_dict[jid].get('reason')
+            nick = users_dict[jid].get('nick')
+            item_tag = item.addChild('item', {'jid': jid,
+                                              'affiliation': affiliation})
+            if reason is not None:
+                item_tag.setTagData('reason', reason)
+
+            if nick is not None:
+                item_tag.setAttr('nick', nick)
+        log.info('Set affiliation for %s: %s', room_jid, users_dict)
+        return iq
+
+    @call_on_response('_default_response')
+    def set_role(self, room_jid, nick, role, reason=''):
+        iq = Iq(typ='set', to=room_jid, queryNS=NS_MUC_ADMIN)
+        item = iq.setQuery().setTag('item')
+        item.setAttr('nick', nick)
+        item.setAttr('role', role)
+        if reason:
+            item.addChild(name='reason', payload=reason)
+        log.info('Set role for %s: %s %s %s', room_jid, nick, role, reason)
+        return iq
+
+    def set_subject(self, room_jid, subject):
+        message = Message(room_jid, typ='groupchat', subject=subject)
+        log.info('Set subject for %s', room_jid)
+        self._client.send(message)
+
+    def decline(self, room, to, reason=None):
+        message = Message(to=room)
+        muc_user = message.addChild('x', namespace=NS_MUC_USER)
+        decline = muc_user.addChild('decline', attrs={'to': to})
+        if reason:
+            decline.setTagData('reason', reason)
+        self._client.send(message)
+
+    def request_voice(self, room):
+        message = Message(to=room)
+        xdata = DataForm(typ='submit')
+        xdata.addChild(node=DataField(name='FORM_TYPE',
+                                      value=NS_MUC_REQUEST))
+        xdata.addChild(node=DataField(name='muc#role',
+                                      value='participant',
+                                      typ='text-single'))
+        message.addChild(node=xdata)
+        self._client.send(message)
+
+    def invite(self, room, to, password, reason=None, continue_=False,
+               type_=InviteType.MEDIATED):
+        if type_ == InviteType.DIRECT:
+            invite = self._build_direct_invite(
+                room, to, reason, password, continue_)
+        else:
+            invite = self._build_mediated_invite(
+                room, to, reason, password, continue_)
+        self._client.send(invite)
+
+    @staticmethod
+    def _build_direct_invite(room, to, reason, password, continue_):
+        message = Message(to=to)
+        attrs = {'jid': room}
+        if reason:
+            attrs['reason'] = reason
+        if continue_:
+            attrs['continue'] = 'true'
+        if password:
+            attrs['password'] = password
+        message.addChild(name='x', attrs=attrs,
+                         namespace=NS_CONFERENCE)
+        return message
+
+    @staticmethod
+    def _build_mediated_invite(room, to, reason, password, continue_):
+        message = Message(to=room)
+        muc_user = message.addChild('x', namespace=NS_MUC_USER)
+        invite = muc_user.addChild('invite', attrs={'to': to})
+        if continue_:
+            invite.addChild(name='continue')
+        if reason:
+            invite.setTagData('reason', reason)
+        if password:
+            muc_user.setTagData('password', password)
+        return message
+
+    def send_captcha(self, room_jid, form_node):
+        iq = Iq(typ='set', to=room_jid)
+        captcha = iq.addChild(name='captcha', namespace=NS_CAPTCHA)
+        captcha.addChild(node=form_node)
+        self._client.send(iq)
+
+    @callback
+    def _default_response(self, stanza):
+        if not isResultNode(stanza):
+            log.info('Error: %s', stanza.getError())
+            return CommonResult(jid=stanza.getFrom(),
+                                error=stanza.getError())
+        return CommonResult(jid=stanza.getFrom())

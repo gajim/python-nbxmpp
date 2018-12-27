@@ -115,7 +115,7 @@ class XMPPDispatcher(PlugIn):
                 self.RegisterCycleHandler, self.RegisterHandlerOnce,
                 self.UnregisterHandler, self.RegisterProtocol,
                 self.SendAndWaitForResponse, self.SendAndCallForResponse,
-                self.getAnID, self.Event, self.send]
+                self.getAnID, self.Event, self.send, self.get_module]
 
         # \ufddo -> \ufdef range
         c = '\ufdd0'
@@ -152,6 +152,9 @@ class XMPPDispatcher(PlugIn):
         Dispatcher replugins.
         """
         self.handlers = handlers
+
+    def get_module(self, name):
+        return self._modules[name]
 
     def _register_modules(self):
         self._modules['BasePresence'] = BasePresence(self._owner)

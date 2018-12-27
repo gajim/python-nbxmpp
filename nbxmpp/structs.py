@@ -33,6 +33,8 @@ CaptchaData = namedtuple('CaptchaData', 'form bob_data')
 
 BobData = namedtuple('BobData', 'algo hash_ max_age data cid type')
 
+VoiceRequest = namedtuple('VoiceRequest', 'form')
+
 
 class Properties:
     pass
@@ -61,6 +63,7 @@ class MessageProperties:
         self.muc_invite = None
         self.muc_decline = None
         self.captcha = None
+        self.voice_request = None
 
     @property
     def is_http_auth(self):
@@ -89,6 +92,10 @@ class MessageProperties:
     def is_captcha_challenge(self):
         return self.captcha is not None
 
+    @property
+    def is_voice_request(self):
+        return self.voice_request is not None
+
 
 class IqProperties:
     def __init__(self):
@@ -113,3 +120,27 @@ class PresenceProperties:
         self.status = ''
         self.error_message = ''
         self.error_code = ''
+
+
+class BaseResult:
+    @property
+    def is_error(self):
+        return self.error is not None
+
+
+class CommonResult(BaseResult, namedtuple('CommonResult', 'jid error')):
+    pass
+
+CommonResult.__new__.__defaults__ = (None,)
+
+class AffiliationResult(BaseResult, namedtuple('AffiliationResult',
+                                               'jid affiliation users error')):
+    pass
+
+AffiliationResult.__new__.__defaults__ = (None, None)
+
+class MucConfigResult(BaseResult, namedtuple('MucConfigResult',
+                                             'jid form error')):
+    pass
+
+MucConfigResult.__new__.__defaults__ = (None, None)
