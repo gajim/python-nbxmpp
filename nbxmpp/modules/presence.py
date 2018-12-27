@@ -65,7 +65,7 @@ class BasePresence:
             log.warning(stanza)
             return 0
 
-        if priority not in range(-128, 127):
+        if priority not in range(-129, 128):
             log.warning('Invalid priority value: %s', priority)
             log.warning(stanza)
             return 0
