@@ -1,4 +1,4 @@
-# Copyright (C) 2018 Philipp Horist <philipp AT hoerist.com>
+# Copyright (C) 2018 Philipp Hörist <philipp AT hoerist.com>
 #
 # This file is part of nbxmpp.
 #
