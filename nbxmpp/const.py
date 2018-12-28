@@ -99,3 +99,10 @@ class StatusCode(Enum):
 class InviteType(Enum):
     MEDIATED = 'mediated'
     DIRECT = 'direct'
+
+
+class AvatarState(Enum):
+    IGNORE = 'ignore'
+    NOT_READY = 'not ready'
+    EMPTY = 'empty'
+    ADVERTISED = 'advertised'

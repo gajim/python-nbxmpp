@@ -19,6 +19,7 @@ import time
 from collections import namedtuple
 
 from nbxmpp.const import MessageType
+from nbxmpp.const import AvatarState
 
 StanzaHandler = namedtuple('StanzaHandler',
                            'name callback typ ns xmlns system priority')
@@ -124,6 +125,8 @@ class PresenceProperties:
         self.signed = None
         self.error_message = ''
         self.error_code = ''
+        self.avatar_sha = None
+        self.avatar_state = AvatarState.IGNORE
 
 
 class BaseResult:
