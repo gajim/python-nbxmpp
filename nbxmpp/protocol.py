@@ -979,6 +979,12 @@ class Protocol(Node):
         """
         return self.getTagAttr('error', 'code')
 
+    def getErrorType(self):
+        """
+        Return the error code. Obsolete.
+        """
+        return self.getTagAttr('error', 'type')
+
     def getStatusConditions(self, as_code=False):
         """
         Return the status conditions list as defined in XEP-0306.

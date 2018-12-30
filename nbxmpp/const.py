@@ -65,9 +65,17 @@ class PresenceType(Enum):
     UNSUBSCRIBED = 'unsubscribed'
     ERROR = 'error'
 
+    @property
+    def is_available(self):
+        return self == PresenceType.AVAILABLE
+
+    @property
+    def is_unavailable(self):
+        return self == PresenceType.UNAVAILABLE
+
 
 class PresenceShow(Enum):
-    ONLINE = None
+    ONLINE = 'online'
     CHAT = 'chat'
     AWAY = 'away'
     XA = 'xa'
@@ -87,6 +95,7 @@ class StatusCode(Enum):
     CONFIG_SEMI_ANONYMOUS = '173'
     CONFIG_FULL_ANONYMOUS = '174'
     CREATED = '201'
+    NICKNAME_MODIFIED = '210'
     REMOVED_BANNED = '301'
     NICKNAME_CHANGE = '303'
     REMOVED_KICKED = '307'
@@ -106,3 +115,79 @@ class AvatarState(Enum):
     NOT_READY = 'not ready'
     EMPTY = 'empty'
     ADVERTISED = 'advertised'
+
+
+class Affiliation(Enum):
+    OWNER = 'owner'
+    ADMIN = 'admin'
+    MEMBER = 'member'
+    OUTCAST = 'outcast'
+    NONE = 'none'
+
+    @property
+    def is_owner(self):
+        return self == Affiliation.OWNER
+
+    @property
+    def is_admin(self):
+        return self == Affiliation.ADMIN
+
+    @property
+    def is_member(self):
+        return self == Affiliation.MEMBER
+
+    @property
+    def is_outcast(self):
+        return self == Affiliation.OUTCAST
+
+    @property
+    def is_none(self):
+        return self == Affiliation.NONE
+
+
+class Role(Enum):
+    MODERATOR = 'moderator'
+    PARTICIPANT = 'participant'
+    VISITOR = 'visitor'
+    NONE = 'none'
+
+    @property
+    def is_moderator(self):
+        return self == Role.MODERATOR
+
+    @property
+    def is_participant(self):
+        return self == Role.PARTICIPANT
+
+    @property
+    def is_visitor(self):
+        return self == Role.VISITOR
+
+    @property
+    def is_none(self):
+        return self == Role.NONE
+
+
+class Error(Enum):
+    BAD_REQUEST = 'bad-request'
+    CONFLICT = 'conflict'
+    FEATURE_NOT_IMPLEMENTED = 'feature-not-implemented'
+    FORBIDDEN = 'forbidden'
+    GONE = 'gone'
+    INTERNAL_SERVER_ERROR = 'internal-server-error'
+    ITEM_NOT_FOUND = 'item-not-found'
+    JID_MALFORMED = 'jid-malformed'
+    NOT_ACCEPTABLE = 'not-acceptable'
+    NOT_ALLOWED = 'not-allowed'
+    NOT_AUTHORIZED = 'not-authorized'
+    PAYMENT_REQUIRED = 'payment-required'
+    RECIPIENT_UNAVAILABLE = 'recipient-unavailable'
+    REDIRECT = 'redirect'
+    REGISTRATION_REQUIRED = 'registration-required'
+    REMOTE_SERVER_NOT_FOUND = 'remote-server-not-found'
+    REMOTE_SERVER_TIMEOUT = 'remote-server-timeout'
+    RESOURCE_CONSTRAINT = 'resource-constraint'
+    SERVICE_UNAVAILABLE = 'service-unavailable'
+    SUBSCRIPTION_REQUIRED = 'subscription-required'
+    UNDEFINED_CONDITION = 'undefined-condition'
+    UNEXPECTED_REQUEST = 'unexpected-request'

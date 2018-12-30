@@ -17,10 +17,11 @@
 
 import logging
 
-from nbxmpp.protocol import Error
+from nbxmpp.protocol import Error as ErrorStanza
 from nbxmpp.protocol import ERR_BAD_REQUEST
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
+from nbxmpp.structs import ErrorProperties
 from nbxmpp.const import PresenceType
 from nbxmpp.const import PresenceShow
 
@@ -45,8 +46,7 @@ class BasePresence:
         properties.status = stanza.getStatus()
 
         if properties.type == PresenceType.ERROR:
-            properties.error_code = stanza.getErrorCode()
-            properties.error_message = stanza.getErrorMsg()
+            properties.error = ErrorProperties(stanza)
 
         own_jid = self._client.get_bound_jid()
         if own_jid == stanza.getFrom():
@@ -79,12 +79,14 @@ class BasePresence:
         except ValueError:
             log.warning('Presence with invalid type received')
             log.warning(stanza)
-            self._client.send(Error(stanza, ERR_BAD_REQUEST))
+            self._client.send(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
     @staticmethod
     def _parse_show(stanza):
         show = stanza.getShow()
+        if show is None:
+            return PresenceShow.ONLINE
         try:
             return PresenceShow(show)
         except ValueError:

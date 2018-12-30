@@ -37,12 +37,16 @@ from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import InviteType
 from nbxmpp.const import MessageType
 from nbxmpp.const import StatusCode
+from nbxmpp.const import Affiliation
+from nbxmpp.const import Role
 from nbxmpp.structs import DeclineData
 from nbxmpp.structs import InviteData
 from nbxmpp.structs import VoiceRequest
 from nbxmpp.structs import AffiliationResult
 from nbxmpp.structs import CommonResult
 from nbxmpp.structs import MucConfigResult
+from nbxmpp.structs import MucUserData
+from nbxmpp.structs import MucDestroyed
 from nbxmpp.util import validate_jid
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
@@ -93,13 +97,76 @@ class MUC:
         if muc is None:
             return
         properties.from_muc = True
+        properties.muc_nickname = properties.jid.getResource()
 
     @staticmethod
     def _process_muc_user_presence(_con, stanza, properties):
-        muc = stanza.getTag('x', namespace=NS_MUC_USER)
-        if muc is None:
+        muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
+        if muc_user is None:
             return
         properties.from_muc = True
+
+        destroy = muc_user.getTag('destroy')
+        if destroy is not None:
+            alternate = destroy.getAttr('jid')
+            if alternate is not None:
+                try:
+                    alternate = JID(validate_jid(alternate))
+                except InvalidJid as error:
+                    log.warning('Invalid alternate JID provided')
+                    log.warning(stanza)
+                    alternate = None
+            properties.muc_destroyed = MucDestroyed(
+                alternate=alternate,
+                reason=muc_user.getTagData('reason'),
+                password=muc_user.getTagData('password'))
+            return
+
+        properties.muc_nickname = properties.jid.getResource()
+
+        # https://xmpp.org/extensions/xep-0045.html#registrar-statuscodes
+        message_status_codes = [
+            StatusCode.NON_ANONYMOUS,
+            StatusCode.SELF,
+            StatusCode.CONFIG_ROOM_LOGGING,
+            StatusCode.CREATED,
+            StatusCode.NICKNAME_MODIFIED,
+            StatusCode.REMOVED_BANNED,
+            StatusCode.NICKNAME_CHANGE,
+            StatusCode.REMOVED_KICKED,
+            StatusCode.REMOVED_AFFILIATION_CHANGE,
+            StatusCode.REMOVED_NONMEMBER_IN_MEMBERS_ONLY,
+            StatusCode.REMOVED_SERVICE_SHUTDOWN,
+            StatusCode.REMOVED_ERROR,
+        ]
+
+        codes = set()
+        for status in muc_user.getTags('status'):
+            try:
+                code = StatusCode(status.getAttr('code'))
+            except ValueError:
+                log.warning('Received invalid status code: %s',
+                            status.getAttr('code'))
+                log.warning(stanza)
+                continue
+            if code in message_status_codes:
+                codes.add(code)
+
+        if codes:
+            properties.muc_status_codes = codes
+
+        item = muc_user.getTag('item')
+        if item is not None:
+            item_dict = item.getAttrs()
+            if 'role' in item_dict:
+                item_dict['role'] = Role(item_dict['role'])
+            if 'affiliation' in item_dict:
+                item_dict['affiliation'] = Affiliation(item_dict['affiliation'])
+            if 'jid' in item_dict:
+                item_dict['jid'] = JID(item_dict['jid'])
+            item_dict['actor'] = item.getTagAttr('actor', 'nick')
+            item_dict['reason'] = item.getTagData('reason')
+            properties.muc_user = MucUserData(**item_dict)
 
     @staticmethod
     def _process_groupchat_message(_con, _stanza, properties):

@@ -18,8 +18,13 @@
 import time
 from collections import namedtuple
 
+from nbxmpp.protocol import JID
+from nbxmpp.protocol import NS_STANZAS
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
+from nbxmpp.const import StatusCode
+from nbxmpp.const import PresenceType
+from nbxmpp.const import Error
 
 StanzaHandler = namedtuple('StanzaHandler',
                            'name callback typ ns xmlns system priority')
@@ -36,6 +41,11 @@ BobData = namedtuple('BobData', 'algo hash_ max_age data cid type')
 
 VoiceRequest = namedtuple('VoiceRequest', 'form')
 
+MucUserData = namedtuple('MucUserData', 'affiliation jid nick role actor reason')
+MucUserData.__new__.__defaults__ = (None, None, None, None, None)
+
+MucDestroyed = namedtuple('MucDestroyed', 'alternate reason password')
+MucDestroyed.__new__.__defaults__ = (None, None, None)
 
 class Properties:
     pass
@@ -123,10 +133,94 @@ class PresenceProperties:
         self.user_timestamp = None
         self.idle_timestamp = None
         self.signed = None
-        self.error_message = ''
-        self.error_code = ''
+        self.error = None
         self.avatar_sha = None
         self.avatar_state = AvatarState.IGNORE
+        self.muc_status_codes = None
+        self.muc_user = None
+        self.muc_nickname = None
+        self.muc_destroyed = None
+
+    @property
+    def is_muc_destroyed(self):
+        return self.muc_destroyed is not None
+
+    @property
+    def is_muc_self_presence(self):
+        return (self.from_muc and
+                self.muc_status_codes is not None and
+                StatusCode.SELF in self.muc_status_codes)
+
+    @property
+    def is_nickname_changed(self):
+        return (self.from_muc and
+                self.muc_status_codes is not None and
+                self.muc_user.nick is not None and
+                StatusCode.NICKNAME_CHANGE in self.muc_status_codes and
+                self.type == PresenceType.UNAVAILABLE)
+
+    @property
+    def new_jid(self):
+        if not self.is_nickname_changed:
+            raise ValueError('This is not a nickname change')
+        jid = JID(self.jid)
+        jid.setResource(self.muc_user.nick)
+        return jid
+
+    @property
+    def is_kicked(self):
+        status_codes = {
+            StatusCode.REMOVED_BANNED,
+            StatusCode.REMOVED_KICKED,
+            StatusCode.REMOVED_AFFILIATION_CHANGE,
+            StatusCode.REMOVED_NONMEMBER_IN_MEMBERS_ONLY,
+            StatusCode.REMOVED_ERROR
+        }
+        return (self.from_muc and
+                self.muc_status_codes is not None and
+                status_codes.intersection(self.muc_status_codes) and
+                self.type == PresenceType.UNAVAILABLE)
+
+    @property
+    def is_muc_shutdown(self):
+        return (self.from_muc and
+                self.muc_status_codes is not None and
+                StatusCode.REMOVED_SERVICE_SHUTDOWN in self.muc_status_codes)
+
+    @property
+    def is_new_room(self):
+        status_codes = {
+            StatusCode.CREATED,
+            StatusCode.SELF
+        }
+        return (self.from_muc and
+                self.muc_status_codes is not None and
+                status_codes.issubset(self.muc_status_codes))
+
+    @property
+    def affiliation(self):
+        try:
+            return self.muc_user.affiliation
+        except Exception:
+            return None
+
+    @property
+    def role(self):
+        try:
+            return self.muc_user.role
+        except Exception:
+            return None
+
+
+class ErrorProperties:
+    def __init__(self, stanza):
+        for child in stanza.getTag('error').getChildren():
+            if child.getNamespace() == NS_STANZAS:
+                self.type = Error(child.name)
+                break
+        self.legacy_code = stanza.getErrorCode()
+        self.legacy_type = stanza.getErrorType()
+        self.message = stanza.getErrorMsg()
 
 
 class BaseResult:
