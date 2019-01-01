@@ -73,6 +73,30 @@ class PresenceType(Enum):
     def is_unavailable(self):
         return self == PresenceType.UNAVAILABLE
 
+    @property
+    def is_error(self):
+        return self == PresenceType.ERROR
+
+    @property
+    def is_probe(self):
+        return self == PresenceType.PROBE
+
+    @property
+    def is_unsubscribe(self):
+        return self == PresenceType.UNSUBSCRIBE
+
+    @property
+    def is_unsubscribed(self):
+        return self == PresenceType.UNSUBSCRIBED
+
+    @property
+    def is_subscribe(self):
+        return self == PresenceType.SUBSCRIBE
+
+    @property
+    def is_subscribed(self):
+        return self == PresenceType.SUBSCRIBED
+
 
 class PresenceShow(Enum):
     ONLINE = 'online'
@@ -80,6 +104,26 @@ class PresenceShow(Enum):
     AWAY = 'away'
     XA = 'xa'
     DND = 'dnd'
+
+    @property
+    def is_online(self):
+        return self == PresenceShow.ONLINE
+
+    @property
+    def is_chat(self):
+        return self == PresenceShow.CHAT
+
+    @property
+    def is_away(self):
+        return self == PresenceShow.AWAY
+
+    @property
+    def is_xa(self):
+        return self == PresenceShow.XA
+
+    @property
+    def is_dnd(self):
+        return self == PresenceShow.DND
 
 
 class StatusCode(Enum):
