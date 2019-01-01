@@ -47,6 +47,9 @@ MucUserData.__new__.__defaults__ = (None, None, None, None, None)
 MucDestroyed = namedtuple('MucDestroyed', 'alternate reason password')
 MucDestroyed.__new__.__defaults__ = (None, None, None)
 
+EntityCapsData = namedtuple('EntityCapsData', 'hash node ver')
+EntityCapsData.__new__.__defaults__ = (None, None, None)
+
 class Properties:
     pass
 
@@ -140,6 +143,7 @@ class PresenceProperties:
         self.muc_user = None
         self.muc_nickname = None
         self.muc_destroyed = None
+        self.entity_caps = None
 
     @property
     def is_self_presence(self):
