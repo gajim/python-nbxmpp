@@ -222,6 +222,9 @@ class ErrorProperties:
         self.legacy_type = stanza.getErrorType()
         self.message = stanza.getErrorMsg()
 
+    def __str__(self):
+        return '%s %s' % (self.type, self.message)
+
 
 class BaseResult:
     @property
