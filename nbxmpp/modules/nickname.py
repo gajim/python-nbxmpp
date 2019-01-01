@@ -53,7 +53,7 @@ class Nickname:
 
     @staticmethod
     def _parse_nickname(stanza):
-        nickname = stanza.getTagData('nick', namespace=NS_NICK)
-        if not nickname:
+        nickname = stanza.getTag('nick', namespace=NS_NICK)
+        if nickname is None:
             return
-        return nickname
+        return nickname.getData() or None
