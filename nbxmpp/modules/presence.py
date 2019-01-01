@@ -49,8 +49,8 @@ class BasePresence:
             properties.error = ErrorProperties(stanza)
 
         own_jid = self._client.get_bound_jid()
-        if own_jid == stanza.getFrom():
-            properties.self_presence = True
+        properties.self_presence = own_jid == properties.jid
+        properties.self_bare = properties.jid.bareMatch(own_jid)
 
     @staticmethod
     def _parse_priority(stanza):

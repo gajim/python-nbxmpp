@@ -130,6 +130,7 @@ class PresenceProperties:
         self.id = None
         self.nickname = None
         self.self_presence = False
+        self.self_bare = False
         self.from_muc = False
         self.status = ''
         self.timestamp = time.time()
@@ -148,6 +149,10 @@ class PresenceProperties:
     @property
     def is_self_presence(self):
         return self.self_presence
+
+    @property
+    def is_self_bare(self):
+        return self.self_bare
 
     @property
     def is_muc_destroyed(self):
