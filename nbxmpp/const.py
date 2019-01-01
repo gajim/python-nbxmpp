@@ -235,3 +235,5 @@ class Error(Enum):
     SUBSCRIPTION_REQUIRED = 'subscription-required'
     UNDEFINED_CONDITION = 'undefined-condition'
     UNEXPECTED_REQUEST = 'unexpected-request'
+    POLICY_VIOLATION = 'policy-violation'
+    UNKNOWN_ERROR = 'unknown-error'

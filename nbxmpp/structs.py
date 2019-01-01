@@ -224,7 +224,10 @@ class ErrorProperties:
     def __init__(self, stanza):
         for child in stanza.getTag('error').getChildren():
             if child.getNamespace() == NS_STANZAS:
-                self.type = Error(child.name)
+                try:
+                    self.type = Error(child.name)
+                except ValueError:
+                    self.type = Error('unknown-error')
                 break
         self.legacy_code = stanza.getErrorCode()
         self.legacy_type = stanza.getErrorType()
