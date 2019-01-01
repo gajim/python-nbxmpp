@@ -142,6 +142,10 @@ class PresenceProperties:
         self.muc_destroyed = None
 
     @property
+    def is_self_presence(self):
+        return self.self_presence
+
+    @property
     def is_muc_destroyed(self):
         return self.muc_destroyed is not None
 
