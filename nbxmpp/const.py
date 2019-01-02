@@ -280,3 +280,6 @@ class Error(Enum):
     UNEXPECTED_REQUEST = 'unexpected-request'
     POLICY_VIOLATION = 'policy-violation'
     UNKNOWN_ERROR = 'unknown-error'
+
+    def __str__(self):
+        return self.value
