@@ -19,6 +19,7 @@ import logging
 
 from nbxmpp.protocol import NS_HTTP_AUTH
 from nbxmpp.structs import StanzaHandler
+from nbxmpp.structs import HTTPAuthData
 
 log = logging.getLogger('nbxmpp.m.http_auth')
 
@@ -46,5 +47,5 @@ class HTTPAuth:
 
         http_auth = confirm.getAttrs().copy()
         http_auth['body'] = stanza.getTagData('body')
-        properties.http_auth = http_auth
+        properties.http_auth = HTTPAuthData(**http_auth)
         log.info('Found data: %s', http_auth)

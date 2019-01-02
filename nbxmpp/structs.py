@@ -50,6 +50,8 @@ MucDestroyed.__new__.__defaults__ = (None, None, None)
 EntityCapsData = namedtuple('EntityCapsData', 'hash node ver')
 EntityCapsData.__new__.__defaults__ = (None, None, None)
 
+HTTPAuthData = namedtuple('HTTPAuthData', 'id method url body')
+HTTPAuthData.__new__.__defaults__ = (None, None, None, None)
 
 class Properties:
     pass
