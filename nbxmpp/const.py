@@ -47,12 +47,55 @@ class GSSAPIState(IntEnum):
     WRAP = 1
 
 
+class IqType(Enum):
+    GET = 'get'
+    SET = 'set'
+    RESULT = 'result'
+    ERROR = 'error'
+
+    @property
+    def is_get(self):
+        return self == IqType.GET
+
+    @property
+    def is_set(self):
+        return self == IqType.SET
+
+    @property
+    def is_result(self):
+        return self == IqType.RESULT
+
+    @property
+    def is_error(self):
+        return self == IqType.ERROR
+
+
 class MessageType(Enum):
     NORMAL = 'normal'
     CHAT = 'chat'
     GROUPCHAT = 'groupchat'
     HEADLINE = 'headline'
     ERROR = 'error'
+
+    @property
+    def is_normal(self):
+        return self == MessageType.NORMAL
+
+    @property
+    def is_chat(self):
+        return self == MessageType.CHAT
+
+    @property
+    def is_groupchat(self):
+        return self == MessageType.GROUPCHAT
+
+    @property
+    def is_headline(self):
+        return self == MessageType.HEADLINE
+
+    @property
+    def is_error(self):
+        return self == MessageType.ERROR
 
 
 class PresenceType(Enum):

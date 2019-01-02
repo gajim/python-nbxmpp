@@ -17,43 +17,44 @@
 
 import logging
 
+from nbxmpp.protocol import Error as ErrorStanza
+from nbxmpp.protocol import ERR_BAD_REQUEST
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ErrorProperties
-from nbxmpp.const import MessageType
+from nbxmpp.const import IqType
 
-log = logging.getLogger('nbxmpp.m.message')
+log = logging.getLogger('nbxmpp.m.iq')
 
 
-class BaseMessage:
+class BaseIq:
     def __init__(self, client):
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_message_base,
+            StanzaHandler(name='iq',
+                          callback=self._process_iq_base,
                           priority=10),
         ]
 
-    def _process_message_base(self, _con, stanza, properties):
-        properties.type = self._parse_type(stanza)
+    def _process_iq_base(self, _con, stanza, properties):
+        try:
+            properties.type = IqType(stanza.getType())
+        except ValueError:
+            log.warning('Message with invalid type: %s', stanza.getType())
+            log.warning(stanza)
+            self._client.send(ErrorStanza(stanza, ERR_BAD_REQUEST))
+            raise NodeProcessed
+
         properties.jid = stanza.getFrom()
         properties.id = stanza.getID()
-        properties.body = stanza.getBody()
-        properties.thread = stanza.getThread()
-        properties.subject = stanza.getSubject()
+
+        payloads = stanza.getPayload()
+        for payload in payloads:
+            if payload.getName() != 'error':
+                properties.payload = payload
+                break
+
+        properties.query = stanza.getQuery()
 
         if properties.type.is_error:
             properties.error = ErrorProperties(stanza)
-
-    @staticmethod
-    def _parse_type(stanza):
-        type_ = stanza.getType()
-        if type_ is None:
-            return MessageType.NORMAL
-
-        try:
-            return MessageType(type_)
-        except ValueError:
-            log.warning('Message with invalid type: %s', type_)
-            log.warning(stanza)
-            raise NodeProcessed

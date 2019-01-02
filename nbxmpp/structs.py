@@ -50,6 +50,7 @@ MucDestroyed.__new__.__defaults__ = (None, None, None)
 EntityCapsData = namedtuple('EntityCapsData', 'hash node ver')
 EntityCapsData.__new__.__defaults__ = (None, None, None)
 
+
 class Properties:
     pass
 
@@ -65,8 +66,7 @@ class MessageProperties:
         self.thread = None
         self.user_timestamp = None
         self.timestamp = time.time()
-        self.error_code = None
-        self.error_message = None
+        self.error = None
         self.eme = None
         self.http_auth = None
         self.nickname = None
@@ -113,6 +113,12 @@ class MessageProperties:
 
 class IqProperties:
     def __init__(self):
+        self.type = None
+        self.jid = None
+        self.id = None
+        self.error = None
+        self.query = None
+        self.payload = None
         self.http_auth = None
 
     @property

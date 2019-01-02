@@ -45,6 +45,7 @@ from nbxmpp.modules.eme import EME
 from nbxmpp.modules.http_auth import HTTPAuth
 from nbxmpp.modules.presence import BasePresence
 from nbxmpp.modules.message import BaseMessage
+from nbxmpp.modules.iq import BaseIq
 from nbxmpp.modules.nickname import Nickname
 from nbxmpp.modules.delay import Delay
 from nbxmpp.modules.muc import MUC
@@ -163,6 +164,7 @@ class XMPPDispatcher(PlugIn):
     def _register_modules(self):
         self._modules['BasePresence'] = BasePresence(self._owner)
         self._modules['BaseMessage'] = BaseMessage(self._owner)
+        self._modules['BaseIq'] = BaseIq(self._owner)
         self._modules['EME'] = EME(self._owner)
         self._modules['HTTPAuth'] = HTTPAuth(self._owner)
         self._modules['Nickname'] = Nickname(self._owner)

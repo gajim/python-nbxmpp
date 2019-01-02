@@ -45,7 +45,7 @@ class BasePresence:
         properties.id = stanza.getID()
         properties.status = stanza.getStatus()
 
-        if properties.type == PresenceType.ERROR:
+        if properties.type.is_error:
             properties.error = ErrorProperties(stanza)
 
         own_jid = self._client.get_bound_jid()
