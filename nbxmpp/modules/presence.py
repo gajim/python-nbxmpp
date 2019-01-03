@@ -84,11 +84,9 @@ class BasePresence:
 
     @staticmethod
     def _parse_show(stanza):
-        show = stanza.getShow()
-        if show is None:
-            return PresenceShow.ONLINE
         try:
-            return PresenceShow(show)
+            return PresenceShow(stanza.getShow())
         except ValueError:
             log.warning('Presence with invalid show')
             log.warning(stanza)
+            return PresenceShow.ONLINE
