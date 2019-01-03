@@ -41,6 +41,7 @@ class BaseMessage:
         properties.body = stanza.getBody()
         properties.thread = stanza.getThread()
         properties.subject = stanza.getSubject()
+        properties.self_message = self._parse_self_message(stanza, properties)
 
         if properties.type.is_error:
             properties.error = ErrorProperties(stanza)
@@ -57,3 +58,9 @@ class BaseMessage:
             log.warning('Message with invalid type: %s', type_)
             log.warning(stanza)
             raise NodeProcessed
+
+    @staticmethod
+    def _parse_self_message(stanza, properties):
+        if properties.type.is_groupchat:
+            return False
+        return stanza.getFrom().bareMatch(stanza.getTo())

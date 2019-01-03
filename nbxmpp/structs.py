@@ -80,6 +80,7 @@ class MessageProperties:
         self.muc_decline = None
         self.captcha = None
         self.voice_request = None
+        self.self_message = False
 
     @property
     def is_http_auth(self):
@@ -111,6 +112,10 @@ class MessageProperties:
     @property
     def is_voice_request(self):
         return self.voice_request is not None
+
+    @property
+    def is_self_message(self):
+        return self.self_message
 
 
 class IqProperties:
