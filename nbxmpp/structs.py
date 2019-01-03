@@ -53,6 +53,9 @@ EntityCapsData.__new__.__defaults__ = (None, None, None)
 HTTPAuthData = namedtuple('HTTPAuthData', 'id method url body')
 HTTPAuthData.__new__.__defaults__ = (None, None, None, None)
 
+StanzaIDData = namedtuple('StanzaIDData', 'id by')
+StanzaIDData.__new__.__defaults__ = (None, None)
+
 class Properties:
     pass
 
@@ -62,6 +65,7 @@ class MessageProperties:
         self.carbon_type = None
         self.type = MessageType.NORMAL
         self.id = None
+        self.stanza_id = None
         self.jid = None
         self.subject = None
         self.body = None

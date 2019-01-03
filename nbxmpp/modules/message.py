@@ -20,6 +20,7 @@ import logging
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ErrorProperties
+from nbxmpp.structs import StanzaIDData
 from nbxmpp.const import MessageType
 
 log = logging.getLogger('nbxmpp.m.message')
@@ -31,6 +32,9 @@ class BaseMessage:
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_message_base,
+                          priority=5),
+            StanzaHandler(name='message',
+                          callback=self._process_message_after_base,
                           priority=10),
         ]
 
@@ -38,13 +42,22 @@ class BaseMessage:
         properties.type = self._parse_type(stanza)
         properties.jid = stanza.getFrom()
         properties.id = stanza.getID()
-        properties.body = stanza.getBody()
-        properties.thread = stanza.getThread()
-        properties.subject = stanza.getSubject()
         properties.self_message = self._parse_self_message(stanza, properties)
+
+        # Stanza ID
+        id_, by = stanza.getStanzaIDAttrs()
+        properties.stanza_id = StanzaIDData(id=id_, by=by)
 
         if properties.type.is_error:
             properties.error = ErrorProperties(stanza)
+
+    @staticmethod
+    def _process_message_after_base(_con, stanza, properties):
+        # This handler runs after decryption handlers had the chance
+        # to decrypt the body
+        properties.body = stanza.getBody()
+        properties.thread = stanza.getThread()
+        properties.subject = stanza.getSubject()
 
     @staticmethod
     def _parse_type(stanza):
