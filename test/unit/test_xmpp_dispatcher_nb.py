@@ -47,17 +47,17 @@ class TestDispatcherNB(unittest.TestCase):
         self.dispatcher.RegisterHandler('message', _got_message)
 
         # should be able to parse a normal message
-        self.dispatcher.ProcessNonBlocking('<message><body>hello</body></message>')
+        self.dispatcher.ProcessNonBlocking('<message from="test@test.at"><body>hello</body></message>')
         self.assertEqual(1, len(msgs))
 
-        self.dispatcher.ProcessNonBlocking('<message><x:y/></message>')
+        self.dispatcher.ProcessNonBlocking('<message from="test@test.at"><x:y/></message>')
         self.assertEqual(2, len(msgs))
         # we should not have been disconnected after that message
         self.con.pollend.assert_not_called()
         self.con.disconnect.assert_not_called()
 
         # we should be able to keep parsing
-        self.dispatcher.ProcessNonBlocking('<message><body>still here?</body></message>')
+        self.dispatcher.ProcessNonBlocking('<message from="test@test.at"><body>still here?</body></message>')
         self.assertEqual(3, len(msgs))
 
     def test_process_non_blocking(self):
