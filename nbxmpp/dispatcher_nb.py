@@ -34,6 +34,7 @@ from nbxmpp.protocol import NS_STREAMS
 from nbxmpp.protocol import NS_HTTP_BIND
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import InvalidFrom
+from nbxmpp.protocol import InvalidStanza
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Presence
 from nbxmpp.protocol import Message
@@ -55,6 +56,7 @@ from nbxmpp.modules.vcard_avatar import VCardAvatar
 from nbxmpp.modules.captcha import Captcha
 from nbxmpp.modules.entity_caps import EntityCaps
 from nbxmpp.modules.misc import unwrap_carbon
+from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.util import get_properties_struct
 
 
@@ -517,6 +519,7 @@ class XMPPDispatcher(PlugIn):
                 log.warning('Message addressed to someone else: %s', stanza)
                 return
 
+            # Unwrap carbon
             try:
                 stanza, properties.carbon_type = unwrap_carbon(stanza, own_jid)
             except InvalidFrom as exc:
@@ -524,6 +527,12 @@ class XMPPDispatcher(PlugIn):
                 return
             except NodeProcessed as exc:
                 log.info(exc)
+                return
+
+            # Unwrap mam
+            try:
+                stanza, properties.mam = unwrap_mam(stanza, own_jid)
+            except InvalidStanza:
                 return
 
         typ = stanza.getType()

@@ -20,6 +20,8 @@ from collections import namedtuple
 
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import NS_STANZAS
+from nbxmpp.protocol import NS_MAM_1
+from nbxmpp.protocol import NS_MAM_2
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
 from nbxmpp.const import StatusCode
@@ -56,6 +58,20 @@ HTTPAuthData.__new__.__defaults__ = (None, None, None, None)
 StanzaIDData = namedtuple('StanzaIDData', 'id by')
 StanzaIDData.__new__.__defaults__ = (None, None)
 
+
+class MAMData(namedtuple('MAMData', 'id query_id archive namespace timestamp')):
+
+    __slots__ = []
+
+    @property
+    def is_ver_1(self):
+        return self.namespace == NS_MAM_1
+
+    @property
+    def is_ver_2(self):
+        return self.namespace == NS_MAM_2
+
+
 class Properties:
     pass
 
@@ -82,9 +98,15 @@ class MessageProperties:
         self.muc_private_message = False
         self.muc_invite = None
         self.muc_decline = None
+        self.muc_user = None
         self.captcha = None
         self.voice_request = None
         self.self_message = False
+        self.mam = None
+
+    @property
+    def is_mam_message(self):
+        return self.mam is not None
 
     @property
     def is_http_auth(self):

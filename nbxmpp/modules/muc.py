@@ -99,8 +99,7 @@ class MUC:
         properties.from_muc = True
         properties.muc_nickname = properties.jid.getResource()
 
-    @staticmethod
-    def _process_muc_user_presence(_con, stanza, properties):
+    def _process_muc_user_presence(self, _con, stanza, properties):
         muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
         if muc_user is None:
             return
@@ -112,7 +111,7 @@ class MUC:
             if alternate is not None:
                 try:
                     alternate = JID(validate_jid(alternate))
-                except InvalidJid as error:
+                except InvalidJid:
                     log.warning('Invalid alternate JID provided')
                     log.warning(stanza)
                     alternate = None
@@ -155,23 +154,15 @@ class MUC:
         if codes:
             properties.muc_status_codes = codes
 
-        item = muc_user.getTag('item')
-        if item is not None:
-            item_dict = item.getAttrs()
-            if 'role' in item_dict:
-                item_dict['role'] = Role(item_dict['role'])
-            if 'affiliation' in item_dict:
-                item_dict['affiliation'] = Affiliation(item_dict['affiliation'])
-            if 'jid' in item_dict:
-                item_dict['jid'] = JID(item_dict['jid'])
-            item_dict['actor'] = item.getTagAttr('actor', 'nick')
-            item_dict['reason'] = item.getTagData('reason')
-            properties.muc_user = MucUserData(**item_dict)
+        properties.muc_user = self._parse_muc_user(muc_user)
 
-    @staticmethod
-    def _process_groupchat_message(_con, _stanza, properties):
+    def _process_groupchat_message(self, _con, stanza, properties):
         properties.from_muc = True
         properties.muc_nickname = properties.jid.getResource() or None
+        
+        muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
+        if muc_user is not None:
+            properties.muc_user = self._parse_muc_user(muc_user)
 
     @staticmethod
     def _process_message(_con, stanza, properties):
@@ -502,3 +493,27 @@ class MUC:
             return CommonResult(jid=stanza.getFrom(),
                                 error=stanza.getError())
         return CommonResult(jid=stanza.getFrom())
+
+    @staticmethod
+    def _parse_muc_user(muc_user):
+        item = muc_user.getTag('item')
+        if item is not None:
+            item_dict = item.getAttrs()
+            if 'role' in item_dict:
+                item_dict['role'] = Role(item_dict['role'])
+            else:
+                item_dict['role'] = None
+
+            if 'affiliation' in item_dict:
+                item_dict['affiliation'] = Affiliation(item_dict['affiliation'])
+            else:
+                item_dict['affiliation'] = None
+
+            if 'jid' in item_dict:
+                item_dict['jid'] = JID(item_dict['jid'])
+            else:
+                item_dict['jid'] = None
+
+            item_dict['actor'] = item.getTagAttr('actor', 'nick')
+            item_dict['reason'] = item.getTagData('reason')
+            return MucUserData(**item_dict)
