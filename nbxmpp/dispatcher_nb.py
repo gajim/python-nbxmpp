@@ -519,6 +519,9 @@ class XMPPDispatcher(PlugIn):
                 log.warning('Message addressed to someone else: %s', stanza)
                 return
 
+            if stanza.getFrom() is None:
+                stanza.setFrom(own_jid.getBare())
+
             # Unwrap carbon
             try:
                 stanza, properties.carbon_type = unwrap_carbon(stanza, own_jid)
