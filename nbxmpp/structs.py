@@ -167,6 +167,8 @@ class PresenceProperties:
         self.jid = None
         self.resource = None
         self.id = None
+        self.payload = None
+        self.query = None
         self.nickname = None
         self.self_presence = False
         self.self_bare = False

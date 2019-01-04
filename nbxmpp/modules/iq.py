@@ -48,10 +48,10 @@ class BaseIq:
         properties.jid = stanza.getFrom()
         properties.id = stanza.getID()
 
-        payloads = stanza.getPayload()
-        for payload in payloads:
-            if payload.getName() != 'error':
-                properties.payload = payload
+        childs = stanza.getChildren()
+        for child in childs:
+            if child.getName() != 'error':
+                properties.payload = child
                 break
 
         properties.query = stanza.getQuery()
