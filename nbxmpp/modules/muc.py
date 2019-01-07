@@ -354,11 +354,10 @@ class MUC:
         return iq
 
     @call_on_response('_config_received')
-    def request_config(self, room_jid, lang):
+    def request_config(self, room_jid):
         iq = Iq(typ='get',
                 queryNS=NS_MUC_OWNER,
                 to=room_jid)
-        iq.setAttr('xml:lang', lang)
         log.info('Request config for %s', room_jid)
         return iq
 
