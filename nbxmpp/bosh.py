@@ -45,10 +45,7 @@ class NonBlockingBOSH(NonBlockingTransport):
             idlequeue, estabilish_tls, certs, tls_version, cipher_list)
 
         self.bosh_sid = None
-        if locale.getdefaultlocale()[0]:
-            self.bosh_xml_lang = locale.getdefaultlocale()[0].split('_')[0]
-        else:
-            self.bosh_xml_lang = 'en'
+        self.bosh_xml_lang = self._owner.lang
 
         self.http_version = 'HTTP/1.1'
         self.http_persistent = True

@@ -42,7 +42,7 @@ class NonBlockingClient:
     handling, whereas underlying modules take care of feature-specific logic
     """
 
-    def __init__(self, domain, idlequeue, caller=None):
+    def __init__(self, domain, idlequeue, caller=None, lang='en'):
         """
         Caches connection data
 
@@ -50,9 +50,11 @@ class NonBlockingClient:
         :param idlequeue: processing idlequeue
         :param caller: calling object - it has to implement methods
             _event_dispatcher which is called from dispatcher instance
+        :param lang: the preferred stream language
         """
         self.Namespace = protocol.NS_CLIENT
         self.defaultNamespace = self.Namespace
+        self.lang = lang
 
         self.idlequeue = idlequeue
         self.disconnect_handlers = []
