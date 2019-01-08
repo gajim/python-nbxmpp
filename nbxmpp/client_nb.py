@@ -37,7 +37,7 @@ class NonBlockingClient(object):
     handling, whereas underlying modules take care of feature-specific logic
     """
 
-    def __init__(self, domain, idlequeue, caller=None):
+    def __init__(self, domain, idlequeue, caller=None, lang='en'):
         """
         Caches connection data
 
@@ -48,6 +48,7 @@ class NonBlockingClient(object):
         """
         self.Namespace = protocol.NS_CLIENT
         self.defaultNamespace = self.Namespace
+        self.lang = lang
 
         self.idlequeue = idlequeue
         self.disconnect_handlers = []

@@ -194,9 +194,7 @@ class XMPPDispatcher(PlugIn):
         self._metastream.setAttr('version', '1.0')
         self._metastream.setAttr('xmlns:stream', NS_STREAMS)
         self._metastream.setAttr('to', self._owner.Server)
-        if locale.getdefaultlocale()[0]:
-            self._metastream.setAttr('xml:lang',
-                    locale.getdefaultlocale()[0].split('_')[0])
+        self._metastream.setAttr('xml:lang', self._owner.lang)
         self._owner.send("%s%s>" % (XML_DECLARATION, str(self._metastream)[:-2]))
 
     def _check_stream_start(self, ns, tag, attrs):
@@ -623,9 +621,7 @@ class BOSHDispatcher(XMPPDispatcher):
         self._metastream.setAttr('version', '1.0')
         self._metastream.setAttr('xmlns:stream', NS_STREAMS)
         self._metastream.setAttr('to', self._owner.Server)
-        if locale.getdefaultlocale()[0]:
-            self._metastream.setAttr('xml:lang',
-                    locale.getdefaultlocale()[0].split('_')[0])
+        self._metastream.setAttr('xml:lang', self._owner.lang)
 
         self.restart = True
         self._owner.Connection.send_init(after_SASL=self.after_SASL)
