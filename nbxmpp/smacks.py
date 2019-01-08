@@ -184,43 +184,36 @@ class Smacks(object):
             self.old_uqueue = []
 
     def error_handling(self, disp, stanza):
-        # If the server doesn't recognize previd, forget about resuming
-        # Ask for service discovery, etc..
-        if stanza.getTag('item-not-found'):
-            self.resuming = False
-            self.enabled = False
-            # we need to bind a resource
-            self._owner.NonBlockingBind.resuming = False
-            self._owner.Dispatcher.Event(NS_STREAM_MGMT, 'RESUME FAILED', None)
-            self._owner._on_auth_bind(None)
-            self.failed_resume = True
-            
-            h = stanza.getAttr('h')
-            log.info('Session resumption failed (item-not-found), server h: %s' % str(h))
-            if not h:
-                return
-            #prepare old_queue to contain only unacked stanzas for later resend (which is happening after our session is established properly)
-            h = int(h)
-            diff = self.out_h - h
-
-            if diff < 0:
-                log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d, #queue: %d)' % (self.out_h, h, len(self.old_uqueue)))
-                self.old_uqueue = []        #that's weird, but we don't resend this stanzas if the server says we don't need to
-            elif len(self.old_uqueue) < diff:
-                log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d, #queue: %d)' % (self.out_h, h, len(self.old_uqueue)))
-            else:
-                log.info('Removing %d already acked stanzas from old outgoing queue (our h: %d, server h: %d, #queue: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, len(self.old_uqueue), diff))
-                while (len(self.old_uqueue) > diff):
-                    self.old_uqueue.pop(0)
-            return
-
         # Doesn't support resumption
         if stanza.getTag('feature-not-implemented'):
             log.info('Session resumption failed (feature-not-implemented)')
             self.negociate(False)
             return
 
-        if stanza.getTag('unexpected-request'):
-            log.error('Gajim failed to negociate Stream Management')
-            self.enabled = False
+        # If the server doesn't recognize previd, forget about resuming
+        # Ask for service discovery, etc..
+        self.resuming = False
+        self.enabled = False
+        # we need to bind a resource
+        self._owner.NonBlockingBind.resuming = False
+        self._owner.Dispatcher.Event(NS_STREAM_MGMT, 'RESUME FAILED', None)
+        self._owner._on_auth_bind(None)
+        self.failed_resume = True
+        
+        h = stanza.getAttr('h')
+        log.info('Session resumption failed, server h: %s' % str(h))
+        if not h:
             return
+        #prepare old_queue to contain only unacked stanzas for later resend (which is happening after our session is established properly)
+        h = int(h)
+        diff = self.out_h - h
+
+        if diff < 0:
+            log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d, #queue: %d)' % (self.out_h, h, len(self.old_uqueue)))
+            self.old_uqueue = []        #that's weird, but we don't resend this stanzas if the server says we don't need to
+        elif len(self.old_uqueue) < diff:
+            log.error('Server and client number of stanzas handled mismatch on session resumption (our h: %d, server h: %d, #queue: %d)' % (self.out_h, h, len(self.old_uqueue)))
+        else:
+            log.info('Removing %d already acked stanzas from old outgoing queue (our h: %d, server h: %d, #queue: %d, remaining in queue: %d)' % (len(self.old_uqueue) - diff, self.out_h, h, len(self.old_uqueue), diff))
+            while (len(self.old_uqueue) > diff):
+                self.old_uqueue.pop(0)
