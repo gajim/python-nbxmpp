@@ -294,14 +294,23 @@ class CommonResult(BaseResult, namedtuple('CommonResult', 'jid error')):
 
 CommonResult.__new__.__defaults__ = (None,)
 
+
 class AffiliationResult(BaseResult, namedtuple('AffiliationResult',
                                                'jid affiliation users error')):
     pass
 
 AffiliationResult.__new__.__defaults__ = (None, None)
 
+
 class MucConfigResult(BaseResult, namedtuple('MucConfigResult',
                                              'jid form error')):
     pass
 
 MucConfigResult.__new__.__defaults__ = (None, None)
+
+
+class BlockingListResult(BaseResult, namedtuple('BlockingListResult',
+                                                'blocking_list error')):
+    pass
+
+BlockingListResult.__new__.__defaults__ = (None,)
