@@ -255,10 +255,10 @@ class NonBlockingTLS(PlugIn):
         :param mycerts: path to pem file with certificates of user trusted
             servers
         :param tls_version: The lowest supported TLS version. If None is
-            provided, version 1.0 is used. For example setting to 1.1 will
-            enable TLS 1.1, TLS 1.2 and all further protocols
+            provided, version 1.2 is used. For example setting to 1.3 will
+            enable TLS 1.3 and all further protocols
         :param cipher_list: list of ciphers to use when connection to server. If
-            None is provided, a default list is used: HIGH:!aNULL:RC4-SHA
+            None is provided, a default list is used: HIGH:!aNULL
         """
         PlugIn.__init__(self)
         self.cacerts = cacerts
@@ -287,10 +287,7 @@ class NonBlockingTLS(PlugIn):
         return res
 
     def _dumpX509(self, cert, stream=sys.stderr):
-        try:
-            print("Digest (SHA-2 256):" + cert.digest("sha256"), file=stream)
-        except ValueError: # Old OpenSSL version
-            pass
+        print("Digest (SHA-2 256):" + cert.digest("sha256"), file=stream)
         print("Digest (SHA-1):" + cert.digest("sha1"), file=stream)
         print("Digest (MD5):" + cert.digest("md5"), file=stream)
         print("Serial #:" + cert.get_serial_number(), file=stream)
@@ -368,40 +365,17 @@ class NonBlockingTLS(PlugIn):
         # See http://docs.python.org/dev/library/ssl.html
         tcpsock._sslContext = OpenSSL.SSL.Context(OpenSSL.SSL.SSLv23_METHOD)
         flags = OpenSSL.SSL.OP_NO_SSLv2 | OpenSSL.SSL.OP_NO_SSLv3 | \
-            OpenSSL.SSL.OP_SINGLE_DH_USE
-        try:
-            flags |= OpenSSL.SSL.OP_NO_TICKET
-        except AttributeError as e:
-            # py-OpenSSL < 0.9 or old OpenSSL
-            flags |= 16384
+            OpenSSL.SSL.OP_NO_TLSv1 | OpenSSL.SSL.OP_NO_TLSv1_1 | \
+            OpenSSL.SSL.OP_SINGLE_DH_USE | OpenSSL.SSL.OP_NO_TICKET
 
         if self.alpn:
             # XEP-0368 set ALPN Protocol
             tcpsock._sslContext.set_alpn_protos([b'xmpp-client'])
 
-        try:
-            # OpenSSL 1.0.1d supports TLS 1.1 and TLS 1.2 and
-            # fixes renegotiation in TLS 1.1, 1.2 by using the correct TLS version. 
-            if OpenSSL.SSL.OPENSSL_VERSION_NUMBER >= 0x1000104f:
-                if self.tls_version != '1.0':
-                    flags |= OpenSSL.SSL.OP_NO_TLSv1
-                if self.tls_version not in ('1.0', '1.1'):
-                    try:
-                        flags |= OpenSSL.SSL.OP_NO_TLSv1_1
-                    except AttributeError as e:
-                        # older py-OpenSSL
-                        flags |= 0x10000000
-        except AttributeError as e:
-            pass # much older py-OpenSSL
- 
-
         tcpsock._sslContext.set_options(flags)
 
-        try: # Supported only pyOpenSSL >= 0.14
-            # Disable session resumption, protection against Triple Handshakes TLS attack
-            tcpsock._sslContext.set_session_cache_mode(OpenSSL.SSL.SESS_CACHE_OFF)
-        except AttributeError as e:
-            pass
+        # Disable session resumption, protection against Triple Handshakes TLS attack
+        tcpsock._sslContext.set_session_cache_mode(OpenSSL.SSL.SESS_CACHE_OFF)
 
         # NonBlockingHTTPBOSH instance has no attribute _owner
         if hasattr(tcpsock, '_owner') and tcpsock._owner._caller.client_cert \
