@@ -45,7 +45,6 @@ class NonBlockingBOSH(NonBlockingTransport):
             idlequeue, estabilish_tls, certs, tls_version, cipher_list)
 
         self.bosh_sid = None
-        self.bosh_xml_lang = self._owner.lang
 
         self.http_version = 'HTTP/1.1'
         self.http_persistent = True
@@ -414,7 +413,7 @@ class NonBlockingBOSH(NonBlockingTransport):
             t = BOSHBody(
                     attrs={ 'to': self.bosh_to,
                             'sid': self.bosh_sid,
-                            'xml:lang': self.bosh_xml_lang,
+                            'xml:lang': self._owner.lang,
                             'xmpp:restart': 'true',
                             'secure': self.bosh_secure,
                             'xmlns:xmpp': 'urn:xmpp:xbosh'})
@@ -425,7 +424,7 @@ class NonBlockingBOSH(NonBlockingTransport):
                     'route': 'xmpp:%s:%s' % (self.route_host, self.route_port),
                     'to': self.bosh_to,
                     'wait': str(self.bosh_wait),
-                    'xml:lang': self.bosh_xml_lang,
+                    'xml:lang': self._owner.lang,
                     'xmpp:version': '1.0',
                     'ver': '1.6',
                     'xmlns:xmpp': 'urn:xmpp:xbosh'})
