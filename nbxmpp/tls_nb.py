@@ -15,7 +15,6 @@
 ##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ##   GNU General Public License for more details.
 
-import ssl
 import sys
 import os
 import time
@@ -26,24 +25,10 @@ from .plugin import PlugIn
 
 log = logging.getLogger('nbxmpp.tls_nb')
 
-USE_PYOPENSSL = False
-
 PYOPENSSL = 'PYOPENSSL'
-PYSTDLIB  = 'PYSTDLIB'
 
-try:
-    #raise ImportError("Manually disabled PyOpenSSL")
-    import OpenSSL.SSL
-    import OpenSSL.crypto
-    USE_PYOPENSSL = True
-    log.info("PyOpenSSL loaded")
-except ImportError:
-    log.debug("Import of PyOpenSSL failed:", exc_info=True)
-
-    # FIXME: Remove these prints before release, replace with a warning dialog.
-    print("=" * 79, file=sys.stderr)
-    print("PyOpenSSL not found, falling back to Python builtin SSL objects (insecure).", file=sys.stderr)
-    print("=" * 79, file=sys.stderr)
+import OpenSSL.SSL
+import OpenSSL.crypto
 
 def gattr(obj, attr, default=None):
     try:
@@ -209,44 +194,11 @@ class PyOpenSSLWrapper(SSLWrapper):
         return 0
 
 
-class StdlibSSLWrapper(SSLWrapper):
-    """
-    Wrapper class for Python socket.ssl read() and write() methods
-    """
-
-    def __init__(self, *args):
-        self.parent = SSLWrapper
-        self.parent.__init__(self, *args)
-
-    def recv(self, bufsize, flags=None):
-        # we simply ignore flags since ssl object doesn't support it
-        try:
-            return self.sslobj.read(bufsize)
-        except ssl.SSLError as e:
-            log.debug("Recv: Caught ssl.SSLError: " + repr(e), exc_info=True)
-            if e.args[0] not in (ssl.SSL_ERROR_WANT_READ,
-            ssl.SSL_ERROR_WANT_WRITE):
-                raise SSLWrapper.Error(self.sock or self.sslobj, e)
-        return None
-
-    def send(self, data, flags=None, now=False):
-        # we simply ignore flags since ssl object doesn't support it
-        try:
-            return self.sslobj.write(data)
-        except ssl.SSLError as e:
-            log.debug("Send: Caught socket.sslerror:", exc_info=True)
-            if e.args[0] not in (ssl.SSL_ERROR_WANT_READ,
-            ssl.SSL_ERROR_WANT_WRITE):
-                raise SSLWrapper.Error(self.sock or self.sslobj, e)
-        return 0
-
-
 class NonBlockingTLS(PlugIn):
     """
-    TLS connection used to encrypts already estabilished tcp connection
+    TLS connection used to encrypt already estabilished tcp connection
 
-    Can be plugged into NonBlockingTCP and will make use of StdlibSSLWrapper or
-    PyOpenSSLWrapper.
+    Can be plugged into NonBlockingTCP and will make use of PyOpenSSLWrapper.
     """
 
     def __init__(self, cacerts, mycerts, tls_version, cipher_list, alpn):
@@ -315,10 +267,7 @@ class NonBlockingTLS(PlugIn):
         """
         log.debug("_startSSL called")
 
-        if USE_PYOPENSSL:
-            result = self._startSSL_pyOpenSSL()
-        else:
-            result = self._startSSL_stdlib()
+        result = self._startSSL_pyOpenSSL()
 
         if result:
             log.debug('Synchronous handshake completed')
@@ -447,34 +396,6 @@ class NonBlockingTLS(PlugIn):
         self._owner.ssl_lib = PYOPENSSL
         return True
 
-    def _startSSL_stdlib(self):
-        log.debug("_startSSL_stdlib called")
-        tcpsock=self._owner
-        try:
-            tcpsock._sslObj = ssl.wrap_socket(tcpsock._sock,
-                ssl_version=ssl.PROTOCOL_TLSv1, do_handshake_on_connect=False)
-            wrapper = StdlibSSLWrapper(tcpsock._sslObj, tcpsock._sock)
-            tcpsock._recv = wrapper.recv
-            tcpsock._send = wrapper.send
-            log.debug("Initiating handshake...")
-            try:
-                tcpsock._sslObj.do_handshake()
-            except (ssl.SSLError) as e:
-                if e.args[0] in (ssl.SSL_ERROR_WANT_READ,
-                ssl.SSL_ERROR_WANT_WRITE):
-                    pass
-                else:
-                    log.error('Error while TLS handshake: ', exc_info=True)
-                    return False
-            except:
-                log.error('Error while TLS handshake: ', exc_info=True)
-                return False
-        except:
-            log.error("Exception caught in _startSSL_stdlib:", exc_info=True)
-            return False
-        self._owner.ssl_lib = PYSTDLIB
-        return True
-
     def _ssl_verify_callback(self, sslconn, cert, errnum, depth, ok):
         # Exceptions can't propagate up through this callback, so print them here.
         try:
@@ -500,9 +421,6 @@ class NonBlockingTLS(PlugIn):
         """
         sslObj = self._owner._sslObj
         try:
-            if USE_PYOPENSSL:
-                return sslObj.get_finished()
-            else:
-                return sslObj.get_channel_binding()
+            return sslObj.get_finished()
         except AttributeError:
             raise NotImplementedError
