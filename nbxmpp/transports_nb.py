@@ -619,9 +619,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             errstr = 'zero bytes on recv'
 
         if (self.ssl_lib is None and received == '') or \
-        (self.ssl_lib == tls_nb.PYSTDLIB  and errnum ==  8 ) or \
         (self.ssl_lib == tls_nb.PYOPENSSL and errnum == -1 ):
-            #  8 in stdlib: errstr == EOF occured in violation of protocol
             # -1 in pyopenssl: errstr == Unexpected EOF
             log.info("Disconnected by remote server: #%s, %s" % (errnum, errstr))
             self.on_remote_disconnect()
