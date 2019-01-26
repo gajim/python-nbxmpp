@@ -623,7 +623,10 @@ class XMPPDispatcher(PlugIn):
                 continue
             if _id in self.on_responses:
                 if len(self._expected) == 1:
-                    self._owner.onreceive(None)
+                    if hasattr(self._owner, 'onreceive'):
+                        # With BOSH we get a terminating body with multiple stanzas
+                        # in it, we unplug BOSH before we parse the stanzas
+                        self._owner.onreceive(None)
                 resp, args = self.on_responses[_id]
                 del self.on_responses[_id]
                 if args is None:
