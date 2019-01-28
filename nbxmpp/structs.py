@@ -58,6 +58,8 @@ HTTPAuthData.__new__.__defaults__ = (None, None, None, None)
 StanzaIDData = namedtuple('StanzaIDData', 'id by')
 StanzaIDData.__new__.__defaults__ = (None, None)
 
+PubSubEventData = namedtuple('PubSubEventData', 'node id item data')
+
 
 class MAMData(namedtuple('MAMData', 'id query_id archive namespace timestamp')):
 
@@ -103,6 +105,11 @@ class MessageProperties:
         self.voice_request = None
         self.self_message = False
         self.mam = None
+        self.pubsub_event = None
+
+    @property
+    def is_pubsub_event(self):
+        return self.pubsub_event is not None
 
     @property
     def is_mam_message(self):

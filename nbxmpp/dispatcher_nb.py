@@ -56,6 +56,7 @@ from nbxmpp.modules.vcard_avatar import VCardAvatar
 from nbxmpp.modules.captcha import Captcha
 from nbxmpp.modules.entity_caps import EntityCaps
 from nbxmpp.modules.blocking import Blocking
+from nbxmpp.modules.pubsub import PubSub
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.util import get_properties_struct
@@ -179,6 +180,7 @@ class XMPPDispatcher(PlugIn):
         self._modules['VCardAvatar'] = VCardAvatar(self._owner)
         self._modules['EntityCaps'] = EntityCaps(self._owner)
         self._modules['Blocking'] = Blocking(self._owner)
+        self._modules['PubSub'] = PubSub(self._owner)
 
         for instance in self._modules.values():
             for handler in instance.handlers:
