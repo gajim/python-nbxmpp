@@ -18,6 +18,8 @@
 import logging
 
 from nbxmpp.protocol import NS_NICK
+from nbxmpp.protocol import NS_PUBSUB_EVENT
+from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import PresenceType
 
@@ -28,6 +30,10 @@ class Nickname:
     def __init__(self, client):
         self._client = client
         self.handlers = [
+            StanzaHandler(name='message',
+                          callback=self._process_pubsub_nickname,
+                          ns=NS_PUBSUB_EVENT,
+                          priority=16),
             StanzaHandler(name='message',
                           callback=self._process_nickname,
                           ns=NS_NICK,
@@ -51,9 +57,29 @@ class Nickname:
                 return
             properties.nickname = self._parse_nickname(stanza)
 
+    def _process_pubsub_nickname(self, _con, _stanza, properties):
+        if not properties.is_pubsub_event:
+            return
+
+        if properties.pubsub_event.node != NS_NICK:
+            return
+
+        nick = self._parse_nickname(properties.pubsub_event.item)
+        log.info('Received nickname: %s - %s', properties.jid, nick)
+
+        properties.pubsub_event = properties.pubsub_event._replace(data=nick)
+
     @staticmethod
     def _parse_nickname(stanza):
         nickname = stanza.getTag('nick', namespace=NS_NICK)
         if nickname is None:
             return
         return nickname.getData() or None
+
+    def set_nickname(self, nickname):
+        item = Node('nick', {'xmlns': NS_NICK})
+        if nickname is not None:
+            item.addData(nickname)
+        jid = self._client.get_bound_jid().getBare()
+        self._client.get_module('PubSub').publish(
+            jid, NS_NICK, item, id_='current')
