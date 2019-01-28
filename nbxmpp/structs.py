@@ -60,6 +60,8 @@ StanzaIDData.__new__.__defaults__ = (None, None)
 
 PubSubEventData = namedtuple('PubSubEventData', 'node id item data')
 
+MoodData = namedtuple('MoodData', 'mood text')
+
 
 class MAMData(namedtuple('MAMData', 'id query_id archive namespace timestamp')):
 
