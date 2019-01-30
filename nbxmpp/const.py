@@ -370,3 +370,85 @@ MOODS = [
     'undefined',
     'weak',
     'worried']
+
+
+ACTIVITIES = {
+    'doing_chores': [
+        'buying_groceries',
+        'cleaning',
+        'cooking',
+        'doing_maintenance',
+        'doing_the_dishes',
+        'doing_the_laundry',
+        'gardening',
+        'running_an_errand',
+        'walking_the_dog'],
+    'drinking': [
+        'having_a_beer',
+        'having_coffee',
+        'having_tea'],
+    'eating': [
+        'having_a_snack',
+        'having_breakfast',
+        'having_dinner',
+        'having_lunch'],
+    'exercising': [
+        'cycling',
+        'dancing',
+        'hiking',
+        'jogging',
+        'playing_sports',
+        'running',
+        'skiing',
+        'swimming',
+        'working_out'],
+    'grooming': [
+        'at_the_spa',
+        'brushing_teeth',
+        'getting_a_haircut',
+        'shaving',
+        'taking_a_bath',
+        'taking_a_shower'],
+    'having_appointment': [],
+    'inactive': [
+        'day_off',
+        'hanging_out',
+        'hiding',
+        'on_vacation',
+        'praying',
+        'scheduled_holiday',
+        'sleeping',
+        'thinking'],
+    'relaxing': [
+        'fishing',
+        'gaming',
+        'going_out',
+        'partying',
+        'reading',
+        'rehearsing',
+        'shopping',
+        'smoking',
+        'socializing',
+        'sunbathing',
+        'watching_tv',
+        'watching_a_movie'],
+    'talking': [
+        'in_real_life',
+        'on_the_phone',
+        'on_video_phone'],
+    'traveling': [
+        'commuting',
+        'cycling',
+        'driving',
+        'in_a_car',
+        'on_a_bus',
+        'on_a_plane',
+        'on_a_train',
+        'on_a_trip',
+        'walking'],
+    'working': [
+        'coding',
+        'in_a_meeting',
+        'studying',
+        'writing']
+}

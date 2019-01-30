@@ -57,6 +57,7 @@ from nbxmpp.modules.captcha import Captcha
 from nbxmpp.modules.entity_caps import EntityCaps
 from nbxmpp.modules.blocking import Blocking
 from nbxmpp.modules.pubsub import PubSub
+from nbxmpp.modules.activity import Activity
 from nbxmpp.modules.mood import Mood
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
@@ -183,6 +184,7 @@ class XMPPDispatcher(PlugIn):
         self._modules['Blocking'] = Blocking(self._owner)
         self._modules['PubSub'] = PubSub(self._owner)
         self._modules['Mood'] = Mood(self._owner)
+        self._modules['Activity'] = Activity(self._owner)
 
         for instance in self._modules.values():
             for handler in instance.handlers:

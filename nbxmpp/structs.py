@@ -62,6 +62,8 @@ PubSubEventData = namedtuple('PubSubEventData', 'node id item data')
 
 MoodData = namedtuple('MoodData', 'mood text')
 
+ActivityData = namedtuple('ActivityData', 'activity subactivity text')
+
 
 class MAMData(namedtuple('MAMData', 'id query_id archive namespace timestamp')):
 
