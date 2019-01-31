@@ -109,7 +109,12 @@ class MessageProperties:
         self.voice_request = None
         self.self_message = False
         self.mam = None
+        self.pubsub = False
         self.pubsub_event = None
+
+    @property
+    def is_pubsub(self):
+        return self.pubsub
 
     @property
     def is_pubsub_event(self):

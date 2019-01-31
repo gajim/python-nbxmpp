@@ -42,6 +42,7 @@ class PubSub:
         ]
 
     def _process_pubsub_base(self, _con, stanza, properties):
+        properties.pubsub = True
         event = stanza.getTag('event', namespace=NS_PUBSUB_EVENT)
         items = event.getTag('items')
         if len(items.getChildren()) != 1:
@@ -49,6 +50,8 @@ class PubSub:
             log.warning(stanza)
         node = items.getAttr('node')
         item = items.getTag('item')
+        if item is None:
+            return
         id_ = item.getAttr('id')
         properties.pubsub_event = PubSubEventData(node, id_, item, None)
 
