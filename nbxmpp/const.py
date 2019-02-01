@@ -452,3 +452,29 @@ ACTIVITIES = {
         'studying',
         'writing']
 }
+
+LOCATION_DATA = [
+    'accuracy',
+    'alt',
+    'altaccuracy',
+    'area',
+    'bearing',
+    'building',
+    'country',
+    'countrycode',
+    'datum',
+    'description',
+    'error',
+    'floor',
+    'lat',
+    'locality',
+    'lon',
+    'postalcode',
+    'region',
+    'room',
+    'speed',
+    'street',
+    'text',
+    'timestamp',
+    'tzo',
+    'uri']

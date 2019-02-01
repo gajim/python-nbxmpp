@@ -53,7 +53,7 @@ class PubSub:
         if item is None:
             return
         id_ = item.getAttr('id')
-        properties.pubsub_event = PubSubEventData(node, id_, item, None)
+        properties.pubsub_event = PubSubEventData(node, id_, item, None, False)
 
     @call_on_response('_default_response')
     def publish(self, jid, node, item, id_=None, options=None):

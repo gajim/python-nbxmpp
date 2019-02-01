@@ -27,6 +27,7 @@ from nbxmpp.const import AvatarState
 from nbxmpp.const import StatusCode
 from nbxmpp.const import PresenceType
 from nbxmpp.const import Error
+from nbxmpp.const import LOCATION_DATA
 
 StanzaHandler = namedtuple('StanzaHandler',
                            'name callback typ ns xmlns system priority')
@@ -58,11 +59,14 @@ HTTPAuthData.__new__.__defaults__ = (None, None, None, None)
 StanzaIDData = namedtuple('StanzaIDData', 'id by')
 StanzaIDData.__new__.__defaults__ = (None, None)
 
-PubSubEventData = namedtuple('PubSubEventData', 'node id item data')
+PubSubEventData = namedtuple('PubSubEventData', 'node id item data empty')
 
 MoodData = namedtuple('MoodData', 'mood text')
 
 ActivityData = namedtuple('ActivityData', 'activity subactivity text')
+
+LocationData = namedtuple('LocationData', LOCATION_DATA)
+LocationData.__new__.__defaults__ = (None,) * len(LocationData._fields)
 
 
 class TuneData(namedtuple('TuneData', 'artist length rating source title track uri')):
