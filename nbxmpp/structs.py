@@ -65,6 +65,22 @@ MoodData = namedtuple('MoodData', 'mood text')
 ActivityData = namedtuple('ActivityData', 'activity subactivity text')
 
 
+class TuneData(namedtuple('TuneData', 'artist length rating source title track uri')):
+
+    __slots__ = []
+
+    def __new__(cls, artist=None, length=None, rating=None, source=None,
+                title=None, track=None, uri=None):
+        return super(TuneData, cls).__new__(cls, artist, length, rating,
+                                            source, title, track, uri)
+
+    @property
+    def was_removed(self):
+        return (self.artist is None and
+                self.title is None and
+                self.track is None)
+
+
 class MAMData(namedtuple('MAMData', 'id query_id archive namespace timestamp')):
 
     __slots__ = []
