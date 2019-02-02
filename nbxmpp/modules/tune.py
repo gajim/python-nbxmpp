@@ -48,17 +48,18 @@ class Tune:
 
         tune_node = item.getTag('tune', namespace=NS_TUNE)
         if not tune_node.getChildren():
-            data = properties.pubsub_event._replace(empty=True)
+            pubsub_event = properties.pubsub_event._replace(empty=True)
+            log.info('Received tune: %s - no tune set', properties.jid)
         else:
             tune_dict = {}
             for attr in TUNE_DATA:
                 tune_dict[attr] = tune_node.getTagData(attr)
 
             data = TuneData(**tune_dict)
-            data = properties.pubsub_event._replace(data=data)
+            pubsub_event = properties.pubsub_event._replace(data=data)
+            log.info('Received tune: %s - %s', properties.jid, data)
 
-        log.info('Received tune: %s - %s', properties.jid, data)
-        properties.pubsub_event = data
+        properties.pubsub_event = pubsub_event
 
     def set_tune(self, data):
         item = Node('tune', {'xmlns': NS_TUNE})

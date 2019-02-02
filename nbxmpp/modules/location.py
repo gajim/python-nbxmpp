@@ -48,16 +48,17 @@ class Location:
 
         location_node = item.getTag('geoloc', namespace=NS_LOCATION)
         if not location_node.getChildren():
-            data = properties.pubsub_event._replace(empty=True)
+            pubsub_event = properties.pubsub_event._replace(empty=True)
+            log.info('Received location: %s - no location set', properties.jid)
         else:
             location_dict = {}
             for node in LOCATION_DATA:
                 location_dict[node] = location_node.getTagData(node)
             data = LocationData(**location_dict)
-            data = properties.pubsub_event._replace(data=data)
+            pubsub_event = properties.pubsub_event._replace(data=data)
+            log.info('Received location: %s - %s', properties.jid, data)
 
-        log.info('Received location: %s - %s', properties.jid, data)
-        properties.pubsub_event = data
+        properties.pubsub_event = pubsub_event
 
     def set_location(self, data):
         item = Node('geoloc', {'xmlns': NS_LOCATION})

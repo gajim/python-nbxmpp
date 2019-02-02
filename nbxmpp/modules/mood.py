@@ -49,7 +49,8 @@ class Mood:
 
         mood_node = item.getTag('mood', namespace=NS_MOOD)
         if not mood_node.getChildren():
-            data = properties.pubsub_event._replace(empty=True)
+            pubsub_event = properties.pubsub_event._replace(empty=True)
+            log.info('Received mood: %s - no mood set', properties.jid)
         else:
             mood, text = None, None
             for child in mood_node.getChildren():
@@ -65,10 +66,10 @@ class Mood:
                 raise NodeProcessed
 
             data = MoodData(mood, text)
-            data = properties.pubsub_event._replace(data=data)
+            pubsub_event = properties.pubsub_event._replace(data=data)
+            log.info('Received mood: %s - %s', properties.jid, data)
 
-        log.info('Received mood: %s - %s', properties.jid, data)
-        properties.pubsub_event = data
+        properties.pubsub_event = pubsub_event
 
     def set_mood(self, data):
         item = Node('mood', {'xmlns': NS_MOOD})

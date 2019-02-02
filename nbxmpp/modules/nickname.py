@@ -65,7 +65,10 @@ class Nickname:
             return
 
         nick = self._parse_nickname(properties.pubsub_event.item)
-        log.info('Received nickname: %s - %s', properties.jid, nick)
+        if nick is None:
+            log.info('Received nickname: %s - no nickname set', properties.jid)
+        else:
+            log.info('Received nickname: %s - %s', properties.jid, nick)
 
         properties.pubsub_event = properties.pubsub_event._replace(data=nick)
 

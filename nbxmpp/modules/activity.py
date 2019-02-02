@@ -49,7 +49,8 @@ class Activity:
 
         activity_node = item.getTag('activity', namespace=NS_ACTIVITY)
         if not activity_node.getChildren():
-            data = properties.pubsub_event._replace(empty=True)
+            pubsub_event = properties.pubsub_event._replace(empty=True)
+            log.info('Received activity: %s - no activity set', properties.jid)
         else:
             activity, subactivity, text = None, None, None
             for child in activity_node.getChildren():
@@ -66,10 +67,10 @@ class Activity:
                 raise NodeProcessed
 
             data = ActivityData(activity, subactivity, text)
-            data = properties.pubsub_event._replace(data=data)
+            pubsub_event = properties.pubsub_event._replace(data=data)
+            log.info('Received activity: %s - %s', properties.jid, data)
 
-        log.info('Received activity: %s - %s', properties.jid, data)
-        properties.pubsub_event = data
+        properties.pubsub_event = pubsub_event
 
     @staticmethod
     def _parse_sub_activity(activity):
