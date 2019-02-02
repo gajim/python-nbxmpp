@@ -20,6 +20,7 @@ import logging
 from nbxmpp.protocol import NS_ACTIVITY
 from nbxmpp.protocol import NS_PUBSUB_EVENT
 from nbxmpp.protocol import Node
+from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ActivityData
 from nbxmpp.const import ACTIVITIES
@@ -47,24 +48,28 @@ class Activity:
         item = properties.pubsub_event.item
 
         activity_node = item.getTag('activity', namespace=NS_ACTIVITY)
+        if not activity_node.getChildren():
+            data = properties.pubsub_event._replace(empty=True)
+        else:
+            activity, subactivity, text = None, None, None
+            for child in activity_node.getChildren():
+                name = child.getName()
+                if name == 'text':
+                    text = child.getData()
+                elif name in ACTIVITIES:
+                    activity = name
+                    subactivity = self._parse_sub_activity(child)
 
-        activity, subactivity, text = None, None, None
-        for child in activity_node.getChildren():
-            name = child.getName()
-            if name == 'text':
-                text = child.getData()
-            elif name in ACTIVITIES:
-                activity = name
-                subactivity = self._parse_sub_activity(child)
+            if activity is None and activity_node.getPayload():
+                log.warning('No valid activity value found')
+                log.warning(stanza)
+                raise NodeProcessed
 
-        if activity is None and activity_node.getPayload():
-            log.warning('No valid activity value found')
-            log.warning(stanza)
-            return
+            data = ActivityData(activity, subactivity, text)
+            data = properties.pubsub_event._replace(data=data)
 
-        data = ActivityData(activity, subactivity, text)
         log.info('Received activity: %s - %s', properties.jid, data)
-        properties.pubsub_event = properties.pubsub_event._replace(data=data)
+        properties.pubsub_event = data
 
     @staticmethod
     def _parse_sub_activity(activity):

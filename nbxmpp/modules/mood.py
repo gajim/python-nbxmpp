@@ -20,6 +20,7 @@ import logging
 from nbxmpp.protocol import NS_MOOD
 from nbxmpp.protocol import NS_PUBSUB_EVENT
 from nbxmpp.protocol import Node
+from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import MoodData
 from nbxmpp.const import MOODS
@@ -47,23 +48,27 @@ class Mood:
         item = properties.pubsub_event.item
 
         mood_node = item.getTag('mood', namespace=NS_MOOD)
+        if not mood_node.getChildren():
+            data = properties.pubsub_event._replace(empty=True)
+        else:
+            mood, text = None, None
+            for child in mood_node.getChildren():
+                name = child.getName().strip()
+                if name == 'text':
+                    text = child.getData()
+                elif name in MOODS:
+                    mood = name
 
-        mood, text = None, None
-        for child in mood_node.getChildren():
-            name = child.getName().strip()
-            if name == 'text':
-                text = child.getData()
-            elif name in MOODS:
-                mood = name
+            if mood is None and mood_node.getPayload():
+                log.warning('No valid mood value found')
+                log.warning(stanza)
+                raise NodeProcessed
 
-        if mood is None and mood_node.getPayload():
-            log.warning('No valid mood value found')
-            log.warning(stanza)
-            return
+            data = MoodData(mood, text)
+            data = properties.pubsub_event._replace(data=data)
 
-        data = MoodData(mood, text)
         log.info('Received mood: %s - %s', properties.jid, data)
-        properties.pubsub_event = properties.pubsub_event._replace(data=data)
+        properties.pubsub_event = data
 
     def set_mood(self, data):
         item = Node('mood', {'xmlns': NS_MOOD})
