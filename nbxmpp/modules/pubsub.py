@@ -76,3 +76,14 @@ class PubSub:
             return CommonResult(jid=stanza.getFrom(),
                                 error=stanza.getError())
         return CommonResult(jid=stanza.getFrom())
+
+
+def get_pubsub_request(jid, node, id_=None, max_items=None):
+    query = Iq('get', to=jid)
+    pubsub = query.addChild('pubsub', namespace=NS_PUBSUB)
+    items = pubsub.addChild('items', {'node': node})
+    if max_items is not None:
+        items.setAttr('max_items', max_items)
+    if id_ is not None:
+        items.addChild('item', {'id': id_})
+    return query
