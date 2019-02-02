@@ -453,6 +453,7 @@ ACTIVITIES = {
         'writing']
 }
 
+
 LOCATION_DATA = [
     'accuracy',
     'alt',
@@ -477,4 +478,14 @@ LOCATION_DATA = [
     'text',
     'timestamp',
     'tzo',
+    'uri']
+
+
+TUNE_DATA = [
+    'artist',
+    'length',
+    'rating',
+    'source',
+    'title',
+    'track',
     'uri']

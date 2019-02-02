@@ -22,6 +22,7 @@ from nbxmpp.protocol import NS_PUBSUB_EVENT
 from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import TuneData
+from nbxmpp.const import TUNE_DATA
 
 log = logging.getLogger('nbxmpp.m.tune')
 
@@ -47,40 +48,27 @@ class Tune:
 
         tune_node = item.getTag('tune', namespace=NS_TUNE)
         if not tune_node.getChildren():
-            data = TuneData()
+            data = properties.pubsub_event._replace(empty=True)
         else:
-            artist = tune_node.getTagData('artist')
-            length = tune_node.getTagData('length')
-            rating = tune_node.getTagData('rating')
-            source = tune_node.getTagData('source')
-            title = tune_node.getTagData('title')
-            track = tune_node.getTagData('track')
-            uri = tune_node.getTagData('uri')
+            tune_dict = {}
+            for attr in TUNE_DATA:
+                tune_dict[attr] = tune_node.getTagData(attr)
 
-            data = TuneData(artist, length, rating, source, title, track, uri)
+            data = TuneData(**tune_dict)
+            data = properties.pubsub_event._replace(data=data)
 
         log.info('Received tune: %s - %s', properties.jid, data)
-        properties.pubsub_event = properties.pubsub_event._replace(data=data)
+        properties.pubsub_event = data
 
     def set_tune(self, data):
         item = Node('tune', {'xmlns': NS_TUNE})
         if data is None:
             return item
 
-        if data.artist:
-            item.addChild('artist', payload=data.artist)
-        if data.length:
-            item.addChild('length', payload=data.length)
-        if data.rating:
-            item.addChild('length', payload=data.rating)
-        if data.source:
-            item.addChild('source', payload=data.source)
-        if data.title:
-            item.addChild('title', payload=data.title)
-        if data.track:
-            item.addChild('track', payload=data.track)
-        if data.uri:
-            item.addChild('track', payload=data.uri)
+        data = data._asdict()
+        for tag, value in data:
+            if value is not None:
+                item.addChild(tag, payload=value)
 
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
