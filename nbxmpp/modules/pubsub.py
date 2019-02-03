@@ -19,6 +19,9 @@ import logging
 
 from nbxmpp.protocol import NS_PUBSUB
 from nbxmpp.protocol import NS_PUBSUB_EVENT
+from nbxmpp.protocol import NS_PUBSUB_PUBLISH_OPTIONS
+from nbxmpp.protocol import NS_DATA
+from nbxmpp.protocol import Node
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
 from nbxmpp.structs import StanzaHandler
@@ -87,3 +90,21 @@ def get_pubsub_request(jid, node, id_=None, max_items=None):
     if id_ is not None:
         items.addChild('item', {'id': id_})
     return query
+
+
+def get_pubsub_item(stanza):
+    pubsub_node = stanza.getTag('pubsub')
+    items_node = pubsub_node.getTag('items')
+    return items_node.getTag('item')
+
+
+def get_bookmark_publish_options():
+    # TODO: Make generic
+    options = Node(NS_DATA + ' x',
+                   attrs={'type': 'submit'})
+    field = options.addChild('field',
+                             attrs={'var': 'FORM_TYPE', 'type': 'hidden'})
+    field.setTagData('value', NS_PUBSUB_PUBLISH_OPTIONS)
+    field = options.addChild('field', attrs={'var': 'pubsub#access_model'})
+    field.setTagData('value', 'whitelist')
+    return options

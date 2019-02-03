@@ -74,6 +74,9 @@ AvatarMetaData.__new__.__defaults__ = (None,) * len(AvatarMetaData._fields)
 AvatarData = namedtuple('AvatarData', 'jid sha data')
 AvatarData.__new__.__defaults__ = (None,) * len(AvatarData._fields)
 
+BookmarkData = namedtuple('BookmarkData', 'jid name nick autojoin password')
+BookmarkData.__new__.__defaults__ = (None, None, None, None)
+
 
 class TuneData(namedtuple('TuneData', 'artist length rating source title track uri')):
 

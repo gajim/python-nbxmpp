@@ -285,6 +285,11 @@ class Error(Enum):
         return self.value
 
 
+class BookmarkStoreType(Enum):
+    PUBSUB = 'pubsub'
+    PRIVATE = 'private'
+
+
 MOODS = [
     'afraid',
     'amazed',

@@ -159,11 +159,35 @@ def callback(func):
     @wraps(func)
     def func_wrapper(self, _con, stanza, **kwargs):
         cb = kwargs.pop('callback', None)
-        if cb is None:
-            return
 
-        if cb() is not None:
-            result = func(self, stanza, **kwargs)
+        result = func(self, stanza, **kwargs)
+        if cb is not None and cb() is not None:
             cb()(result)
 
     return func_wrapper
+
+
+def from_xs_boolean(value):
+    if value in ('1', 'true', 'True'):
+        return True
+
+    if value in ('0', 'false', 'False', ''):
+        return False
+
+    raise ValueError('Cant convert %s to python boolean' % value)
+
+
+def to_xs_boolean(value):
+    # Convert to xs:boolean ('true', 'false')
+    # from a python boolean (True, False) or None
+    if value is True:
+        return 'true'
+
+    if value is False:
+        return 'false'
+
+    if value is None:
+        return 'false'
+
+    raise ValueError(
+        'Cant convert %s to xs:boolean' % value)
