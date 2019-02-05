@@ -124,7 +124,7 @@ class SASL(PlugIn):
         self.channel_binding = channel_binding
         self.enabled_auth_mechs = auth_mechs
         self.realm = None
-        self._domain_based_hostname = None
+        self._domain_based_name = None
 
     def plugin(self, owner):
         if 'version' not in self._owner.Dispatcher.Stream._document_attrs:
