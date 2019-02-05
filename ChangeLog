@@ -1,3 +1,8 @@
+python-nbxmpp 0.6.10 (TBA)
+
+ * Add support for domain based name in features for GSSAPI
+ * Fix usage of BOSH
+
 python-nbxmpp 0.6.9 (10 January 2019)
 
  * Always bind after SM failed Fixes #64
