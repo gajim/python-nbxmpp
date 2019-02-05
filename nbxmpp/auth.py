@@ -29,6 +29,7 @@ from nbxmpp.protocol import Node
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import SASL_ERROR_CONDITIONS
 from nbxmpp.protocol import SASL_AUTH_MECHS
+from nbxmpp.protocol import NS_DOMAIN_BASED_NAME
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
 from nbxmpp.const import GSSAPIState
@@ -77,6 +78,7 @@ class SASL(PlugIn):
         self._method = None
 
         self._channel_binding = None
+        self._domain_based_name = None
 
     def _setup_mechs(self):
         if self._owner.connected in ('ssl', 'tls'):
@@ -139,6 +141,11 @@ class SASL(PlugIn):
 
         log.info('Available mechanisms: %s', available_mechs)
 
+        hostname = stanza.getTag('hostname', namespace=NS_DOMAIN_BASED_NAME)
+        if hostname is not None:
+            self._domain_based_name = hostname.getData()
+            log.info('Found domain based name: %s', self._domain_based_name)
+
         if not available_mechs:
             log.error('No available auth mechanisms found')
             self._abort_auth('invalid-mechanism')
@@ -192,7 +199,8 @@ class SASL(PlugIn):
 
         elif self._chosen_mechanism == 'GSSAPI':
             self._method = GSSAPI(self._owner.Connection)
-            self._method.initiate(self._owner.xmpp_hostname)
+            self._method.initiate(self._domain_based_name or
+                                  self._owner.xmpp_hostname)
 
         else:
             log.error('Unknown auth mech')
