@@ -126,9 +126,9 @@ class Bookmarks:
             log.info('Error: %s', stanza.getError())
             return []
 
+        bookmarks = []
         if type_ == BookmarkStoreType.PUBSUB:
             item = get_pubsub_item(stanza)
-            bookmarks = []
             storage_node = item.getTag('storage', namespace=NS_BOOKMARKS)
 
         if type_ == BookmarkStoreType.PRIVATE:
