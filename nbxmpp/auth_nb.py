@@ -24,7 +24,7 @@ See client_nb.py
 from __future__ import unicode_literals
 
 from .protocol import NS_SASL, NS_SESSION, NS_STREAMS, NS_BIND, NS_AUTH
-from .protocol import NS_STREAM_MGMT
+from .protocol import NS_STREAM_MGMT, NS_DOMAIN_BASED_NAME
 from .protocol import Node, NodeProcessed, isResultNode, Iq, Protocol, JID
 from .plugin import PlugIn
 import sys
@@ -124,6 +124,7 @@ class SASL(PlugIn):
         self.channel_binding = channel_binding
         self.enabled_auth_mechs = auth_mechs
         self.realm = None
+        self._domain_based_hostname = None
 
     def plugin(self, owner):
         if 'version' not in self._owner.Dispatcher.Stream._document_attrs:
@@ -189,6 +190,10 @@ class SASL(PlugIn):
             in feats.getTag('mechanisms', namespace=NS_SASL).getTags('mechanism')
         ) & self.enabled_auth_mechs
 
+        hostname = feats.getTag('hostname', namespace=NS_DOMAIN_BASED_NAME)
+        if hostname is not None:
+            self._domain_based_name = hostname.getData()
+
         # Password based authentication mechanism ordered by strength.
         # If the server supports a mechanism disable all weaker mechanisms.
         password_auth_mechs_strength = ['SCRAM-SHA-1-PLUS', 'SCRAM-SHA-1',
@@ -229,9 +234,9 @@ class SASL(PlugIn):
             raise NodeProcessed
         if 'GSSAPI' in self.mecs and have_kerberos:
             self.mecs.remove('GSSAPI')
+            hostname = self._domain_based_name or self._owner.xmpp_hostname
             try:
-                self.gss_vc = kerberos.authGSSClientInit('xmpp@' + \
-                    self._owner.xmpp_hostname)[1]
+                self.gss_vc = kerberos.authGSSClientInit('xmpp@%s' % hostname)[1]
                 kerberos.authGSSClientStep(self.gss_vc, '')
                 response = kerberos.authGSSClientResponse(self.gss_vc)
                 node=Node('auth', attrs={'xmlns': NS_SASL,
