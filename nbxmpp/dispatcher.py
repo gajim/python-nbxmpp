@@ -1,5 +1,4 @@
-##   dispatcher_nb.py
-##       based on dispatcher.py
+##   dispatcher.py
 ##
 ##   Copyright (C) 2003-2005 Alexey "Snake" Nezhdanov
 ##       modified by Dimitur Kirov <dkirov@gmail.com>
@@ -68,7 +67,7 @@ from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.util import get_properties_struct
 
 
-log = logging.getLogger('nbxmpp.dispatcher_nb')
+log = logging.getLogger('nbxmpp.dispatcher')
 
 #: default timeout to wait for response for our id
 DEFAULT_TIMEOUT_SECONDS = 25

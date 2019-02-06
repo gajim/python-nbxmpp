@@ -1,12 +1,12 @@
 '''
-Tests for dispatcher_nb.py
+Tests for dispatcher.py
 '''
 import unittest
 from unittest.mock import Mock
 
 from test import lib
 
-from nbxmpp import dispatcher_nb
+from nbxmpp import dispatcher
 from nbxmpp import protocol
 from nbxmpp.protocol import JID
 
@@ -17,7 +17,7 @@ class TestDispatcherNB(unittest.TestCase):
     into a mock client
     '''
     def setUp(self):
-        self.dispatcher = dispatcher_nb.XMPPDispatcher()
+        self.dispatcher = dispatcher.XMPPDispatcher()
 
         # Setup mock client
         self.client = Mock()

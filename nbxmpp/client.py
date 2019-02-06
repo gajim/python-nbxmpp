@@ -20,7 +20,7 @@ Client class establishes connection to XMPP Server and handles authentication
 import socket
 import logging
 
-from . import transports_nb, dispatcher_nb, roster, protocol, bosh
+from . import transports_nb, dispatcher, roster, protocol, bosh
 from .protocol import NS_TLS
 from .protocol import JID
 from .auth import SASL
@@ -376,7 +376,7 @@ class NonBlockingClient:
             if 'Dispatcher' in self.__dict__:
                 self.Dispatcher.PlugOut()
                 self.got_features = False
-            dispatcher_nb.Dispatcher.get_instance().PlugIn(self)
+            dispatcher.Dispatcher.get_instance().PlugIn(self)
             on_next_receive('RECEIVE_DOCUMENT_ATTRIBUTES')
 
         elif mode == 'FAILURE':
@@ -591,7 +591,7 @@ class NonBlockingClient:
         if requestRoster:
             # FIXME: used somewhere?
             roster.NonBlockingRoster.get_instance().PlugIn(self)
-        self.send(dispatcher_nb.Presence(to=jid, typ=typ))
+        self.send(dispatcher.Presence(to=jid, typ=typ))
 
 ###############################################################################
 ### following methods are moved from blocking client class of xmpppy

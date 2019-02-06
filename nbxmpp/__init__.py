@@ -10,7 +10,7 @@ Thanks and credits to the xmpppy developers. See: http://xmpppy.sourceforge.net/
 
 from .protocol import *
 from . import simplexml, protocol, auth, transports_nb, roster
-from . import dispatcher_nb, features, idlequeue, bosh, tls_nb, proxy_connectors
+from . import dispatcher, features, idlequeue, bosh, tls_nb, proxy_connectors
 from .client import NonBlockingClient
 from .plugin import PlugIn
 from .smacks import Smacks
