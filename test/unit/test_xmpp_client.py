@@ -1,5 +1,5 @@
 '''
-Testing script for NonBlockingClient class (src/common/xmpp/client_nb.py)
+Testing script for NonBlockingClient class (nbxmpp/client.py)
 
 It actually connects to a xmpp server.
 '''
@@ -9,7 +9,7 @@ from unittest.mock import Mock
 
 from test.lib.xmpp_mocks import MockConnection, IdleQueueThread
 
-from nbxmpp import client_nb
+from nbxmpp import client
 
 # (XMPP server hostname, c2s port). Script will connect to the machine.
 xmpp_server_port = ('gajim.org', 5222)
@@ -54,7 +54,7 @@ class TestNonBlockingClient(unittest.TestCase):
             def on_connect_failure(self):
                 pass
 
-        self.client = client_nb.NonBlockingClient(
+        self.client = client.NonBlockingClient(
                 domain=server_port[0],
                 idlequeue=self.idlequeue_thread.iq,
                 caller=Mock(spec=TempConnection))

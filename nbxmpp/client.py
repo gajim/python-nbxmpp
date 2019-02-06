@@ -1,5 +1,4 @@
-##   client_nb.py
-##         based on client.py, changes backported up to revision 1.60
+##   client.py
 ##
 ##   Copyright (C) 2003-2005 Alexey "Snake" Nezhdanov
 ##         modified by Dimitur Kirov <dkirov@gmail.com>
@@ -31,7 +30,7 @@ from .const import Realm
 from .const import Event
 
 
-log = logging.getLogger('nbxmpp.client_nb')
+log = logging.getLogger('nbxmpp.client')
 
 
 class NonBlockingClient:
