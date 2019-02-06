@@ -1,5 +1,4 @@
-##   tls_nb.py
-##       based on transports_nb.py
+##   tls.py
 ##
 ##   Copyright (C) 2003-2004 Alexey "Snake" Nezhdanov
 ##       modified by Dimitur Kirov <dkirov@gmail.com>
@@ -23,7 +22,7 @@ import logging
 
 from .plugin import PlugIn
 
-log = logging.getLogger('nbxmpp.tls_nb')
+log = logging.getLogger('nbxmpp.tls')
 
 PYOPENSSL = 'PYOPENSSL'
 

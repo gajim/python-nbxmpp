@@ -206,7 +206,7 @@ class NonBlockingClient:
                 'tls' - TLS established after negotiation with starttls, or
                 'plain'.
             cacerts, mycerts, tls_version, cipher_list, alpn
-                see tls_nb.NonBlockingTLS constructor for more details
+                see tls.NonBlockingTLS constructor for more details
         """
         self.on_connect = on_connect
         self.on_connect_failure=on_connect_failure

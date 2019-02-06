@@ -37,7 +37,7 @@ from urllib.parse import urlparse
 from .plugin import PlugIn
 from .idlequeue import IdleObject
 from . import proxy_connectors
-from . import tls_nb
+from . import tls
 
 log = logging.getLogger('nbxmpp.transports_nb')
 
@@ -130,7 +130,7 @@ class NonBlockingTransport(PlugIn):
         :param estabilish_tls: boolean whether to estabilish TLS connection
             after TCP connection is done
         :param certs: tuple of (cacerts, mycerts) see constructor
-            of tls_nb.NonBlockingTLS for more details
+            of tls.NonBlockingTLS for more details
         :param tls_version: The lowest supported TLS version.
         :param cipher_list: list of ciphers used to connect to server
         """
@@ -429,7 +429,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         NonBlockingTLS module
         """
         cacerts, mycerts = self.certs
-        result = tls_nb.NonBlockingTLS.get_instance(cacerts, mycerts,
+        result = tls.NonBlockingTLS.get_instance(cacerts, mycerts,
             self.tls_version, self.cipher_list, self.alpn).PlugIn(self)
         if result:
             on_succ()
@@ -607,7 +607,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
         try:
             # get as many bites, as possible, but not more than RECV_BUFSIZE
             received = self._recv(RECV_BUFSIZE)
-        except tls_nb.SSLWrapper.Error as e:
+        except tls.SSLWrapper.Error as e:
             log.info("_do_receive, caught SSL error, got %s:" % received,
                     exc_info=True)
             errnum, errstr = e.errno,\
@@ -619,7 +619,7 @@ class NonBlockingTCP(NonBlockingTransport, IdleObject):
             errstr = 'zero bytes on recv'
 
         if (self.ssl_lib is None and received == '') or \
-        (self.ssl_lib == tls_nb.PYOPENSSL and errnum == -1 ):
+        (self.ssl_lib == tls.PYOPENSSL and errnum == -1 ):
             # -1 in pyopenssl: errstr == Unexpected EOF
             log.info("Disconnected by remote server: #%s, %s" % (errnum, errstr))
             self.on_remote_disconnect()
