@@ -20,7 +20,7 @@ Client class establishes connection to XMPP Server and handles authentication
 import socket
 import logging
 
-from . import transports_nb, dispatcher, roster, protocol, bosh
+from . import transports, dispatcher, roster, protocol, bosh
 from .protocol import NS_TLS
 from .protocol import JID
 from .auth import SASL
@@ -243,7 +243,7 @@ class NonBlockingClient:
             # tcp_host is hostname of machine used for socket connection
             # (DNS request will be done for proxy or BOSH CM hostname)
             tcp_host, tcp_port, proxy_user, proxy_pass = \
-                    transports_nb.get_proxy_data_from_dict(proxy)
+                    transports.get_proxy_data_from_dict(proxy)
 
             if proxy['type'] == 'bosh':
                 # Setup BOSH transport
@@ -270,7 +270,7 @@ class NonBlockingClient:
 
         if not proxy or proxy['type'] != 'bosh':
             # Setup ordinary TCP transport
-            self.socket = transports_nb.NonBlockingTCP.get_instance(
+            self.socket = transports.NonBlockingTCP.get_instance(
                     on_disconnect=self.disconnect,
                     raise_event=self.raise_event,
                     idlequeue=self.idlequeue,

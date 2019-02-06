@@ -4,7 +4,7 @@ Unit test for tranports classes.
 
 import unittest
 
-from nbxmpp import transports_nb
+from nbxmpp import transports
 
 
 class TestModuleLevelFunctions(unittest.TestCase):
@@ -13,7 +13,7 @@ class TestModuleLevelFunctions(unittest.TestCase):
     '''
     def test_urisplit(self):
         def check_uri(uri, proto, host, port, path):
-            _proto, _host, _port, _path = transports_nb.urisplit(uri)
+            _proto, _host, _port, _path = transports.urisplit(uri)
             self.assertEqual(proto, _proto)
             self.assertEqual(host, _host)
             self.assertEqual(path, _path)
@@ -30,7 +30,7 @@ class TestModuleLevelFunctions(unittest.TestCase):
 
     def test_get_proxy_data_from_dict(self):
         def check_dict(proxy_dict, host, port, user, passwd):
-            _host, _port, _user, _passwd = transports_nb.get_proxy_data_from_dict(
+            _host, _port, _user, _passwd = transports.get_proxy_data_from_dict(
                     proxy_dict)
             self.assertEqual(_host, host)
             self.assertEqual(_port, port)

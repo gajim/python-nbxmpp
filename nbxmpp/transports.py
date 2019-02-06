@@ -1,5 +1,4 @@
-##   transports_nb.py
-##       based on transports.py
+##   transports.py
 ##
 ##   Copyright (C) 2003-2004 Alexey "Snake" Nezhdanov
 ##       modified by Dimitur Kirov <dkirov@gmail.com>
@@ -39,7 +38,7 @@ from .idlequeue import IdleObject
 from . import proxy_connectors
 from . import tls
 
-log = logging.getLogger('nbxmpp.transports_nb')
+log = logging.getLogger('nbxmpp.transports')
 
 def urisplit(uri):
     """
