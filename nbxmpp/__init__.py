@@ -9,7 +9,7 @@ Thanks and credits to the xmpppy developers. See: http://xmpppy.sourceforge.net/
 """
 
 from .protocol import *
-from . import simplexml, protocol, auth, transports_nb, roster_nb
+from . import simplexml, protocol, auth, transports_nb, roster
 from . import dispatcher_nb, features_nb, idlequeue, bosh, tls_nb, proxy_connectors
 from .client_nb import NonBlockingClient
 from .plugin import PlugIn

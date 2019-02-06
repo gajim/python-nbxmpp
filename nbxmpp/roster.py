@@ -1,5 +1,4 @@
-##   roster_nb.py
-##         based on roster.py
+##   roster.py
 ##
 ##   Copyright (C) 2003-2005 Alexey "Snake" Nezhdanov
 ##         modified by Dimitur Kirov <dkirov@gmail.com>
@@ -25,7 +24,7 @@ from .protocol import JID, Iq, Presence, Node, NS_MUC_USER, NS_ROSTER
 from .plugin import PlugIn
 
 
-log = logging.getLogger('nbxmpp.roster_nb')
+log = logging.getLogger('nbxmpp.roster')
 
 
 class NonBlockingRoster(PlugIn):

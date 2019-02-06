@@ -21,7 +21,7 @@ Client class establishes connection to XMPP Server and handles authentication
 import socket
 import logging
 
-from . import transports_nb, dispatcher_nb, roster_nb, protocol, bosh
+from . import transports_nb, dispatcher_nb, roster, protocol, bosh
 from .protocol import NS_TLS
 from .protocol import JID
 from .auth import SASL
@@ -572,7 +572,7 @@ class NonBlockingClient:
         Plug in the roster
         """
         if 'NonBlockingRoster' not in self.__dict__:
-            return roster_nb.NonBlockingRoster.get_instance(
+            return roster.NonBlockingRoster.get_instance(
                 version=version).PlugIn(self, request=request)
 
     def getRoster(self, on_ready=None, force=False):
@@ -591,7 +591,7 @@ class NonBlockingClient:
         """
         if requestRoster:
             # FIXME: used somewhere?
-            roster_nb.NonBlockingRoster.get_instance().PlugIn(self)
+            roster.NonBlockingRoster.get_instance().PlugIn(self)
         self.send(dispatcher_nb.Presence(to=jid, typ=typ))
 
 ###############################################################################
