@@ -88,7 +88,8 @@ class TestDispatcherNB(unittest.TestCase):
         self._simulate_connect()
         stanza = "<iq type='get' />"
         def send(data):
-            self.assertEqual(lib.xml2str_sorted(data), '<iq xmlns="jabber:client" type="error"><error code="501" type="cancel"><feature-not-implemented xmlns="urn:ietf:params:xml:ns:xmpp-stanzas" /><text xmlns="urn:ietf:params:xml:ns:xmpp-stanzas">The feature requested is not implemented by the recipient or server and therefore cannot be processed.</text></error></iq>')
+            print(lib.xml2str_sorted(data))
+            self.assertEqual(lib.xml2str_sorted(data), '<iq xmlns="jabber:client" from="test@test.test" to="test@test.test" type="error"><error code="501" type="cancel"><feature-not-implemented xmlns="urn:ietf:params:xml:ns:xmpp-stanzas" /><text xmlns="urn:ietf:params:xml:ns:xmpp-stanzas">The feature requested is not implemented by the recipient or server and therefore cannot be processed.</text></error></iq>')
         self.client.send = send
         self.dispatcher.ProcessNonBlocking(stanza)
 
