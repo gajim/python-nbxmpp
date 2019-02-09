@@ -189,6 +189,8 @@ NS_HASHES_SHA3_512 = 'urn:xmpp:hash-function-text-names:sha3-512'
 NS_HASHES_BLAKE2B_256 = 'urn:xmpp:hash-function-text-names:id-blake2b256'
 NS_HASHES_BLAKE2B_512 = 'urn:xmpp:hash-function-text-names:id-blake2b512'
 NS_OPENPGP = 'urn:xmpp:openpgp:0'
+NS_OPENPGP_PK = 'urn:xmpp:openpgp:0:public-keys'
+NS_OPENPGP_SK = 'urn:xmpp:openpgp:0:secret-key'
 NS_BOOKMARK_CONVERSION = 'urn:xmpp:bookmarks-conversion:0'
 NS_DOMAIN_BASED_NAME = 'urn:xmpp:domain-based-name:1'
 
@@ -655,6 +657,9 @@ class InvalidStanza(Exception):
 class InvalidJid(Exception):
     pass
 
+class StanzaMalformed(Exception):
+    pass
+
 stream_exceptions = {'bad-format': BadFormat,
                     'bad-namespace-prefix': BadNamespacePrefix,
                     'conflict': Conflict,
@@ -806,6 +811,10 @@ class JID:
         dictionary
         """
         return hash(str(self))
+
+    def __repr__(self):
+        return str(self)
+
 
 class BOSHBody(Node):
     """

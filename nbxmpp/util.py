@@ -30,6 +30,7 @@ from nbxmpp.structs import Properties
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import PresenceProperties
+from nbxmpp.structs import CommonError
 
 log = logging.getLogger('nbxmpp.util')
 
@@ -137,6 +138,7 @@ def call_on_response(cb):
     def response_decorator(func):
         @wraps(func)
         def func_wrapper(self, *args, **kwargs):
+            user_data = kwargs.pop('user_data', None)
             callback_ = kwargs.pop('callback', None)
 
             stanza = func(self, *args, **kwargs)
@@ -144,6 +146,9 @@ def call_on_response(cb):
                 stanza, attrs = stanza
             else:
                 stanza, attrs = stanza, {}
+
+            if user_data is not None:
+                attrs['user_data'] = user_data
 
             if callback_ is not None:
                 attrs['callback'] = weakref.WeakMethod(callback_)
@@ -159,11 +164,14 @@ def callback(func):
     @wraps(func)
     def func_wrapper(self, _con, stanza, **kwargs):
         cb = kwargs.pop('callback', None)
+        user_data = kwargs.pop('user_data', None)
 
         result = func(self, stanza, **kwargs)
         if cb is not None and cb() is not None:
-            cb()(result)
-
+            if user_data is not None:
+                cb()(result, user_data)
+            else:
+                cb()(result)
     return func_wrapper
 
 
@@ -191,3 +199,18 @@ def to_xs_boolean(value):
 
     raise ValueError(
         'Cant convert %s to xs:boolean' % value)
+
+
+def raise_error(log_method, stanza, type_=None, message=None):
+    if type_ is None:
+        type_ = stanza.getError()
+        message = stanza.getErrorMsg()
+    error = CommonError(type_, message)
+    log_method(error)
+    if log_method.__name__ in ('warning', 'error'):
+        log_method(stanza)
+    return error
+
+
+def is_error_result(result):
+    return isinstance(result, CommonError)

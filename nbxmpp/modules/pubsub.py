@@ -47,16 +47,34 @@ class PubSub:
     def _process_pubsub_base(self, _con, stanza, properties):
         properties.pubsub = True
         event = stanza.getTag('event', namespace=NS_PUBSUB_EVENT)
-        items = event.getTag('items')
-        if len(items.getChildren()) != 1:
-            log.warning('PubSub event with more than one item')
-            log.warning(stanza)
-        node = items.getAttr('node')
-        item = items.getTag('item')
-        if item is None:
+
+        delete = event.getTag('delete')
+        if delete is not None:
+            node = delete.getAttr('node')
+            properties.pubsub_event = PubSubEventData(
+                node, empty=True, deleted=True)
             return
-        id_ = item.getAttr('id')
-        properties.pubsub_event = PubSubEventData(node, id_, item, None, False)
+
+        retract = event.getTag('retract')
+        if retract is not None:
+            node = retract.getAttr('node')
+            item = retract.getTag('item')
+            id_ = item.getAttr('id')
+            properties.pubsub_event = PubSubEventData(
+                node, id_, item, retracted=True)
+            return
+
+        items = event.getTag('items')
+        if items is not None:
+            if len(items.getChildren()) != 1:
+                log.warning('PubSub event with more than one item')
+                log.warning(stanza)
+            node = items.getAttr('node')
+            item = items.getTag('item')
+            if item is None:
+                return
+            id_ = item.getAttr('id')
+            properties.pubsub_event = PubSubEventData(node, id_, item)
 
     @call_on_response('_default_response')
     def publish(self, jid, node, item, id_=None, options=None):

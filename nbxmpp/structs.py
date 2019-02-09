@@ -59,7 +59,8 @@ HTTPAuthData.__new__.__defaults__ = (None, None, None, None)
 StanzaIDData = namedtuple('StanzaIDData', 'id by')
 StanzaIDData.__new__.__defaults__ = (None, None)
 
-PubSubEventData = namedtuple('PubSubEventData', 'node id item data empty')
+PubSubEventData = namedtuple('PubSubEventData', 'node id item data empty deleted retracted')
+PubSubEventData.__new__.__defaults__ = (None, None, None, False, False, False)
 
 MoodData = namedtuple('MoodData', 'mood text')
 
@@ -76,6 +77,17 @@ AvatarData.__new__.__defaults__ = (None,) * len(AvatarData._fields)
 
 BookmarkData = namedtuple('BookmarkData', 'jid name nick autojoin password')
 BookmarkData.__new__.__defaults__ = (None, None, None, None)
+
+PGPPublicKey = namedtuple('PGPPublicKey', 'jid key date')
+
+PGPKeyMetadata = namedtuple('PGPKeyMetadata', 'jid fingerprint date')
+
+
+class CommonError(namedtuple('CommonError', 'type message')):
+    def __str__(self):
+        if self.message is not None:
+            return '%s: %s' % (self.type, self.message)
+        return self.type
 
 
 class TuneData(namedtuple('TuneData', 'artist length rating source title track uri')):
@@ -140,6 +152,16 @@ class MessageProperties:
         self.mam = None
         self.pubsub = False
         self.pubsub_event = None
+        self.openpgp = None
+        self.encrypted = None
+
+    @property
+    def is_encrypted(self):
+        return self.encrypted is not None
+
+    @property
+    def is_openpgp(self):
+        return self.openpgp is not None
 
     @property
     def is_pubsub(self):

@@ -63,6 +63,7 @@ from nbxmpp.modules.mood import Mood
 from nbxmpp.modules.location import Location
 from nbxmpp.modules.user_avatar import UserAvatar
 from nbxmpp.modules.bookmarks import Bookmarks
+from nbxmpp.modules.openpgp import OpenPGP
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.util import get_properties_struct
@@ -193,6 +194,7 @@ class XMPPDispatcher(PlugIn):
         self._modules['Location'] = Location(self._owner)
         self._modules['UserAvatar'] = UserAvatar(self._owner)
         self._modules['Bookmarks'] = Bookmarks(self._owner)
+        self._modules['OpenPGP'] = OpenPGP(self._owner)
 
         for instance in self._modules.values():
             for handler in instance.handlers:
@@ -518,14 +520,19 @@ class XMPPDispatcher(PlugIn):
         # Convert simplexml to Protocol object
         stanza = self.handlers[xmlns][name]['type'](node=stanza)
 
+        own_jid = self._owner.get_bound_jid()
         properties = get_properties_struct(name)
+
+        if name == 'iq':
+            if stanza.getFrom() is None and own_jid is not None:
+                stanza.setFrom(own_jid.getBare())
+
         if name == 'message':
             # https://tools.ietf.org/html/rfc6120#section-8.1.1.1
             # If the stanza does not include a 'to' address then the client MUST
             # treat it as if the 'to' address were included with a value of the
             # client's full JID.
 
-            own_jid = self._owner.get_bound_jid()
             to = stanza.getTo()
             if to is None:
                 stanza.setTo(own_jid)
