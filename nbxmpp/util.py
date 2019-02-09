@@ -202,6 +202,8 @@ def to_xs_boolean(value):
 
 
 def raise_error(log_method, stanza, type_=None, message=None):
+    if message is not None:
+        message = str(message)
     if type_ is None:
         type_ = stanza.getError()
         message = stanza.getErrorMsg()

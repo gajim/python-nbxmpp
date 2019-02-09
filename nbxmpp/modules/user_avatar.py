@@ -29,6 +29,7 @@ from nbxmpp.structs import AvatarMetaData
 from nbxmpp.structs import AvatarData
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
+from nbxmpp.util import raise_error
 from nbxmpp.modules.pubsub import get_pubsub_request
 
 log = logging.getLogger('nbxmpp.m.user_avatar')
@@ -54,6 +55,11 @@ class UserAvatar:
         item = properties.pubsub_event.item
 
         metadata = item.getTag('metadata', namespace=NS_AVATAR_METADATA)
+        if metadata is None:
+            log.warning('No metadata node found')
+            log.warning(stanza)
+            raise NodeProcessed
+
         if not metadata.getChildren():
             pubsub_event = properties.pubsub_event._replace(empty=True)
             log.info('Received avatar metadata: %s - no avatar set',
@@ -83,8 +89,7 @@ class UserAvatar:
             jid = JID(self._client.get_bound_jid().getBare())
 
         if not isResultNode(stanza):
-            log.info('Error: %s', stanza.getError())
-            raise NodeProcessed
+            return raise_error(log.warning, stanza)
 
         pubsub_node = stanza.getTag('pubsub')
         items_node = pubsub_node.getTag('items')
@@ -93,16 +98,18 @@ class UserAvatar:
         sha = item.getAttr('id')
         data_node = item.getTag('data', namespace=NS_AVATAR_DATA)
         if data_node is None:
-            log.warning('No data node found')
-            log.warning(stanza)
-            raise NodeProcessed
+            return raise_error(log.warning, stanza, 'stanza-malformed',
+                               'No data node found')
 
         data = data_node.getData()
         if data is None:
-            log.warning('Data node empty')
-            log.warning(stanza)
-            raise NodeProcessed
+            return raise_error(log.warning, stanza, 'stanza-malformed',
+                               'Data node empty')
 
-        data = base64.b64decode(data.encode('utf-8'))
+        try:
+            data = base64.b64decode(data.encode('utf-8'))
+        except Exception as error:
+            return raise_error(log.warning, stanza, 'stanza-malformed', error)
+
         log.info('Received avatar data: %s %s', jid, sha)
         return AvatarData(jid, sha, data)

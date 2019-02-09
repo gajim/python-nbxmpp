@@ -50,6 +50,7 @@ from nbxmpp.structs import MucDestroyed
 from nbxmpp.util import validate_jid
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
+from nbxmpp.util import raise_error
 from nbxmpp.modules.dataforms import extend_form
 
 log = logging.getLogger('nbxmpp.m.muc')
@@ -488,9 +489,7 @@ class MUC:
     @callback
     def _default_response(self, stanza):
         if not isResultNode(stanza):
-            log.info('Error: %s', stanza.getError())
-            return CommonResult(jid=stanza.getFrom(),
-                                error=stanza.getError())
+            return raise_error(log.info, stanza)
         return CommonResult(jid=stanza.getFrom())
 
     @staticmethod

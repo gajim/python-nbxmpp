@@ -31,6 +31,7 @@ from nbxmpp.util import to_xs_boolean
 from nbxmpp.util import validate_jid
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
+from nbxmpp.util import raise_error
 from nbxmpp.modules.pubsub import get_pubsub_item
 from nbxmpp.modules.pubsub import get_pubsub_request
 from nbxmpp.modules.pubsub import get_bookmark_publish_options
@@ -123,8 +124,7 @@ class Bookmarks:
     @callback
     def _bookmarks_received(self, stanza, type_):
         if not isResultNode(stanza):
-            log.info('Error: %s', stanza.getError())
-            return []
+            return raise_error(log.info, stanza)
 
         bookmarks = []
         if type_ == BookmarkStoreType.PUBSUB:
@@ -187,4 +187,4 @@ class Bookmarks:
     @staticmethod
     def _on_private_store_result(_con, stanza):
         if not isResultNode(stanza):
-            log.info('Error: %s', stanza.getError())
+            return raise_error(log.info, stanza)

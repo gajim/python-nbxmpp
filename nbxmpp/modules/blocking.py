@@ -24,6 +24,7 @@ from nbxmpp.structs import BlockingListResult
 from nbxmpp.structs import CommonResult
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
+from nbxmpp.util import raise_error
 
 log = logging.getLogger('nbxmpp.m.blocking')
 
@@ -43,9 +44,7 @@ class Blocking:
     def _blocking_list_received(self, stanza):
         blocked = []
         if not isResultNode(stanza):
-            log.info('Error: %s', stanza.getErrorMsg())
-            return BlockingListResult(blocking_list=blocked,
-                                      error=stanza.getErrorMsg())
+            return raise_error(log.info, stanza)
 
         blocklist = stanza.getTag('blocklist', namespace=NS_BLOCKING)
         for item in blocklist.getTags('item'):
@@ -75,7 +74,5 @@ class Blocking:
     @callback
     def _default_response(self, stanza):
         if not isResultNode(stanza):
-            log.info('Error: %s', stanza.getErrorMsg())
-            return CommonResult(jid=stanza.getFrom(),
-                                error=stanza.getErrorMsg())
+            return raise_error(log.info, stanza)
         return CommonResult(jid=stanza.getFrom())
