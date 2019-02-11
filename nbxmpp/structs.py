@@ -84,6 +84,8 @@ AvatarData.__new__.__defaults__ = (None,) * len(AvatarData._fields)
 BookmarkData = namedtuple('BookmarkData', 'jid name nick autojoin password')
 BookmarkData.__new__.__defaults__ = (None, None, None, None)
 
+BlockingListResult = namedtuple('BlockingListResult', 'blocking_list')
+
 PGPPublicKey = namedtuple('PGPPublicKey', 'jid key date')
 
 PGPKeyMetadata = namedtuple('PGPKeyMetadata', 'jid fingerprint date')
@@ -379,11 +381,3 @@ class CommonResult(BaseResult, namedtuple('CommonResult', 'jid error')):
     pass
 
 CommonResult.__new__.__defaults__ = (None,)
-
-
-
-class BlockingListResult(BaseResult, namedtuple('BlockingListResult',
-                                                'blocking_list error')):
-    pass
-
-BlockingListResult.__new__.__defaults__ = (None,)
