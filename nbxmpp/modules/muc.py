@@ -25,6 +25,7 @@ from nbxmpp.protocol import NS_MUC_REQUEST
 from nbxmpp.protocol import NS_MUC_ADMIN
 from nbxmpp.protocol import NS_MUC_OWNER
 from nbxmpp.protocol import NS_CAPTCHA
+from nbxmpp.protocol import NS_ADDRESS
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Message
@@ -71,7 +72,7 @@ class MUC:
             StanzaHandler(name='message',
                           callback=self._process_groupchat_message,
                           typ='groupchat',
-                          priority=11),
+                          priority=6),
             StanzaHandler(name='message',
                           callback=self._process_mediated_invite,
                           typ='normal',
@@ -160,10 +161,16 @@ class MUC:
     def _process_groupchat_message(self, _con, stanza, properties):
         properties.from_muc = True
         properties.muc_nickname = properties.jid.getResource() or None
-        
+
         muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
         if muc_user is not None:
             properties.muc_user = self._parse_muc_user(muc_user)
+
+        addresses = stanza.getTag('addresses', namespace=NS_ADDRESS)
+        if addresses is not None:
+            address = addresses.getTag('address', attrs={'type': 'ofrom'})
+            if address is not None:
+                properties.muc_ofrom = JID(address.getAttr('jid'))
 
     @staticmethod
     def _process_message(_con, stanza, properties):
