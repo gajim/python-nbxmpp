@@ -34,6 +34,9 @@ StanzaHandler = namedtuple('StanzaHandler',
                            'name callback typ ns xmlns system priority')
 StanzaHandler.__new__.__defaults__ = ('', '', None, False, 50)
 
+CommonResult = namedtuple('CommonResult', 'jid')
+CommonResult.__new__.__defaults__ = (None,)
+
 InviteData = namedtuple('InviteData',
                         'muc from_ reason password type continued thread')
 
@@ -369,15 +372,3 @@ class ErrorProperties:
 
     def __str__(self):
         return '%s %s' % (self.type, self.message)
-
-
-class BaseResult:
-    @property
-    def is_error(self):
-        return self.error is not None
-
-
-class CommonResult(BaseResult, namedtuple('CommonResult', 'jid error')):
-    pass
-
-CommonResult.__new__.__defaults__ = (None,)
