@@ -300,18 +300,12 @@ class MUC:
         iq = Iq(typ='get', to=jid, queryNS=NS_MUC_ADMIN)
         item = iq.setQuery().setTag('item')
         item.setAttr('affiliation', affiliation)
-        return iq, {'affiliation': affiliation}
+        return iq
 
     @callback
-    def _affiliation_received(self, stanza, affiliation):
+    def _affiliation_received(self, stanza):
         if not isResultNode(stanza):
-            log.info('Affiliation error: %s %s %s',
-                     stanza.getFrom(),
-                     stanza.getError(),
-                     affiliation)
-            return AffiliationResult(jid=stanza.getFrom(),
-                                     affiliation=affiliation,
-                                     error=stanza.getError())
+            return raise_error(log.info, stanza)
 
         room_jid = stanza.getFrom()
         query = stanza.getTag('query', namespace=NS_MUC_ADMIN)
@@ -333,12 +327,10 @@ class MUC:
             if reason:
                 users_dict[jid]['reason'] = reason
 
-        log.info('%s affiliations received from %s: %s',
-                 affiliation, room_jid, users_dict)
+        log.info('Affiliations received from %s: %s',
+                 room_jid, users_dict)
 
-        return AffiliationResult(jid=room_jid,
-                                 affiliation=affiliation,
-                                 users=users_dict)
+        return AffiliationResult(jid=room_jid, users=users_dict)
 
     @call_on_response('_default_response')
     def destroy(self, room_jid, reason='', jid=''):
