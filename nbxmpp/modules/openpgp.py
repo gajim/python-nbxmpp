@@ -56,7 +56,7 @@ class OpenPGP:
             StanzaHandler(name='message',
                           callback=self._process_openpgp_message,
                           ns=NS_OPENPGP,
-                          priority=6),
+                          priority=7),
         ]
 
     def _process_openpgp_message(self, _con, stanza, properties):
