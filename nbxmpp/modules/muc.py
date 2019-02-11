@@ -364,9 +364,7 @@ class MUC:
     @callback
     def _config_received(self, stanza):
         if not isResultNode(stanza):
-            log.info('Error: %s', stanza.getError())
-            return MucConfigResult(jid=stanza.getFrom(),
-                                   error=stanza.getError())
+            return raise_error(log.info, stanza)
 
         jid = stanza.getFrom()
         payload = stanza.getQueryPayload()

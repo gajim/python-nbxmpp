@@ -51,6 +51,9 @@ MucUserData.__new__.__defaults__ = (None, None, None, None, None)
 MucDestroyed = namedtuple('MucDestroyed', 'alternate reason password')
 MucDestroyed.__new__.__defaults__ = (None, None, None)
 
+MucConfigResult = namedtuple('MucConfigResult', 'jid form')
+MucConfigResult.__new__.__defaults__ = (None,)
+
 AffiliationResult = namedtuple('AffiliationResult', 'jid users')
 
 EntityCapsData = namedtuple('EntityCapsData', 'hash node ver')
@@ -377,12 +380,6 @@ class CommonResult(BaseResult, namedtuple('CommonResult', 'jid error')):
 
 CommonResult.__new__.__defaults__ = (None,)
 
-
-class MucConfigResult(BaseResult, namedtuple('MucConfigResult',
-                                             'jid form error')):
-    pass
-
-MucConfigResult.__new__.__defaults__ = (None, None)
 
 
 class BlockingListResult(BaseResult, namedtuple('BlockingListResult',
