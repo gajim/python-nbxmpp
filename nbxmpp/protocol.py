@@ -121,7 +121,6 @@ NS_MUC_CONFIG     = NS_MUC + '#roomconfig'
 NS_MUC_REQUEST    = NS_MUC + '#request'
 NS_NICK           = 'http://jabber.org/protocol/nick'                 # XEP-0172
 NS_OFFLINE        = 'http://www.jabber.org/jeps/jep-0030.html'        # XEP-0013
-NS_OMEMO          = 'urn:xmpp:omemo:0'                                # XEP-0384
 NS_PHYSLOC        = 'http://jabber.org/protocol/physloc'              # XEP-0112
 NS_PING           = 'urn:xmpp:ping'                                   # XEP-0199
 NS_PRESENCE       = 'presence'                                        # Jabberd2
@@ -191,8 +190,12 @@ NS_HASHES_BLAKE2B_512 = 'urn:xmpp:hash-function-text-names:id-blake2b512'
 NS_OPENPGP = 'urn:xmpp:openpgp:0'
 NS_OPENPGP_PK = 'urn:xmpp:openpgp:0:public-keys'
 NS_OPENPGP_SK = 'urn:xmpp:openpgp:0:secret-key'
+NS_OMEMO_TEMP = 'eu.siacs.conversations.axolotl'
+NS_OMEMO_TEMP_DL = 'eu.siacs.conversations.axolotl.devicelist'
+NS_OMEMO_TEMP_BUNDLE = 'eu.siacs.conversations.axolotl.bundles'
 NS_BOOKMARK_CONVERSION = 'urn:xmpp:bookmarks-conversion:0'
 NS_DOMAIN_BASED_NAME = 'urn:xmpp:domain-based-name:1'
+NS_HINTS = 'urn:xmpp:hints'
 
 #xmpp_stream_error_conditions = '''
 #bad-format --  --  -- The entity has sent XML that cannot be processed.

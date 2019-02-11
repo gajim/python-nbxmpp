@@ -16,6 +16,7 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 import time
+import random
 from collections import namedtuple
 
 from nbxmpp.protocol import JID
@@ -82,6 +83,13 @@ PGPPublicKey = namedtuple('PGPPublicKey', 'jid key date')
 
 PGPKeyMetadata = namedtuple('PGPKeyMetadata', 'jid fingerprint date')
 
+OMEMOMessage = namedtuple('OMEMOMessage', 'sid iv keys payload')
+
+
+class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
+    def pick_prekey(self):
+        return random.SystemRandom().choice(self.otpks)
+
 
 class CommonError(namedtuple('CommonError', 'type message')):
     def __str__(self):
@@ -146,6 +154,7 @@ class MessageProperties:
         self.muc_invite = None
         self.muc_decline = None
         self.muc_user = None
+        self.muc_ofrom = None
         self.captcha = None
         self.voice_request = None
         self.self_message = False
@@ -153,11 +162,16 @@ class MessageProperties:
         self.pubsub = False
         self.pubsub_event = None
         self.openpgp = None
+        self.omemo = None
         self.encrypted = None
 
     @property
     def is_encrypted(self):
         return self.encrypted is not None
+
+    @property
+    def is_omemo(self):
+        return self.omemo is not None
 
     @property
     def is_openpgp(self):

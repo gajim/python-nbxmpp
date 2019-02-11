@@ -36,6 +36,8 @@ log = logging.getLogger('nbxmpp.util')
 
 
 def b64decode(data, return_type=str):
+    if not data:
+        raise ValueError('No data to decode')
     if isinstance(data, str):
         data = data.encode()
     result = base64.b64decode(data)
@@ -45,6 +47,8 @@ def b64decode(data, return_type=str):
 
 
 def b64encode(data, return_type=str):
+    if not data:
+        raise ValueError('No data to encode')
     if isinstance(data, str):
         data = data.encode()
     result = base64.b64encode(data)

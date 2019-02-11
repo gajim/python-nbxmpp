@@ -64,6 +64,7 @@ from nbxmpp.modules.location import Location
 from nbxmpp.modules.user_avatar import UserAvatar
 from nbxmpp.modules.bookmarks import Bookmarks
 from nbxmpp.modules.openpgp import OpenPGP
+from nbxmpp.modules.omemo import OMEMO
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.util import get_properties_struct
@@ -195,6 +196,7 @@ class XMPPDispatcher(PlugIn):
         self._modules['UserAvatar'] = UserAvatar(self._owner)
         self._modules['Bookmarks'] = Bookmarks(self._owner)
         self._modules['OpenPGP'] = OpenPGP(self._owner)
+        self._modules['OMEMO'] = OMEMO(self._owner)
 
         for instance in self._modules.values():
             for handler in instance.handlers:
