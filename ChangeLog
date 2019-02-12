@@ -1,4 +1,4 @@
-python-nbxmpp 0.6.10 (TBA)
+python-nbxmpp 0.6.10 (13 February 2019)
 
  * Add support for domain based name in features for GSSAPI
  * Fix usage of BOSH
