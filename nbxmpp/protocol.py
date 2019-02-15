@@ -1518,7 +1518,7 @@ class Hashes2(Node):
 
     supported = ('sha-256', 'sha-512', 'sha3-256', 'sha3-512', 'blake2b-256', 'blake2b-512')
 
-    def __init__(self, nsp=NS_HASHES):
+    def __init__(self, nsp=NS_HASHES_2):
         Node.__init__(self, None, {}, [], None, None, False, None)
         self.setNamespace(nsp)
         self.setName('hash')
