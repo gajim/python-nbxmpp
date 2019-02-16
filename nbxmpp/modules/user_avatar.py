@@ -94,6 +94,9 @@ class UserAvatar:
         pubsub_node = stanza.getTag('pubsub')
         items_node = pubsub_node.getTag('items')
         item = items_node.getTag('item')
+        if item is None:
+            return raise_error(log.warning, stanza, 'stanza-malformed',
+                               'No item in node found')
 
         sha = item.getAttr('id')
         data_node = item.getTag('data', namespace=NS_AVATAR_DATA)
