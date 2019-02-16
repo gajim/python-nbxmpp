@@ -171,6 +171,9 @@ class OMEMO:
           </item>
         </items>
         '''
+        if item is None:
+            return []
+
         list_node = item.getTag('list', namespace=NS_OMEMO_TEMP)
         if list_node is None:
             raise StanzaMalformed('No list node found')
@@ -328,6 +331,9 @@ class OMEMO:
           </bundle>
         </item>
         '''
+        if item is None:
+            raise StanzaMalformed('No item in node found')
+
         bundle = item.getTag('bundle', namespace=NS_OMEMO_TEMP)
         if bundle is None:
             raise StanzaMalformed('No bundle node found')
