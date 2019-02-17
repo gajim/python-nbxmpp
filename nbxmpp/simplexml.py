@@ -21,6 +21,7 @@ projects. It is designed to be as standalone as possible
 import logging
 import xml.parsers.expat
 from xml.parsers.expat import ExpatError
+from copy import deepcopy
 
 log = logging.getLogger('nbxmpp.simplexml')
 
@@ -226,10 +227,12 @@ class Node:
         self.kids.remove(node)
         return node
 
-    def getAttrs(self):
+    def getAttrs(self, copy=False):
         """
         Return all node's attributes as dictionary
         """
+        if copy:
+            return deepcopy(self.attrs)
         return self.attrs
 
     def getAttr(self, key):

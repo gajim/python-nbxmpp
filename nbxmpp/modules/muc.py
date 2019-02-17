@@ -493,7 +493,7 @@ class MUC:
     def _parse_muc_user(muc_user):
         item = muc_user.getTag('item')
         if item is not None:
-            item_dict = item.getAttrs()
+            item_dict = item.getAttrs(copy=True)
             if 'role' in item_dict:
                 item_dict['role'] = Role(item_dict['role'])
             else:
