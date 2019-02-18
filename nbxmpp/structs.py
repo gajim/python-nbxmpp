@@ -95,6 +95,9 @@ PGPKeyMetadata = namedtuple('PGPKeyMetadata', 'jid fingerprint date')
 
 OMEMOMessage = namedtuple('OMEMOMessage', 'sid iv keys payload')
 
+AnnotationNote = namedtuple('AnnotationNote', 'jid data cdate mdate')
+AnnotationNote.__new__.__defaults__ = (None, None)
+
 
 class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
     def pick_prekey(self):
