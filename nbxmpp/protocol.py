@@ -1393,6 +1393,22 @@ class Iq(Protocol):
         if tag:
             return tag.getChildren()
 
+    def getQueryChild(self, name=None):
+        """
+        Return the 'query' child element with name, or the first element
+        which is not an error element
+        """
+        query = self.getQuery()
+        if not query:
+            return
+        for node in query.getChildren():
+            if name is not None:
+                if node.getName() == name:
+                    return node
+            else:
+                if node.getName() != 'error':
+                    return node
+
     def setQuery(self, name=None):
         """
         Change the name of the query node, creating it if needed. Keep the
