@@ -86,7 +86,7 @@ class Annotations:
 
         log.info('Received annotations from %s:', self.domain)
         for note in notes:
-            log.info(notes)
+            log.info(note)
         return notes
 
     @call_on_response('_default_response')
