@@ -98,6 +98,8 @@ OMEMOMessage = namedtuple('OMEMOMessage', 'sid iv keys payload')
 AnnotationNote = namedtuple('AnnotationNote', 'jid data cdate mdate')
 AnnotationNote.__new__.__defaults__ = (None, None)
 
+EMEData = namedtuple('EMEData', 'name namespace')
+
 
 class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
     def pick_prekey(self):

@@ -19,6 +19,7 @@ import logging
 
 from nbxmpp.protocol import NS_EME
 from nbxmpp.structs import StanzaHandler
+from nbxmpp.structs import EMEData
 
 log = logging.getLogger('nbxmpp.m.eme')
 
@@ -35,16 +36,15 @@ class EME:
 
     @staticmethod
     def _process_eme(_con, stanza, properties):
-        enc_tag = stanza.getTag('encryption', namespace=NS_EME)
-        if enc_tag is None:
+        encryption = stanza.getTag('encryption', namespace=NS_EME)
+        if encryption is None:
             return
 
-        ns = enc_tag.getAttr('namespace')
-        if ns is None:
+        name = encryption.getAttr('name')
+        namespace = encryption.getAttr('namespace')
+        if namespace is None:
             log.warning('No namespace on message')
             return
 
-        properties.eme = {}
-        properties.eme['namespace'] = ns
-        properties.eme['name'] = enc_tag.getAttr('name')
+        properties.eme = EMEData(name=name, namespace=namespace)
         log.info('Found data: %s', properties.eme)
