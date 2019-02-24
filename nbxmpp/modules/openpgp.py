@@ -128,6 +128,9 @@ class OpenPGP:
 
     @staticmethod
     def _parse_keylist(jid, item):
+        if item is None:
+            return []
+
         keylist_node = item.getTag('public-keys-list', namespace=NS_OPENPGP)
         if keylist_node is None:
             raise StanzaMalformed('No public-keys-list node found')
