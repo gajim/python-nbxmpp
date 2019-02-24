@@ -44,16 +44,21 @@ class Delay:
             # to indicate when the user has set the subject,
             # the 'from' attr on these delays is the MUC server
             # but we treat it as user timestamp
-            properties.user_timestamp = parse_delay(
-                stanza, from_=properties.jid.getBare())
+            jids = [properties.jid.getBare(),
+                    properties.jid.getDomain()]
+
+            properties.user_timestamp = parse_delay(stanza, from_=jids)
 
         else:
-            jid = self._client.get_bound_jid().getDomain()
-            timestamp = parse_delay(stanza, from_=jid)
-            if timestamp is not None:
-                properties.timestamp = timestamp
+            if properties.from_muc:
+                # Some servers use the MUC JID, others the domain
+                jids = [properties.jid.getBare(),
+                        properties.jid.getDomain()]
+            else:
+                jids = [self._client.get_bound_jid().getDomain()]
 
-            properties.user_timestamp = parse_delay(stanza, not_from=[jid])
+            properties.timestamp = parse_delay(stanza, from_=jids)
+            properties.user_timestamp = parse_delay(stanza, not_from=jids)
 
     @staticmethod
     def _process_presence_delay(_con, stanza, properties):
@@ -85,7 +90,7 @@ def parse_delay(stanza, epoch=True, convert='utc', from_=None, not_from=None):
 
         delay_from = delay.getAttr('from')
         if from_ is not None:
-            if delay_from != from_:
+            if delay_from not in from_:
                 continue
         if not_from is not None:
             if delay_from in not_from:
