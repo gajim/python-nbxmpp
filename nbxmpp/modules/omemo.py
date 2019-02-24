@@ -25,6 +25,7 @@ from nbxmpp.protocol import NS_EME
 from nbxmpp.protocol import NS_HINTS
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import Node
+from nbxmpp.protocol import Message
 from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.util import call_on_response
@@ -433,6 +434,25 @@ def create_omemo_message(stanza, omemo_message, store_hint=True,
 
     if store_hint:
         stanza.addChild(node=Node('store', attrs={'xmlns': NS_HINTS}))
+
+
+def get_key_transport_message(typ, jid, omemo_message):
+    message = Message(typ=typ, to=jid)
+
+    encrypted = Node('encrypted', attrs={'xmlns': NS_OMEMO_TEMP})
+    header = Node('header', attrs={'sid': omemo_message.sid})
+    for rid, (key, prekey) in omemo_message.keys.items():
+        attrs = {'rid': rid}
+        if prekey:
+            attrs['prekey'] = 'true'
+        child = header.addChild('key', attrs=attrs)
+        child.addData(b64encode(key))
+
+    header.addChild('iv').addData(b64encode(omemo_message.iv))
+    encrypted.addChild(node=header)
+
+    message.addChild(node=encrypted)
+    return message
 
 
 def cleanup_stanza(stanza, node_whitelist):
