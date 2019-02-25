@@ -2,17 +2,17 @@
 
 import sys
 import os
-import nbxmpp
-import time
 import logging
-try:
-    from gi.repository import GObject as gobject
-except Exception:
-    import gobject
+
+import nbxmpp
+from gi.repository import GLib
+
+if sys.platform in ('win32', 'darwin'):
+    import certifi
 
 consoleloghandler = logging.StreamHandler()
 root_log = logging.getLogger('nbxmpp')
-#root_log.setLevel('DEBUG')
+root_log.setLevel('DEBUG')
 root_log.addHandler(consoleloghandler)
 
 if len(sys.argv) < 2:
@@ -38,19 +38,29 @@ class Connection:
     def __init__(self):
         self.jid = nbxmpp.protocol.JID(jidparams['jid'])
         self.password = jidparams['password']
-        self.sm = nbxmpp.Smacks(self) # Stream Management
         self.client_cert = None
+        self.sm = nbxmpp.Smacks(self)
+        self.idle_queue = nbxmpp.idlequeue.get_idlequeue()
+        self.client = None
 
     def on_auth(self, con, auth):
         if not auth:
             print('could not authenticate!')
             sys.exit()
         print('authenticated using ' + auth)
-        self.send_message(to_jid, text)
+        con.RegisterHandler('message', self._on_message)
+        self.send_presence()
+
+    def _on_message(self, con, stanza):
+        print('message received')
+        print(stanza.getBody())
 
     def on_connected(self, con, con_type):
         print('connected with ' + con_type)
-        auth = self.client.auth(self.jid.getNode(), self.password, resource=self.jid.getResource(), sasl=1, on_auth=self.on_auth)
+        self.client.auth(self.jid.getNode(),
+                         self.password,
+                         resource=self.jid.getResource(),
+                         on_auth=self.on_auth)
 
     def get_password(self, cb, mech):
         cb(self.password)
@@ -62,14 +72,36 @@ class Connection:
         pass
 
     def connect(self):
-        idle_queue = nbxmpp.idlequeue.get_idlequeue()
-        self.client = nbxmpp.NonBlockingClient(self.jid.getDomain(), idle_queue, caller=self)
-        self.con = self.client.connect(self.on_connected, self.on_connection_failed, secure_tuple=('tls', '', '', None, None))
+        cacerts = ''
+        if sys.platform in ('win32', 'darwin'):
+            cacerts = certifi.where()
+
+        self.client = nbxmpp.NonBlockingClient(self.jid.getDomain(),
+                                               self.idle_queue,
+                                               caller=self)
+
+        self.client.connect(self.on_connected,
+                            self.on_connection_failed,
+                            secure_tuple=('tls', cacerts, '', None, None, False))
+
+        if sys.platform == 'win32':
+            timeout, in_seconds = 20, None
+        else:
+            timeout, in_seconds = 100, False
+
+        if in_seconds:
+            GLib.timeout_add_seconds(timeout, self.process_connections)
+        else:
+            GLib.timeout_add(timeout, self.process_connections)
 
     def send_message(self, to_jid, text):
         id_ = self.client.send(nbxmpp.protocol.Message(to_jid, text, typ='chat'))
         print('sent message with id ' + id_)
-        gobject.timeout_add(1000, self.quit)
+        GLib.timeout_add(1000, self.quit)
+
+    def send_presence(self):
+        presence = nbxmpp.Presence()
+        self.client.send(presence)
 
     def quit(self):
         self.disconnect()
@@ -78,8 +110,28 @@ class Connection:
     def disconnect(self):
         self.client.start_disconnect()
 
+    def process_connections(self):
+        try:
+            self.idle_queue.process()
+        except Exception:
+            # Otherwise, an exception will stop our loop
+
+            if sys.platform == 'win32':
+                # On Windows process() calls select.select(), so we need this
+                # executed as often as possible.
+                timeout, in_seconds = 1, None
+            else:
+                timeout, in_seconds = 100, False
+
+            if in_seconds:
+                GLib.timeout_add_seconds(timeout, self.process_connections)
+            else:
+                GLib.timeout_add(timeout, self.process_connections)
+            raise
+        return True # renew timeout (loop for ever)
+
 
 con = Connection()
 con.connect()
-ml = gobject.MainLoop()
+ml = GLib.MainLoop()
 ml.run()
