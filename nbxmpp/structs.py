@@ -100,6 +100,10 @@ AnnotationNote.__new__.__defaults__ = (None, None)
 
 EMEData = namedtuple('EMEData', 'name namespace')
 
+MuclumbusResult = namedtuple('MuclumbusResult', 'first last max end items')
+
+MuclumbusItem = namedtuple('MuclumbusItem', 'jid name nusers description language is_open anonymity_mode')
+
 
 class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
     def pick_prekey(self):

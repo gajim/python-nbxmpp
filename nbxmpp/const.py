@@ -290,6 +290,12 @@ class BookmarkStoreType(Enum):
     PRIVATE = 'private'
 
 
+class AnonymityMode(Enum):
+    UNKNOWN = None
+    SEMI = 'semi'
+    NONE = 'none'
+
+
 MOODS = [
     'afraid',
     'amazed',

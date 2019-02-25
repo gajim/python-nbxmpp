@@ -196,6 +196,7 @@ NS_OMEMO_TEMP_BUNDLE = 'eu.siacs.conversations.axolotl.bundles'
 NS_BOOKMARK_CONVERSION = 'urn:xmpp:bookmarks-conversion:0'
 NS_DOMAIN_BASED_NAME = 'urn:xmpp:domain-based-name:1'
 NS_HINTS = 'urn:xmpp:hints'
+NS_MUCLUMBUS = 'https://xmlns.zombofant.net/muclumbus/search/1.0'
 
 #xmpp_stream_error_conditions = '''
 #bad-format --  --  -- The entity has sent XML that cannot be processed.
