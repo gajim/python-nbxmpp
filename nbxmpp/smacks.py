@@ -21,7 +21,7 @@ import logging
 from nbxmpp.protocol import NS_STREAM_MGMT
 from nbxmpp.protocol import NS_DELAY2
 from nbxmpp.simplexml import Node
-from nbxmpp.transports_nb import DISCONNECTING
+from nbxmpp.transports import DISCONNECTING
 from nbxmpp.plugin import PlugIn
 from nbxmpp.const import Realm
 from nbxmpp.const import Event

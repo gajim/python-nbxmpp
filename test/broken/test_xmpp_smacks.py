@@ -4,7 +4,7 @@ Tests for smacks.py Stream Management
 import unittest
 from unittest.mock import Mock
 
-from nbxmpp import dispatcher_nb
+from nbxmpp import dispatcher
 from nbxmpp import protocol
 from nbxmpp import smacks
 
@@ -14,7 +14,7 @@ class TestDispatcherNB(unittest.TestCase):
     into a mock client
     '''
     def setUp(self):
-        self.dispatcher = dispatcher_nb.XMPPDispatcher()
+        self.dispatcher = dispatcher.XMPPDispatcher()
 
         # Setup mock client
         self.client = Mock()

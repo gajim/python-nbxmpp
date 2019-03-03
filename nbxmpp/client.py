@@ -1,5 +1,4 @@
-##   client_nb.py
-##         based on client.py, changes backported up to revision 1.60
+##   client.py
 ##
 ##   Copyright (C) 2003-2005 Alexey "Snake" Nezhdanov
 ##         modified by Dimitur Kirov <dkirov@gmail.com>
@@ -21,7 +20,7 @@ Client class establishes connection to XMPP Server and handles authentication
 import socket
 import logging
 
-from . import transports_nb, dispatcher_nb, roster_nb, protocol, bosh
+from . import transports, dispatcher, roster, protocol, bosh
 from .protocol import NS_TLS
 from .protocol import JID
 from .auth import SASL
@@ -31,7 +30,7 @@ from .const import Realm
 from .const import Event
 
 
-log = logging.getLogger('nbxmpp.client_nb')
+log = logging.getLogger('nbxmpp.client')
 
 
 class NonBlockingClient:
@@ -207,7 +206,7 @@ class NonBlockingClient:
                 'tls' - TLS established after negotiation with starttls, or
                 'plain'.
             cacerts, mycerts, tls_version, cipher_list, alpn
-                see tls_nb.NonBlockingTLS constructor for more details
+                see tls.NonBlockingTLS constructor for more details
         """
         self.on_connect = on_connect
         self.on_connect_failure=on_connect_failure
@@ -244,7 +243,7 @@ class NonBlockingClient:
             # tcp_host is hostname of machine used for socket connection
             # (DNS request will be done for proxy or BOSH CM hostname)
             tcp_host, tcp_port, proxy_user, proxy_pass = \
-                    transports_nb.get_proxy_data_from_dict(proxy)
+                    transports.get_proxy_data_from_dict(proxy)
 
             if proxy['type'] == 'bosh':
                 # Setup BOSH transport
@@ -271,7 +270,7 @@ class NonBlockingClient:
 
         if not proxy or proxy['type'] != 'bosh':
             # Setup ordinary TCP transport
-            self.socket = transports_nb.NonBlockingTCP.get_instance(
+            self.socket = transports.NonBlockingTCP.get_instance(
                     on_disconnect=self.disconnect,
                     raise_event=self.raise_event,
                     idlequeue=self.idlequeue,
@@ -377,7 +376,7 @@ class NonBlockingClient:
             if 'Dispatcher' in self.__dict__:
                 self.Dispatcher.PlugOut()
                 self.got_features = False
-            dispatcher_nb.Dispatcher.get_instance().PlugIn(self)
+            dispatcher.Dispatcher.get_instance().PlugIn(self)
             on_next_receive('RECEIVE_DOCUMENT_ATTRIBUTES')
 
         elif mode == 'FAILURE':
@@ -572,7 +571,7 @@ class NonBlockingClient:
         Plug in the roster
         """
         if 'NonBlockingRoster' not in self.__dict__:
-            return roster_nb.NonBlockingRoster.get_instance(
+            return roster.NonBlockingRoster.get_instance(
                 version=version).PlugIn(self, request=request)
 
     def getRoster(self, on_ready=None, force=False):
@@ -591,8 +590,8 @@ class NonBlockingClient:
         """
         if requestRoster:
             # FIXME: used somewhere?
-            roster_nb.NonBlockingRoster.get_instance().PlugIn(self)
-        self.send(dispatcher_nb.Presence(to=jid, typ=typ))
+            roster.NonBlockingRoster.get_instance().PlugIn(self)
+        self.send(dispatcher.Presence(to=jid, typ=typ))
 
 ###############################################################################
 ### following methods are moved from blocking client class of xmpppy

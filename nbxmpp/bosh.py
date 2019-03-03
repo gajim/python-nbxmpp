@@ -23,7 +23,7 @@ import locale
 import logging
 from hashlib import sha1
 
-from .transports_nb import NonBlockingTransport, NonBlockingHTTPBOSH,\
+from .transports import NonBlockingTransport, NonBlockingHTTPBOSH,\
         CONNECTED, CONNECTING, DISCONNECTED, DISCONNECTING,\
         urisplit, DISCONNECT_TIMEOUT_SECONDS
 from .protocol import BOSHBody, Protocol, NS_CLIENT

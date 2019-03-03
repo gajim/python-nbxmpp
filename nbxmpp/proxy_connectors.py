@@ -1,5 +1,4 @@
 ##   proxy_connectors.py
-##       based on transports_nb.py
 ##
 ##   Copyright (C) 2003-2004 Alexey "Snake" Nezhdanov
 ##       modified by Dimitur Kirov <dkirov@gmail.com>

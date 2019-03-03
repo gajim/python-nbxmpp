@@ -7,7 +7,7 @@ import unittest
 import socket
 
 from test.lib.xmpp_mocks import IdleQueueThread, IdleMock
-from nbxmpp import transports_nb
+from nbxmpp import transports
 
 
 class AbstractTransportTest(unittest.TestCase):
@@ -72,7 +72,7 @@ class TestNonBlockingTCP(AbstractTransportTest):
             except socket.error as e:
                 self.testcase.fail(msg=str(e))
 
-            self.socket = transports_nb.NonBlockingTCP(
+            self.socket = transports.NonBlockingTCP(
                     raise_event=lambda event_type, data: self.testcase.assertTrue(
                             event_type and data),
                     on_disconnect=lambda: self.on_success(mode='SocketDisconnect'),
@@ -210,7 +210,7 @@ class TestNonBlockingHTTP(AbstractTransportTest):
     }
 
     def _get_transport(self, http_dict, proxy_dict=None):
-        return transports_nb.NonBlockingHTTP(
+        return transports.NonBlockingHTTP(
                 raise_event=None,
                 on_disconnect=None,
                 idlequeue=self.idlequeue_thread.iq,
