@@ -1261,6 +1261,8 @@ class Presence(Protocol):
         """
         Set the show value of the message
         """
+        if val not in ['away', 'chat', 'dnd', 'xa']:
+            raise ValueError('Invalid show value: %s' % val)
         self.setTagData('show', val)
 
     def setStatus(self, val):
