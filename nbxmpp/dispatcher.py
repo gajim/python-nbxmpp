@@ -617,7 +617,7 @@ class XMPPDispatcher(PlugIn):
                     # Backwards compatibility until all handlers support
                     # properties
                     signature = inspect.signature(handler['func'])
-                    if 'properties' in signature.parameters:
+                    if len(signature.parameters) > 2:
                         handler['func'](session, stanza, properties)
                     else:
                         handler['func'](session, stanza)
