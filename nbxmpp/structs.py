@@ -162,6 +162,7 @@ class MessageProperties:
         self.thread = None
         self.user_timestamp = None
         self.timestamp = time.time()
+        self.has_server_delay = False
         self.error = None
         self.eme = None
         self.http_auth = None
@@ -183,6 +184,10 @@ class MessageProperties:
         self.openpgp = None
         self.omemo = None
         self.encrypted = None
+
+    @property
+    def has_user_delay(self):
+        return self.user_timestamp is not None
 
     @property
     def is_encrypted(self):

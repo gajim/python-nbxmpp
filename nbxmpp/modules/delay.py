@@ -57,7 +57,11 @@ class Delay:
             else:
                 jids = [self._client.get_bound_jid().getDomain()]
 
-            properties.timestamp = parse_delay(stanza, from_=jids)
+            server_delay = parse_delay(stanza, from_=jids)
+            if server_delay is not None:
+                properties.has_server_delay = True
+                properties.timestamp = server_delay
+
             properties.user_timestamp = parse_delay(stanza, not_from=jids)
 
     @staticmethod
