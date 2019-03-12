@@ -19,7 +19,9 @@ import logging
 import socket
 import base64
 import weakref
+import hashlib
 from functools import wraps
+from functools import lru_cache
 
 import precis_i18n.codec
 
@@ -31,6 +33,7 @@ from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import CommonError
+from nbxmpp.third_party.hsluv import hsluv_to_rgb
 
 log = logging.getLogger('nbxmpp.util')
 
@@ -220,3 +223,21 @@ def raise_error(log_method, stanza, type_=None, message=None):
 
 def is_error_result(result):
     return isinstance(result, CommonError)
+
+
+def clip_rgb(red, green, blue):
+    return (
+        min(max(red, 0), 1),
+        min(max(green, 0), 1),
+        min(max(blue, 0), 1),
+    )
+
+
+@lru_cache()
+def text_to_colour(text):
+    hash_ = hashlib.sha1()
+    hash_.update(text.encode())
+    hue = (int.from_bytes(hash_.digest()[:2], 'little') & 0xffff) / 0xffff
+
+    red, green, blue = clip_rgb(*hsluv_to_rgb((hue * 360, 100, 50)))
+    return red * 0.8, green * 0.8, blue * 0.8
