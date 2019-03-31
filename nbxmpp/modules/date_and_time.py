@@ -145,6 +145,8 @@ def parse_datetime(timestring, check_utc=False,
 
     return a datetime or epoch
     '''
+    if timestring is None:
+        return None
     if convert not in (None, 'utc', 'local'):
         raise TypeError('"%s" is not a valid value for convert')
     if check_utc:
