@@ -271,7 +271,7 @@ class OpenPGP:
                                'PGP secretkey has no data')
 
         try:
-            key = b64decode(data.getData(), return_type=bytes)
+            key = b64decode(data, return_type=bytes)
         except Exception as error:
             return raise_error(log.warning, stanza, 'stanza-malformed',
                                str(error))
