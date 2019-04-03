@@ -104,6 +104,8 @@ MuclumbusResult = namedtuple('MuclumbusResult', 'first last max end items')
 
 MuclumbusItem = namedtuple('MuclumbusItem', 'jid name nusers description language is_open anonymity_mode')
 
+SoftwareVersionResult = namedtuple('SoftwareVersionResult', 'name version os')
+
 
 class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
     def pick_prekey(self):
