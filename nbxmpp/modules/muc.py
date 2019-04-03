@@ -82,7 +82,7 @@ class MUC:
                           callback=self._process_direct_invite,
                           typ='normal',
                           ns=NS_CONFERENCE,
-                          priority=11),
+                          priority=12),
             StanzaHandler(name='message',
                           callback=self._process_voice_request,
                           ns=NS_DATA,
@@ -90,7 +90,7 @@ class MUC:
             StanzaHandler(name='message',
                           callback=self._process_message,
                           ns=NS_MUC_USER,
-                          priority=12),
+                          priority=13),
         ]
 
     @staticmethod
@@ -225,15 +225,14 @@ class MUC:
         if direct is None:
             return
 
-        muc_jid = direct.getAttr('jid')
-        if muc_jid is None:
-            # Not a direct invite
+        if stanza.getTag('x', namespace=NS_MUC_USER) is not None:
+            # not a direct invite
             # See https://xmpp.org/extensions/xep-0045.html#example-57
             # read implementation notes
             return
 
         data = {}
-        data['muc'] = JID(muc_jid)
+        data['muc'] = JID(direct.getAttr('jid'))
         data['from_'] = properties.jid
         data['reason'] = direct.getAttr('reason')
         data['password'] = direct.getAttr('password')
