@@ -67,6 +67,7 @@ from nbxmpp.modules.omemo import OMEMO
 from nbxmpp.modules.annotations import Annotations
 from nbxmpp.modules.muclumbus import Muclumbus
 from nbxmpp.modules.software_version import SoftwareVersion
+from nbxmpp.modules.adhoc import AdHoc
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.util import get_properties_struct
@@ -202,6 +203,7 @@ class XMPPDispatcher(PlugIn):
         self._modules['Annotations'] = Annotations(self._owner)
         self._modules['Muclumbus'] = Muclumbus(self._owner)
         self._modules['SoftwareVersion'] = SoftwareVersion(self._owner)
+        self._modules['AdHoc'] = AdHoc(self._owner)
 
         for instance in self._modules.values():
             for handler in instance.handlers:

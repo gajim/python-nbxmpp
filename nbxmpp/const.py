@@ -296,6 +296,26 @@ class AnonymityMode(Enum):
     NONE = 'none'
 
 
+class AdHocStatus(Enum):
+    EXECUTING = 'executing'
+    COMPLETED = 'completed'
+    CANCELED = 'canceled'
+
+
+class AdHocAction(Enum):
+    EXECUTE = 'execute'
+    CANCEL = 'cancel'
+    PREV = 'prev'
+    NEXT = 'next'
+    COMPLETE = 'complete'
+
+
+class AdHocNoteType(Enum):
+    INFO = 'info'
+    WARN = 'warn'
+    ERROR = 'error'
+
+
 MOODS = [
     'afraid',
     'amazed',

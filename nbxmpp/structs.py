@@ -29,6 +29,7 @@ from nbxmpp.const import StatusCode
 from nbxmpp.const import PresenceType
 from nbxmpp.const import Error
 from nbxmpp.const import LOCATION_DATA
+from nbxmpp.const import AdHocStatus
 
 StanzaHandler = namedtuple('StanzaHandler',
                            'name callback typ ns xmlns system priority')
@@ -105,6 +106,25 @@ MuclumbusResult = namedtuple('MuclumbusResult', 'first last max end items')
 MuclumbusItem = namedtuple('MuclumbusItem', 'jid name nusers description language is_open anonymity_mode')
 
 SoftwareVersionResult = namedtuple('SoftwareVersionResult', 'name version os')
+
+AdHocCommandNote = namedtuple('AdHocCommandNote', 'text type')
+
+class AdHocCommand(namedtuple('AdHocCommand', 'jid node name sessionid status data actions notes')):
+
+    __slots__ = []
+
+    def __new__(cls, jid, node, name, sessionid=None, status=None,
+                data=None, actions=None, notes=None):
+        return super(AdHocCommand, cls).__new__(cls, jid, node, name, sessionid,
+                                                status, data, actions, notes)
+
+    @property
+    def is_completed(self):
+        return self.status == AdHocStatus.COMPLETED
+
+    @property
+    def is_canceled(self):
+        return self.status == AdHocStatus.CANCEL
 
 
 class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
