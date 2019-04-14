@@ -124,7 +124,7 @@ class AdHocCommand(namedtuple('AdHocCommand', 'jid node name sessionid status da
 
     @property
     def is_canceled(self):
-        return self.status == AdHocStatus.CANCEL
+        return self.status == AdHocStatus.CANCELED
 
 
 class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
