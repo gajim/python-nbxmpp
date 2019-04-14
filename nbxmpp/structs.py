@@ -206,6 +206,7 @@ class MessageProperties:
         self.openpgp = None
         self.omemo = None
         self.encrypted = None
+        self.pgp_legacy = None
 
     @property
     def has_user_delay(self):
@@ -222,6 +223,10 @@ class MessageProperties:
     @property
     def is_openpgp(self):
         return self.openpgp is not None
+
+    @property
+    def is_pgp_legacy(self):
+        return self.pgp_legacy is not None
 
     @property
     def is_pubsub(self):

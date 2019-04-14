@@ -50,7 +50,7 @@ from nbxmpp.modules.nickname import Nickname
 from nbxmpp.modules.delay import Delay
 from nbxmpp.modules.muc import MUC
 from nbxmpp.modules.idle import Idle
-from nbxmpp.modules.signed import Signed
+from nbxmpp.modules.pgplegacy import PGPLegacy
 from nbxmpp.modules.vcard_avatar import VCardAvatar
 from nbxmpp.modules.captcha import Captcha
 from nbxmpp.modules.entity_caps import EntityCaps
@@ -187,7 +187,7 @@ class XMPPDispatcher(PlugIn):
         self._modules['Delay'] = Delay(self._owner)
         self._modules['Captcha'] = Captcha(self._owner)
         self._modules['Idle'] = Idle(self._owner)
-        self._modules['Signed'] = Signed(self._owner)
+        self._modules['PGPLegacy'] = PGPLegacy(self._owner)
         self._modules['VCardAvatar'] = VCardAvatar(self._owner)
         self._modules['EntityCaps'] = EntityCaps(self._owner)
         self._modules['Blocking'] = Blocking(self._owner)
