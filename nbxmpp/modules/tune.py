@@ -67,7 +67,7 @@ class Tune:
             return item
 
         data = data._asdict()
-        for tag, value in data:
+        for tag, value in data.items():
             if value is not None:
                 item.addChild(tag, payload=value)
 
