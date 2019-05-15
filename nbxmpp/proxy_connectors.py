@@ -152,7 +152,7 @@ class SOCKS5Connector(ProxyConnector):
             self.on_failure('Invalid proxy reply')
             return
         if self._to_int(reply[1]) == 0:
-            return self._on_proxy_auth('\x01\x00')
+            return self._on_proxy_auth(b'\x01\x00')
         elif self._to_int(reply[1]) == 2:
             to_send = '\x01' + chr(len(self.proxy_user)) + self.proxy_user +\
                 chr(len(self.proxy_pass)) + self.proxy_pass
@@ -176,14 +176,11 @@ class SOCKS5Connector(ProxyConnector):
             log.error('Invalid proxy reply')
             self.on_failure('Invalid proxy reply')
             return
-        if reply[0] != '\x01':
-            log.error('Invalid proxy reply')
-            self.on_failure('Invalid proxy reply')
-            return
-        if reply[1] != '\x00':
+        if reply != b'\x01\x00':
             log.error('Authentification to proxy failed')
             self.on_failure('Authentification to proxy failed')
             return
+
         log.info('Authentification successfull. Jabber server contacted.')
         # Request connection
         req = b'\x05\x01\x00'
