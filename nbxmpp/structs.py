@@ -109,6 +109,9 @@ SoftwareVersionResult = namedtuple('SoftwareVersionResult', 'name version os')
 
 AdHocCommandNote = namedtuple('AdHocCommandNote', 'text type')
 
+IBBData = namedtuple('IBBData', 'block_size sid seq type data')
+IBBData.__new__.__defaults__ = (None, None, None, None, None)
+
 class AdHocCommand(namedtuple('AdHocCommand', 'jid node name sessionid status data actions notes')):
 
     __slots__ = []
@@ -285,10 +288,15 @@ class IqProperties:
         self.query = None
         self.payload = None
         self.http_auth = None
+        self.ibb = None
 
     @property
     def is_http_auth(self):
         return self.http_auth is not None
+
+    @property
+    def is_ibb(self):
+        return self.ibb is not None
 
 
 class PresenceProperties:
