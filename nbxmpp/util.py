@@ -233,11 +233,23 @@ def clip_rgb(red, green, blue):
     )
 
 
-@lru_cache()
-def text_to_colour(text):
+@lru_cache(maxsize=1024)
+def text_to_color(text, background_color):
+    # background color = (rb, gb, bb)
     hash_ = hashlib.sha1()
     hash_.update(text.encode())
-    hue = (int.from_bytes(hash_.digest()[:2], 'little') & 0xffff) / 0xffff
+    hue = int.from_bytes(hash_.digest()[:2], 'little') / 65536
 
     red, green, blue = clip_rgb(*hsluv_to_rgb((hue * 360, 100, 50)))
-    return red * 0.8, green * 0.8, blue * 0.8
+
+    rb, gb, bb = background_color
+
+    rb_inv = 1 - rb
+    gb_inv = 1 - gb
+    bb_inv = 1 - bb
+
+    rc = 0.2 * rb_inv + 0.8 * red
+    gc = 0.2 * gb_inv + 0.8 * green
+    bc = 0.2 * bb_inv + 0.8 * blue
+
+    return rc, gc, bc
