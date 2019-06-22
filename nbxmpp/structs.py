@@ -135,7 +135,7 @@ class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
         return random.SystemRandom().choice(self.otpks)
 
 
-class CommonError(namedtuple('CommonError', 'type message')):
+class CommonError(namedtuple('CommonError', 'type message jid')):
     def __str__(self):
         if self.message is not None:
             return '%s: %s' % (self.type, self.message)

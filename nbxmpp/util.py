@@ -214,7 +214,8 @@ def raise_error(log_method, stanza, type_=None, message=None):
     if type_ is None:
         type_ = stanza.getError()
         message = stanza.getErrorMsg()
-    error = CommonError(type_, message)
+    jid = stanza.getFrom()
+    error = CommonError(type_, message, jid)
     log_method(error)
     if log_method.__name__ in ('warning', 'error'):
         log_method(stanza)
