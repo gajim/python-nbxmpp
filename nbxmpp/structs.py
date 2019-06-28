@@ -138,8 +138,8 @@ class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
 class CommonError(namedtuple('CommonError', 'type message jid')):
     def __str__(self):
         if self.message is not None:
-            return '%s: %s' % (self.type, self.message)
-        return self.type
+            return 'Error from %s %s: %s' % (self.jid, self.type, self.message)
+        return 'Error from %s: %s' % (self.jid, self.type)
 
 
 class TuneData(namedtuple('TuneData', 'artist length rating source title track uri')):
