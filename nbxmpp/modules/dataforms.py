@@ -667,6 +667,10 @@ class DataForm(ExtendedNode):
         for value in self.getTags('instructions'):
             self.delChild(value)
 
+    @property
+    def is_reported(self):
+        return self.getTag('reported') is not None
+
 
 class SimpleDataForm(DataForm, DataRecord):
     def __init__(self, type_=None, title=None, instructions=None, fields=None,
