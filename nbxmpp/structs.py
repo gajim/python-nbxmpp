@@ -112,6 +112,15 @@ AdHocCommandNote = namedtuple('AdHocCommandNote', 'text type')
 IBBData = namedtuple('IBBData', 'block_size sid seq type data')
 IBBData.__new__.__defaults__ = (None, None, None, None, None)
 
+DiscoInfo = namedtuple('DiscoInfo', 'jid node identities features dataforms')
+DiscoIdentity = namedtuple('DiscoIdentity', 'category type name lang')
+DiscoIdentity.__new__.__defaults__ = (None, None)
+
+DiscoItems = namedtuple('DiscoItems', 'jid node items')
+DiscoItem = namedtuple('DiscoItem', 'jid name node')
+DiscoItem.__new__.__defaults__ = (None, None)
+
+
 class AdHocCommand(namedtuple('AdHocCommand', 'jid node name sessionid status data actions notes')):
 
     __slots__ = []
