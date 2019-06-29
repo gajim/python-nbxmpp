@@ -113,12 +113,33 @@ IBBData = namedtuple('IBBData', 'block_size sid seq type data')
 IBBData.__new__.__defaults__ = (None, None, None, None, None)
 
 DiscoInfo = namedtuple('DiscoInfo', 'jid node identities features dataforms')
-DiscoIdentity = namedtuple('DiscoIdentity', 'category type name lang')
-DiscoIdentity.__new__.__defaults__ = (None, None)
 
 DiscoItems = namedtuple('DiscoItems', 'jid node items')
 DiscoItem = namedtuple('DiscoItem', 'jid name node')
 DiscoItem.__new__.__defaults__ = (None, None)
+
+
+class DiscoIdentity(namedtuple('DiscoIdentity', 'category type name lang')):
+
+    __slots__ = []
+
+    def __new__(cls, category, type, name=None, lang=None):
+        return super(DiscoIdentity, cls).__new__(cls, category, type, name, lang)
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __str__(self):
+        return '%s/%s/%s/%s' % (self.category,
+                                self.type,
+                                self.lang or '',
+                                self.name or '')
+
+    def __hash__(self):
+        return hash(str(self))
 
 
 class AdHocCommand(namedtuple('AdHocCommand', 'jid node name sessionid status data actions notes')):

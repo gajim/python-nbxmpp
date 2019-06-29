@@ -27,6 +27,7 @@ import precis_i18n.codec
 
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import InvalidJid
+from nbxmpp.protocol import DiscoInfoMalformed
 from nbxmpp.stringprepare import nameprep
 from nbxmpp.structs import Properties
 from nbxmpp.structs import IqProperties
@@ -254,3 +255,116 @@ def text_to_color(text, background_color):
     bc = 0.2 * bb_inv + 0.8 * blue
 
     return rc, gc, bc
+
+
+def compute_caps_hash(info):
+    """
+    Compute caps hash according to XEP-0115, V1.5
+    https://xmpp.org/extensions/xep-0115.html#ver-proc
+
+    :param: info    DiscoInfo
+    """
+    # Initialize an empty string S.
+    string_ = ''
+
+    # Sort the service discovery identities by category and then by type and
+    # then by xml:lang (if it exists), formatted as
+    # CATEGORY '/' [TYPE] '/' [LANG] '/' [NAME]. Note that each slash is
+    # included even if the LANG or NAME is not included (in accordance with
+    # XEP-0030, the category and type MUST be included).
+    # For each identity, append the 'category/type/lang/name' to S, followed by
+    # the '<' character.
+    # Sort the supported service discovery features.
+
+    def sort_identities_key(i):
+        return (i.category, i.type, i.lang or '')
+
+    identities = sorted(info.identities, key=sort_identities_key)
+    for identity in identities:
+        string_ += '%s<' % str(identity)
+
+    # If the response includes more than one service discovery identity with
+    # the same category/type/lang/name, consider the entire response
+    # to be ill-formed.
+    if len(set(identities)) != len(identities):
+        raise DiscoInfoMalformed('Non-unique identity found')
+
+    # Sort the supported service discovery features.
+    # For each feature, append the feature to S, followed by the '<' character.
+    features = sorted(info.features)
+    for feature in features:
+        string_ += '%s<' % feature
+
+    # If the response includes more than one service discovery feature with the
+    # same XML character data, consider the entire response to be ill-formed.
+    if len(set(features)) != len(features):
+        raise DiscoInfoMalformed('Non-unique feature found')
+
+    # If the response includes more than one extended service discovery
+    # information form with the same FORM_TYPE or the FORM_TYPE field contains
+    # more than one <value/> element with different XML character data,
+    # consider the entire response to be ill-formed.
+
+    # If the response includes an extended service discovery information form
+    # where the FORM_TYPE field is not of type "hidden" or the form does not
+    # include a FORM_TYPE field, ignore the form but continue processing.
+
+    dataforms = []
+    form_type_values = []
+    for dataform in info.dataforms:
+        form_type = dataform.vars.get('FORM_TYPE')
+        if form_type is None:
+            # Ignore dataform because of missing FORM_TYPE
+            continue
+        if form_type.type_ != 'hidden':
+            # Ignore dataform because of wrong type
+            continue
+
+        values = form_type.getTags('value')
+        if len(values) != 1:
+            raise DiscoInfoMalformed('Form should have exactly '
+                                     'one FORM_TYPE value')
+        value = values[0].getData()
+
+        dataforms.append(dataform)
+        form_type_values.append(value)
+
+    if len(set(form_type_values)) != len(form_type_values):
+        raise DiscoInfoMalformed('Non-unique FORM_TYPE value found')
+
+    # If the service discovery information response includes XEP-0128 data
+    # forms, sort the forms by the FORM_TYPE (i.e., by the XML character data
+    # of the <value/> element).
+
+    # For each extended service discovery information form:
+    #   - Append the XML character data of the FORM_TYPE field's <value/>
+    #     element, followed by the '<' character.
+    #   - Sort the fields by the value of the "var" attribute.
+    #   - For each field other than FORM_TYPE:
+    #       - Append the value of the "var" attribute, followed by the
+    #         '<' character.
+    #       - Sort values by the XML character data of the <value/> element.
+    #       - For each <value/> element, append the XML character data,
+    #         followed by the '<' character.
+
+    def sort_dataforms_key(dataform):
+        return dataform['FORM_TYPE'].getTagData('value')
+
+    dataforms = sorted(dataforms, key=sort_dataforms_key)
+    for dataform in dataforms:
+        string_ += '%s<' % dataform['FORM_TYPE'].getTagData('value')
+
+        fields = {}
+        for field in dataform.iter_fields():
+            if field.var == 'FORM_TYPE':
+                continue
+            values = field.getTags('value')
+            fields[field.var] = sorted([value.getData() for value in values])
+
+        for var in sorted(fields.keys()):
+            string_ += '%s<' % var
+            for value in fields[var]:
+                string_ += '%s<' % value
+
+    hash_ = hashlib.sha1(string_.encode())
+    return b64encode(hash_.digest())

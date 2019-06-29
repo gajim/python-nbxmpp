@@ -49,37 +49,7 @@ class Discovery:
     def _disco_info_received(self, stanza):
         if not isResultNode(stanza):
             return raise_error(log.info, stanza)
-
-        idenities = []
-        features = []
-        dataforms = []
-
-        query = stanza.getQuery()
-        for node in query.getTags('identity'):
-            attrs = node.getAttrs()
-            try:
-                idenities.append(
-                    DiscoIdentity(category=attrs['category'],
-                                  type=attrs['type'],
-                                  name=attrs.get('name'),
-                                  lang=attrs.get('xml:lang')))
-            except Exception:
-                return raise_error(log.warning, stanza, 'stanza-malformed')
-
-        for node in query.getTags('feature'):
-            try:
-                features.append(node.getAttr('var'))
-            except Exception:
-                return raise_error(log.warning, stanza, 'stanza-malformed')
-
-        for node in query.getTags('x', namespace=NS_DATA):
-            dataforms.append(extend_form(node))
-
-        return DiscoInfo(jid=stanza.getFrom(),
-                         node=query.getAttr('node'),
-                         identities=idenities,
-                         features=features,
-                         dataforms=dataforms)
+        return parse_disco_info(stanza)
 
     @call_on_response('_disco_items_received')
     def disco_items(self, jid, node=None):
@@ -90,24 +60,59 @@ class Discovery:
     def _disco_items_received(self, stanza):
         if not isResultNode(stanza):
             return raise_error(log.info, stanza)
+        return parse_disco_items(stanza)
 
-        items = []
 
-        query = stanza.getQuery()
-        for node in query.getTags('item'):
-            attrs = node.getAttrs()
-            try:
-                items.append(
-                    DiscoItem(jid=attrs['jid'],
+def parse_disco_info(stanza):
+    idenities = []
+    features = []
+    dataforms = []
+
+    query = stanza.getQuery()
+    for node in query.getTags('identity'):
+        attrs = node.getAttrs()
+        try:
+            idenities.append(
+                DiscoIdentity(category=attrs['category'],
+                              type=attrs['type'],
                               name=attrs.get('name'),
-                              node=attrs.get('node')))
-            except Exception:
-                return raise_error(log.warning, stanza, 'stanza-malformed')
+                              lang=attrs.get('xml:lang')))
+        except Exception:
+            return raise_error(log.warning, stanza, 'stanza-malformed')
 
-        return DiscoItems(jid=stanza.getFrom(),
-                          node=query.getAttr('node'),
-                          items=items)
+    for node in query.getTags('feature'):
+        try:
+            features.append(node.getAttr('var'))
+        except Exception:
+            return raise_error(log.warning, stanza, 'stanza-malformed')
 
+    for node in query.getTags('x', namespace=NS_DATA):
+        dataforms.append(extend_form(node))
+
+    return DiscoInfo(jid=stanza.getFrom(),
+                     node=query.getAttr('node'),
+                     identities=idenities,
+                     features=features,
+                     dataforms=dataforms)
+
+
+def parse_disco_items(stanza):
+    items = []
+
+    query = stanza.getQuery()
+    for node in query.getTags('item'):
+        attrs = node.getAttrs()
+        try:
+            items.append(
+                DiscoItem(jid=attrs['jid'],
+                          name=attrs.get('name'),
+                          node=attrs.get('node')))
+        except Exception:
+            return raise_error(log.warning, stanza, 'stanza-malformed')
+
+    return DiscoItems(jid=stanza.getFrom(),
+                      node=query.getAttr('node'),
+                      items=items)
 
 
 def get_disco_request(namespace, jid, node=None):

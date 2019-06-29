@@ -664,6 +664,9 @@ class InvalidJid(Exception):
 class StanzaMalformed(Exception):
     pass
 
+class DiscoInfoMalformed(Exception):
+    pass
+
 stream_exceptions = {'bad-format': BadFormat,
                     'bad-namespace-prefix': BadNamespacePrefix,
                     'conflict': Conflict,
