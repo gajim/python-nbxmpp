@@ -112,11 +112,24 @@ AdHocCommandNote = namedtuple('AdHocCommandNote', 'text type')
 IBBData = namedtuple('IBBData', 'block_size sid seq type data')
 IBBData.__new__.__defaults__ = (None, None, None, None, None)
 
-DiscoInfo = namedtuple('DiscoInfo', 'jid node identities features dataforms')
-
 DiscoItems = namedtuple('DiscoItems', 'jid node items')
 DiscoItem = namedtuple('DiscoItem', 'jid name node')
 DiscoItem.__new__.__defaults__ = (None, None)
+
+
+class DiscoInfo(namedtuple('DiscoInfo', 'jid node identities features dataforms')):
+
+    __slots__ = []
+
+    def __new__(cls, jid, node, identities, features, dataforms):
+        return super(DiscoInfo, cls).__new__(cls, jid, node, identities,
+                                             features, dataforms)
+
+    def get_caps_hash(self):
+        try:
+            return self.node.split('#')[1]
+        except Exception:
+            return None
 
 
 class DiscoIdentity(namedtuple('DiscoIdentity', 'category type name lang')):

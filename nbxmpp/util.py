@@ -257,12 +257,14 @@ def text_to_color(text, background_color):
     return rc, gc, bc
 
 
-def compute_caps_hash(info):
+def compute_caps_hash(info, compare=True):
     """
     Compute caps hash according to XEP-0115, V1.5
     https://xmpp.org/extensions/xep-0115.html#ver-proc
 
     :param: info    DiscoInfo
+    :param: compare If True an exception is raised if the hash announced in
+                    the node attr is not equal to what is calculated
     """
     # Initialize an empty string S.
     string_ = ''
@@ -367,4 +369,8 @@ def compute_caps_hash(info):
                 string_ += '%s<' % value
 
     hash_ = hashlib.sha1(string_.encode())
-    return b64encode(hash_.digest())
+    b64hash = b64encode(hash_.digest())
+    if compare and b64hash != info.get_caps_hash():
+        raise DiscoInfoMalformed('Caps hashes differ: %s != %s' % (
+            b64hash, info.get_caps_hash()))
+    return b64hash
