@@ -21,8 +21,8 @@
 
 from nbxmpp.protocol import NS_DATA
 from nbxmpp.protocol import NS_DATA_MEDIA
+from nbxmpp.protocol import JID
 from nbxmpp.simplexml import Node
-from nbxmpp.util import validate_jid
 
 
 # exceptions used in this module
@@ -426,7 +426,7 @@ class JidSingleField(ListSingleField):
     def is_valid(self):
         if self.value:
             try:
-                validate_jid(self.value)
+                JID(self.value)
                 return True, ''
             except Exception as error:
                 return False, error
@@ -481,7 +481,7 @@ class JidMultiField(ListMultiField):
         if self.values:
             for value in self.values:
                 try:
-                    validate_jid(value)
+                    JID(value)
                 except Exception as error:
                     return False, error
             return True, ''

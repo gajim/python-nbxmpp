@@ -32,7 +32,6 @@ from nbxmpp.protocol import Message
 from nbxmpp.protocol import DataForm
 from nbxmpp.protocol import DataField
 from nbxmpp.protocol import isResultNode
-from nbxmpp.protocol import InvalidJid
 from nbxmpp.simplexml import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import InviteType
@@ -48,7 +47,6 @@ from nbxmpp.structs import CommonResult
 from nbxmpp.structs import MucConfigResult
 from nbxmpp.structs import MucUserData
 from nbxmpp.structs import MucDestroyed
-from nbxmpp.util import validate_jid
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
@@ -112,9 +110,9 @@ class MUC:
             alternate = destroy.getAttr('jid')
             if alternate is not None:
                 try:
-                    alternate = JID(validate_jid(alternate))
-                except InvalidJid:
-                    log.warning('Invalid alternate JID provided')
+                    alternate = JID(alternate)
+                except Exception as error:
+                    log.warning('Invalid alternate JID provided: %s', error)
                     log.warning(stanza)
                     alternate = None
             properties.muc_destroyed = MucDestroyed(
@@ -312,9 +310,10 @@ class MUC:
         users_dict = {}
         for item in items:
             try:
-                jid = validate_jid(item.getAttr('jid'))
-            except InvalidJid as error:
-                log.exception(error)
+                jid = JID(item.getAttr('jid'))
+            except Exception as error:
+                log.warning('Invalid JID: %s, %s',
+                            item.getAttr('jid'), error)
                 continue
 
             users_dict[jid] = {}

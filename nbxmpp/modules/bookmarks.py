@@ -23,12 +23,12 @@ from nbxmpp.protocol import NS_PRIVATE
 from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import BookmarkData
 from nbxmpp.const import BookmarkStoreType
 from nbxmpp.util import from_xs_boolean
 from nbxmpp.util import to_xs_boolean
-from nbxmpp.util import validate_jid
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
@@ -87,10 +87,10 @@ class Bookmarks:
                     autojoin = False
 
             try:
-                jid = validate_jid(conf.getAttr('jid'))
-            except Exception:
-                log.warning('Invalid JID: %s, ignoring it',
-                            conf.getAttr('jid'))
+                jid = JID(conf.getAttr('jid'))
+            except Exception as error:
+                log.warning('Invalid JID: %s, %s',
+                            conf.getAttr('jid'), error)
                 continue
 
             bookmark = BookmarkData(

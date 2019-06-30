@@ -22,10 +22,10 @@ from nbxmpp.protocol import NS_ROSTERNOTES
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import isResultNode
+from nbxmpp.protocol import JID
 from nbxmpp.structs import AnnotationNote
 from nbxmpp.structs import CommonResult
 from nbxmpp.modules.date_and_time import parse_datetime
-from nbxmpp.util import validate_jid
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
@@ -66,10 +66,10 @@ class Annotations:
         notes = []
         for note in nodes:
             try:
-                jid = validate_jid(note.getAttr('jid'))
-            except Exception:
-                log.warning('Invalid JID: %s, ignoring it',
-                            note.getAttr('jid'))
+                jid = JID(note.getAttr('jid'))
+            except Exception as error:
+                log.warning('Invalid JID: %s, %s',
+                            note.getAttr('jid'), error)
                 continue
 
             cdate = note.getAttr('cdate')
