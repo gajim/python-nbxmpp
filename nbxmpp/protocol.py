@@ -874,6 +874,12 @@ class JID:
         """
         return self.__str__(0)
 
+    def setBare(self):
+        """
+        Deletes the resource which makes the JID bare
+        """
+        self.resource = ''
+
     @property
     def isBare(self):
         return self.node and self.domain and not self.resource
