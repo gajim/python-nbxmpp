@@ -23,6 +23,7 @@ from nbxmpp.protocol import JID
 from nbxmpp.protocol import NS_STANZAS
 from nbxmpp.protocol import NS_MAM_1
 from nbxmpp.protocol import NS_MAM_2
+from nbxmpp.protocol import NS_MUC
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
 from nbxmpp.const import StatusCode
@@ -130,6 +131,15 @@ class DiscoInfo(namedtuple('DiscoInfo', 'jid node identities features dataforms'
             return self.node.split('#')[1]
         except Exception:
             return None
+
+    @property
+    def is_muc(self):
+        for identity in self.identities:
+            if identity.category == 'conference':
+                if NS_MUC in self.features:
+                    return True
+        return False
+    
 
 
 class DiscoIdentity(namedtuple('DiscoIdentity', 'category type name lang')):
