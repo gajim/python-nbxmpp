@@ -97,6 +97,8 @@ class MUC:
         if muc is None:
             return
         properties.from_muc = True
+        properties.muc_jid = properties.jid.copy()
+        properties.muc_jid.setBare()
         properties.muc_nickname = properties.jid.getResource()
 
     def _process_muc_user_presence(self, _con, stanza, properties):
@@ -104,6 +106,8 @@ class MUC:
         if muc_user is None:
             return
         properties.from_muc = True
+        properties.muc_jid = properties.jid.copy()
+        properties.muc_jid.setBare()
 
         destroy = muc_user.getTag('destroy')
         if destroy is not None:
@@ -158,6 +162,8 @@ class MUC:
 
     def _process_groupchat_message(self, _con, stanza, properties):
         properties.from_muc = True
+        properties.muc_jid = properties.jid.copy()
+        properties.muc_jid.setBare()
         properties.muc_nickname = properties.jid.getResource() or None
 
         muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
@@ -185,6 +191,8 @@ class MUC:
             return
 
         properties.from_muc = True
+        properties.muc_jid = properties.jid.copy()
+        properties.muc_jid.setBare()
 
         if not properties.jid.isBare:
             return
@@ -249,6 +257,8 @@ class MUC:
             return
 
         properties.from_muc = True
+        properties.muc_jid = properties.jid.copy()
+        properties.muc_jid.setBare()
 
         data = {}
 
@@ -291,6 +301,9 @@ class MUC:
             return
 
         properties.voice_request = VoiceRequest(form=data_form)
+        properties.from_muc = True
+        properties.muc_jid = properties.jid.copy()
+        properties.muc_jid.setBare()
 
     @call_on_response('_affiliation_received')
     def get_affiliation(self, jid, affiliation):

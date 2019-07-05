@@ -246,6 +246,7 @@ class MessageProperties:
         self.http_auth = None
         self.nickname = None
         self.from_muc = False
+        self.muc_jid = None
         self.muc_nickname = None
         self.muc_status_codes = None
         self.muc_private_message = False
@@ -374,6 +375,7 @@ class PresenceProperties:
         self.error = None
         self.avatar_sha = None
         self.avatar_state = AvatarState.IGNORE
+        self.muc_jid = None
         self.muc_status_codes = None
         self.muc_user = None
         self.muc_nickname = None
