@@ -816,7 +816,8 @@ class JID:
         """
         if not jid and not domain:
             raise ValueError('JID must contain at least domain name')
-        elif type(jid) == type(self):
+
+        if isinstance(jid, JID):
             self.node, self.domain = jid.node, jid.domain
             self.resource = jid.resource
         elif domain:
