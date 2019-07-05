@@ -825,6 +825,9 @@ class JID:
         else:
             self.node, self.domain, self.resource = parse_jid(jid)
 
+    def copy(self):
+        return JID(self)
+
     def getNode(self):
         """
         Return the node part of the JID
