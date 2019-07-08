@@ -123,6 +123,7 @@ NS_MUC_OWNER      = NS_MUC + '#owner'
 NS_MUC_UNIQUE     = NS_MUC + '#unique'
 NS_MUC_CONFIG     = NS_MUC + '#roomconfig'
 NS_MUC_REQUEST    = NS_MUC + '#request'
+NS_MUC_INFO       = NS_MUC + '#roominfo'
 NS_NICK           = 'http://jabber.org/protocol/nick'                 # XEP-0172
 NS_OFFLINE        = 'http://www.jabber.org/jeps/jep-0030.html'        # XEP-0013
 NS_PHYSLOC        = 'http://jabber.org/protocol/physloc'              # XEP-0112

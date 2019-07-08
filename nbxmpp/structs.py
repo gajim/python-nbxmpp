@@ -24,6 +24,7 @@ from nbxmpp.protocol import NS_STANZAS
 from nbxmpp.protocol import NS_MAM_1
 from nbxmpp.protocol import NS_MAM_2
 from nbxmpp.protocol import NS_MUC
+from nbxmpp.protocol import NS_MUC_INFO
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
 from nbxmpp.const import StatusCode
@@ -132,6 +133,20 @@ class DiscoInfo(namedtuple('DiscoInfo', 'jid node identities features dataforms'
         except Exception:
             return None
 
+    def _get_form_value(self, form_type, var):
+        for dataform in self.dataforms:
+            try:
+                is_info_form = dataform['FORM_TYPE'] != form_type
+                if not is_info_form:
+                    continue
+
+                if dataform[var].type_ == 'jid-multi':
+                    return dataform[var].values or None
+                return dataform[var].value or None
+
+            except Exception:
+                continue
+
     @property
     def is_muc(self):
         for identity in self.identities:
@@ -139,7 +154,95 @@ class DiscoInfo(namedtuple('DiscoInfo', 'jid node identities features dataforms'
                 if NS_MUC in self.features:
                     return True
         return False
-    
+
+    @property
+    def muc_name(self):
+        for identity in self.identities:
+            if identity.category == 'conference':
+                return identity.name
+
+    @property
+    def muc_description(self):
+        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_description')
+
+    @property
+    def muc_log_uri(self):
+        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_logs')
+
+    @property
+    def muc_users(self):
+        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_occupants')
+
+    @property
+    def muc_contacts(self):
+        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_contactjid')
+
+    @property
+    def muc_subject(self):
+        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_subject')
+
+    @property
+    def muc_subjectmod(self):
+        # muc#roominfo_changesubject stems from a wrong example in the MUC XEP
+        # Ejabberd and Prosody use this value
+        return (self._get_form_value(NS_MUC_INFO, 'muc#roominfo_subjectmod') or
+                self._get_form_value(NS_MUC_INFO, 'muc#roominfo_changesubject'))
+
+    @property
+    def muc_lang(self):
+        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_lang')
+
+    @property
+    def muc_has_mam(self):
+        return NS_MAM_2 in self.features or NS_MAM_1 in self.features
+
+    @property
+    def muc_is_persistent(self):
+        return 'muc_persistent' in self.features
+
+    @property
+    def muc_is_moderated(self):
+        return 'muc_moderated' in self.features
+
+    @property
+    def muc_is_open(self):
+        return 'muc_open' in self.features
+
+    @property
+    def muc_is_members_only(self):
+        return 'muc_membersonly' in self.features
+
+    @property
+    def muc_is_hidden(self):
+        return 'muc_hidden' in self.features
+
+    @property
+    def muc_is_nonanonymous(self):
+        return 'muc_nonanonymous' in self.features
+
+    @property
+    def muc_is_passwordprotected(self):
+        return 'muc_passwordprotected' in self.features
+
+    @property
+    def muc_is_public(self):
+        return 'muc_public' in self.features
+
+    @property
+    def muc_is_semianonymous(self):
+        return 'muc_semianonymous' in self.features
+
+    @property
+    def muc_is_temporary(self):
+        return 'muc_temporary' in self.features
+
+    @property
+    def muc_is_unmoderated(self):
+        return 'muc_unmoderated' in self.features
+
+    @property
+    def muc_is_unsecured(self):
+        return 'muc_unsecured' in self.features
 
 
 class DiscoIdentity(namedtuple('DiscoIdentity', 'category type name lang')):
