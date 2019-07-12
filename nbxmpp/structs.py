@@ -147,6 +147,28 @@ class DiscoInfo(namedtuple('DiscoInfo', 'jid node identities features dataforms'
             except Exception:
                 continue
 
+    def supports(self, feature):
+        return feature in self.features
+
+    @property
+    def mam_namespace(self):
+        if NS_MAM_2 in self.features:
+            return NS_MAM_2
+        if NS_MAM_1 in self.features:
+            return NS_MAM_1
+
+    @property
+    def has_mam_2(self):
+        return NS_MAM_2 in self.features
+
+    @property
+    def has_mam_1(self):
+        return NS_MAM_1 in self.features
+
+    @property
+    def has_mam(self):
+        return self.has_mam_1 or self.has_mam_2
+
     @property
     def is_muc(self):
         for identity in self.identities:
@@ -191,10 +213,6 @@ class DiscoInfo(namedtuple('DiscoInfo', 'jid node identities features dataforms'
     @property
     def muc_lang(self):
         return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_lang')
-
-    @property
-    def muc_has_mam(self):
-        return NS_MAM_2 in self.features or NS_MAM_1 in self.features
 
     @property
     def muc_is_persistent(self):
