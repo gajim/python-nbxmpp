@@ -342,10 +342,8 @@ class StringField(DataField):
 
     @value.setter
     def value(self, value):
-        assert isinstance(value, str)
-        if value == '' and not self.required:
-            del self.value
-            return
+        if value is None:
+            value = ''
         self.setTagData('value', value)
 
     @value.deleter
