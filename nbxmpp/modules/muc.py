@@ -488,11 +488,12 @@ class MUC:
             muc_user.setTagData('password', password)
         return message
 
+    @call_on_response('_default_response')
     def send_captcha(self, room_jid, form_node):
         iq = Iq(typ='set', to=room_jid)
         captcha = iq.addChild(name='captcha', namespace=NS_CAPTCHA)
         captcha.addChild(node=form_node)
-        self._client.send(iq)
+        return iq
 
     @callback
     def _default_response(self, stanza):
