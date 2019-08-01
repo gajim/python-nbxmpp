@@ -26,6 +26,7 @@ from nbxmpp.protocol import NS_MUC_ADMIN
 from nbxmpp.protocol import NS_MUC_OWNER
 from nbxmpp.protocol import NS_CAPTCHA
 from nbxmpp.protocol import NS_ADDRESS
+from nbxmpp.protocol import ERR_NOT_ACCEPTABLE
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Message
@@ -494,6 +495,12 @@ class MUC:
         captcha = iq.addChild(name='captcha', namespace=NS_CAPTCHA)
         captcha.addChild(node=form_node)
         return iq
+
+    def cancel_captcha(self, room_jid, message_id):
+        message = Message(typ='error', to=room_jid)
+        message.setID(message_id)
+        message.setError(ERR_NOT_ACCEPTABLE)
+        self._client.send(message)
 
     @callback
     def _default_response(self, stanza):
