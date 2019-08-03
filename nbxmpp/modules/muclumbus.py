@@ -16,6 +16,7 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import json
 
 from nbxmpp.protocol import NS_MUCLUMBUS
 from nbxmpp.protocol import NS_DATA
@@ -31,6 +32,13 @@ from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
 
+try:
+    import gi
+    gi.require_version('Soup', '2.4')
+    from gi.repository import Soup
+    SOUP_AVAILABLE = True
+except (ValueError, ImportError):
+    SOUP_AVAILABLE = False
 
 log = logging.getLogger('nbxmpp.m.muclumbus')
 
@@ -41,6 +49,10 @@ class Muclumbus:
     def __init__(self, client):
         self._client = client
         self.handlers = []
+
+        self._soup_session = None
+        if SOUP_AVAILABLE:
+            self._soup_session = Soup.Session()
 
     @call_on_response('_parameters_received')
     def request_parameters(self, jid):
@@ -75,6 +87,25 @@ class Muclumbus:
         query = Iq(to=jid, typ='get')
         query.addChild(node=search)
         return query
+
+    def set_http_search(self, uri, keywords, after=None,
+                        callback=None, user_data=None):
+        if not SOUP_AVAILABLE:
+            raise ImportError('Module Soup not found')
+
+        search = {'keywords': keywords}
+        if after is not None:
+            search['after'] = after
+
+        message = Soup.Message.new('POST', uri)
+        message.set_request('application/json',
+                            Soup.MemoryUse.COPY,
+                            json.dumps(search).encode())
+
+        self._soup_session.queue_message(message,
+                                         self._http_search_received,
+                                         callback,
+                                         user_data)
 
     @callback
     def _search_received(self, stanza):
@@ -118,10 +149,10 @@ class Muclumbus:
             except ValueError:
                 anonymity_mode = AnonymityMode.UNKNOWN
             results.append(MuclumbusItem(jid=jid,
-                                         name=name,
-                                         nusers=nusers,
-                                         description=description,
-                                         language=language,
+                                         name=name or '',
+                                         nusers=nusers or '',
+                                         description=description or '',
+                                         language=language or '',
                                          is_open=is_open,
                                          anonymity_mode=anonymity_mode))
         return MuclumbusResult(first=first,
@@ -129,3 +160,53 @@ class Muclumbus:
                                max=max_,
                                end=len(items) < max_,
                                items=results)
+
+    def _http_search_received(self, _session, message, callback, user_data):
+        soup_body = message.get_property('response-body')
+
+        if message.status_code != 200:
+            log.warning(soup_body.data)
+            return MuclumbusResult(first=None,
+                                   last=None,
+                                   max=None,
+                                   end=True,
+                                   items=[])
+
+
+        response = json.loads(soup_body.data)
+
+        result = response['result']
+        items = result.get('items')
+        if items is None:
+            return MuclumbusResult(first=None,
+                                   last=None,
+                                   max=None,
+                                   end=True,
+                                   items=[])
+
+        results = []
+        for item in items:
+            try:
+                anonymity_mode = AnonymityMode(item['anonymity_mode'])
+            except ValueError:
+                anonymity_mode = AnonymityMode.UNKNOWN
+
+            results.append(
+                MuclumbusItem(jid=item['address'],
+                              name=item['name'] or '',
+                              nusers=str(item['nusers'] or ''),
+                              description=item['description'] or '',
+                              language=item['language'] or '',
+                              is_open=item['is_open'],
+                              anonymity_mode=anonymity_mode))
+
+        muclumbus_result = MuclumbusResult(first=None,
+                                           last=result['last'],
+                                           max=None,
+                                           end=not result['more'],
+                                           items=results)
+
+        if user_data is None:
+            callback(muclumbus_result)
+        else:
+            callback(muclumbus_result, user_data)
