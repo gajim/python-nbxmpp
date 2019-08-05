@@ -46,7 +46,8 @@ class BaseMessage:
 
         # Stanza ID
         id_, by = stanza.getStanzaIDAttrs()
-        properties.stanza_id = StanzaIDData(id=id_, by=by)
+        if id_ is not None and by is not None:
+            properties.stanza_id = StanzaIDData(id=id_, by=by)
 
         if properties.type.is_error:
             properties.error = ErrorProperties(stanza)
