@@ -1084,11 +1084,27 @@ class Protocol(Node):
         of the error (otherwise)
         """
         errtag = self.getTag('error')
-        if errtag:
-            for tag in errtag.getChildren():
-                if tag.getName() != 'text':
-                    return tag.getName()
-            return errtag.getData()
+        if errtag is None:
+            return
+        for tag in errtag.getChildren():
+            if tag.getName() != 'text' and tag.getNamespace() == NS_STANZAS:
+                return tag.getName()
+
+    def getAppError(self):
+        errtag = self.getTag('error')
+        if errtag is None:
+            return
+        for tag in errtag.getChildren():
+            if tag.getName() != 'text' and tag.getNamespace() != NS_STANZAS:
+                return tag.getName()
+
+    def getAppErrorNamespace(self):
+        errtag = self.getTag('error')
+        if errtag is None:
+            return
+        for tag in errtag.getChildren():
+            if tag.getName() != 'text' and tag.getNamespace() != NS_STANZAS:
+                return tag.getNamespace()
 
     def getErrorMsg(self):
         """

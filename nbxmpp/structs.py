@@ -309,11 +309,52 @@ class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
         return random.SystemRandom().choice(self.otpks)
 
 
-class CommonError(namedtuple('CommonError', 'type message jid')):
+class CommonError:
+    def __init__(self, stanza):
+        self._error_node = stanza.getTag('error')
+        self.condition = stanza.getError()
+        self.app_condition = stanza.getAppError()
+        self.type = stanza.getErrorType()
+        self.jid = stanza.getFrom()
+        self.id = stanza.getID()
+        self._text = {}
+
+        error = stanza.getTag('error')
+        if error is not None:
+            text_elements = error.getTags('text', namespace=NS_STANZAS)
+            for element in text_elements:
+                lang = element.getXmlLang()
+                text = element.getData()
+                self._text[lang] = text
+
+    def get_text(self, pref_lang=None):
+        if pref_lang is not None:
+            text = self._text.get(pref_lang)
+            if text is not None:
+                return text
+
+        if self._text:
+            text = self._text.get('en')
+            if text is not None:
+                return text
+
+            text = self._text.get(None)
+            if text is not None:
+                return text
+            return self._text.popitem()[1]
+        return ''
+
+    def set_text(self, lang, text):
+        self._text[lang] = text
+
     def __str__(self):
-        if self.message is not None:
-            return 'Error from %s %s: %s' % (self.jid, self.type, self.message)
-        return 'Error from %s: %s' % (self.jid, self.type)
+        condition = self.condition
+        if self.app_condition is not None:
+            condition = '%s (%s)' % (self.condition, self.app_condition)
+        text = self.get_text('en') or ''
+        if text:
+            text = ' - %s' % text
+        return 'Error from %s: %s%s' % (self.jid, condition, text)
 
 
 class TuneData(namedtuple('TuneData', 'artist length rating source title track uri')):

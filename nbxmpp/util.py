@@ -138,14 +138,19 @@ def to_xs_boolean(value):
         'Cant convert %s to xs:boolean' % value)
 
 
-def raise_error(log_method, stanza, type_=None, message=None):
-    if message is not None:
-        message = str(message)
-    if type_ is None:
-        type_ = stanza.getError()
-        message = stanza.getErrorMsg()
-    jid = stanza.getFrom()
-    error = CommonError(type_, message, jid)
+error_classes = {}
+
+def error_factory(stanza):
+    app_namespace = stanza.getAppErrorNamespace()
+    return error_classes.get(app_namespace, CommonError)(stanza)
+
+
+def raise_error(log_method, stanza, condition=None, text=None):
+    error = error_factory(stanza)
+    if text is not None:
+        error.set_text('en', str(text))
+    if condition is not None:
+        error.condition = str(condition)
     log_method(error)
     if log_method.__name__ in ('warning', 'error'):
         log_method(stanza)
