@@ -431,6 +431,14 @@ class Node:
         except Exception:
             self.addChild(tag, attrs, payload = [str(val)])
 
+    def getXmlLang(self):
+        lang = self.attrs.get('xml:lang')
+        if lang is not None:
+            return lang
+
+        if self.parent is not None:
+            return self.parent.getXmlLang()
+
     def has_attr(self, key):
         """
         Check if node have attribute "key"
