@@ -184,6 +184,10 @@ class DiscoInfo(namedtuple('DiscoInfo', 'jid node identities features dataforms'
                 return identity.name
 
     @property
+    def muc_room_name(self):
+        return self._get_form_value(NS_MUC_INFO, 'muc#roomconfig_roomname')   
+
+    @property
     def muc_description(self):
         return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_description')
 
