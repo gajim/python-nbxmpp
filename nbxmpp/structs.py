@@ -119,12 +119,12 @@ DiscoItem = namedtuple('DiscoItem', 'jid name node')
 DiscoItem.__new__.__defaults__ = (None, None)
 
 
-class DiscoInfo(namedtuple('DiscoInfo', 'jid node identities features dataforms')):
+class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms')):
 
     __slots__ = []
 
-    def __new__(cls, jid, node, identities, features, dataforms):
-        return super(DiscoInfo, cls).__new__(cls, jid, node, identities,
+    def __new__(cls, stanza, identities, features, dataforms):
+        return super(DiscoInfo, cls).__new__(cls, stanza, identities,
                                              features, dataforms)
 
     def get_caps_hash(self):
@@ -149,6 +149,24 @@ class DiscoInfo(namedtuple('DiscoInfo', 'jid node identities features dataforms'
 
     def supports(self, feature):
         return feature in self.features
+
+    @property
+    def node(self):
+        try:
+            query = self.stanza.getQuery()
+        except Exception:
+            return None
+
+        if query is not None:
+            return query.getAttr('node')
+        return None
+
+    @property
+    def jid(self):
+        try:
+            return self.stanza.getFrom()
+        except Exception:
+            return None
 
     @property
     def mam_namespace(self):

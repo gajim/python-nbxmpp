@@ -89,8 +89,7 @@ def parse_disco_info(stanza):
     for node in query.getTags('x', namespace=NS_DATA):
         dataforms.append(extend_form(node))
 
-    return DiscoInfo(jid=stanza.getFrom(),
-                     node=query.getAttr('node'),
+    return DiscoInfo(stanza=stanza,
                      identities=idenities,
                      features=features,
                      dataforms=dataforms)
