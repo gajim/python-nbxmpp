@@ -119,13 +119,13 @@ DiscoItem = namedtuple('DiscoItem', 'jid name node')
 DiscoItem.__new__.__defaults__ = (None, None)
 
 
-class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms')):
+class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
 
     __slots__ = []
 
-    def __new__(cls, stanza, identities, features, dataforms):
+    def __new__(cls, stanza, identities, features, dataforms, timestamp=None):
         return super(DiscoInfo, cls).__new__(cls, stanza, identities,
-                                             features, dataforms)
+                                             features, dataforms, timestamp)
 
     def get_caps_hash(self):
         try:
@@ -203,7 +203,7 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms'))
 
     @property
     def muc_room_name(self):
-        return self._get_form_value(NS_MUC_INFO, 'muc#roomconfig_roomname')   
+        return self._get_form_value(NS_MUC_INFO, 'muc#roomconfig_roomname')
 
     @property
     def muc_description(self):

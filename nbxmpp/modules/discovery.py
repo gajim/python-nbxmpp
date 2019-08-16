@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+import time
 import logging
 
 from nbxmpp.protocol import Iq
@@ -63,10 +64,13 @@ class Discovery:
         return parse_disco_items(stanza)
 
 
-def parse_disco_info(stanza):
+def parse_disco_info(stanza, timestamp=None):
     idenities = []
     features = []
     dataforms = []
+
+    if timestamp is None:
+        timestamp = time.time()
 
     query = stanza.getQuery()
     for node in query.getTags('identity'):
@@ -92,7 +96,8 @@ def parse_disco_info(stanza):
     return DiscoInfo(stanza=stanza,
                      identities=idenities,
                      features=features,
-                     dataforms=dataforms)
+                     dataforms=dataforms,
+                     timestamp=timestamp)
 
 
 def parse_disco_items(stanza):
