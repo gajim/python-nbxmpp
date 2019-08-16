@@ -150,6 +150,11 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
     def supports(self, feature):
         return feature in self.features
 
+    def serialize(self):
+        if self.stanza is None:
+            raise ValueError('Unable to serialize DiscoInfo, no stanza found')
+        return str(self.stanza)
+
     @property
     def node(self):
         try:
