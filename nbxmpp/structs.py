@@ -29,7 +29,6 @@ from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
 from nbxmpp.const import StatusCode
 from nbxmpp.const import PresenceType
-from nbxmpp.const import Error
 from nbxmpp.const import LOCATION_DATA
 from nbxmpp.const import AdHocStatus
 
@@ -648,20 +647,3 @@ class PresenceProperties:
             return self.muc_user.role
         except Exception:
             return None
-
-
-class ErrorProperties:
-    def __init__(self, stanza):
-        for child in stanza.getTag('error').getChildren():
-            if child.getNamespace() == NS_STANZAS:
-                try:
-                    self.type = Error(child.name)
-                except ValueError:
-                    self.type = Error('unknown-error')
-                break
-        self.legacy_code = stanza.getErrorCode()
-        self.legacy_type = stanza.getErrorType()
-        self.message = stanza.getErrorMsg()
-
-    def __str__(self):
-        return '%s %s' % (self.type, self.message)

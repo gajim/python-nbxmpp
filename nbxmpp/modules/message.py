@@ -19,8 +19,8 @@ import logging
 
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import ErrorProperties
 from nbxmpp.structs import StanzaIDData
+from nbxmpp.util import error_factory
 from nbxmpp.const import MessageType
 
 log = logging.getLogger('nbxmpp.m.message')
@@ -50,7 +50,7 @@ class BaseMessage:
             properties.stanza_id = StanzaIDData(id=id_, by=by)
 
         if properties.type.is_error:
-            properties.error = ErrorProperties(stanza)
+            properties.error = error_factory(stanza)
 
     @staticmethod
     def _process_message_after_base(_con, stanza, properties):
