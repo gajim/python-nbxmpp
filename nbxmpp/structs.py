@@ -589,6 +589,13 @@ class PresenceProperties:
                 StatusCode.SELF in self.muc_status_codes)
 
     @property
+    def is_nickname_modified(self):
+        return (self.from_muc and
+                self.muc_status_codes is not None and
+                StatusCode.NICKNAME_MODIFIED in self.muc_status_codes and
+                self.type == PresenceType.AVAILABLE)
+
+    @property
     def is_nickname_changed(self):
         return (self.from_muc and
                 self.muc_status_codes is not None and
