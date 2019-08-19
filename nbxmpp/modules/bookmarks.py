@@ -56,10 +56,18 @@ class Bookmarks:
         if properties.pubsub_event.node != NS_BOOKMARKS:
             return
 
+        if properties.pubsub_event.deleted or properties.pubsub_event.retracted:
+            return
+
         item = properties.pubsub_event.item
+        if item is None:
+            return
+
+        storage_node = item.getTag('storage', namespace=NS_BOOKMARKS)
+        if storage_node is None:
+            return
 
         bookmarks = []
-        storage_node = item.getTag('storage', namespace=NS_BOOKMARKS)
         if storage_node.getChildren():
             bookmarks = self._parse_bookmarks(storage_node)
 
