@@ -200,6 +200,17 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
         return False
 
     @property
+    def muc_name(self):
+        if self.muc_room_name:
+            return self.muc_room_name
+
+        if self.muc_identity_name:
+            return self.muc_identity_name
+
+        if self.jid is not None:
+            return self.jid.getNode()
+
+    @property
     def muc_identity_name(self):
         for identity in self.identities:
             if identity.category == 'conference':
