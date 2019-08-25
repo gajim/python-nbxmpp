@@ -132,11 +132,22 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
         except Exception:
             return None
 
-    def _get_form_value(self, form_type, var):
+    def has_field(self, form_type, var):
         for dataform in self.dataforms:
             try:
-                is_info_form = dataform['FORM_TYPE'] != form_type
-                if not is_info_form:
+                if dataform['FORM_TYPE'].value != form_type:
+                    continue
+                if var in dataform.vars:
+                    return True
+
+            except Exception:
+                continue
+        return False
+
+    def get_field_value(self, form_type, var):
+        for dataform in self.dataforms:
+            try:
+                if dataform['FORM_TYPE'].value != form_type:
                     continue
 
                 if dataform[var].type_ == 'jid-multi':
@@ -218,38 +229,38 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
 
     @property
     def muc_room_name(self):
-        return self._get_form_value(NS_MUC_INFO, 'muc#roomconfig_roomname')
+        return self.get_field_value(NS_MUC_INFO, 'muc#roomconfig_roomname')
 
     @property
     def muc_description(self):
-        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_description')
+        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_description')
 
     @property
     def muc_log_uri(self):
-        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_logs')
+        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_logs')
 
     @property
     def muc_users(self):
-        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_occupants')
+        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_occupants')
 
     @property
     def muc_contacts(self):
-        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_contactjid')
+        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_contactjid')
 
     @property
     def muc_subject(self):
-        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_subject')
+        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_subject')
 
     @property
     def muc_subjectmod(self):
         # muc#roominfo_changesubject stems from a wrong example in the MUC XEP
         # Ejabberd and Prosody use this value
-        return (self._get_form_value(NS_MUC_INFO, 'muc#roominfo_subjectmod') or
-                self._get_form_value(NS_MUC_INFO, 'muc#roominfo_changesubject'))
+        return (self.get_field_value(NS_MUC_INFO, 'muc#roominfo_subjectmod') or
+                self.get_field_value(NS_MUC_INFO, 'muc#roominfo_changesubject'))
 
     @property
     def muc_lang(self):
-        return self._get_form_value(NS_MUC_INFO, 'muc#roominfo_lang')
+        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_lang')
 
     @property
     def muc_is_persistent(self):
