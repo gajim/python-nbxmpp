@@ -361,6 +361,7 @@ class CommonError:
     def __init__(self, stanza):
         self._error_node = stanza.getTag('error')
         self.condition = stanza.getError()
+        self.condition_data = self._error_node.getTagData(self.condition)
         self.app_condition = stanza.getAppError()
         self.type = stanza.getErrorType()
         self.jid = stanza.getFrom()
