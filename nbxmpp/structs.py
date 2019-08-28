@@ -48,7 +48,7 @@ CaptchaData = namedtuple('CaptchaData', 'form bob_data')
 
 BobData = namedtuple('BobData', 'algo hash_ max_age data cid type')
 
-VoiceRequest = namedtuple('VoiceRequest', 'form')
+VoiceRequest = namedtuple('VoiceRequest', 'form jid nick')
 
 MucUserData = namedtuple('MucUserData', 'affiliation jid nick role actor reason')
 MucUserData.__new__.__defaults__ = (None, None, None, None, None)

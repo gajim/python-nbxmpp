@@ -33,6 +33,7 @@ from nbxmpp.protocol import Message
 from nbxmpp.protocol import DataForm
 from nbxmpp.protocol import DataField
 from nbxmpp.protocol import isResultNode
+from nbxmpp.protocol import NodeProcessed
 from nbxmpp.simplexml import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import InviteType
@@ -301,10 +302,27 @@ class MUC:
         except KeyError:
             return
 
-        properties.voice_request = VoiceRequest(form=data_form)
+        nick = data_form['muc#roomnick'].value
+
+        try:
+            jid = JID(data_form['muc#jid'].value)
+        except Exception:
+            log.warning('Invalid JID on voice request')
+            log.warning(stanza)
+            raise NodeProcessed
+
+        properties.voice_request = VoiceRequest(jid=jid,
+                                                nick=nick,
+                                                form=data_form)
         properties.from_muc = True
         properties.muc_jid = properties.jid.copy()
         properties.muc_jid.setBare()
+
+    def approve_voice_request(self, muc_jid, voice_request):
+        form = voice_request.form
+        form.type_ = 'submit'
+        form['muc#request_allow'].value = True
+        self._client.send(Message(to=muc_jid, payload=form))
 
     @call_on_response('_affiliation_received')
     def get_affiliation(self, jid, affiliation):
