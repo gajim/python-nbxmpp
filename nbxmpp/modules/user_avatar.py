@@ -112,7 +112,8 @@ class UserAvatar:
         try:
             data = base64.b64decode(data.encode('utf-8'))
         except Exception as error:
-            return raise_error(log.warning, stanza, 'stanza-malformed', error)
+            return raise_error(log.warning, stanza,
+                               'stanza-malformed', str(error))
 
         log.info('Received avatar data: %s %s', jid, sha)
         return AvatarData(jid, sha, data)

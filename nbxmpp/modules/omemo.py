@@ -221,7 +221,7 @@ class OMEMO:
             return self._parse_devicelist(item)
         except StanzaMalformed as error:
             return raise_error(log.warning, stanza,
-                               'stanza-malformed', error)
+                               'stanza-malformed', str(error))
 
     def set_bundle(self, bundle, device_id):
         item = self._create_bundle(bundle)
@@ -301,7 +301,7 @@ class OMEMO:
             return self._parse_bundle(item)
         except StanzaMalformed as error:
             return raise_error(log.warning, stanza,
-                               'stanza-malformed', error)
+                               'stanza-malformed', str(error))
 
     @staticmethod
     def _parse_bundle(item):
