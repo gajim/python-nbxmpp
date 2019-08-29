@@ -28,12 +28,14 @@ import precis_i18n.codec
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import InvalidJid
 from nbxmpp.protocol import DiscoInfoMalformed
+from nbxmpp.protocol import isErrorNode
 from nbxmpp.stringprepare import nameprep
 from nbxmpp.structs import Properties
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import CommonError
+from nbxmpp.structs import StanzaMalformedError
 from nbxmpp.third_party.hsluv import hsluv_to_rgb
 
 log = logging.getLogger('nbxmpp.util')
@@ -140,18 +142,22 @@ def to_xs_boolean(value):
 
 error_classes = {}
 
-def error_factory(stanza):
+def error_factory(stanza, condition=None, text=None):
+    if condition == 'stanza-malformed':
+        return StanzaMalformedError(stanza, text)
     app_namespace = stanza.getAppErrorNamespace()
     return error_classes.get(app_namespace, CommonError)(stanza)
 
 
 def raise_error(log_method, stanza, condition=None, text=None):
-    error = error_factory(stanza)
-    if text is not None:
-        error.set_text('en', str(text))
-    if condition is not None:
-        error.condition = str(condition)
+    if not isErrorNode(stanza) and condition != 'stanza-malformed':
+        condition = 'stanza-malformed'
+        if log_method.__name__ not in ('warning', 'error'):
+            log_method = log_method.__self__.warning
+
+    error = error_factory(stanza, condition, text)
     log_method(error)
+
     if log_method.__name__ in ('warning', 'error'):
         log_method(stanza)
     return error

@@ -368,13 +368,11 @@ class CommonError:
         self.id = stanza.getID()
         self._text = {}
 
-        error = stanza.getTag('error')
-        if error is not None:
-            text_elements = error.getTags('text', namespace=NS_STANZAS)
-            for element in text_elements:
-                lang = element.getXmlLang()
-                text = element.getData()
-                self._text[lang] = text
+        text_elements = self._error_node.getTags('text', namespace=NS_STANZAS)
+        for element in text_elements:
+            lang = element.getXmlLang()
+            text = element.getData()
+            self._text[lang] = text
 
     def get_text(self, pref_lang=None):
         if pref_lang is not None:
@@ -404,6 +402,26 @@ class CommonError:
         if text:
             text = ' - %s' % text
         return 'Error from %s: %s%s' % (self.jid, condition, text)
+
+
+class StanzaMalformedError(CommonError):
+    def __init__(self, stanza, text):
+        self._error_node = None
+        self.condition = 'stanza-malformed'
+        self.condition_data = None
+        self.app_condition = None
+        self.type = None
+        self.jid = stanza.getFrom()
+        self.id = stanza.getID()
+        self._text = {}
+        if text:
+            self._text['en'] = text
+
+    def __str__(self):
+        text = self.get_text('en')
+        if text:
+            text = ': %s' % text
+        return 'Received malformed stanza from %s%s' % (self.jid, text)
 
 
 class TuneData(namedtuple('TuneData', 'artist length rating source title track uri')):
