@@ -16,7 +16,6 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import socket
 import base64
 import weakref
 import hashlib
@@ -25,11 +24,8 @@ from functools import lru_cache
 
 import precis_i18n.codec
 
-from nbxmpp.protocol import JID
-from nbxmpp.protocol import InvalidJid
 from nbxmpp.protocol import DiscoInfoMalformed
 from nbxmpp.protocol import isErrorNode
-from nbxmpp.stringprepare import nameprep
 from nbxmpp.structs import Properties
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
