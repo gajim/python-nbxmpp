@@ -58,13 +58,8 @@ class Annotations:
             return raise_error(log.warning, stanza, 'stanza-malformed',
                                'No annotations found')
 
-        nodes = storage.getTags('note')
-        if not nodes:
-            return raise_error(log.info, stanza, 'is-empty',
-                               'No annotations found')
-
         notes = []
-        for note in nodes:
+        for note in storage.getTags('note'):
             try:
                 jid = JID(note.getAttr('jid'))
             except Exception as error:
