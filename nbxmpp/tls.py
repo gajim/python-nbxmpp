@@ -212,6 +212,7 @@ class NonBlockingTLS(PlugIn):
             None is provided, a default list is used: HIGH:!aNULL
         """
         PlugIn.__init__(self)
+        self._exported_methods = [self.get_ssl_connection]
         self.cacerts = cacerts
         self.mycerts = mycerts
         if cipher_list is None:
@@ -423,3 +424,9 @@ class NonBlockingTLS(PlugIn):
             return sslObj.get_finished()
         except AttributeError:
             raise NotImplementedError
+
+    def get_ssl_connection(self):
+        try:
+            return self._owner._sslObj
+        except Exception:
+            pass

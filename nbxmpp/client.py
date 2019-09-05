@@ -119,6 +119,10 @@ class NonBlockingClient:
     def get_bound_jid(self):
         return self._registered_name
 
+    def get_ssl_connection(self):
+        if 'NonBlockingTCP' in self.__dict__:
+            return self.NonBlockingTCP.get_ssl_connection()
+
     def disconnect(self, message=''):
         """
         Called on disconnection - disconnect callback is picked based on state of
