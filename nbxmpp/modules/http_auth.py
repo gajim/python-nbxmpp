@@ -45,7 +45,10 @@ class HTTPAuth:
         if confirm is None:
             return
 
-        http_auth = confirm.getAttrs().copy()
-        http_auth['body'] = stanza.getTagData('body')
-        properties.http_auth = HTTPAuthData(**http_auth)
-        log.info('Found data: %s', http_auth)
+        attrs = confirm.getAttrs()
+        body = stanza.getTagData('body')
+        id_ = attrs.get('id')
+        method = attrs.get('method')
+        url = attrs.get('url')
+        properties.http_auth = HTTPAuthData(id_, method, url, body)
+        log.info('HTTPAuth received: %s %s %s %s', id_, method, url, body)
