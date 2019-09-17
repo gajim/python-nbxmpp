@@ -18,6 +18,7 @@
 from enum import Enum
 from enum import IntEnum
 from enum import unique
+from functools import total_ordering
 
 
 @unique
@@ -141,6 +142,7 @@ class PresenceType(Enum):
         return self == PresenceType.SUBSCRIBED
 
 
+@total_ordering
 class PresenceShow(Enum):
     ONLINE = 'online'
     CHAT = 'chat'
@@ -167,6 +169,23 @@ class PresenceShow(Enum):
     @property
     def is_dnd(self):
         return self == PresenceShow.DND
+
+    def __lt__(self, other):
+        try:
+            w1 = self._WEIGHTS[self]
+            w2 = self._WEIGHTS[other]
+        except KeyError:
+            return NotImplemented
+        return w1 < w2
+
+
+PresenceShow._WEIGHTS = {
+    PresenceShow.CHAT: 1,
+    PresenceShow.ONLINE: 0,
+    PresenceShow.AWAY: -1,
+    PresenceShow.XA: -2,
+    PresenceShow.DND: -3,
+}
 
 
 class StatusCode(Enum):
@@ -204,6 +223,7 @@ class AvatarState(Enum):
     ADVERTISED = 'advertised'
 
 
+@total_ordering
 class Affiliation(Enum):
     OWNER = 'owner'
     ADMIN = 'admin'
@@ -231,7 +251,25 @@ class Affiliation(Enum):
     def is_none(self):
         return self == Affiliation.NONE
 
+    def __lt__(self, other):
+        try:
+            w1 = self._WEIGHTS[self]
+            w2 = self._WEIGHTS[other]
+        except KeyError:
+            return NotImplemented
+        return w1 < w2
 
+
+Affiliation._WEIGHTS = {
+    Affiliation.OWNER: 4,
+    Affiliation.ADMIN: 3,
+    Affiliation.MEMBER: 2,
+    Affiliation.NONE: 1,
+    Affiliation.OUTCAST: 0,
+}
+
+
+@total_ordering
 class Role(Enum):
     MODERATOR = 'moderator'
     PARTICIPANT = 'participant'
@@ -253,6 +291,22 @@ class Role(Enum):
     @property
     def is_none(self):
         return self == Role.NONE
+
+    def __lt__(self, other):
+        try:
+            w1 = self._WEIGHTS[self]
+            w2 = self._WEIGHTS[other]
+        except KeyError:
+            return NotImplemented
+        return w1 < w2
+
+
+Role._WEIGHTS = {
+    Role.MODERATOR: 3,
+    Role.PARTICIPANT: 2,
+    Role.VISITOR: 1,
+    Role.NONE: 0,
+}
 
 
 class BookmarkStoreType(Enum):
