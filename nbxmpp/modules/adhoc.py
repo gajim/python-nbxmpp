@@ -54,7 +54,7 @@ class AdHoc:
             return raise_error(log.info, stanza)
 
         payload = stanza.getQueryPayload()
-        if not payload:
+        if payload is None:
             return raise_error(log.warning, stanza, 'stanza-malformed')
 
         command_list = []
