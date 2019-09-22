@@ -659,6 +659,7 @@ class PresenceProperties:
             StatusCode.REMOVED_KICKED,
             StatusCode.REMOVED_AFFILIATION_CHANGE,
             StatusCode.REMOVED_NONMEMBER_IN_MEMBERS_ONLY,
+            StatusCode.REMOVED_SERVICE_SHUTDOWN,
             StatusCode.REMOVED_ERROR
         }
         return (self.from_muc and
