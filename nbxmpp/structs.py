@@ -70,8 +70,12 @@ HTTPAuthData.__new__.__defaults__ = (None, None, None, None)
 StanzaIDData = namedtuple('StanzaIDData', 'id by')
 StanzaIDData.__new__.__defaults__ = (None, None)
 
-PubSubEventData = namedtuple('PubSubEventData', 'node id item data empty deleted retracted')
-PubSubEventData.__new__.__defaults__ = (None, None, None, False, False, False)
+PubSubEventData = namedtuple('PubSubEventData', 'node id item data empty deleted retracted purged')
+PubSubEventData.__new__.__defaults__ = (None, None, None, False, False, False, False)
+
+PubSubConfigResult = namedtuple('PubSubConfigResult', 'jid node form')
+
+PubSubPublishResult = namedtuple('PubSubPublishResult', 'jid node id')
 
 MoodData = namedtuple('MoodData', 'mood text')
 

@@ -310,7 +310,8 @@ Role._WEIGHTS = {
 
 
 class BookmarkStoreType(Enum):
-    PUBSUB = 'pubsub'
+    PUBSUB_BOOKMARK_2 = 'pubsub bookmark 2'
+    PUBSUB_BOOKMARK_1 = 'pubsub bookmark 1'
     PRIVATE = 'private'
 
 
