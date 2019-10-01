@@ -1346,6 +1346,13 @@ class Message(Protocol):
                 attrs.append(child.getAttr('code'))
         return attrs
 
+    def setMarker(self, type_, id_):
+        self.setTag(type_, namespace=NS_CHATMARKERS, attrs={'id': id_})
+
+    def setMarkable(self):
+        self.setTag('markable', namespace=NS_CHATMARKERS)
+
+
 class Presence(Protocol):
 
     def __init__(self, to=None, typ=None, priority=None, show=None, status=None,

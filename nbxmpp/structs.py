@@ -361,6 +361,21 @@ class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
         return random.SystemRandom().choice(self.otpks)
 
 
+class ChatMarker(namedtuple('ChatMarker', 'type id')):
+
+    @property
+    def is_received(self):
+        return self.type == 'received'
+
+    @property
+    def is_displayed(self):
+        return self.type == 'displayed'
+
+    @property
+    def is_acknowledged(self):
+        return self.type == 'acknowledged'
+
+
 class CommonError:
     def __init__(self, stanza):
         self._error_node = stanza.getTag('error')
@@ -497,6 +512,7 @@ class MessageProperties:
         self.omemo = None
         self.encrypted = None
         self.pgp_legacy = None
+        self.marker = None
 
     @property
     def has_user_delay(self):
@@ -564,6 +580,28 @@ class MessageProperties:
     @property
     def is_self_message(self):
         return self.self_message
+
+    @property
+    def is_marker(self):
+        return self.marker is not None
+
+    @property
+    def is_acknowledged_marker(self):
+        if self.marker is None:
+            return False
+        return self.marker.is_acknowledged
+
+    @property
+    def is_received_marker(self):
+        if self.marker is None:
+            return False
+        return self.marker.is_received
+
+    @property
+    def is_displayed_marker(self):
+        if self.marker is None:
+            return False
+        return self.marker.is_displayed
 
 
 class IqProperties:
