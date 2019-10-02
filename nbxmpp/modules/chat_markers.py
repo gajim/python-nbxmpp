@@ -21,7 +21,7 @@ from nbxmpp.protocol import NS_CHATMARKERS
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ChatMarker
 
-log = logging.getLogger('nbxmpp.m.chat_marker')
+log = logging.getLogger('nbxmpp.m.chat_markers')
 
 
 class ChatMarkers:
@@ -36,18 +36,19 @@ class ChatMarkers:
 
     @staticmethod
     def _process_message_marker(_con, stanza, properties):
-        type_ = stanza.getTag('received', NS_CHATMARKERS)
-        if type_ is not None:
-            type_ = stanza.getTag('displayed', NS_CHATMARKERS)
+        type_ = stanza.getTag('received', namespace=NS_CHATMARKERS)
+        if type_ is None:
+            type_ = stanza.getTag('displayed', namespace=NS_CHATMARKERS)
             if type_ is None:
-                type_ = stanza.getTag('acknowledged', NS_CHATMARKERS)
+                type_ = stanza.getTag('acknowledged', namespace=NS_CHATMARKERS)
                 if type_ is None:
                     return
 
+        name = type_.getName()
         id_ = type_.getAttr('id')
         if id_ is None:
             log.warning('Chatmarker without id')
             log.warning(stanza)
             return
 
-        properties.marker = ChatMarker(type_, id_)
+        properties.marker = ChatMarker(name, id_)
