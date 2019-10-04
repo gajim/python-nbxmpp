@@ -560,7 +560,7 @@ class XMPPDispatcher(PlugIn):
 
             # Unwrap carbon
             try:
-                stanza, properties.carbon_type = unwrap_carbon(stanza, own_jid)
+                stanza, properties.carbon = unwrap_carbon(stanza, own_jid)
             except InvalidFrom as exc:
                 log.warning(exc)
                 return

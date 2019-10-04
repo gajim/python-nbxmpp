@@ -472,13 +472,26 @@ class MAMData(namedtuple('MAMData', 'id query_id archive namespace timestamp')):
         return self.namespace == NS_MAM_2
 
 
+class CarbonData(namedtuple('MAMData', 'type')):
+
+    __slots__ = []
+
+    @property
+    def is_sent(self):
+        return self.type == 'sent'
+
+    @property
+    def is_received(self):
+        return self.type == 'received'
+
+
 class Properties:
     pass
 
 
 class MessageProperties:
     def __init__(self):
-        self.carbon_type = None
+        self.carbon = None
         self.type = MessageType.NORMAL
         self.id = None
         self.stanza_id = None
@@ -541,6 +554,10 @@ class MessageProperties:
     @property
     def is_pubsub_event(self):
         return self.pubsub_event is not None
+
+    @property
+    def is_carbon_message(self):
+        return self.carbon is not None
 
     @property
     def is_mam_message(self):

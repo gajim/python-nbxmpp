@@ -27,6 +27,7 @@ from nbxmpp.protocol import InvalidFrom
 from nbxmpp.protocol import InvalidStanza
 from nbxmpp.protocol import Message
 from nbxmpp.structs import MAMData
+from nbxmpp.structs import CarbonData
 from nbxmpp.modules.delay import parse_delay
 
 
@@ -70,7 +71,7 @@ def unwrap_carbon(stanza, own_jid):
             # there is no need to process the received carbon
             raise NodeProcessed('Drop MUC-PM "received"-Carbon')
 
-    return message, type_
+    return message, CarbonData(type=type_)
 
 
 def unwrap_mam(stanza, own_jid):
