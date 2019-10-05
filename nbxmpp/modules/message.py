@@ -55,6 +55,8 @@ class BaseMessage:
         else:
             properties.jid = stanza.getFrom()
 
+        properties.from_ = stanza.getFrom()
+        properties.to = stanza.getTo()
         properties.id = stanza.getID()
         properties.self_message = self._parse_self_message(stanza, properties)
 

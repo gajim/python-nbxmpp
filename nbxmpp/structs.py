@@ -495,6 +495,8 @@ class MessageProperties:
         self.type = MessageType.NORMAL
         self.id = None
         self.stanza_id = None
+        self.from_ = None
+        self.to = None
         self.jid = None
         self.subject = None
         self.body = None
