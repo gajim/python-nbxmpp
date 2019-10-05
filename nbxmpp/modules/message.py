@@ -40,7 +40,21 @@ class BaseMessage:
 
     def _process_message_base(self, _con, stanza, properties):
         properties.type = self._parse_type(stanza)
-        properties.jid = stanza.getFrom()
+
+        # Determine remote JID
+        if properties.is_carbon_message and properties.carbon.is_sent:
+            properties.jid = stanza.getTo()
+
+        elif properties.is_mam_message and not properties.type.is_groupchat:
+            own_jid = self._client.get_bound_jid()
+            if own_jid.bareMatch(stanza.getFrom()):
+                properties.jid = stanza.getTo()
+            else:
+                properties.jid = stanza.getFrom()
+
+        else:
+            properties.jid = stanza.getFrom()
+
         properties.id = stanza.getID()
         properties.self_message = self._parse_self_message(stanza, properties)
 
