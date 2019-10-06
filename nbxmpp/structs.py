@@ -604,24 +604,6 @@ class MessageProperties:
     def is_marker(self):
         return self.marker is not None
 
-    @property
-    def is_acknowledged_marker(self):
-        if self.marker is None:
-            return False
-        return self.marker.is_acknowledged
-
-    @property
-    def is_received_marker(self):
-        if self.marker is None:
-            return False
-        return self.marker.is_received
-
-    @property
-    def is_displayed_marker(self):
-        if self.marker is None:
-            return False
-        return self.marker.is_displayed
-
 
 class IqProperties:
     def __init__(self):
