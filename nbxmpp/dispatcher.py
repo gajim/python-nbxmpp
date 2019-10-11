@@ -33,6 +33,7 @@ from nbxmpp.protocol import NS_STREAMS
 from nbxmpp.protocol import NS_HTTP_BIND
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import InvalidFrom
+from nbxmpp.protocol import InvalidJid
 from nbxmpp.protocol import InvalidStanza
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Presence
@@ -533,7 +534,12 @@ class XMPPDispatcher(PlugIn):
             log.debug('Got %s / %s stanza', xmlns, name)
 
         # Convert simplexml to Protocol object
-        stanza = self.handlers[xmlns][name]['type'](node=stanza)
+        try:
+            stanza = self.handlers[xmlns][name]['type'](node=stanza)
+        except InvalidJid:
+            log.warning('Invalid JID, ignoring stanza')
+            log.warning(stanza)
+            return
 
         own_jid = self._owner.get_bound_jid()
         properties = get_properties_struct(name)
@@ -561,8 +567,9 @@ class XMPPDispatcher(PlugIn):
             # Unwrap carbon
             try:
                 stanza, properties.carbon = unwrap_carbon(stanza, own_jid)
-            except InvalidFrom as exc:
+            except (InvalidFrom, InvalidJid) as exc:
                 log.warning(exc)
+                log.warning(stanza)
                 return
             except NodeProcessed as exc:
                 log.info(exc)
@@ -571,7 +578,9 @@ class XMPPDispatcher(PlugIn):
             # Unwrap mam
             try:
                 stanza, properties.mam = unwrap_mam(stanza, own_jid)
-            except InvalidStanza:
+            except (InvalidStanza, InvalidJid) as exc:
+                log.warning(exc)
+                log.warning(stanza)
                 return
 
         typ = stanza.getType()
