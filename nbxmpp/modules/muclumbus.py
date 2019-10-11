@@ -188,7 +188,7 @@ class Muclumbus:
         for item in items:
             try:
                 anonymity_mode = AnonymityMode(item['anonymity_mode'])
-            except ValueError:
+            except (ValueError, KeyError):
                 anonymity_mode = AnonymityMode.UNKNOWN
 
             results.append(
