@@ -485,6 +485,22 @@ class CarbonData(namedtuple('MAMData', 'type')):
         return self.type == 'received'
 
 
+class ReceiptData(namedtuple('ReceiptData', 'type id')):
+
+    __slots__ = []
+
+    def __new__(cls, type, id=None):
+        return super(ReceiptData, cls).__new__(cls, type, id)
+
+    @property
+    def is_request(self):
+        return self.type == 'request'
+
+    @property
+    def is_received(self):
+        return self.type == 'received'
+
+
 class Properties:
     pass
 
@@ -528,6 +544,7 @@ class MessageProperties:
         self.encrypted = None
         self.pgp_legacy = None
         self.marker = None
+        self.receipt = None
 
     @property
     def has_user_delay(self):
@@ -603,6 +620,10 @@ class MessageProperties:
     @property
     def is_marker(self):
         return self.marker is not None
+
+    @property
+    def is_receipt(self):
+        return self.receipt is not None
 
 
 class IqProperties:

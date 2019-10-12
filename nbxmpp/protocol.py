@@ -1323,6 +1323,11 @@ class Message(Protocol):
         """
         self.setTag('origin-id', namespace=NS_SID, attrs={'id': val})
 
+    def buildReceipt(self):
+        message = Message(to=self.getFrom().getBare(), typ=self.getType())
+        message.setReceiptReceived(self.getID())
+        return message
+
     def buildReply(self, text=None):
         """
         Builds and returns another message object with specified text. The to,
@@ -1351,6 +1356,12 @@ class Message(Protocol):
 
     def setMarkable(self):
         self.setTag('markable', namespace=NS_CHATMARKERS)
+
+    def setReceiptRequest(self):
+        self.setTag('request', namespace=NS_RECEIPTS)
+
+    def setReceiptReceived(self, id_):
+        self.setTag('received', namespace=NS_RECEIPTS, attrs={'id': id_})
 
 
 class Presence(Protocol):
