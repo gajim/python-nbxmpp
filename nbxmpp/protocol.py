@@ -1372,6 +1372,9 @@ class Message(Protocol):
     def setCorrection(self, id_):
         self.setTag('replace', namespace=NS_CORRECT, attrs={'id': id_})
 
+    def setAttention(self):
+        self.setTag('attention', namespace=NS_ATTENTION)
+
 
 class Presence(Protocol):
 
