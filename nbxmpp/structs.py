@@ -123,6 +123,8 @@ DiscoItem.__new__.__defaults__ = (None, None)
 
 OOBData = namedtuple('OOBData', 'url desc')
 
+CorrectionData = namedtuple('CorrectionData', 'id')
+
 
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
 
@@ -548,6 +550,7 @@ class MessageProperties:
         self.marker = None
         self.receipt = None
         self.oob = None
+        self.correction = None
 
     @property
     def has_user_delay(self):
@@ -631,6 +634,10 @@ class MessageProperties:
     @property
     def is_oob(self):
         return self.oob is not None
+
+    @property
+    def is_correction(self):
+        return self.correction is not None
 
 
 class IqProperties:

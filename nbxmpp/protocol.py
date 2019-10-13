@@ -1369,6 +1369,9 @@ class Message(Protocol):
         if desc is not None:
             oob.setTagData('desc', desc)
 
+    def setCorrection(self, id_):
+        self.setTag('replace', namespace=NS_CORRECT, attrs={'id': id_})
+
 
 class Presence(Protocol):
 

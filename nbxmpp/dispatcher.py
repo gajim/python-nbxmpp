@@ -74,6 +74,7 @@ from nbxmpp.modules.discovery import Discovery
 from nbxmpp.modules.chat_markers import ChatMarkers
 from nbxmpp.modules.receipts import Receipts
 from nbxmpp.modules.oob import OOB
+from nbxmpp.modules.correction import Correction
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.util import get_properties_struct
@@ -215,6 +216,7 @@ class XMPPDispatcher(PlugIn):
         self._modules['ChatMarkers'] = ChatMarkers(self._owner)
         self._modules['Receipts'] = Receipts(self._owner)
         self._modules['OOB'] = OOB(self._owner)
+        self._modules['Correction'] = Correction(self._owner)
 
         for instance in self._modules.values():
             for handler in instance.handlers:
