@@ -18,6 +18,7 @@
 import logging
 
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import NS_DATA
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import StanzaIDData
 from nbxmpp.util import error_factory
@@ -75,6 +76,9 @@ class BaseMessage:
         properties.body = stanza.getBody()
         properties.thread = stanza.getThread()
         properties.subject = stanza.getSubject()
+        forms = stanza.getTags('x', namespace=NS_DATA)
+        if forms:
+            properties.forms = forms
 
     @staticmethod
     def _parse_type(stanza):

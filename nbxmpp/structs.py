@@ -552,6 +552,7 @@ class MessageProperties:
         self.oob = None
         self.correction = None
         self.attention = False
+        self.forms = None
 
     @property
     def has_user_delay(self):
@@ -643,6 +644,10 @@ class MessageProperties:
     @property
     def has_attention(self):
         return self.attention
+
+    @property
+    def has_forms(self):
+        return self.forms is not None
 
 
 class IqProperties:
