@@ -1363,6 +1363,12 @@ class Message(Protocol):
     def setReceiptReceived(self, id_):
         self.setTag('received', namespace=NS_RECEIPTS, attrs={'id': id_})
 
+    def setOOB(self, url, desc=None):
+        oob = self.setTag('x', namespace=NS_X_OOB)
+        oob.setTagData('url', url)
+        if desc is not None:
+            oob.setTagData('desc', desc)
+
 
 class Presence(Protocol):
 

@@ -121,6 +121,8 @@ DiscoItems = namedtuple('DiscoItems', 'jid node items')
 DiscoItem = namedtuple('DiscoItem', 'jid name node')
 DiscoItem.__new__.__defaults__ = (None, None)
 
+OOBData = namedtuple('OOBData', 'url desc')
+
 
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
 
@@ -545,6 +547,7 @@ class MessageProperties:
         self.pgp_legacy = None
         self.marker = None
         self.receipt = None
+        self.oob = None
 
     @property
     def has_user_delay(self):
@@ -624,6 +627,10 @@ class MessageProperties:
     @property
     def is_receipt(self):
         return self.receipt is not None
+
+    @property
+    def is_oob(self):
+        return self.oob is not None
 
 
 class IqProperties:
