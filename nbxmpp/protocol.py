@@ -1243,12 +1243,14 @@ class Message(Protocol):
 
         TODO: Returning a DOM could make rendering faster.
         """
-        xhtml = self.getTag('html')
+        xhtml = self.getTag('html', namespace=NS_XHTML_IM)
         if xhtml:
             if xmllang:
-                body = xhtml.getTag('body', attrs={'xml:lang': xmllang})
+                body = xhtml.getTag('body',
+                                    namespace=NS_XHTML,
+                                    attrs={'xml:lang': xmllang})
             else:
-                body = xhtml.getTag('body')
+                body = xhtml.getTag('body', namespace=NS_XHTML)
             return str(body)
         return None
 

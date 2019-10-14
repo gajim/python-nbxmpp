@@ -79,6 +79,7 @@ class BaseMessage:
         forms = stanza.getTags('x', namespace=NS_DATA)
         if forms:
             properties.forms = forms
+        properties.xhtml = stanza.getXHTML()
 
     @staticmethod
     def _parse_type(stanza):

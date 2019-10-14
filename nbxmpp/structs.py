@@ -553,6 +553,7 @@ class MessageProperties:
         self.correction = None
         self.attention = False
         self.forms = None
+        self.xhtml = None
 
     @property
     def has_user_delay(self):
@@ -648,6 +649,10 @@ class MessageProperties:
     @property
     def has_forms(self):
         return self.forms is not None
+
+    @property
+    def has_xhtml(self):
+        return self.xhtml is not None
 
 
 class IqProperties:
