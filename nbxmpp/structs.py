@@ -125,6 +125,9 @@ OOBData = namedtuple('OOBData', 'url desc')
 
 CorrectionData = namedtuple('CorrectionData', 'id')
 
+DisplayMarking = namedtuple('DisplayMarking', 'label fgcolor bgcolor')
+SecurityLabel = namedtuple('SecurityLabel', 'displaymarking')
+
 
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
 
@@ -554,6 +557,7 @@ class MessageProperties:
         self.attention = False
         self.forms = None
         self.xhtml = None
+        self.security_label = None
 
     @property
     def has_user_delay(self):
@@ -653,6 +657,10 @@ class MessageProperties:
     @property
     def has_xhtml(self):
         return self.xhtml is not None
+
+    @property
+    def has_security_label(self):
+        return self.security_label is not None
 
 
 class IqProperties:
