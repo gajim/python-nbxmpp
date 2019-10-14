@@ -558,6 +558,7 @@ class MessageProperties:
         self.forms = None
         self.xhtml = None
         self.security_label = None
+        self.chatstate = None
 
     @property
     def has_user_delay(self):
@@ -661,6 +662,10 @@ class MessageProperties:
     @property
     def has_security_label(self):
         return self.security_label is not None
+
+    @property
+    def has_chatstate(self):
+        return self.chatstate is not None
 
 
 class IqProperties:

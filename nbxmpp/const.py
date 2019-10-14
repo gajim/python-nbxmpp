@@ -545,3 +545,12 @@ TUNE_DATA = [
     'title',
     'track',
     'uri']
+
+
+CHATSTATES = [
+    'active',
+    'inactive',
+    'gone',
+    'composing',
+    'paused'
+]

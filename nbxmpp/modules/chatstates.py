@@ -1,0 +1,62 @@
+# Copyright (C) 2018 Philipp Hörist <philipp AT hoerist.com>
+#
+# This file is part of nbxmpp.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; If not, see <http://www.gnu.org/licenses/>.
+
+import logging
+
+from nbxmpp.protocol import NS_CHATSTATES
+from nbxmpp.protocol import NS_DELAY2
+from nbxmpp.structs import StanzaHandler
+from nbxmpp.const import CHATSTATES
+
+log = logging.getLogger('nbxmpp.m.chatstates')
+
+
+class Chatstates:
+    def __init__(self, client):
+        self._client = client
+        self.handlers = [
+            StanzaHandler(name='message',
+                          callback=self._process_message_chatstate,
+                          ns=NS_CHATSTATES,
+                          priority=15),
+        ]
+
+    def _process_message_chatstate(self, _con, stanza, properties):
+        chatstate = parse_chatstate(stanza)
+        if chatstate is None:
+            return
+
+        if properties.is_mam_message:
+            return
+
+        if stanza.getTag('delay', namespace=NS_DELAY2) is not None:
+            return
+
+        if chatstate not in CHATSTATES:
+            log.warning('Invalid chatstate: %s', chatstate)
+            log.warning(stanza)
+            return
+
+        properties.chatstate = chatstate
+
+
+def parse_chatstate(stanza):
+    children = stanza.getChildren()
+    for child in children:
+        if child.getNamespace() == NS_CHATSTATES:
+            return child.getName()
+    return None
