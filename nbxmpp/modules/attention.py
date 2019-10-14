@@ -45,7 +45,7 @@ class Attention:
         if properties.is_carbon_message and properties.carbon.is_sent:
             return
 
-        if stanza.getTag('x', namespace=NS_DELAY2) is not None:
+        if stanza.getTag('delay', namespace=NS_DELAY2) is not None:
             return
 
         properties.attention = True
