@@ -22,6 +22,7 @@ import os
 import errno
 import select
 import logging
+import time
 log = logging.getLogger('nbxmpp.idlequeue')
 
 # needed for get_idleqeue
@@ -174,8 +175,7 @@ class IdleCommand(IdleObject):
         self.pipe = Popen(self._compose_command_args(), stdout=PIPE,
             bufsize=1024, shell=True, stderr=STDOUT, stdin=PIPE)
         if self.commandtimeout >= 0:
-            self.endtime = self.idlequeue.current_time() + \
-                (self.commandtimeout * 1e6)
+            self.endtime = self.idlequeue.current_time() + self.commandtimeout
             self.idlequeue.set_alarm(self.wait_child, 0.1)
 
     def _start_posix(self):
@@ -253,7 +253,7 @@ class IdleQueue:
         """
         Set up a new alarm. alarm_cb will be called after specified seconds.
         """
-        alarm_time = self.current_time() + (seconds * 1e6)
+        alarm_time = self.current_time() + seconds
         # almost impossible, but in case we have another alarm_cb at this time
         if alarm_time in self.alarms:
             self.alarms[alarm_time].append(alarm_cb)
@@ -306,7 +306,7 @@ class IdleQueue:
         if func:
             log_txt += ' with function ' + str(func)
         log.info(log_txt)
-        timeout = self.current_time() + (seconds * 1e6)
+        timeout = self.current_time() + seconds
         if fd in self.read_timeouts:
             self.read_timeouts[fd][timeout] = func
         else:
@@ -385,8 +385,7 @@ class IdleQueue:
             self._remove_idle(fd)
 
     def current_time(self):
-        from time import time
-        return time() * 1e6
+        return time.monotonic()
 
     def _remove_idle(self, fd):
         """
@@ -571,5 +570,3 @@ class GlibIdleQueue(IdleQueue):
 
     def process(self):
         self._check_time_events()
-
-    current_time = GLib.get_real_time
