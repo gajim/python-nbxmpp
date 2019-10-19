@@ -25,6 +25,8 @@ from nbxmpp.protocol import NS_MAM_1
 from nbxmpp.protocol import NS_MAM_2
 from nbxmpp.protocol import NS_MUC
 from nbxmpp.protocol import NS_MUC_INFO
+from nbxmpp.protocol import NS_CLIENT
+from nbxmpp.protocol import Protocol
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
 from nbxmpp.const import StatusCode
@@ -385,6 +387,7 @@ class ChatMarker(namedtuple('ChatMarker', 'type id')):
 
 class CommonError:
     def __init__(self, stanza):
+        self._stanza_name = stanza.getName()
         self._error_node = stanza.getTag('error')
         self.condition = stanza.getError()
         self.condition_data = self._error_node.getTagData(self.condition)
@@ -399,6 +402,10 @@ class CommonError:
             lang = element.getXmlLang()
             text = element.getData()
             self._text[lang] = text
+
+    @classmethod
+    def from_string(cls, node_string):
+        return cls(Protocol(node=node_string))
 
     def get_text(self, pref_lang=None):
         if pref_lang is not None:
@@ -429,6 +436,13 @@ class CommonError:
             text = ' - %s' % text
         return 'Error from %s: %s%s' % (self.jid, condition, text)
 
+    def serialize(self):
+        return str(Protocol(name=self._stanza_name,
+                            frm=self.jid,
+                            xmlns=NS_CLIENT,
+                            attrs={'id': self.id},
+                            payload=self._error_node))
+
 
 class StanzaMalformedError(CommonError):
     def __init__(self, stanza, text):
@@ -443,11 +457,18 @@ class StanzaMalformedError(CommonError):
         if text:
             self._text['en'] = text
 
+    @classmethod
+    def from_string(cls, node_string):
+        raise NotImplementedError
+
     def __str__(self):
         text = self.get_text('en')
         if text:
             text = ': %s' % text
         return 'Received malformed stanza from %s%s' % (self.jid, text)
+
+    def serialize(self):
+        raise NotImplementedError
 
 
 class TuneData(namedtuple('TuneData', 'artist length rating source title track uri')):
