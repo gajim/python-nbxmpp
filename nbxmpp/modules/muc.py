@@ -185,7 +185,9 @@ class MUC:
             return
 
         # MUC Private message
-        if properties.type == MessageType.CHAT and not muc_user.getChildren():
+        if (properties.type.is_chat or
+                properties.type.is_error and
+                not muc_user.getChildren()):
             properties.muc_private_message = True
             return
 
