@@ -19,6 +19,7 @@ import logging
 import base64
 import weakref
 import hashlib
+import uuid
 from functools import wraps
 from functools import lru_cache
 
@@ -310,3 +311,7 @@ def compute_caps_hash(info, compare=True):
         raise DiscoInfoMalformed('Caps hashes differ: %s != %s' % (
             b64hash, info.get_caps_hash()))
     return b64hash
+
+
+def generate_id():
+    return str(uuid.uuid4())
