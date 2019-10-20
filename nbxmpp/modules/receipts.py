@@ -18,8 +18,12 @@
 import logging
 
 from nbxmpp.protocol import NS_RECEIPTS
+from nbxmpp.protocol import NS_MUC_USER
+from nbxmpp.protocol import isMucPM
+from nbxmpp.protocol import Message
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ReceiptData
+from nbxmpp.util import generate_id
 
 log = logging.getLogger('nbxmpp.m.receipts')
 
@@ -49,3 +53,34 @@ class Receipts:
                 return
 
             properties.receipt = ReceiptData(received.getName(), id_)
+
+
+def build_receipt(stanza):
+    if not isinstance(stanza, Message):
+        raise ValueError('Stanza type must be protocol.Message')
+
+    if stanza.getType() == 'error':
+        raise ValueError('Receipt can not be generated for type error messages')
+
+    if stanza.getID() is None:
+        raise ValueError('Receipt can not be generated for messages without id')
+
+    if stanza.getTag('received', namespace=NS_RECEIPTS) is not None:
+        raise ValueError('Receipt can not be generated for receipts')
+
+    is_muc_pm = isMucPM(stanza)
+
+    jid = stanza.getFrom()
+    typ = stanza.getType()
+    if typ == 'groupchat' or not is_muc_pm:
+        jid.setBare()
+
+    message = Message(to=jid, typ=typ)
+    if is_muc_pm:
+        message.setTag('x', namespace=NS_MUC_USER)
+    message_id = generate_id()
+    message.setID(message_id)
+    message.setReceiptReceived(stanza.getID())
+    message.setHint('store')
+    message.setOriginID(message_id)
+    return message

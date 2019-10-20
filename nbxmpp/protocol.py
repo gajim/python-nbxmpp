@@ -580,6 +580,12 @@ def isErrorNode(node):
     """
     return node and node.getType() == 'error'
 
+def isMucPM(message):
+    muc_user = message.getTag('x', namespace=NS_MUC_USER)
+    return (message.getType() in ('chat', 'error') and
+            muc_user is not None and
+            not muc_user.getChildren())
+
 class NodeProcessed(Exception):
     """
     Exception that should be raised by handler when the handling should be
@@ -1325,11 +1331,6 @@ class Message(Protocol):
         """
         self.setTag('origin-id', namespace=NS_SID, attrs={'id': val})
 
-    def buildReceipt(self):
-        message = Message(to=self.getFrom().getBare(), typ=self.getType())
-        message.setReceiptReceived(self.getID())
-        return message
-
     def buildReply(self, text=None):
         """
         Builds and returns another message object with specified text. The to,
@@ -1376,6 +1377,9 @@ class Message(Protocol):
 
     def setAttention(self):
         self.setTag('attention', namespace=NS_ATTENTION)
+
+    def setHint(self, hint):
+        self.setTag(hint, namespace=NS_HINTS)
 
 
 class Presence(Protocol):
