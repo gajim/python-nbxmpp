@@ -614,6 +614,14 @@ class MessageProperties:
         return self.carbon is not None
 
     @property
+    def is_sent_carbon(self):
+        return self.carbon is not None and self.carbon.is_sent
+
+    @property
+    def is_received_carbon(self):
+        return self.carbon is not None and self.carbon.is_received
+
+    @property
     def is_mam_message(self):
         return self.mam is not None
 
