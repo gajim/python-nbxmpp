@@ -70,7 +70,7 @@ def build_receipt(stanza):
 
     is_muc_pm = isMucPM(stanza)
 
-    jid = stanza.getFrom()
+    jid = stanza.getFrom().copy()
     typ = stanza.getType()
     if typ == 'groupchat' or not is_muc_pm:
         jid.setBare()
