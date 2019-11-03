@@ -19,10 +19,8 @@ import logging
 
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import NS_DATA
-from nbxmpp.protocol import NS_XHTML
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import StanzaIDData
-from nbxmpp.structs import XHTMLData
 from nbxmpp.util import error_factory
 from nbxmpp.const import MessageType
 
@@ -81,17 +79,7 @@ class BaseMessage:
         forms = stanza.getTags('x', namespace=NS_DATA)
         if forms:
             properties.forms = forms
-
-        xhtml = stanza.getXHTML()
-        if xhtml is None:
-            return
-
-        if xhtml.getTag('body', namespace=NS_XHTML) is None:
-            log.warning('xhtml without body found')
-            log.warning(stanza)
-            return
-
-        properties.xhtml = XHTMLData(xhtml)
+        properties.xhtml = stanza.getXHTML()
 
     @staticmethod
     def _parse_type(stanza):

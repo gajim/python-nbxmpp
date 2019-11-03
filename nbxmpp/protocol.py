@@ -26,6 +26,7 @@ from base64 import b64encode
 from precis_i18n import get_profile
 from nbxmpp.stringprepare import nameprep
 from nbxmpp.simplexml import Node
+from nbxmpp.simplexml import NodeBuilder
 
 def ascii_upper(s):
     return s.upper()
@@ -1231,7 +1232,7 @@ class Message(Protocol):
                 payload=payload, timestamp=timestamp, xmlns=xmlns, node=node)
         if body:
             self.setBody(body)
-        if xhtml is not None:
+        if xhtml:
             self.setXHTML(xhtml)
         if subject is not None:
             self.setSubject(subject)
@@ -1242,8 +1243,22 @@ class Message(Protocol):
         """
         return self.getTagData('body')
 
-    def getXHTML(self):
-        return self.getTag('html', namespace=NS_XHTML_IM)
+    def getXHTML(self, xmllang=None):
+        """
+        Return serialized xhtml-im element text of the message
+
+        TODO: Returning a DOM could make rendering faster.
+        """
+        xhtml = self.getTag('html', namespace=NS_XHTML_IM)
+        if xhtml:
+            if xmllang:
+                body = xhtml.getTag('body',
+                                    namespace=NS_XHTML,
+                                    attrs={'xml:lang': xmllang})
+            else:
+                body = xhtml.getTag('body', namespace=NS_XHTML)
+            return str(body)
+        return None
 
     def getSubject(self):
         """
@@ -1278,20 +1293,25 @@ class Message(Protocol):
         Set the text of the message"""
         self.setTagData('body', val)
 
-    def setXHTML(self, body, add=False):
-        if isinstance(body, str):
-            body = Node(node=body)
-        if add:
-            xhtml = self.getTag('html', namespace=NS_XHTML_IM)
-            if xhtml is not None:
-                xhtml.addChild(node=body)
+    def setXHTML(self, val, xmllang=None):
+        """
+        Sets the xhtml text of the message (XEP-0071). The parameter is the
+        "inner html" to the body.
+        """
+        try:
+            if xmllang:
+                dom = NodeBuilder('<body xmlns="%s" xml:lang="%s">%s</body>' \
+                    % (NS_XHTML, xmllang, val)).getDom()
             else:
-                self.addChild('html', namespace=NS_XHTML_IM, payload=body)
-        else:
-            xhtml_nodes = self.getTags('html', namespace=NS_XHTML_IM)
-            for xhtml in xhtml_nodes:
-                self.delChild(xhtml)
-            self.addChild('html', namespace=NS_XHTML_IM, payload=body)
+                dom = NodeBuilder('<body xmlns="%s">%s</body>' % (NS_XHTML,
+                    val), 0).getDom()
+            if self.getTag('html'):
+                self.getTag('html').addChild(node=dom)
+            else:
+                self.setTag('html', namespace=NS_XHTML_IM).addChild(node=dom)
+        except Exception as e:
+            print("Error" + str(e))
+            # FIXME: log. we could not set xhtml (parse error, whatever)
 
     def setSubject(self, val):
         """
