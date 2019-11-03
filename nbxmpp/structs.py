@@ -26,6 +26,7 @@ from nbxmpp.protocol import NS_MAM_2
 from nbxmpp.protocol import NS_MUC
 from nbxmpp.protocol import NS_MUC_INFO
 from nbxmpp.protocol import NS_CLIENT
+from nbxmpp.protocol import NS_XHTML
 from nbxmpp.protocol import Protocol
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
@@ -831,3 +832,26 @@ class PresenceProperties:
             return self.muc_user.role
         except Exception:
             return None
+
+
+class XHTMLData:
+    def __init__(self, xhtml):
+        self._bodys = {}
+        for body in xhtml.getTags('body', namespace=NS_XHTML):
+            lang = body.getXmlLang()
+            self._bodys[lang] = body
+
+    def get_body(self, pref_lang=None):
+        if pref_lang is not None:
+            body = self._bodys.get(pref_lang)
+            if body is not None:
+                return str(body)
+
+        body = self._bodys.get('en')
+        if body is not None:
+            return str(body)
+
+        body = self._bodys.get(None)
+        if body is not None:
+            return str(body)
+        return str(self._bodys.popitem()[1])

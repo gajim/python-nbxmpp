@@ -22,6 +22,7 @@ from nbxmpp.protocol import NS_FORWARD
 from nbxmpp.protocol import NS_MUC_USER
 from nbxmpp.protocol import NS_MAM_1
 from nbxmpp.protocol import NS_MAM_2
+from nbxmpp.protocol import NS_XHTML
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import InvalidFrom
 from nbxmpp.protocol import InvalidStanza
@@ -118,3 +119,16 @@ def unwrap_mam(stanza, own_jid):
                             archive=stanza.getFrom(),
                             namespace=result.getNamespace(),
                             timestamp=delay_timestamp)
+
+
+def build_xhtml_body(xhtml, xmllang=None):
+    try:
+        if xmllang is not None:
+            body = '<body xmlns="%s" xml:lang="%s">%s</body>' % (
+                NS_XHTML, xmllang, xhtml)
+        else:
+            body = '<body xmlns="%s">%s</body>' % (NS_XHTML, xhtml)
+    except Exception as error:
+        log.error('Error while building xhtml node: %s', error)
+        return None
+    return body
