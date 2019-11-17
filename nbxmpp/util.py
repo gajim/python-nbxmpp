@@ -152,9 +152,15 @@ def raise_error(log_method, stanza, condition=None, text=None):
         if log_method.__name__ not in ('warning', 'error'):
             log_method = log_method.__self__.warning
 
-    error = error_factory(stanza, condition, text)
-    log_method(error)
+    try:
+        error = error_factory(stanza, condition, text)
+    except Exception:
+        log.exception('Malformed error stanza')
+        log.error(stanza)
+        error = StanzaMalformedError(stanza, text)
+        return error
 
+    log_method(error)
     if log_method.__name__ in ('warning', 'error'):
         log_method(stanza)
     return error
