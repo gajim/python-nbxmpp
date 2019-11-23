@@ -15,4 +15,4 @@ from .client import NonBlockingClient
 from .plugin import PlugIn
 from .smacks import Smacks
 
-__version__ = "0.9.92"
+__version__ = "0.9.93"
