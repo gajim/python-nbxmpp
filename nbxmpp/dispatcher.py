@@ -508,7 +508,7 @@ class XMPPDispatcher(PlugIn):
         else:
             log.warning('Received unhandled event: %s' % event)
 
-    def dispatch(self, stanza, session=None):
+    def dispatch(self, stanza):
         """
         Main procedure that performs XMPP stanza recognition and calling
         apppropriate handlers for it. Called by simplexml
@@ -516,9 +516,7 @@ class XMPPDispatcher(PlugIn):
 
         self.Event('', 'STANZA RECEIVED', stanza)
 
-        if not session:
-            session = self
-        session.Stream._mini_dom = None
+        self.Stream._mini_dom = None
 
         # Count stanza
         self._owner.Smacks.count_incoming(stanza.getName())
@@ -526,7 +524,7 @@ class XMPPDispatcher(PlugIn):
         name = stanza.getName()
         if name == 'features':
             self._owner.got_features = True
-            session.Stream.features = stanza
+            self.Stream.features = stanza
         elif name == 'error':
             if stanza.getTag('see-other-host'):
                 self._owner.got_see_other_host = stanza
@@ -647,9 +645,9 @@ class XMPPDispatcher(PlugIn):
                     # properties
                     signature = inspect.signature(handler['func'])
                     if len(signature.parameters) > 2:
-                        handler['func'](session, stanza, properties)
+                        handler['func'](self, stanza, properties)
                     else:
-                        handler['func'](session, stanza)
+                        handler['func'](self, stanza)
                 except NodeProcessed:
                     processed = True
                 except Exception:
@@ -658,7 +656,7 @@ class XMPPDispatcher(PlugIn):
 
         # Stanza was not processed call default handler
         if not processed and self._defaultHandler:
-            self._defaultHandler(session, stanza)
+            self._defaultHandler(self, stanza)
 
     def SendAndCallForResponse(self, stanza, func=None, args=None):
         """
@@ -735,7 +733,7 @@ class BOSHDispatcher(XMPPDispatcher):
             self.restart = False
         return XMPPDispatcher.ProcessNonBlocking(self, data)
 
-    def dispatch(self, stanza, session=None):
+    def dispatch(self, stanza):
         if stanza.getName() == 'body' and stanza.getNamespace() == NS_HTTP_BIND:
 
             stanza_attrs = stanza.getAttrs()
@@ -753,6 +751,6 @@ class BOSHDispatcher(XMPPDispatcher):
                     # rewrite it to jabber:client
                     if child.getNamespace() == NS_HTTP_BIND:
                         child.setNamespace(self._owner.defaultNamespace)
-                    XMPPDispatcher.dispatch(self, child, session)
+                    XMPPDispatcher.dispatch(self, child)
         else:
-            XMPPDispatcher.dispatch(self, stanza, session)
+            XMPPDispatcher.dispatch(self, stanza)
