@@ -87,7 +87,7 @@ class NonBlockingBind(PlugIn):
         payload = Node('bind', attrs={'xmlns': NS_BIND}, payload=resource)
         node = Protocol('iq', typ='set', payload=[payload])
 
-        self._owner.Dispatcher.SendAndWaitForResponse(node, func=self._on_bind)
+        self._owner.Dispatcher.SendAndCallForResponse(node, func=self._on_bind)
 
     def _on_bind(self, stanza):
         if isResultNode(stanza):
@@ -104,7 +104,7 @@ class NonBlockingBind(PlugIn):
                 else:
                     node = Node('session', attrs={'xmlns':NS_SESSION})
                     iq = Protocol('iq', typ='set', payload=[node])
-                    self._owner.SendAndWaitForResponse(
+                    self._owner.SendAndCallForResponse(
                         iq, func=self._on_session)
                 return
         if stanza:
