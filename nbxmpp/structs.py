@@ -131,6 +131,8 @@ CorrectionData = namedtuple('CorrectionData', 'id')
 DisplayMarking = namedtuple('DisplayMarking', 'label fgcolor bgcolor')
 SecurityLabel = namedtuple('SecurityLabel', 'displaymarking')
 
+RegisterData = namedtuple('RegisterData', 'instructions form fields_form oob_url bob_data')
+
 
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
 

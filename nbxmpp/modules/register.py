@@ -17,13 +17,21 @@
 
 import logging
 
+from nbxmpp.protocol import NS_X_OOB
+from nbxmpp.protocol import NS_DATA
 from nbxmpp.protocol import NS_REGISTER
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
 from nbxmpp.structs import CommonResult
+from nbxmpp.structs import RegisterData
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
+from nbxmpp.const import REGISTER_FIELDS
+from nbxmpp.modules.bits_of_binary import parse_bob_data
+from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.modules.dataforms import create_field
+from nbxmpp.modules.dataforms import SimpleDataForm
 
 log = logging.getLogger('nbxmpp.m.register')
 
@@ -42,8 +50,72 @@ class Register:
         query.addChild('remove')
         return iq
 
+    @call_on_response('_on_register_form')
+    def request_register_form(self, jid=None):
+        if jid is None:
+            jid = self._client.Server
+        return Iq('get', NS_REGISTER, to=jid)
+
+    @callback
+    def _on_register_form(self, stanza):
+        query = stanza.getQuery()
+
+        instructions = query.getTagData('instructions') or None
+
+        return RegisterData(instructions=instructions,
+                            form=self._parse_form(stanza),
+                            fields_form=self._parse_fields_form(query),
+                            oob_url=self._parse_oob_url(query),
+                            bob_data=parse_bob_data(query))
+
     @callback
     def _default_response(self, stanza):
         if not isResultNode(stanza):
             return raise_error(log.info, stanza)
         return CommonResult(jid=stanza.getFrom())
+
+    @staticmethod
+    def _parse_oob_url(query):
+        oob = query.getTag('x', namespace=NS_X_OOB)
+        if oob is not None:
+            return oob.getTagData('url') or None
+        return None
+
+    @staticmethod
+    def _parse_form(stanza):
+        form = stanza.getQuery().getTag('x', namespace=NS_DATA)
+        if form is None:
+            return None
+
+        form = extend_form(node=form)
+        field = form.vars.get('FORM_TYPE')
+        if field is None:
+            log.warning('No FORM_TYPE found')
+            log.warning(stanza)
+            return None
+
+        # Invalid urn:xmpp:captcha used by ejabberd
+        # See https://github.com/processone/ejabberd/issues/3093
+        if field.value in ('jabber:iq:register', 'urn:xmpp:captcha'):
+            return form
+        return None
+
+    @staticmethod
+    def _parse_fields_form(query):
+        fields = []
+        for field in query.getChildren():
+            field_name = field.getName()
+            if field_name not in REGISTER_FIELDS:
+                continue
+
+            required = field_name in ('username', 'password')
+            typ = 'text-single' if field_name != 'password' else 'text-private'
+            fields.append(create_field(typ=typ,
+                                       var=field_name,
+                                       required=required))
+
+        if not fields:
+            return None
+
+        fields.append(create_field(typ='hidden', var='fakeform'))
+        return SimpleDataForm(type_='form', fields=fields)

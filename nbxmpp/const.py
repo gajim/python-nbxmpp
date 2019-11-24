@@ -554,3 +554,20 @@ CHATSTATES = [
     'composing',
     'paused'
 ]
+
+REGISTER_FIELDS = [
+    'username',
+    'nick',
+    'password',
+    'name',
+    'first',
+    'last',
+    'email',
+    'address',
+    'city',
+    'state',
+    'zip',
+    'phone',
+    'url',
+    'date',
+]
