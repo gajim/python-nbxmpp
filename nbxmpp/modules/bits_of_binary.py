@@ -19,7 +19,6 @@ import logging
 import hashlib
 
 from nbxmpp.protocol import NS_BOB
-from nbxmpp.protocol import InvalidStanza
 from nbxmpp.structs import BobData
 from nbxmpp.util import b64decode
 
@@ -29,7 +28,7 @@ log = logging.getLogger('nbxmpp.m.bob')
 def parse_bob_data(stanza):
     data_node = stanza.getTag('data', namespace=NS_BOB)
     if data_node is None:
-        return
+        return None
 
     cid = data_node.getAttr('cid')
     type_ = data_node.getAttr('type')
@@ -39,42 +38,42 @@ def parse_bob_data(stanza):
             max_age = int(max_age)
         except Exception:
             log.exception(stanza)
-            raise InvalidStanza
+            return None
 
     if cid is None or type_ is None:
         log.warning('Invalid data node (no cid or type attr): %s', stanza)
-        raise InvalidStanza
+        return None
 
     try:
         algo_hash = cid.split('@')[0]
         algo, hash_ = algo_hash.split('+')
     except Exception:
         log.exception('Invalid cid: %s', stanza)
-        raise InvalidStanza
+        return None
 
     bob_data = data_node.getData()
     if not bob_data:
         log.warning('No bob data found: %s', stanza)
-        raise InvalidStanza
+        return None
 
     try:
         bob_data = b64decode(bob_data, return_type=bytes)
     except Exception:
         log.warning('Unable to decode data')
         log.exception(stanza)
-        raise InvalidStanza
+        return None
 
     try:
         sha = hashlib.new(algo)
     except ValueError as error:
         log.warning(stanza)
         log.warning(error)
-        raise InvalidStanza
+        return None
 
     sha.update(bob_data)
     if sha.hexdigest() != hash_:
         log.warning('Invalid hash: %s', stanza)
-        raise InvalidStanza
+        return None
 
     return BobData(algo=algo,
                    hash_=hash_,

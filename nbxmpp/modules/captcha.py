@@ -19,7 +19,6 @@ import logging
 
 from nbxmpp.protocol import NS_CAPTCHA
 from nbxmpp.protocol import NS_DATA
-from nbxmpp.protocol import InvalidStanza
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import CaptchaData
 from nbxmpp.modules.dataforms import extend_form
@@ -51,10 +50,7 @@ class Captcha:
             return
 
         form = extend_form(node=data_form)
-        try:
-            bob_data = parse_bob_data(stanza)
-        except InvalidStanza:
-            bob_data = None
+        bob_data = parse_bob_data(stanza)
 
         properties.captcha = CaptchaData(form=form,
                                          bob_data=bob_data)
