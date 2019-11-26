@@ -24,9 +24,11 @@ from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
 from nbxmpp.structs import CommonResult
 from nbxmpp.structs import RegisterData
+from nbxmpp.structs import ChangePasswordResult
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
+from nbxmpp.util import get_form
 from nbxmpp.const import REGISTER_FIELDS
 from nbxmpp.modules.bits_of_binary import parse_bob_data
 from nbxmpp.modules.dataforms import extend_form
@@ -119,3 +121,34 @@ class Register:
 
         fields.append(create_field(typ='hidden', var='fakeform'))
         return SimpleDataForm(type_='form', fields=fields)
+
+    @call_on_response('_on_password_change')
+    def change_password(self, password):
+        hostname = self._client.get_bound_jid().getDomain()
+        username = self._client.get_bound_jid().getNode()
+        iq = Iq('set', NS_REGISTER, to=hostname)
+        query = iq.getQuery()
+        query.setTagData('username', username)
+        query.setTagData('password', password)
+        return iq
+
+    @callback
+    def _on_password_change(self, stanza):
+        if isResultNode(stanza):
+            return ChangePasswordResult(successful=True)
+
+        if stanza.getQuery() is None:
+            return raise_error(log.info, stanza)
+
+        form = get_form(stanza.getQuery(),
+                        'jabber:iq:register:changepassword')
+        if form is None:
+            return raise_error(log.info, stanza)
+        return ChangePasswordResult(successful=False, form=form)
+
+    @call_on_response('_default_response')
+    def change_password_with_form(self, form):
+        hostname = self._client.get_bound_jid().getDomain()
+        iq = Iq('set', NS_REGISTER, to=hostname)
+        iq.setQueryPayload(form)
+        return iq

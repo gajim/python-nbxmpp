@@ -321,3 +321,19 @@ def compute_caps_hash(info, compare=True):
 
 def generate_id():
     return str(uuid.uuid4())
+
+
+def get_form(stanza, form_type):
+    forms = stanza.getTags('x', namespace=NS_DATA)
+    if not forms:
+        return None
+
+    for form in forms:
+        form = extend_form(node=form)
+        field = form.vars.get('FORM_TYPE')
+        if field is None:
+            continue
+
+        if field.value == form_type:
+            return form
+    return None

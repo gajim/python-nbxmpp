@@ -133,6 +133,8 @@ SecurityLabel = namedtuple('SecurityLabel', 'displaymarking')
 
 RegisterData = namedtuple('RegisterData', 'instructions form fields_form oob_url bob_data')
 
+ChangePasswordResult = namedtuple('ChangePasswordResult', 'successful form')
+ChangePasswordResult.__new__.__defaults__ = (None,)
 
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
 
