@@ -46,28 +46,31 @@ class Mood:
             return
 
         item = properties.pubsub_event.item
+        if item is None:
+            # Retract, Deleted or Purged
+            return
 
         mood_node = item.getTag('mood', namespace=NS_MOOD)
         if not mood_node.getChildren():
-            pubsub_event = properties.pubsub_event._replace(empty=True)
-            log.info('Received mood: %s - no mood set', properties.jid)
-        else:
-            mood, text = None, None
-            for child in mood_node.getChildren():
-                name = child.getName().strip()
-                if name == 'text':
-                    text = child.getData()
-                elif name in MOODS:
-                    mood = name
+            log.info('Received mood: %s - removed mood', properties.jid)
+            return
 
-            if mood is None and mood_node.getPayload():
-                log.warning('No valid mood value found')
-                log.warning(stanza)
-                raise NodeProcessed
+        mood, text = None, None
+        for child in mood_node.getChildren():
+            name = child.getName().strip()
+            if name == 'text':
+                text = child.getData()
+            elif name in MOODS:
+                mood = name
 
-            data = MoodData(mood, text)
-            pubsub_event = properties.pubsub_event._replace(data=data)
-            log.info('Received mood: %s - %s', properties.jid, data)
+        if mood is None and mood_node.getPayload():
+            log.warning('No valid mood value found')
+            log.warning(stanza)
+            raise NodeProcessed
+
+        data = MoodData(mood, text)
+        pubsub_event = properties.pubsub_event._replace(data=data)
+        log.info('Received mood: %s - %s', properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 

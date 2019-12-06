@@ -46,29 +46,32 @@ class Activity:
             return
 
         item = properties.pubsub_event.item
+        if item is None:
+            # Retract, Deleted or Purged
+            return
 
         activity_node = item.getTag('activity', namespace=NS_ACTIVITY)
         if not activity_node.getChildren():
-            pubsub_event = properties.pubsub_event._replace(empty=True)
             log.info('Received activity: %s - no activity set', properties.jid)
-        else:
-            activity, subactivity, text = None, None, None
-            for child in activity_node.getChildren():
-                name = child.getName()
-                if name == 'text':
-                    text = child.getData()
-                elif name in ACTIVITIES:
-                    activity = name
-                    subactivity = self._parse_sub_activity(child)
+            return
 
-            if activity is None and activity_node.getPayload():
-                log.warning('No valid activity value found')
-                log.warning(stanza)
-                raise NodeProcessed
+        activity, subactivity, text = None, None, None
+        for child in activity_node.getChildren():
+            name = child.getName()
+            if name == 'text':
+                text = child.getData()
+            elif name in ACTIVITIES:
+                activity = name
+                subactivity = self._parse_sub_activity(child)
 
-            data = ActivityData(activity, subactivity, text)
-            pubsub_event = properties.pubsub_event._replace(data=data)
-            log.info('Received activity: %s - %s', properties.jid, data)
+        if activity is None and activity_node.getPayload():
+            log.warning('No valid activity value found')
+            log.warning(stanza)
+            raise NodeProcessed
+
+        data = ActivityData(activity, subactivity, text)
+        pubsub_event = properties.pubsub_event._replace(data=data)
+        log.info('Received activity: %s - %s', properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 

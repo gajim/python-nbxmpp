@@ -25,6 +25,7 @@ from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import JID
+from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import BookmarkData
 from nbxmpp.const import BookmarkStoreType
@@ -77,27 +78,28 @@ class Bookmarks:
         self._node_configuration_in_progress = False
         self._node_configuration_not_possible = False
 
-    def _process_pubsub_bookmarks(self, _con, _stanza, properties):
+    def _process_pubsub_bookmarks(self, _con, stanza, properties):
         if not properties.is_pubsub_event:
             return
 
         if properties.pubsub_event.node != NS_BOOKMARKS:
             return
 
-        if properties.pubsub_event.deleted or properties.pubsub_event.retracted:
-            return
-
         item = properties.pubsub_event.item
         if item is None:
+            # Retract, Deleted or Purged
             return
 
         storage_node = item.getTag('storage', namespace=NS_BOOKMARKS)
         if storage_node is None:
-            return
+            log.warning('No storage node found')
+            log.warning(stanza)
+            raise NodeProcessed
 
-        bookmarks = []
-        if storage_node.getChildren():
-            bookmarks = self._parse_bookmarks(storage_node)
+        bookmarks = self._parse_bookmarks(storage_node)
+        if not bookmarks:
+            log.info('Bookmarks removed')
+            return
 
         pubsub_event = properties.pubsub_event._replace(data=bookmarks)
         log.info('Received bookmarks from: %s', properties.jid)
@@ -113,16 +115,14 @@ class Bookmarks:
         if properties.pubsub_event.node != NS_BOOKMARKS_2:
             return
 
-        if properties.pubsub_event.deleted or properties.pubsub_event.retracted:
-            return
-
         item = properties.pubsub_event.item
         if item is None:
+            # Retract, Deleted or Purged
             return
 
         bookmark_item = self._parse_bookmarks2(item)
         if bookmark_item is None:
-            return
+            raise NodeProcessed
 
         pubsub_event = properties.pubsub_event._replace(data=bookmark_item)
         log.info('Received bookmark item from: %s', properties.jid)
@@ -183,7 +183,7 @@ class Bookmarks:
             log.warning(item)
             return
 
-        autojoin = conference.getAttr('autojoin') == 'true'
+        autojoin = conference.getAttr('autojoin') in ('True', 'true', '1')
         name = conference.getAttr('name')
         nick = conference.getTagData('nick')
 

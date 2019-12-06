@@ -64,12 +64,17 @@ class Nickname:
         if properties.pubsub_event.node != NS_NICK:
             return
 
-        nick = self._parse_nickname(properties.pubsub_event.item)
-        if nick is None:
-            log.info('Received nickname: %s - no nickname set', properties.jid)
-        else:
-            log.info('Received nickname: %s - %s', properties.jid, nick)
+        item = properties.pubsub_event.item
+        if item is None:
+            # Retract, Deleted or Purged
+            return
 
+        nick = self._parse_nickname(item)
+        if nick is None:
+            log.info('Received nickname: %s - nickname removed', properties.jid)
+            return
+
+        log.info('Received nickname: %s - %s', properties.jid, nick)
         properties.pubsub_event = properties.pubsub_event._replace(data=nick)
 
     @staticmethod

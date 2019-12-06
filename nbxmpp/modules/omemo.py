@@ -133,15 +133,11 @@ class OMEMO:
         if properties.pubsub_event.node != NS_OMEMO_TEMP_DL:
             return
 
-        if properties.pubsub_event.retracted:
-            # Retracts should not happen and its unclear how we should react
-            raise NodeProcessed
-
-        if properties.pubsub_event.deleted:
-            log.info('Devicelist node deleted by %s', properties.jid)
+        item = properties.pubsub_event.item
+        if item is None:
+            # Retract, Deleted or Purged
             return
 
-        item = properties.pubsub_event.item
         try:
             devices = self._parse_devicelist(item)
         except StanzaMalformed as error:
@@ -150,13 +146,13 @@ class OMEMO:
             raise NodeProcessed
 
         if not devices:
-            pubsub_event = properties.pubsub_event._replace(empty=True)
             log.info('Received OMEMO devicelist: %s - no devices set',
                      properties.jid)
-        else:
-            pubsub_event = properties.pubsub_event._replace(data=devices)
-            log.info('Received OMEMO devicelist: %s - %s',
-                     properties.jid, devices)
+            return
+
+        pubsub_event = properties.pubsub_event._replace(data=devices)
+        log.info('Received OMEMO devicelist: %s - %s',
+                 properties.jid, devices)
 
         properties.pubsub_event = pubsub_event
 
@@ -172,15 +168,12 @@ class OMEMO:
           </item>
         </items>
         '''
-        if item is None:
-            return []
-
         list_node = item.getTag('list', namespace=NS_OMEMO_TEMP)
         if list_node is None:
             raise StanzaMalformed('No list node found')
 
         if not list_node.getChildren():
-            return []
+            return None
 
         result = []
         devices_nodes = list_node.getChildren()

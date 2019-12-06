@@ -101,15 +101,11 @@ class OpenPGP:
             </public-keys-list>
           </item>
         '''
-        if properties.pubsub_event.retracted:
-            # Retracts should not happen and its unclear how we should react
-            raise NodeProcessed
-
-        if properties.pubsub_event.deleted:
-            log.info('Keylist node deleted by %s', properties.jid)
+        item = properties.pubsub_event.item
+        if item is None:
+            # Retract, Deleted or Purged
             return
 
-        item = properties.pubsub_event.item
         try:
             data = self._parse_keylist(properties.jid, item)
         except StanzaMalformed as error:
@@ -118,26 +114,23 @@ class OpenPGP:
             raise NodeProcessed
 
         if data is None:
-            pubsub_event = properties.pubsub_event._replace(empty=True)
             log.info('Received PGP keylist: %s - no keys set', properties.jid)
-        else:
-            pubsub_event = properties.pubsub_event._replace(data=data)
-            log.info('Received PGP keylist: %s - %s', properties.jid, data)
+            return
+
+        pubsub_event = properties.pubsub_event._replace(data=data)
+        log.info('Received PGP keylist: %s - %s', properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 
     @staticmethod
     def _parse_keylist(jid, item):
-        if item is None:
-            return []
-
         keylist_node = item.getTag('public-keys-list', namespace=NS_OPENPGP)
         if keylist_node is None:
             raise StanzaMalformed('No public-keys-list node found')
 
         metadata = keylist_node.getTags('pubkey-metadata')
         if not metadata:
-            return []
+            return None
 
         data = []
         for key in metadata:

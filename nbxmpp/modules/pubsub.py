@@ -58,13 +58,12 @@ class PubSub:
         if delete is not None:
             node = delete.getAttr('node')
             properties.pubsub_event = PubSubEventData(
-                node, empty=True, deleted=True)
+                node, deleted=True)
             return
 
         purge = event.getTag('purge')
         if purge is not None:
             node = purge.getAttr('node')
-            item = purge.getTag('item')
             properties.pubsub_event = PubSubEventData(node, purged=True)
             return
 
@@ -80,12 +79,14 @@ class PubSub:
                 return
 
             if len(items.getChildren()) != 1:
-                log.warning('PubSub event with more than one item')
+                log.warning('PubSub event with != 1 item')
                 log.warning(stanza)
                 return
 
             item = items.getTag('item')
             if item is None:
+                log.warning('No item node found')
+                log.warning(stanza)
                 return
             id_ = item.getAttr('id')
             properties.pubsub_event = PubSubEventData(node, id_, item)

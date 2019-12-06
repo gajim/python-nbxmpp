@@ -45,19 +45,22 @@ class Tune:
             return
 
         item = properties.pubsub_event.item
+        if item is None:
+            # Retract, Deleted or Purged
+            return
 
         tune_node = item.getTag('tune', namespace=NS_TUNE)
         if not tune_node.getChildren():
-            pubsub_event = properties.pubsub_event._replace(empty=True)
             log.info('Received tune: %s - no tune set', properties.jid)
-        else:
-            tune_dict = {}
-            for attr in TUNE_DATA:
-                tune_dict[attr] = tune_node.getTagData(attr)
+            return
 
-            data = TuneData(**tune_dict)
-            pubsub_event = properties.pubsub_event._replace(data=data)
-            log.info('Received tune: %s - %s', properties.jid, data)
+        tune_dict = {}
+        for attr in TUNE_DATA:
+            tune_dict[attr] = tune_node.getTagData(attr)
+
+        data = TuneData(**tune_dict)
+        pubsub_event = properties.pubsub_event._replace(data=data)
+        log.info('Received tune: %s - %s', properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 

@@ -53,6 +53,9 @@ class UserAvatar:
             return
 
         item = properties.pubsub_event.item
+        if item is None:
+            # Retract, Deleted or Purged
+            return
 
         metadata = item.getTag('metadata', namespace=NS_AVATAR_METADATA)
         if metadata is None:
@@ -61,20 +64,20 @@ class UserAvatar:
             raise NodeProcessed
 
         if not metadata.getChildren():
-            pubsub_event = properties.pubsub_event._replace(empty=True)
             log.info('Received avatar metadata: %s - no avatar set',
                      properties.jid)
-        else:
-            info = metadata.getTags('info', one=True)
-            try:
-                data = AvatarMetaData(**info.getAttrs())
-            except Exception:
-                log.warning('Malformed user avatar data')
-                log.warning(stanza)
-                raise NodeProcessed
+            return
 
-            pubsub_event = properties.pubsub_event._replace(data=data)
-            log.info('Received avatar metadata: %s - %s', properties.jid, data)
+        info = metadata.getTags('info', one=True)
+        try:
+            data = AvatarMetaData(**info.getAttrs())
+        except Exception:
+            log.warning('Malformed user avatar data')
+            log.warning(stanza)
+            raise NodeProcessed
+
+        pubsub_event = properties.pubsub_event._replace(data=data)
+        log.info('Received avatar metadata: %s - %s', properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 
