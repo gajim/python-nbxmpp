@@ -897,6 +897,14 @@ class JID:
     def isBare(self):
         return self.node and self.domain and not self.resource
 
+    @property
+    def isDomain(self):
+        return self.domain and not self.node and not self.resource
+
+    @property
+    def isFull(self):
+        return self.domain and self.node and self.resource
+
     def __eq__(self, other):
         """
         Compare the JID to another instance or to string for equality
