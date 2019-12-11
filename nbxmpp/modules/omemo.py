@@ -209,6 +209,8 @@ class OMEMO:
         pubsub_node = stanza.getTag('pubsub')
         items_node = pubsub_node.getTag('items')
         item = items_node.getTag('item')
+        if item is None:
+            return None
 
         try:
             return self._parse_devicelist(item)
