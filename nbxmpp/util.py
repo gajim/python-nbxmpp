@@ -28,11 +28,13 @@ import precis_i18n.codec
 from nbxmpp.protocol import DiscoInfoMalformed
 from nbxmpp.protocol import isErrorNode
 from nbxmpp.protocol import NS_DATA
+from nbxmpp.protocol import NS_HTTPUPLOAD_0
 from nbxmpp.structs import Properties
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import CommonError
+from nbxmpp.structs import HTTPUploadError
 from nbxmpp.structs import StanzaMalformedError
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.third_party.hsluv import hsluv_to_rgb
@@ -139,7 +141,9 @@ def to_xs_boolean(value):
         'Cant convert %s to xs:boolean' % value)
 
 
-error_classes = {}
+error_classes = {
+    NS_HTTPUPLOAD_0: HTTPUploadError
+}
 
 def error_factory(stanza, condition=None, text=None):
     if condition == 'stanza-malformed':

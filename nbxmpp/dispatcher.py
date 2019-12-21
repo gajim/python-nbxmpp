@@ -79,6 +79,7 @@ from nbxmpp.modules.attention import Attention
 from nbxmpp.modules.security_labels import SecurityLabels
 from nbxmpp.modules.chatstates import Chatstates
 from nbxmpp.modules.register import Register
+from nbxmpp.modules.http_upload import HTTPUpload
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.util import get_properties_struct
@@ -225,6 +226,7 @@ class XMPPDispatcher(PlugIn):
         self._modules['SecurityLabels'] = SecurityLabels(self._owner)
         self._modules['Chatstates'] = Chatstates(self._owner)
         self._modules['Register'] = Register(self._owner)
+        self._modules['HTTPUpload'] = HTTPUpload(self._owner)
 
         for instance in self._modules.values():
             for handler in instance.handlers:

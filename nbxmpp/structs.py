@@ -136,6 +136,10 @@ RegisterData = namedtuple('RegisterData', 'instructions form fields_form oob_url
 ChangePasswordResult = namedtuple('ChangePasswordResult', 'successful form')
 ChangePasswordResult.__new__.__defaults__ = (None,)
 
+HTTPUploadData = namedtuple('HTTPUploadData', 'put_uri get_uri headers')
+HTTPUploadData.__new__.__defaults__ = (None,)
+
+
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
 
     __slots__ = []
@@ -447,6 +451,25 @@ class CommonError:
                             xmlns=NS_CLIENT,
                             attrs={'id': self.id},
                             payload=self._error_node))
+
+
+class HTTPUploadError(CommonError):
+    def __init__(self, stanza):
+        CommonError.__init__(self, stanza)
+
+    def get_max_file_size(self):
+        if not self.app_condition == 'file-too-large':
+            return None
+        node = self._error_node.getTag(self.app_condition)
+        try:
+            return float(node.getTagData('max-file-size'))
+        except Exception:
+            return None
+
+    def get_retry_date(self):
+        if not self.app_condition == 'retry':
+            return None
+        return self._error_node.getTagAttr('stamp')
 
 
 class StanzaMalformedError(CommonError):
