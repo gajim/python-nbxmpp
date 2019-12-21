@@ -27,6 +27,7 @@ from nbxmpp.protocol import NS_MUC
 from nbxmpp.protocol import NS_MUC_INFO
 from nbxmpp.protocol import NS_CLIENT
 from nbxmpp.protocol import NS_XHTML
+from nbxmpp.protocol import NS_HTTPUPLOAD_0
 from nbxmpp.protocol import Protocol
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
@@ -225,6 +226,10 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
         return self.has_mam_1 or self.has_mam_2
 
     @property
+    def has_httpupload(self):
+        return NS_HTTPUPLOAD_0 in self.features
+
+    @property
     def is_muc(self):
         for identity in self.identities:
             if identity.category == 'conference':
@@ -331,6 +336,14 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
     @property
     def muc_is_unsecured(self):
         return 'muc_unsecured' in self.features
+
+    @property
+    def httpupload_max_file_size(self):
+        size = self.get_field_value(NS_HTTPUPLOAD_0, 'max-file-size')
+        try:
+            return float(size)
+        except Exception:
+            return None
 
 
 class DiscoIdentity(namedtuple('DiscoIdentity', 'category type name lang')):
