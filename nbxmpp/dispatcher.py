@@ -613,7 +613,7 @@ class XMPPDispatcher(PlugIn):
                       cb, args)
             try:
                 if args is None:
-                    cb(stanza)
+                    cb(self, stanza)
                 else:
                     cb(self, stanza, **args)
             except NodeProcessed:

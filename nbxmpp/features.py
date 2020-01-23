@@ -21,7 +21,7 @@ Different stuff that wasn't worth separating it into modules
 from .protocol import NS_REGISTER, NS_PRIVACY, NS_DATA, Iq, isResultNode, Node
 
 def _on_default_response(disp, iq, cb):
-    def _on_response(resp):
+    def _on_response(_client, resp):
         if isResultNode(resp):
             if cb:
                 cb(True)
@@ -47,7 +47,7 @@ def getRegInfo(disp, host, info={}, sync=True):
     for i in info.keys():
         iq.setTagData(i, info[i])
     if sync:
-        disp.SendAndCallForResponse(iq, lambda resp:
+        disp.SendAndCallForResponse(iq, lambda _client, resp:
                 _ReceivedRegInfo(disp.Dispatcher, resp, host))
     else:
         disp.SendAndCallForResponse(iq, _ReceivedRegInfo, {'agent': host })
@@ -127,7 +127,7 @@ def getPrivacyLists(disp):
     lists on success.
     """
     iq = Iq('get', NS_PRIVACY)
-    def _on_response(resp):
+    def _on_response(_client, resp):
         dict_ = {'lists': []}
         if not isResultNode(resp):
             disp.Event(NS_PRIVACY, PRIVACY_LISTS_RECEIVED, False)
@@ -142,7 +142,7 @@ def getPrivacyLists(disp):
 
 def getActiveAndDefaultPrivacyLists(disp):
     iq = Iq('get', NS_PRIVACY)
-    def _on_response(resp):
+    def _on_response(_client, resp):
         dict_ = {'active': '', 'default': ''}
         if not isResultNode(resp):
             disp.Event(NS_PRIVACY, PRIVACY_LISTS_ACTIVE_DEFAULT, False)
@@ -160,7 +160,7 @@ def getPrivacyList(disp, listname):
     Request specific privacy list listname. Returns list of XML nodes (rules)
     taken from the server responce.
     """
-    def _on_response(resp):
+    def _on_response(_client, resp):
         if not isResultNode(resp):
             disp.Event(NS_PRIVACY, PRIVACY_LIST_RECEIVED, False)
             return

@@ -89,7 +89,7 @@ class NonBlockingBind(PlugIn):
 
         self._owner.Dispatcher.SendAndCallForResponse(node, func=self._on_bind)
 
-    def _on_bind(self, stanza):
+    def _on_bind(self, _client, stanza):
         if isResultNode(stanza):
             bind = stanza.getTag('bind')
             if bind is not None:
@@ -115,7 +115,7 @@ class NonBlockingBind(PlugIn):
         self._owner.Dispatcher.Event(Realm.CONNECTING, Event.BIND_FAILED)
         self.PlugOut()
 
-    def _on_session(self, stanza):
+    def _on_session(self, _client, stanza):
         if isResultNode(stanza):
             log.info('Successfully started session')
             self._on_bind_successful()
