@@ -173,7 +173,7 @@ class OMEMO:
             raise StanzaMalformed('No list node found')
 
         if not list_node.getChildren():
-            return None
+            return []
 
         result = []
         devices_nodes = list_node.getChildren()
@@ -210,7 +210,7 @@ class OMEMO:
         items_node = pubsub_node.getTag('items')
         item = items_node.getTag('item')
         if item is None:
-            return None
+            return []
 
         try:
             return self._parse_devicelist(item)
