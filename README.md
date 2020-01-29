@@ -1,6 +1,6 @@
 # Welcome to python-nbxmpp
 
-`python-nbxmpp` is a Python library that provides a way for Python applications to use the Jabber/XMPP network in a non-blocking way. This library was initialy a fork of `xmpppy`, but is now using non-blocking sockets.
+`python-nbxmpp` is a Python library that provides a way for Python applications to use the Jabber/XMPP network in a non-blocking way. This library was initially a fork of `xmpppy`, but is now using non-blocking sockets.
 
 ## Features
 
@@ -9,8 +9,8 @@
 * Supports connection via proxies
 * Supports TLS
 * Supports [BOSH (XEP-0124)](https://xmpp.org/extensions/xep-0124.html)
-* Supports [Stream Managemen (XEP-0198)](https://xmpp.org/extensions/xep-0198.html)
-* List of [supported XEPs](./Supported-XEPs-in-python-nbxmpp/)
+* Supports [Stream Management (XEP-0198)](https://xmpp.org/extensions/xep-0198.html)
+* List of [supported XEPs](https://dev.gajim.org/gajim/python-nbxmpp/-/wikis/Supported-XEPs-in-python-nbxmpp/)
 
 ## Starting Points
 
