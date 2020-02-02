@@ -270,7 +270,7 @@ class Smacks(PlugIn):
                      stanza.getAttr('h'))
             self._validate_ack(stanza, self._old_uqueue)
         else:
-            for tag in stanza.getTags():
+            for tag in stanza.getChildren():
                 if tag.getName() != 'text':
                     log.info(tag.getName())
 
