@@ -225,7 +225,8 @@ class Bookmarks:
         if type_ == BookmarkStoreType.PUBSUB_BOOKMARK_2:
             items = get_pubsub_items(stanza, NS_BOOKMARKS_2)
             if items is None:
-                return bookmarks
+                return raise_error(log.warning, stanza, 'stanza-malformed')
+
             for item in items:
                 bookmark_item = self._parse_bookmarks2(item)
                 if bookmark_item is not None:
@@ -235,12 +236,20 @@ class Bookmarks:
             item = get_pubsub_item(stanza)
             if item is not None:
                 storage_node = item.getTag('storage', namespace=NS_BOOKMARKS)
+                if storage_node is None:
+                    return raise_error(log.warning, stanza, 'stanza-malformed',
+                                       'No storage node')
+
                 if storage_node.getChildren():
                     bookmarks = self._parse_bookmarks(storage_node)
 
         elif type_ == BookmarkStoreType.PRIVATE:
             query = stanza.getQuery()
             storage_node = query.getTag('storage', namespace=NS_BOOKMARKS)
+            if storage_node is None:
+                return raise_error(log.warning, stanza, 'stanza-malformed',
+                                   'No storage node')
+
             if storage_node.getChildren():
                 bookmarks = self._parse_bookmarks(storage_node)
 
