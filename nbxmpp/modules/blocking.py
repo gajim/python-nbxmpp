@@ -47,6 +47,9 @@ class Blocking:
             return raise_error(log.info, stanza)
 
         blocklist = stanza.getTag('blocklist', namespace=NS_BLOCKING)
+        if blocklist is None:
+            return raise_error(log.warning, stanza, 'stanza-malformed')
+
         for item in blocklist.getTags('item'):
             blocked.append(item.getAttr('jid'))
 
