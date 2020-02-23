@@ -37,7 +37,7 @@ class BasePresence:
                           priority=10),
         ]
 
-    def _process_presence_base(self, _con, stanza, properties):
+    def _process_presence_base(self, _client, stanza, properties):
         properties.type = self._parse_type(stanza)
         properties.priority = self._parse_priority(stanza)
         properties.show = self._parse_show(stanza)
@@ -79,7 +79,7 @@ class BasePresence:
         except ValueError:
             log.warning('Presence with invalid type received')
             log.warning(stanza)
-            self._client.send(ErrorStanza(stanza, ERR_BAD_REQUEST))
+            self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
     @staticmethod

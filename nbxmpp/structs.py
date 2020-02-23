@@ -1,10 +1,10 @@
-# Copyright (C) 2018 Philipp Hörist <philipp AT hoerist.com>
+# Copyright (C) 2018-2020 Philipp Hörist <philipp AT hoerist.com>
 #
 # This file is part of nbxmpp.
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
+# as published by the Free Software Foundation; either version 3
 # of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -19,8 +19,12 @@ import time
 import random
 from collections import namedtuple
 
+from gi.repository import Soup
+from gi.repository import Gio
+
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import NS_STANZAS
+from nbxmpp.protocol import NS_STREAMS
 from nbxmpp.protocol import NS_MAM_1
 from nbxmpp.protocol import NS_MAM_2
 from nbxmpp.protocol import NS_MUC
@@ -37,8 +41,8 @@ from nbxmpp.const import LOCATION_DATA
 from nbxmpp.const import AdHocStatus
 
 StanzaHandler = namedtuple('StanzaHandler',
-                           'name callback typ ns xmlns system priority')
-StanzaHandler.__new__.__defaults__ = ('', '', None, False, 50)
+                           'name callback typ ns xmlns priority')
+StanzaHandler.__new__.__defaults__ = ('', '', None, 50)
 
 CommonResult = namedtuple('CommonResult', 'jid')
 CommonResult.__new__.__defaults__ = (None,)
@@ -387,6 +391,23 @@ class AdHocCommand(namedtuple('AdHocCommand', 'jid node name sessionid status da
         return self.status == AdHocStatus.CANCELED
 
 
+class ProxyData(namedtuple('ProxyData', 'type host username password')):
+
+    __slots__ = []
+
+    def get_uri(self):
+        if self.username is not None:
+            user_pass = Soup.uri_encode('%s:%s' % (self.username,
+                                                   self.password))
+            return '%s://%s@%s' % (self.type,
+                                   user_pass,
+                                   self.host)
+        return '%s://%s' % (self.type, self.host)
+
+    def get_resolver(self):
+        return Gio.SimpleProxyResolver.new(self.get_uri(), None)
+
+
 class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
     def pick_prekey(self):
         return random.SystemRandom().choice(self.otpks)
@@ -507,6 +528,52 @@ class StanzaMalformedError(CommonError):
         if text:
             text = ': %s' % text
         return 'Received malformed stanza from %s%s' % (self.jid, text)
+
+    def serialize(self):
+        raise NotImplementedError
+
+
+class StanzaTimeoutError(CommonError):
+    def __init__(self, id_):
+        self.condition = 'timeout'
+        self.id = id_
+
+    @classmethod
+    def from_string(cls, node_string):
+        raise NotImplementedError
+
+    def __str__(self):
+        return 'IQ with id %s reached timeout' % self.id
+
+    def serialize(self):
+        raise NotImplementedError
+
+
+class StreamError(CommonError):
+    def __init__(self, stanza):
+        self.condition = stanza.getError()
+        self.condition_data = self._error_node.getTagData(self.condition)
+        self.app_condition = stanza.getAppError()
+        self.type = stanza.getErrorType()
+        self.jid = stanza.getFrom()
+        self.id = stanza.getID()
+        self._text = {}
+
+        text_elements = self._error_node.getTags('text', namespace=NS_STREAMS)
+        for element in text_elements:
+            lang = element.getXmlLang()
+            text = element.getData()
+            self._text[lang] = text
+
+    @classmethod
+    def from_string(cls, node_string):
+        raise NotImplementedError
+
+    def __str__(self):
+        text = self.get_text('en') or ''
+        if text:
+            text = ' - %s' % text
+        return 'Error from %s: %s%s' % (self.jid, self.condition, text)
 
     def serialize(self):
         raise NotImplementedError

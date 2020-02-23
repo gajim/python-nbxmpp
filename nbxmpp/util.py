@@ -20,15 +20,30 @@ import base64
 import weakref
 import hashlib
 import uuid
+import binascii
+import ipaddress
+import os
+import re
+from collections import defaultdict
+
 from functools import wraps
 from functools import lru_cache
 
 import precis_i18n.codec
+from gi.repository import Gio
 
 from nbxmpp.protocol import DiscoInfoMalformed
 from nbxmpp.protocol import isErrorNode
 from nbxmpp.protocol import NS_DATA
 from nbxmpp.protocol import NS_HTTPUPLOAD_0
+from nbxmpp.const import GIO_TLS_ERRORS
+from nbxmpp.const import StreamState
+from nbxmpp.protocol import NS_STREAMS
+from nbxmpp.protocol import NS_CLIENT
+from nbxmpp.protocol import NS_FRAMING
+from nbxmpp.protocol import StanzaMalformed
+from nbxmpp.protocol import StreamHeader
+from nbxmpp.protocol import WebsocketOpenHeader
 from nbxmpp.structs import Properties
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
@@ -93,9 +108,9 @@ def call_on_response(cb):
             if callback_ is not None:
                 attrs['callback'] = weakref.WeakMethod(callback_)
 
-            self._client.SendAndCallForResponse(stanza,
-                                                getattr(self, cb),
-                                                attrs)
+            self._client.send_stanza(stanza,
+                                     callback=getattr(self, cb),
+                                     user_data=attrs)
         return func_wrapper
     return response_decorator
 
@@ -343,3 +358,138 @@ def get_form(stanza, form_type):
         if field.value == form_type:
             return form
     return None
+
+
+def validate_stream_header(stanza, domain, is_websocket):
+    attrs = stanza.getAttrs()
+    if attrs.get('from') != domain:
+        raise StanzaMalformed('Invalid from attr in stream header')
+
+    if is_websocket:
+        if attrs.get('xmlns') != NS_FRAMING:
+            raise StanzaMalformed('Invalid namespace in stream header')
+    else:
+        if attrs.get('xmlns:stream') != NS_STREAMS:
+            raise StanzaMalformed('Invalid stream namespace in stream header')
+        if attrs.get('xmlns') != NS_CLIENT:
+            raise StanzaMalformed('Invalid namespace in stream header')
+
+    if attrs.get('version') != '1.0':
+        raise StanzaMalformed('Invalid stream version in stream header')
+    stream_id = attrs.get('id')
+    if stream_id is None:
+        raise StanzaMalformed('No stream id found in stream header')
+    return stream_id
+
+
+def get_stream_header(domain, lang, is_websocket):
+    if is_websocket:
+        return WebsocketOpenHeader(domain, lang)
+    header = StreamHeader(domain, lang)
+    return "<?xml version='1.0'?>%s>" % str(header)[:-3]
+
+
+def get_stanza_id():
+    return str(uuid.uuid4())
+
+
+def utf8_decode(data):
+    '''
+    Decodes utf8 byte string to unicode string
+    Does handle invalid utf8 sequences by splitting
+    the invalid sequence at the end
+
+    returns (decoded unicode string, invalid byte sequence)
+    '''
+    try:
+        return data.decode(), b''
+    except UnicodeDecodeError:
+        for i in range(-1, -4, -1):
+            char = data[i]
+            if char & 0xc0 == 0x80:
+                continue
+            return data[:i].decode(), data[i:]
+        raise
+
+
+def get_rand_number():
+    return int(binascii.hexlify(os.urandom(6)), 16)
+
+
+def get_invalid_xml_regex():
+    # \ufddo -> \ufdef range
+    c = '\ufdd0'
+    r = c
+    while c < '\ufdef':
+        c = chr(ord(c) + 1)
+        r += '|' + c
+
+    # \ufffe-\uffff, \u1fffe-\u1ffff, ..., \u10fffe-\u10ffff
+    c = '\ufffe'
+    r += '|' + c
+    r += '|' + chr(ord(c) + 1)
+    while c < '\U0010fffe':
+        c = chr(ord(c) + 0x10000)
+        r += '|' + c
+        r += '|' + chr(ord(c) + 1)
+
+    return re.compile(r)
+
+
+def get_tls_error_phrase(tls_error):
+    phrase = GIO_TLS_ERRORS.get(tls_error)
+    if phrase is None:
+        return GIO_TLS_ERRORS.get(Gio.TlsCertificateFlags.GENERIC_ERROR)
+    return phrase
+
+
+def convert_tls_error_flags(flags):
+    if not flags:
+        return set()
+
+    # If GLib ever adds more flags GIO_TLS_ERRORS have to
+    # be extended, otherwise errors go unnoticed
+    if Gio.TlsCertificateFlags.VALIDATE_ALL != 127:
+        raise ValueError
+
+    return set(filter(lambda error: error & flags, GIO_TLS_ERRORS.keys()))
+
+
+def get_websocket_close_string(websocket):
+    data = websocket.get_close_data()
+    code = websocket.get_close_code()
+
+    if code is None and data is None:
+        return ''
+    return ' Data: %s Code: %s' % (data, code)
+
+
+def is_websocket_close(stanza):
+    return stanza.getName() == 'close' and stanza.getNamespace() == NS_FRAMING
+
+
+def is_websocket_stream_error(stanza):
+    return stanza.getName() == 'error' and stanza.getNamespace() == NS_STREAMS
+
+
+class Observable:
+    def __init__(self, log_):
+        self._log = log_
+        self._frozen = False
+        self._callbacks = defaultdict(list)
+
+    def remove_subscriptions(self):
+        self._callbacks = defaultdict(list)
+
+    def subscribe(self, signal_name, func):
+        self._callbacks[signal_name].append(func)
+
+    def notify(self, signal_name, *args, **kwargs):
+        if self._frozen:
+            self._frozen = False
+            return
+
+        self._log.info('Signal: %s', signal_name)
+        callbacks = self._callbacks.get(signal_name, [])
+        for func in callbacks:
+            func(self, signal_name, *args, **kwargs)

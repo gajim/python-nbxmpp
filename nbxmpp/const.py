@@ -17,31 +17,9 @@
 
 from enum import Enum
 from enum import IntEnum
-from enum import unique
 from functools import total_ordering
 
-
-@unique
-class Realm(Enum):
-    CONNECTING = 'Connecting'
-
-    def __str__(self):
-        return self.value
-
-
-@unique
-class Event(Enum):
-    AUTH_SUCCESSFUL = 'Auth successful'
-    AUTH_FAILED = 'Auth failed'
-    BIND_FAILED = 'Bind failed'
-    SESSION_FAILED = 'Session failed'
-    RESUME_SUCCESSFUL = 'Resume successful'
-    RESUME_FAILED = 'Resume failed'
-    CONNECTION_ACTIVE = 'Connection active'
-
-    def __str__(self):
-        return self.value
-
+from gi.repository import Gio
 
 class GSSAPIState(IntEnum):
     STEP = 0
@@ -341,6 +319,94 @@ class AdHocNoteType(Enum):
     ERROR = 'error'
 
 
+class ConnectionType(Enum):
+    DIRECT_TLS = 'ssl'
+    START_TLS = 'tls'
+    PLAIN = 'plain'
+
+    @property
+    def is_direct_tls(self):
+        return self == ConnectionType.DIRECT_TLS
+
+    @property
+    def is_start_tls(self):
+        return self == ConnectionType.START_TLS
+
+    @property
+    def is_plain(self):
+        return self == ConnectionType.PLAIN
+
+
+class ConnectionProtocol(IntEnum):
+    TCP = 0
+    WEBSOCKET = 1
+
+
+class StreamState(Enum):
+    RESOLVE = 'resolve'
+    RESOLVED = 'resolved'
+    CONNECTING = 'connecting'
+    CONNECTED = 'connected'
+    DISCONNECTED = 'disconnected'
+    DISCONNECTING = 'disconnecting'
+    STREAM_START = 'stream start'
+    WAIT_FOR_STREAM_START = 'wait for stream start'
+    WAIT_FOR_FEATURES = 'wait for features'
+    WAIT_FOR_TLS_PROCEED = 'wait for tls proceed'
+    TLS_START_SUCCESSFUL = 'tls start successful'
+    PROCEED_WITH_AUTH = 'proceed with auth'
+    AUTH_SUCCESSFUL = 'auth successful'
+    AUTH_FAILED = 'auth failed'
+    SESSION_FAILED = 'session failed'
+    WAIT_FOR_RESUMED = 'wait for resumed'
+    RESUME_FAILED = 'resume failed'
+    RESUME_SUCCESSFUL = 'resume successful'
+    PROCEED_WITH_BIND = 'proceed with bind'
+    BIND_SUCCESSFUL = 'bind successful'
+    BIND_FAILED = 'bind failed'
+    WAIT_FOR_BIND = 'wait for bind'
+    WAIT_FOR_SESSION = 'wait for session'
+    ACTIVE = 'active'
+
+
+class StreamError(Enum):
+    PARSING = 0
+    CONNECTION_FAILED = 1
+    SESSION = 2
+    BIND = 3
+    TLS = 4
+    BAD_CERTIFICATE = 5
+    STREAM = 6
+    SASL = 7
+    REGISTER = 8
+    END = 9
+
+
+class TCPState(Enum):
+    DISCONNECTED = 'disconnected'
+    DISCONNECTING = 'disconnecting'
+    CONNECTING = 'connecting'
+    CONNECTED = 'connected'
+
+
+class Mode(IntEnum):
+    CLIENT = 0
+    REGISTER = 1
+    LOGIN_TEST = 2
+
+    @property
+    def is_client(self):
+        return self == Mode.CLIENT
+
+    @property
+    def is_register(self):
+        return self == Mode.REGISTER
+
+    @property
+    def is_login_test(self):
+        return self == Mode.LOGIN_TEST
+
+
 MOODS = [
     'afraid',
     'amazed',
@@ -571,3 +637,15 @@ REGISTER_FIELDS = [
     'url',
     'date',
 ]
+
+# pylint: disable=line-too-long
+GIO_TLS_ERRORS = {
+    Gio.TlsCertificateFlags.UNKNOWN_CA: 'The signing certificate authority is not known',
+    Gio.TlsCertificateFlags.REVOKED: 'The certificate has been revoked',
+    Gio.TlsCertificateFlags.BAD_IDENTITY: 'The certificate does not match the expected identity of the site',
+    Gio.TlsCertificateFlags.INSECURE: 'The certificate’s algorithm is insecure',
+    Gio.TlsCertificateFlags.NOT_ACTIVATED: 'The certificate’s activation time is in the future',
+    Gio.TlsCertificateFlags.GENERIC_ERROR: 'Unknown validation error',
+    Gio.TlsCertificateFlags.EXPIRED: 'The certificate has expired',
+}
+# pylint: enable=line-too-long

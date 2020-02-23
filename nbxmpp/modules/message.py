@@ -41,7 +41,7 @@ class BaseMessage:
                           priority=10),
         ]
 
-    def _process_message_base(self, _con, stanza, properties):
+    def _process_message_base(self, _client, stanza, properties):
         properties.type = self._parse_type(stanza)
 
         # Determine remote JID
@@ -72,7 +72,7 @@ class BaseMessage:
             properties.error = error_factory(stanza)
 
     @staticmethod
-    def _process_message_after_base(_con, stanza, properties):
+    def _process_message_after_base(_client, stanza, properties):
         # This handler runs after decryption handlers had the chance
         # to decrypt the body
         properties.body = stanza.getBody()

@@ -21,16 +21,13 @@ import logging
 from nbxmpp.protocol import NS_STREAM_MGMT
 from nbxmpp.protocol import NS_DELAY2
 from nbxmpp.simplexml import Node
-from nbxmpp.transports import DISCONNECTING
-from nbxmpp.plugin import PlugIn
-from nbxmpp.const import Realm
-from nbxmpp.const import Event
+from nbxmpp.const import StreamState
 
 
 log = logging.getLogger('nbxmpp.smacks')
 
 
-class Smacks(PlugIn):
+class Smacks:
     """
     This is Smacks is the Stream Management class. It takes care of requesting
     and sending acks. Also, it keeps track of the unhandled outgoing stanzas.
@@ -39,8 +36,8 @@ class Smacks(PlugIn):
     number of handled stanzas
     """
 
-    def __init__(self):
-        PlugIn.__init__(self)
+    def __init__(self, client):
+        self._client = client
         self._out_h = 0  # Outgoing stanzas handled
         self._in_h = 0  # Incoming stanzas handled
         self._acked_h = 0  # Last acked stanza
@@ -51,59 +48,54 @@ class Smacks(PlugIn):
         # Max number of stanzas in queue before making a request
         self.max_queue = 0
 
+        self._sm_supported = False
         self.enabled = False  # If SM is enabled
         self._enable_sent = False  # If we sent 'enable'
         self.resumed = False  # If the session was resumed
         self.resume_in_progress = False
         self.resume_supported = False  # Does the session support resume
-        self._resume_jid = None  # The JID from the previous session
 
         self._session_id = None
         self._location = None
 
-    def get_resume_data(self):
-        if self.resume_supported:
-            return {
-                'out': self._out_h,
-                'in': self._in_h,
-                'session_id': self._session_id,
-                'location': self._location,
-                'uqueue': self._uqueue,
-                'bound_jid': self._owner._registered_name
-            }
+        self.register_handlers()
 
-    def set_resume_data(self, data):
-        if data is None:
+    @property
+    def sm_supported(self):
+        return self._sm_supported
+
+    @sm_supported.setter
+    def sm_supported(self, value):
+        log.info('Server supports detected: %s', value)
+        self._sm_supported = value
+
+    def delegate(self, stanza):
+        if stanza.getNamespace() != NS_STREAM_MGMT:
             return
-        log.debug('Resume data set')
-        self._out_h = data.get('out')
-        self._in_h = data.get('in')
-        self._session_id = data.get('session_id')
-        self._location = data.get('location')
-        self._old_uqueue = data.get('uqueue')
-        self._resume_jid = data.get('bound_jid')
-        self.resume_supported = True
+        if stanza.getName() == 'resumed':
+            self._on_resumed(stanza)
+        elif stanza.getName() == 'failed':
+            self._on_failed(None, stanza, None)
 
     def register_handlers(self):
-        self._owner.Dispatcher.RegisterNamespace(NS_STREAM_MGMT)
-        self._owner.Dispatcher.RegisterHandler(
+        self._client.register_handler(
             'enabled', self._on_enabled, xmlns=NS_STREAM_MGMT)
-        self._owner.Dispatcher.RegisterHandler(
-            'r', self._send_ack, xmlns=NS_STREAM_MGMT)
-        self._owner.Dispatcher.RegisterHandler(
-            'a', self._on_ack, xmlns=NS_STREAM_MGMT)
-        self._owner.Dispatcher.RegisterHandler(
-            'resumed', self._on_resumed, xmlns=NS_STREAM_MGMT)
-        self._owner.Dispatcher.RegisterHandler(
+        self._client.register_handler(
             'failed', self._on_failed, xmlns=NS_STREAM_MGMT)
+        self._client.register_handler(
+            'r', self._send_ack, xmlns=NS_STREAM_MGMT)
+        self._client.register_handler(
+            'a', self._on_ack, xmlns=NS_STREAM_MGMT)
 
     def send_enable(self):
+        if not self.sm_supported:
+            return
         enable = Node(NS_STREAM_MGMT + ' enable', attrs={'resume': 'true'})
-        self._owner.Connection.send(enable, now=False)
+        self._client.send_nonza(enable, now=False)
         log.debug('Send enable')
         self._enable_sent = True
 
-    def _on_enabled(self, _disp, stanza):
+    def _on_enabled(self, _con, stanza, _properties):
         if self.enabled:
             log.error('Received "enabled", but SM is already enabled')
             return
@@ -160,7 +152,7 @@ class Smacks(PlugIn):
         log.info('Resend %s stanzas', len(self._old_uqueue))
         for stanza in self._old_uqueue:
             # Use dispatcher so we increment the counter
-            self._owner.Dispatcher.send(stanza)
+            self._client.send_stanza(stanza)
         self._old_uqueue = []
 
     def resume_request(self):
@@ -181,9 +173,9 @@ class Smacks(PlugIn):
 
         self._acked_h = self._in_h
         self.resume_in_progress = True
-        self._owner.Connection.send(resume, now=False)
+        self._client.send_nonza(resume, now=False)
 
-    def _on_resumed(self, _disp, stanza):
+    def _on_resumed(self, stanza):
         """
         Checks if the number of stanzas sent are the same as the
         number of stanzas received by the server. Resends stanzas not received
@@ -197,29 +189,29 @@ class Smacks(PlugIn):
         self.enabled = True
         self.resumed = True
         self.resume_in_progress = False
-        self._owner.set_bound_jid(self._resume_jid)
-        self._owner.Dispatcher.Event(Realm.CONNECTING, Event.RESUME_SUCCESSFUL)
+        self._client.set_state(StreamState.RESUME_SUCCESSFUL)
         self._resend_queue()
 
     def _send_ack(self, *args):
         ack = Node(NS_STREAM_MGMT + ' a', attrs={'h': self._in_h})
         self._acked_h = self._in_h
         log.debug('Send ack, h: %s', self._in_h)
-        self._owner.Connection.send(ack, now=False)
+        self._client.send_nonza(ack, now=False)
 
-    def send_closing_ack(self):
-        if self._owner.Connection.get_state() != DISCONNECTING:
-            return
-        ack = Node(NS_STREAM_MGMT + ' a', attrs={'h': self._in_h})
-        log.debug('Send closing ack, h: %s', self._in_h)
-        self._owner.Connection.send(ack, now=True)
+    def close_session(self):
+        # We end the connection deliberately
+        # Reset the state -> no resume
+        log.info('Close session')
+        self._reset_state()
 
     def _request_ack(self):
         request = Node(NS_STREAM_MGMT + ' r')
         log.debug('Request ack')
-        self._owner.Connection.send(request, now=False)
+        self._client.send_nonza(request, now=False)
 
-    def _on_ack(self, _disp, stanza):
+    def _on_ack(self, _stream, stanza, _properties):
+        if not self.enabled:
+            return
         log.debug('Ack received, h: %s', stanza.getAttr('h'))
         self._validate_ack(stanza, self._uqueue)
 
@@ -250,17 +242,17 @@ class Smacks(PlugIn):
         else:
             log.debug('Validate ack, our h: %d, server h: %d, queue: %d',
                       self._out_h, count_server, queue_size)
-            log.debug('removing %d stanzas from queue', queue_size - diff)
+            log.debug('Removing %d stanzas from queue', queue_size - diff)
 
             while len(queue) > diff:
                 queue.pop(0)
 
-    def _on_failed(self, _disp, stanza):
+    def _on_failed(self, _stream, stanza, _properties):
         '''
         This can be called after 'enable' and 'resume'
         '''
 
-        log.info('Stream Management negotiation failed')
+        log.info('Negotiation failed')
         error_text = stanza.getTagData('text')
         if error_text is not None:
             log.info(error_text)
@@ -275,10 +267,12 @@ class Smacks(PlugIn):
                     log.info(tag.getName())
 
         if self.resume_in_progress:
-            self._owner.Dispatcher.Event(Realm.CONNECTING, Event.RESUME_FAILED)
-            # We failed while resuming
-            self.resume_supported = False
-            self._owner.bind()
+            # Reset state before sending Bind, because otherwise stanza
+            # will be counted and ack will be requested.
+            # _reset_state() also resets resume_in_progress
+            self._reset_state()
+            self._client.set_state(StreamState.RESUME_FAILED)
+
         self._reset_state()
 
     def _reset_state(self):

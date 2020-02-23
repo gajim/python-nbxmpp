@@ -35,7 +35,7 @@ class EME:
         ]
 
     @staticmethod
-    def _process_eme(_con, stanza, properties):
+    def _process_eme(_client, stanza, properties):
         encryption = stanza.getTag('encryption', namespace=NS_EME)
         if encryption is None:
             return

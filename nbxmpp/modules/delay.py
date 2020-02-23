@@ -38,7 +38,7 @@ class Delay:
                           priority=15)
         ]
 
-    def _process_message_delay(self, _con, stanza, properties):
+    def _process_message_delay(self, _client, stanza, properties):
         if properties.is_muc_subject:
             # MUC Subjects can have a delay timestamp
             # to indicate when the user has set the subject,
@@ -65,7 +65,7 @@ class Delay:
             properties.user_timestamp = parse_delay(stanza, not_from=jids)
 
     @staticmethod
-    def _process_presence_delay(_con, stanza, properties):
+    def _process_presence_delay(_client, stanza, properties):
         properties.user_timestamp = parse_delay(stanza)
 
 

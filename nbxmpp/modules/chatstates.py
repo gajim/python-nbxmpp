@@ -35,7 +35,7 @@ class Chatstates:
                           priority=15),
         ]
 
-    def _process_message_chatstate(self, _con, stanza, properties):
+    def _process_message_chatstate(self, _client, stanza, properties):
         chatstate = parse_chatstate(stanza)
         if chatstate is None:
             return

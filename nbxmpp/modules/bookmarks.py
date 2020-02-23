@@ -78,7 +78,7 @@ class Bookmarks:
         self._node_configuration_in_progress = False
         self._node_configuration_not_possible = False
 
-    def _process_pubsub_bookmarks(self, _con, stanza, properties):
+    def _process_pubsub_bookmarks(self, _client, stanza, properties):
         if not properties.is_pubsub_event:
             return
 
@@ -108,7 +108,7 @@ class Bookmarks:
 
         properties.pubsub_event = pubsub_event
 
-    def _process_pubsub_bookmarks2(self, _con, _stanza, properties):
+    def _process_pubsub_bookmarks2(self, _client, _stanza, properties):
         if not properties.is_pubsub_event:
             return
 
@@ -415,6 +415,6 @@ class Bookmarks:
         return Iq('set', NS_PRIVATE, payload=storage_node)
 
     @staticmethod
-    def _on_private_store_result(_con, stanza):
+    def _on_private_store_result(_client, stanza):
         if not isResultNode(stanza):
             return raise_error(log.info, stanza)

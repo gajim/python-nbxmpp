@@ -36,13 +36,13 @@ class BaseIq:
                           priority=10),
         ]
 
-    def _process_iq_base(self, _con, stanza, properties):
+    def _process_iq_base(self, _client, stanza, properties):
         try:
             properties.type = IqType(stanza.getType())
         except ValueError:
             log.warning('Message with invalid type: %s', stanza.getType())
             log.warning(stanza)
-            self._client.send(ErrorStanza(stanza, ERR_BAD_REQUEST))
+            self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
         properties.jid = stanza.getFrom()

@@ -50,7 +50,7 @@ class PubSub:
                           priority=15),
         ]
 
-    def _process_pubsub_base(self, _con, stanza, properties):
+    def _process_pubsub_base(self, _client, stanza, properties):
         properties.pubsub = True
         event = stanza.getTag('event', namespace=NS_PUBSUB_EVENT)
 

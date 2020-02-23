@@ -59,7 +59,7 @@ class OpenPGP:
                           priority=7),
         ]
 
-    def _process_openpgp_message(self, _con, stanza, properties):
+    def _process_openpgp_message(self, _client, stanza, properties):
         openpgp = stanza.getTag('openpgp', namespace=NS_OPENPGP)
         if openpgp is None:
             log.warning('No openpgp node found')
@@ -80,7 +80,7 @@ class OpenPGP:
             log.warning(stanza)
             return
 
-    def _process_pubsub_openpgp(self, _con, stanza, properties):
+    def _process_pubsub_openpgp(self, _client, stanza, properties):
         if not properties.is_pubsub_event:
             return
 

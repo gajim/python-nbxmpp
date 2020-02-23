@@ -35,7 +35,7 @@ class Idle:
         ]
 
     @staticmethod
-    def _process_idle(_con, stanza, properties):
+    def _process_idle(_client, stanza, properties):
         idle_tag = stanza.getTag('idle', namespace=NS_IDLE)
         if idle_tag is None:
             return

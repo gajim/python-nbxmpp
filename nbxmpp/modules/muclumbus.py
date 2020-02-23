@@ -18,6 +18,10 @@
 import logging
 import json
 
+import gi
+gi.require_version('Soup', '2.4')
+from gi.repository import Soup
+
 from nbxmpp.protocol import NS_MUCLUMBUS
 from nbxmpp.protocol import NS_DATA
 from nbxmpp.protocol import NS_RSM
@@ -32,14 +36,6 @@ from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
 
-try:
-    import gi
-    gi.require_version('Soup', '2.4')
-    from gi.repository import Soup
-    SOUP_AVAILABLE = True
-except (ValueError, ImportError):
-    SOUP_AVAILABLE = False
-
 log = logging.getLogger('nbxmpp.m.muclumbus')
 
 # API Documentation
@@ -50,9 +46,14 @@ class Muclumbus:
         self._client = client
         self.handlers = []
 
-        self._soup_session = None
-        if SOUP_AVAILABLE:
-            self._soup_session = Soup.Session()
+        self._proxy_resolver = None
+        self._soup_session = Soup.Session()
+
+    def set_proxy(self, proxy):
+        if proxy is None:
+            return
+        self._proxy_resolver = proxy.get_resolver()
+        self._soup_session.props.proxy_resolver = self._proxy_resolver
 
     @call_on_response('_parameters_received')
     def request_parameters(self, jid):
@@ -90,9 +91,6 @@ class Muclumbus:
 
     def set_http_search(self, uri, keywords, after=None,
                         callback=None, user_data=None):
-        if not SOUP_AVAILABLE:
-            raise ImportError('Module Soup not found')
-
         search = {'keywords': keywords}
         if after is not None:
             search['after'] = after

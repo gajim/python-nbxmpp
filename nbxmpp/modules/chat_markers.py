@@ -35,7 +35,7 @@ class ChatMarkers:
         ]
 
     @staticmethod
-    def _process_message_marker(_con, stanza, properties):
+    def _process_message_marker(_client, stanza, properties):
         type_ = stanza.getTag('received', namespace=NS_CHATMARKERS)
         if type_ is None:
             type_ = stanza.getTag('displayed', namespace=NS_CHATMARKERS)

@@ -285,7 +285,7 @@ class IdleQueue:
         """
         Remove the read timeout
         """
-        log.info('read timeout removed for fd %s' % fd)
+        log.debug('read timeout removed for fd %s' % fd)
         if fd in self.read_timeouts:
             if timeout:
                 if timeout in self.read_timeouts[fd]:
@@ -302,7 +302,7 @@ class IdleQueue:
 
         A filedescriptor fd can have several timeouts.
         """
-        log_txt = 'read timeout set for fd %s on %s seconds' % (fd, seconds)
+        log_txt = 'read timeout set for fd %s on %i seconds' % (fd, seconds)
         if func:
             log_txt += ' with function ' + str(func)
         log.info(log_txt)

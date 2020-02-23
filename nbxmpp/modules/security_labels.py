@@ -35,7 +35,7 @@ class SecurityLabels:
                           priority=15),
         ]
 
-    def _process_message_security_label(self, _con, stanza, properties):
+    def _process_message_security_label(self, _client, stanza, properties):
         security = stanza.getTag('securitylabel', namespace=NS_SECLABEL)
         if security is None:
             return

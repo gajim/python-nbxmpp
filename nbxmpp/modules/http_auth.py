@@ -40,7 +40,7 @@ class HTTPAuth:
         ]
 
     @staticmethod
-    def _process_http_auth(_con, stanza, properties):
+    def _process_http_auth(_client, stanza, properties):
         confirm = stanza.getTag('confirm', namespace=NS_HTTP_AUTH)
         if confirm is None:
             return

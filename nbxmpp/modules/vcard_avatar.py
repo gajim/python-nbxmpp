@@ -36,7 +36,7 @@ class VCardAvatar:
         ]
 
     @staticmethod
-    def _process_avatar(_con, stanza, properties):
+    def _process_avatar(_client, stanza, properties):
         if properties.type != PresenceType.AVAILABLE:
             return
 

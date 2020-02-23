@@ -34,7 +34,7 @@ class OOB:
                           priority=15),
         ]
 
-    def _process_message_oob(self, _con, stanza, properties):
+    def _process_message_oob(self, _client, stanza, properties):
         oob = stanza.getTag('x', namespace=NS_X_OOB)
         if oob is None:
             return

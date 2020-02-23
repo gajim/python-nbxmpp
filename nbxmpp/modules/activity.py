@@ -38,7 +38,7 @@ class Activity:
                           priority=16),
         ]
 
-    def _process_pubsub_activity(self, _con, stanza, properties):
+    def _process_pubsub_activity(self, _client, stanza, properties):
         if not properties.is_pubsub_event:
             return
 

@@ -139,6 +139,7 @@ NS_PUBSUB_PUBLISH_OPTIONS = NS_PUBSUB + '#publish-options'            # XEP-0060
 NS_PUBSUB_OWNER   = 'http://jabber.org/protocol/pubsub#owner'         # XEP-0060
 NS_PUBSUB_CONFIG  = 'http://jabber.org/protocol/pubsub#node_config'   # XEP-0060
 NS_REGISTER       = 'jabber:iq:register'
+NS_REGISTER_FEATURE = 'http://jabber.org/features/iq-register'
 NS_ROSTER         = 'jabber:iq:roster'
 NS_ROSTERNOTES    = 'storage:rosternotes'
 NS_ROSTERX        = 'http://jabber.org/protocol/rosterx'              # XEP-0144
@@ -204,6 +205,7 @@ NS_BOOKMARK_CONVERSION = 'urn:xmpp:bookmarks-conversion:0'
 NS_DOMAIN_BASED_NAME = 'urn:xmpp:domain-based-name:1'
 NS_HINTS = 'urn:xmpp:hints'
 NS_MUCLUMBUS = 'https://xmlns.zombofant.net/muclumbus/search/1.0'
+NS_FRAMING = 'urn:ietf:params:xml:ns:xmpp-framing'
 
 #xmpp_stream_error_conditions = '''
 #bad-format --  --  -- The entity has sent XML that cannot be processed.
@@ -951,14 +953,39 @@ class JID:
         return str(self)
 
 
-class BOSHBody(Node):
-    """
-    <body> tag that wraps usual XMPP stanzas in XMPP over BOSH
-    """
+class StreamErrorNode(Node):
+    def __init__(self, node):
+        Node.__init__(self, node=node)
 
-    def __init__(self, attrs=None, payload=None, node=None):
-        Node.__init__(self, tag='body', attrs=attrs, payload=payload, node=node)
-        self.setNamespace(NS_HTTP_BIND)
+        self._text = {}
+
+        text_elements = self.getTags('text', namespace=NS_XMPP_STREAMS)
+        for element in text_elements:
+            lang = element.getXmlLang()
+            text = element.getData()
+            self._text[lang] = text
+
+    def get_condition(self):
+        for tag in self.getChildren():
+            if tag.getName() != 'text' and tag.getNamespace() == NS_XMPP_STREAMS:
+                return tag.getName()
+
+    def get_text(self, pref_lang=None):
+        if pref_lang is not None:
+            text = self._text.get(pref_lang)
+            if text is not None:
+                return text
+
+        if self._text:
+            text = self._text.get('en')
+            if text is not None:
+                return text
+
+            text = self._text.get(None)
+            if text is not None:
+                return text
+            return self._text.popitem()[1]
+        return ''
 
 
 class Protocol(Node):
@@ -1732,6 +1759,99 @@ class Hashes2(Node):
     def addHash(self, hash_, algo):
         self.setAttr('algo', algo)
         self.setData(hash_)
+
+
+class BindRequest(Iq):
+    def __init__(self, resource):
+        if resource is not None:
+            resource = Node('resource', payload=resource)
+        Iq.__init__(self, typ='set')
+        self.addChild(node=Node('bind', {'xmlns': NS_BIND}, payload=resource))
+
+
+class TLSRequest(Node):
+    def __init__(self):
+        Node.__init__(self, tag='starttls', attrs={'xmlns': NS_TLS})
+
+
+class SessionRequest(Iq):
+    def __init__(self):
+        Iq.__init__(self, typ='set')
+        self.addChild(node=Node('session', attrs={'xmlns': NS_SESSION}))
+
+
+class StreamHeader(Node):
+    def __init__(self, domain, lang=None):
+        if lang is None:
+            lang = 'en'
+        Node.__init__(self,
+                      tag='stream:stream',
+                      attrs={'xmlns': NS_CLIENT,
+                             'version': '1.0',
+                             'xmlns:stream': NS_STREAMS,
+                             'to': domain,
+                             'xml:lang': lang})
+
+
+class WebsocketOpenHeader(Node):
+    def __init__(self, domain, lang=None):
+        if lang is None:
+            lang = 'en'
+        Node.__init__(self,
+                      tag='open',
+                      attrs={'xmlns': NS_FRAMING,
+                             'version': '1.0',
+                             'to': domain,
+                             'xml:lang': lang})
+
+class WebsocketCloseHeader(Node):
+    def __init__(self):
+        Node.__init__(self, tag='close', attrs={'xmlns': NS_FRAMING})
+
+
+class Features(Node):
+    def __init__(self, node):
+        Node.__init__(self, node=node)
+
+    def has_starttls(self):
+        tls = self.getTag('starttls', namespace=NS_TLS)
+        if tls is not None:
+            required = tls.getTag('required') is not None
+            return True, required
+        return False, False
+
+    def has_sasl(self):
+        return self.getTag('mechanisms', namespace=NS_SASL) is not None
+
+    def get_mechs(self):
+        mechanisms = self.getTag('mechanisms', namespace=NS_SASL)
+        mechanisms = mechanisms.getTags('mechanism')
+        return set(mech.getData() for mech in mechanisms)
+
+    def get_domain_based_name(self):
+        hostname = self.getTag('hostname', namespace=NS_DOMAIN_BASED_NAME)
+        if hostname is not None:
+            return hostname.getData()
+
+    def has_bind(self):
+        return self.getTag('bind', namespace=NS_BIND) is not None
+
+    def session_required(self):
+        session = self.getTag('session', namespace=NS_SESSION)
+        if session is not None:
+            optional = session.getTag('optional') is not None
+            return not optional
+        return False
+
+    def has_sm(self):
+        return self.getTag('sm', namespace=NS_STREAM_MGMT) is not None
+
+    def has_roster_version(self):
+        return self.getTag('ver', namespace=NS_ROSTER_VER) is not None
+
+    def has_register(self):
+        return self.getTag(
+            'register', namespace=NS_REGISTER_FEATURE) is not None
 
 
 class ErrorNode(Node):

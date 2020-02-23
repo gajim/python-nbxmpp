@@ -94,7 +94,7 @@ class MUC:
         ]
 
     @staticmethod
-    def _process_muc_presence(_con, stanza, properties):
+    def _process_muc_presence(_client, stanza, properties):
         muc = stanza.getTag('x', namespace=NS_MUC)
         if muc is None:
             return
@@ -103,7 +103,7 @@ class MUC:
         properties.muc_jid.setBare()
         properties.muc_nickname = properties.jid.getResource()
 
-    def _process_muc_user_presence(self, _con, stanza, properties):
+    def _process_muc_user_presence(self, _client, stanza, properties):
         muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
         if muc_user is None:
             return
@@ -162,7 +162,7 @@ class MUC:
 
         properties.muc_user = self._parse_muc_user(muc_user)
 
-    def _process_groupchat_message(self, _con, stanza, properties):
+    def _process_groupchat_message(self, _client, stanza, properties):
         properties.from_muc = True
         properties.muc_jid = properties.jid.copy()
         properties.muc_jid.setBare()
@@ -179,7 +179,7 @@ class MUC:
                 properties.muc_ofrom = JID(address.getAttr('jid'))
 
     @staticmethod
-    def _process_message(_con, stanza, properties):
+    def _process_message(_client, stanza, properties):
         muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
         if muc_user is None:
             return
@@ -230,7 +230,7 @@ class MUC:
             properties.muc_status_codes = codes
 
     @staticmethod
-    def _process_direct_invite(_con, stanza, properties):
+    def _process_direct_invite(_client, stanza, properties):
         direct = stanza.getTag('x', namespace=NS_CONFERENCE)
         if direct is None:
             return
@@ -252,7 +252,7 @@ class MUC:
         properties.muc_invite = InviteData(**data)
 
     @staticmethod
-    def _process_mediated_invite(_con, stanza, properties):
+    def _process_mediated_invite(_client, stanza, properties):
         muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
         if muc_user is None:
             return
@@ -292,7 +292,7 @@ class MUC:
             return
 
     @staticmethod
-    def _process_voice_request(_con, stanza, properties):
+    def _process_voice_request(_client, stanza, properties):
         data_form = stanza.getTag('x', namespace=NS_DATA)
         if data_form is None:
             return
@@ -324,7 +324,7 @@ class MUC:
         form = voice_request.form
         form.type_ = 'submit'
         form['muc#request_allow'].value = True
-        self._client.send(Message(to=muc_jid, payload=form))
+        self._client.send_stanza(Message(to=muc_jid, payload=form))
 
     @call_on_response('_affiliation_received')
     def get_affiliation(self, jid, affiliation):
@@ -451,7 +451,7 @@ class MUC:
     def set_subject(self, room_jid, subject):
         message = Message(room_jid, typ='groupchat', subject=subject)
         log.info('Set subject for %s', room_jid)
-        self._client.send(message)
+        self._client.send_stanza(message)
 
     def decline(self, room, to, reason=None):
         message = Message(to=room)
@@ -459,7 +459,7 @@ class MUC:
         decline = muc_user.addChild('decline', attrs={'to': to})
         if reason:
             decline.setTagData('reason', reason)
-        self._client.send(message)
+        self._client.send_stanza(message)
 
     def request_voice(self, room):
         message = Message(to=room)
@@ -470,7 +470,7 @@ class MUC:
                                       value='participant',
                                       typ='text-single'))
         message.addChild(node=xdata)
-        self._client.send(message)
+        self._client.send_stanza(message)
 
     def invite(self, room, to, password, reason=None, continue_=False,
                type_=InviteType.MEDIATED):
@@ -480,7 +480,7 @@ class MUC:
         else:
             invite = self._build_mediated_invite(
                 room, to, reason, password, continue_)
-        self._client.send(invite)
+        self._client.send_stanza(invite)
 
     @staticmethod
     def _build_direct_invite(room, to, reason, password, continue_):
@@ -520,7 +520,7 @@ class MUC:
         message = Message(typ='error', to=room_jid)
         message.setID(message_id)
         message.setError(ERR_NOT_ACCEPTABLE)
-        self._client.send(message)
+        self._client.send_stanza(message)
 
     @callback
     def _default_response(self, stanza):

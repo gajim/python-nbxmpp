@@ -34,7 +34,7 @@ class Correction:
                           priority=15),
         ]
 
-    def _process_message_correction(self, _con, stanza, properties):
+    def _process_message_correction(self, _client, stanza, properties):
         replace = stanza.getTag('replace', namespace=NS_CORRECT)
         if replace is None:
             return

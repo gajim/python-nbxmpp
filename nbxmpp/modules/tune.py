@@ -37,7 +37,7 @@ class Tune:
                           priority=16),
         ]
 
-    def _process_pubsub_tune(self, _con, _stanza, properties):
+    def _process_pubsub_tune(self, _client, _stanza, properties):
         if not properties.is_pubsub_event:
             return
 

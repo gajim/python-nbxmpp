@@ -55,7 +55,7 @@ class OMEMO:
                           priority=7),
         ]
 
-    def _process_omemo_message(self, _con, stanza, properties):
+    def _process_omemo_message(self, _client, stanza, properties):
         try:
             properties.omemo = self._parse_omemo_message(stanza)
             log.info('Received message')
@@ -126,7 +126,7 @@ class OMEMO:
 
         return OMEMOMessage(sid=sid, iv=iv, keys=keys, payload=payload)
 
-    def _process_omemo_devicelist(self, _con, stanza, properties):
+    def _process_omemo_devicelist(self, _client, stanza, properties):
         if not properties.is_pubsub_event:
             return
 

@@ -39,7 +39,7 @@ class PGPLegacy:
         ]
 
     @staticmethod
-    def _process_signed(_con, stanza, properties):
+    def _process_signed(_client, stanza, properties):
         signed = stanza.getTag('x', namespace=NS_SIGNED)
         if signed is None:
             return
@@ -47,7 +47,7 @@ class PGPLegacy:
         properties.signed = signed.getData()
 
     @staticmethod
-    def _process_pgplegacy_message(_con, stanza, properties):
+    def _process_pgplegacy_message(_client, stanza, properties):
         pgplegacy = stanza.getTag('x', namespace=NS_ENCRYPTED)
         if pgplegacy is None:
             log.warning('No x node found')

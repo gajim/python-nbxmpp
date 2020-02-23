@@ -531,7 +531,8 @@ class NodeBuilder:
     XML handler
     """
 
-    def __init__(self, data=None, initial_node=None):
+    def __init__(self, data=None, initial_node=None,
+                 dispatch_depth=1, finished=True):
         """
         Take two optional parameters: "data" and "initial_node"
 
@@ -540,7 +541,6 @@ class NodeBuilder:
         about it as of "node upgrade". "data" (if provided) feeded to parser
         immidiatedly after instance init.
         """
-        log.debug("Preparing to handle incoming XML stream.")
         self._parser = xml.parsers.expat.ParserCreate()
         self._parser.UseForeignDTD(False)
         self._parser.StartElementHandler = self.starttag
@@ -559,16 +559,17 @@ class NodeBuilder:
         self.__depth = 0
         self.__last_depth = 0
         self.__max_depth = 0
-        self._dispatch_depth = 1
+        self._dispatch_depth = dispatch_depth
         self._document_attrs = None
         self._document_nsp = None
-        self._mini_dom=initial_node
+        self._mini_dom = initial_node
         self.last_is_data = 1
-        self._ptr=None
+        self._ptr = None
         self.data_buffer = None
         self.streamError = ''
+        self._is_stream = not finished
         if data:
-            self._parser.Parse(data, 1)
+            self._parser.Parse(data, finished)
 
     def check_data_buffer(self):
         if self.data_buffer:
@@ -618,7 +619,7 @@ class NodeBuilder:
                 header = Node(tag=tag, attrs=attrs,
                               nsp=self._document_nsp, node_built=True)
                 self.dispatch(header)
-                self.stream_header_received(ns, name, attrs)
+                self._check_stream_start(ns, name)
             except ValueError as e:
                 self._document_attrs = None
                 raise ValueError(str(e))
@@ -626,7 +627,15 @@ class NodeBuilder:
             self._ptr.parent.data.append('')
         self.last_is_data = 0
 
-    def endtag(self, tag ):
+    def _check_stream_start(self, ns, tag):
+        if self._is_stream:
+            if ns != 'http://etherx.jabber.org/streams' or tag != 'stream':
+                raise ValueError('Incorrect stream start: (%s,%s). Terminating.'
+                                 % (tag, ns))
+        else:
+            self.stream_header_received()
+
+    def endtag(self, tag):
         """
         XML Parser callback. Used internally
         """
@@ -681,7 +690,7 @@ class NodeBuilder:
         """
         pass
 
-    def stream_header_received(self, ns, tag, attrs):
+    def stream_header_received(self):
         """
         Method called when stream just opened
         """

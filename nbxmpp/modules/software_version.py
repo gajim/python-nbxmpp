@@ -101,5 +101,5 @@ class SoftwareVersion:
             log.info('Send software version: %s %s %s',
                      self._name, self._version, self._os)
 
-        self._client.send(iq)
+        self._client.send_stanza(iq)
         raise NodeProcessed

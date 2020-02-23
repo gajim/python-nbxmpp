@@ -35,7 +35,7 @@ class EntityCaps:
         ]
 
     @staticmethod
-    def _process_entity_caps(_con, stanza, properties):
+    def _process_entity_caps(_client, stanza, properties):
         caps = stanza.getTag('c', namespace=NS_CAPS)
         if caps is None:
             properties.entity_caps = EntityCapsData()

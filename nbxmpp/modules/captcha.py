@@ -38,7 +38,7 @@ class Captcha:
         ]
 
     @staticmethod
-    def _process_captcha(_con, stanza, properties):
+    def _process_captcha(_client, stanza, properties):
         captcha = stanza.getTag('captcha', namespace=NS_CAPTCHA)
         if captcha is None:
             return

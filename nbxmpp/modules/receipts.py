@@ -38,7 +38,7 @@ class Receipts:
                           priority=15),
         ]
 
-    def _process_message_receipt(self, _con, stanza, properties):
+    def _process_message_receipt(self, _client, stanza, properties):
         request = stanza.getTag('request', namespace=NS_RECEIPTS)
         if request is not None:
             properties.receipt = ReceiptData(request.getName())

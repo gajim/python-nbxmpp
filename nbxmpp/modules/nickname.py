@@ -44,7 +44,7 @@ class Nickname:
                           priority=40),
         ]
 
-    def _process_nickname(self, _con, stanza, properties):
+    def _process_nickname(self, _client, stanza, properties):
         if stanza.getName() == 'message':
             properties.nickname = self._parse_nickname(stanza)
 
@@ -57,7 +57,7 @@ class Nickname:
                 return
             properties.nickname = self._parse_nickname(stanza)
 
-    def _process_pubsub_nickname(self, _con, _stanza, properties):
+    def _process_pubsub_nickname(self, _client, _stanza, properties):
         if not properties.is_pubsub_event:
             return
 

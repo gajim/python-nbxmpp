@@ -34,7 +34,7 @@ class Attention:
                           priority=15),
         ]
 
-    def _process_message_attention(self, _con, stanza, properties):
+    def _process_message_attention(self, _client, stanza, properties):
         attention = stanza.getTag('attention', namespace=NS_ATTENTION)
         if attention is None:
             return
