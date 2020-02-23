@@ -29,13 +29,13 @@ class PubsubTest(StanzaHandlerTest):
             </message>
         '''
 
-        self.dispatcher.RegisterHandler(
+        self.dispatcher.register_handler(
             *StanzaHandler(name='message',
                            callback=_on_message,
                            ns=NS_PUBSUB_EVENT,
                            priority=16))
 
-        self.dispatcher.ProcessNonBlocking(event)
+        self.dispatcher.process_data(event)
 
     def test_delete_event(self):
         def _on_message(_con, _stanza, properties):
@@ -59,13 +59,13 @@ class PubsubTest(StanzaHandlerTest):
             </message>
         '''
 
-        self.dispatcher.RegisterHandler(
+        self.dispatcher.register_handler(
             *StanzaHandler(name='message',
                            callback=_on_message,
                            ns=NS_PUBSUB_EVENT,
                            priority=16))
 
-        self.dispatcher.ProcessNonBlocking(event)
+        self.dispatcher.process_data(event)
 
 
     def test_retracted_event(self):
@@ -90,10 +90,10 @@ class PubsubTest(StanzaHandlerTest):
             </message>
         '''
 
-        self.dispatcher.RegisterHandler(
+        self.dispatcher.register_handler(
             *StanzaHandler(name='message',
                            callback=_on_message,
                            ns=NS_PUBSUB_EVENT,
                            priority=16))
 
-        self.dispatcher.ProcessNonBlocking(event)
+        self.dispatcher.process_data(event)

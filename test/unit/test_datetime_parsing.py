@@ -97,3 +97,7 @@ class TestDateTime(unittest.TestCase):
             result = parse_datetime(
                 time_string, check_utc=True, epoch=True)
             self.assertEqual(result, expected_value)
+
+
+if __name__ == '__main__':
+    unittest.main()

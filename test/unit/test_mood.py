@@ -41,9 +41,9 @@ class MoodTest(StanzaHandlerTest):
             </message>
         '''
 
-        self.dispatcher.RegisterHandler(
+        self.dispatcher.register_handler(
             *StanzaHandler(name='message',
                            callback=_on_message,
                            ns=NS_PUBSUB_EVENT))
 
-        self.dispatcher.ProcessNonBlocking(event)
+        self.dispatcher.process_data(event)

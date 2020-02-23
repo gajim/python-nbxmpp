@@ -61,12 +61,12 @@ class BookmarkTest(StanzaHandlerTest):
             </message>
         '''
 
-        self.dispatcher.RegisterHandler(
+        self.dispatcher.register_handler(
             *StanzaHandler(name='message',
                            callback=_on_message,
                            ns=NS_PUBSUB_EVENT))
 
-        self.dispatcher.ProcessNonBlocking(event)
+        self.dispatcher.process_data(event)
 
     def test_bookmark_2_parsing(self):
         def _on_message(_con, _stanza, properties):
@@ -106,9 +106,9 @@ class BookmarkTest(StanzaHandlerTest):
             </message>
         '''
 
-        self.dispatcher.RegisterHandler(
+        self.dispatcher.register_handler(
             *StanzaHandler(name='message',
                            callback=_on_message,
                            ns=NS_PUBSUB_EVENT))
 
-        self.dispatcher.ProcessNonBlocking(event)
+        self.dispatcher.process_data(event)

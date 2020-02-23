@@ -27,3 +27,7 @@ class TestHelpers(unittest.TestCase):
 
         timestamp = parse_delay(message, not_from=['romeo.com'])
         self.assertEqual(timestamp, 1031699305.0)
+
+
+if __name__ == '__main__':
+    unittest.main()
