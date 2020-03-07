@@ -221,7 +221,11 @@ class TCPConnection(Connection):
         data, self._read_buffer = utf8_decode(self._read_buffer)
 
         self._log_stanza(data, received=True)
-        self.notify('data-received', data)
+
+        try:
+            self.notify('data-received', data)
+        except Exception:
+            log.exception('Error while executing data-received:')
 
         self._read_async()
 
@@ -265,7 +269,10 @@ class TCPConnection(Connection):
             self._log_stanza(stanza, received=False)
         self._write_stanza_buffer = None
 
-        self.notify('data-sent', data)
+        try:
+            self.notify('data-sent', data)
+        except Exception:
+            log.exception('Error while executing data-sent:')
 
         if self._output_closed and not self._write_queue:
             self._check_for_shutdown()
