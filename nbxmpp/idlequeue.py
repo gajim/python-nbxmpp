@@ -65,13 +65,12 @@ def get_idlequeue():
     if os.name == 'nt':
         # gobject.io_add_watch does not work on windows
         return SelectIdleQueue()
-    else:
-        if HAVE_GLIB:
-            # Gajim's default Idlequeue
-            return GlibIdleQueue()
-        else:
-            # GUI less implementation
-            return SelectIdleQueue()
+
+    if HAVE_GLIB:
+        # Gajim's default Idlequeue
+        return GlibIdleQueue()
+    # GUI less implementation
+    return SelectIdleQueue()
 
 
 class IdleObject:
@@ -197,12 +196,12 @@ class IdleCommand(IdleObject):
     def pollin(self):
         try:
             res = self.pipe.read()
-        except Exception as e:
+        except Exception:
             res = ''
         if res == '':
             return self.pollend()
-        else:
-            self.result += res
+
+        self.result += res
         return None
 
     def read_timeout(self):
@@ -275,8 +274,8 @@ class IdleQueue:
             if not self.alarms[alarm_time]:
                 del self.alarms[alarm_time]
             return True
-        else:
-            return False
+
+        return False
 
     def remove_timeout(self, fd, timeout=None):
         """
@@ -449,8 +448,8 @@ class SelectIdleQueue(IdleQueue):
         union.update(self.error_fds)
         for fd in (union.keys()):
             try:
-                status = os.stat(fd)
-            except OSError as e:
+                _status = os.stat(fd)
+            except OSError:
                 # This file descriptor is invalid. Add to list for closure.
                 bad_fds.append(fd)
 

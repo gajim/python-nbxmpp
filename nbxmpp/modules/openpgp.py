@@ -81,13 +81,7 @@ class OpenPGP:
             return
 
     def _process_pubsub_openpgp(self, _client, stanza, properties):
-        if not properties.is_pubsub_event:
-            return
-
-        if properties.pubsub_event.node != NS_OPENPGP_PK:
-            return
-
-        '''
+        """
         <item>
             <public-keys-list xmlns='urn:xmpp:openpgp:0'>
               <pubkey-metadata
@@ -99,8 +93,15 @@ class OpenPGP:
                 date='1953-05-16T12:00:00Z'
                 />
             </public-keys-list>
-          </item>
-        '''
+        </item>
+        """
+
+        if not properties.is_pubsub_event:
+            return
+
+        if properties.pubsub_event.node != NS_OPENPGP_PK:
+            return
+
         item = properties.pubsub_event.item
         if item is None:
             # Retract, Deleted or Purged

@@ -81,8 +81,7 @@ class EmptyMappingTable:
     def map(self, c):
         if self._in_table_function(c):
             return None
-        else:
-            return c
+        return c
 
 
 class Profile:

@@ -1238,8 +1238,7 @@ class Protocol(Node):
         if protocol and tag:
             if name == 'message':
                 return Message(node=tag)
-            else:
-                return Protocol(node=tag)
+            return Protocol(node=tag)
         return tag
 
     def __setitem__(self, item, val):
@@ -1652,9 +1651,7 @@ class Iq(Protocol):
 class Hashes(Node):
     """
     Hash elements for various XEPs as defined in XEP-300
-    """
 
-    """
     RECOMENDED HASH USE:
     Algorithm     Support
     MD2           MUST NOT
@@ -1714,9 +1711,7 @@ class Hashes(Node):
 class Hashes2(Node):
     """
     Hash elements for various XEPs as defined in XEP-300
-    """
 
-    """
     RECOMENDED HASH USE:
     Algorithm     Support
     MD2           MUST NOT

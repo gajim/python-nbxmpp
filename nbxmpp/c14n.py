@@ -1,4 +1,3 @@
-# -*- coding:utf-8 -*-
 ## c14n.py
 ##
 ## Copyright (C) 2007-2008 Brendan Taylor <whateley AT gmail.com>
@@ -43,7 +42,8 @@ def c14n(node, is_buggy):
                 s = s + normalise_text(node.data[cnt])
             s = s + c14n(a, is_buggy)
             cnt += 1
-    if (len(node.data)-1) >= cnt: s = s + normalise_text(node.data[cnt])
+    if (len(node.data)-1) >= cnt:
+        s = s + normalise_text(node.data[cnt])
     if not node.kids and s.endswith('>'):
         s=s[:-1]+' />'
     else:

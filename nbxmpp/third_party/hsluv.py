@@ -120,15 +120,13 @@ def _dot_product(a, b):
 def _from_linear(c):
     if c <= 0.0031308:
         return 12.92 * c
-    else:
-        return 1.055 * math.pow(c, 0.416666666666666685) - 0.055
+    return 1.055 * math.pow(c, 0.416666666666666685) - 0.055
 
 
 def _to_linear(c):
     if c > 0.04045:
         return math.pow((c + 0.055) / 1.055, 2.4)
-    else:
-        return c / 12.92
+    return c / 12.92
 
 
 def xyz_to_rgb(_hx_tuple):
@@ -150,15 +148,13 @@ def rgb_to_xyz(_hx_tuple):
 def _y_to_l(y):
     if y <= epsilon:
         return y / refY * kappa
-    else:
-        return 116 * math.pow(y / refY, 0.333333333333333315) - 16
+    return 116 * math.pow(y / refY, 0.333333333333333315) - 16
 
 
 def _l_to_y(l):
     if l <= 8:
         return refY * l / kappa
-    else:
-        return refY * math.pow((l + 16) / 116, 3)
+    return refY * math.pow((l + 16) / 116, 3)
 
 
 def xyz_to_luv(_hx_tuple):

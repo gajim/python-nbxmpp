@@ -92,7 +92,8 @@ class Node:
             self.parent = parent
         self.nsp_cache = {}
         if nsp:
-            for k, v in nsp.items(): self.nsp_cache[k] = v
+            for k, v in nsp.items():
+                self.nsp_cache[k] = v
 
         if attrs is not None:
             for attr, val in attrs.items():
@@ -409,8 +410,7 @@ class Node:
         node = self.getTags(name, attrs, namespace=namespace, one=1)
         if node:
             return node
-        else:
-            return self.addChild(name, attrs, namespace=namespace)
+        return self.addChild(name, attrs, namespace=namespace)
 
     def setTagAttr(self, tag, attr, val, namespace=None):
         """
@@ -657,7 +657,8 @@ class NodeBuilder:
             log.debug("Got higher than dispatch level. Stream terminated?")
         self._dec_depth()
         self.last_is_data = 0
-        if self.__depth == 0: self.stream_footer_received()
+        if self.__depth == 0:
+            self.stream_footer_received()
 
     def handle_cdata(self, data):
         if self.last_is_data:

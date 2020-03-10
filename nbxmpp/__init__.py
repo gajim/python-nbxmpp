@@ -1,6 +1,7 @@
 import gi
-gi.require_version('Soup', '2.4')
 
 from .protocol import *
+
+gi.require_version('Soup', '2.4')
 
 __version__ = "0.9.94"
