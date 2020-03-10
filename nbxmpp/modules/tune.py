@@ -67,7 +67,7 @@ class Tune:
     def set_tune(self, data):
         item = Node('tune', {'xmlns': NS_TUNE})
         if data is None:
-            return item
+            return
 
         data = data._asdict()
         for tag, value in data.items():

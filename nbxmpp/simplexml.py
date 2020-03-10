@@ -337,6 +337,7 @@ class Node:
                 return nodes[0]
         if not one:
             return nodes
+        return None
 
     def iterTags(self, name, attrs=None, namespace=None):
         """
@@ -438,6 +439,7 @@ class Node:
 
         if self.parent is not None:
             return self.parent.getXmlLang()
+        return None
 
     def has_attr(self, key):
         """
@@ -496,8 +498,8 @@ class T:
     def __setattr__(self, attr, val):
         if isinstance(val, Node):
             Node.__init__(self.node.setTag(attr), node=val)
-        else:
-            return self.node.setTagData(attr, val)
+            return None
+        return self.node.setTagData(attr, val)
 
     def __delattr__(self, attr):
         return self.node.delChild(attr)
@@ -513,8 +515,8 @@ class NT(T):
     def __setattr__(self, attr, val):
         if isinstance(val, Node):
             self.node.addChild(attr, node=val)
-        else:
-            return self.node.addChild(attr, payload=[val])
+            return None
+        return self.node.addChild(attr, payload=[val])
 
 
 class NodeBuilder:

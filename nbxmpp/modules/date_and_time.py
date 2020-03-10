@@ -108,19 +108,19 @@ def create_tzinfo(hours=0, minutes=0, tz_string=None):
         hours, minutes = map(int, tz_string.split(':'))
     except Exception:
         log.warning('Wrong tz string: %s', tz_string)
-        return
+        return None
 
     if hours not in range(-24, 24):
         log.warning('Wrong tz string: %s', tz_string)
-        return
+        return None
 
     if minutes not in range(0, 59):
         log.warning('Wrong tz string: %s', tz_string)
-        return
+        return None
 
     if hours in (24, -24) and minutes != 0:
         log.warning('Wrong tz string: %s', tz_string)
-        return
+        return None
     return timezone(timedelta(hours=hours, minutes=minutes))
 
 

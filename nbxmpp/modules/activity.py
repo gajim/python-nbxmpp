@@ -81,6 +81,7 @@ class Activity:
         for sub in activity.getChildren():
             if sub.getName() in sub_activities:
                 return sub.getName()
+        return None
 
     def set_activity(self, data):
         item = Node('activity', {'xmlns': NS_ACTIVITY})

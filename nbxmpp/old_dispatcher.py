@@ -319,7 +319,7 @@ class XMPPDispatcher(PlugIn):
         if len(self._pendingExceptions) > 0:
             _pendingException = self._pendingExceptions.pop()
             sys.excepthook(*_pendingException)
-            return
+            return None
         try:
             self.Stream.Parse(data)
             # end stream:stream tag received
@@ -338,7 +338,7 @@ class XMPPDispatcher(PlugIn):
         if len(self._pendingExceptions) > 0:
             _pendingException = self._pendingExceptions.pop()
             sys.excepthook(*_pendingException)
-            return
+            return None
         if len(data) == 0:
             return '0'
         return len(data)

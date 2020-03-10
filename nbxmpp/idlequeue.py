@@ -203,6 +203,7 @@ class IdleCommand(IdleObject):
             return self.pollend()
         else:
             self.result += res
+        return None
 
     def read_timeout(self):
         self.end()

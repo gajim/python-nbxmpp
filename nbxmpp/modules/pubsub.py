@@ -214,10 +214,11 @@ def get_pubsub_items(stanza, node=None):
     pubsub_node = stanza.getTag('pubsub')
     items_node = pubsub_node.getTag('items')
     if node is not None and items_node.getAttr('node') != node:
-        return
+        return None
 
     if items_node is not None:
         return items_node.getTags('item')
+    return None
 
 
 def get_publish_options(config):

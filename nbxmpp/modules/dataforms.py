@@ -227,6 +227,7 @@ class DataField(ExtendedNode):
         media = self.getTag('media', namespace=NS_DATA_MEDIA)
         if media:
             return Media(media)
+        return None
 
     @media.setter
     def media(self, value):

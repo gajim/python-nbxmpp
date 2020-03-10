@@ -81,7 +81,7 @@ class Nickname:
     def _parse_nickname(stanza):
         nickname = stanza.getTag('nick', namespace=NS_NICK)
         if nickname is None:
-            return
+            return None
         return nickname.getData() or None
 
     def set_nickname(self, nickname):

@@ -168,20 +168,20 @@ class Bookmarks:
         jid = item.getAttr('id')
         if jid is None:
             log.warning('No id attr found')
-            return
+            return None
 
         try:
             jid = JID(jid)
         except Exception as error:
             log.warning('Invalid JID: %s', error)
             log.warning(item)
-            return
+            return None
 
         conference = item.getTag('conference', namespace=NS_BOOKMARKS_2)
         if conference is None:
             log.warning('No conference node found')
             log.warning(item)
-            return
+            return None
 
         autojoin = conference.getAttr('autojoin') in ('True', 'true', '1')
         name = conference.getAttr('name')
@@ -215,6 +215,7 @@ class Bookmarks:
         if type_ == BookmarkStoreType.PRIVATE:
             log.info('Request bookmarks (Private Storage)')
             return self.get_private_request(), {'type_': type_}
+        return None
 
     @callback
     def _bookmarks_received(self, stanza, type_):
@@ -418,3 +419,4 @@ class Bookmarks:
     def _on_private_store_result(_client, stanza):
         if not isResultNode(stanza):
             return raise_error(log.info, stanza)
+        return None

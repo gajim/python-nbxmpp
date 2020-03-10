@@ -967,6 +967,7 @@ class StreamErrorNode(Node):
         for tag in self.getChildren():
             if tag.getName() != 'text' and tag.getNamespace() == NS_XMPP_STREAMS:
                 return tag.getName()
+        return None
 
     def get_text(self, pref_lang=None):
         if pref_lang is not None:
@@ -1047,7 +1048,8 @@ class Protocol(Node):
         try:
             return self['to']
         except:
-            return None
+            pass
+        return None
 
     def getFrom(self):
         """
@@ -1056,7 +1058,8 @@ class Protocol(Node):
         try:
             return self['from']
         except:
-            return None
+            pass
+        return None
 
     def getTimestamp(self):
         """
@@ -1126,26 +1129,29 @@ class Protocol(Node):
         """
         errtag = self.getTag('error')
         if errtag is None:
-            return
+            return None
         for tag in errtag.getChildren():
             if tag.getName() != 'text' and tag.getNamespace() == NS_STANZAS:
                 return tag.getName()
+        return None
 
     def getAppError(self):
         errtag = self.getTag('error')
         if errtag is None:
-            return
+            return None
         for tag in errtag.getChildren():
             if tag.getName() != 'text' and tag.getNamespace() != NS_STANZAS:
                 return tag.getName()
+        return None
 
     def getAppErrorNamespace(self):
         errtag = self.getTag('error')
         if errtag is None:
-            return
+            return None
         for tag in errtag.getChildren():
             if tag.getName() != 'text' and tag.getNamespace() != NS_STANZAS:
                 return tag.getNamespace()
+        return None
 
     def getErrorMsg(self):
         """
@@ -1158,6 +1164,7 @@ class Protocol(Node):
                 if tag.getName() == 'text':
                     return tag.getData()
             return self.getError()
+        return None
 
     def getErrorCode(self):
         """
@@ -1546,6 +1553,7 @@ class Iq(Protocol):
         if children and self.getType() != 'error' and \
         children[0].getName() != 'error':
             return children[0]
+        return None
 
     def getQueryNS(self):
         """
@@ -1554,6 +1562,7 @@ class Iq(Protocol):
         tag = self.getQuery()
         if tag:
             return tag.getNamespace()
+        return None
 
     def getQuerynode(self):
         """
@@ -1562,6 +1571,7 @@ class Iq(Protocol):
         tag = self.getQuery()
         if tag:
             return tag.getAttr('node')
+        return None
 
     def getQueryPayload(self):
         """
@@ -1570,6 +1580,7 @@ class Iq(Protocol):
         tag = self.getQuery()
         if tag:
             return tag.getPayload()
+        return None
 
     def getQueryChildren(self):
         """
@@ -1578,6 +1589,7 @@ class Iq(Protocol):
         tag = self.getQuery()
         if tag:
             return tag.getChildren()
+        return None
 
     def getQueryChild(self, name=None):
         """
@@ -1586,7 +1598,7 @@ class Iq(Protocol):
         """
         query = self.getQuery()
         if not query:
-            return
+            return None
         for node in query.getChildren():
             if name is not None:
                 if node.getName() == name:
@@ -1594,6 +1606,7 @@ class Iq(Protocol):
             else:
                 if node.getName() != 'error':
                     return node
+        return None
 
     def setQuery(self, name=None):
         """
@@ -1830,6 +1843,7 @@ class Features(Node):
         hostname = self.getTag('hostname', namespace=NS_DOMAIN_BASED_NAME)
         if hostname is not None:
             return hostname.getData()
+        return None
 
     def has_bind(self):
         return self.getTag('bind', namespace=NS_BIND) is not None

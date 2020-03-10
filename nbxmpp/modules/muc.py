@@ -531,23 +531,25 @@ class MUC:
     @staticmethod
     def _parse_muc_user(muc_user):
         item = muc_user.getTag('item')
-        if item is not None:
-            item_dict = item.getAttrs(copy=True)
-            if 'role' in item_dict:
-                item_dict['role'] = Role(item_dict['role'])
-            else:
-                item_dict['role'] = None
+        if item is None:
+            return None
 
-            if 'affiliation' in item_dict:
-                item_dict['affiliation'] = Affiliation(item_dict['affiliation'])
-            else:
-                item_dict['affiliation'] = None
+        item_dict = item.getAttrs(copy=True)
+        if 'role' in item_dict:
+            item_dict['role'] = Role(item_dict['role'])
+        else:
+            item_dict['role'] = None
 
-            if 'jid' in item_dict:
-                item_dict['jid'] = JID(item_dict['jid'])
-            else:
-                item_dict['jid'] = None
+        if 'affiliation' in item_dict:
+            item_dict['affiliation'] = Affiliation(item_dict['affiliation'])
+        else:
+            item_dict['affiliation'] = None
 
-            item_dict['actor'] = item.getTagAttr('actor', 'nick')
-            item_dict['reason'] = item.getTagData('reason')
-            return MucUserData(**item_dict)
+        if 'jid' in item_dict:
+            item_dict['jid'] = JID(item_dict['jid'])
+        else:
+            item_dict['jid'] = None
+
+        item_dict['actor'] = item.getTagAttr('actor', 'nick')
+        item_dict['reason'] = item.getTagData('reason')
+        return MucUserData(**item_dict)

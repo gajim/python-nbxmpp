@@ -216,6 +216,7 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
             return NS_MAM_2
         if NS_MAM_1 in self.features:
             return NS_MAM_1
+        return None
 
     @property
     def has_mam_2(self):
@@ -251,12 +252,14 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
 
         if self.jid is not None:
             return self.jid.getNode()
+        return None
 
     @property
     def muc_identity_name(self):
         for identity in self.identities:
             if identity.category == 'conference':
                 return identity.name
+        return None
 
     @property
     def muc_room_name(self):

@@ -45,7 +45,7 @@ class PlugIn:
         log.info('Plugging %s __INTO__ %s' % (self, self._owner))
         if self.__class__.__name__ in owner.__dict__:
             log.debug('Plugging ignored: another instance already plugged.')
-            return
+            return None
         self._old_owners_methods=[]
         for method in self._exported_methods:
             if method.__name__ in owner.__dict__:
@@ -61,6 +61,7 @@ class PlugIn:
         # Execute hook
         if hasattr(self, 'plugin'):
             return self.plugin(owner, *args, **kwargs)
+        return None
 
     def PlugOut(self, *args, **kwargs):
         """
@@ -82,6 +83,7 @@ class PlugIn:
         if hasattr(self, 'plugout'):
             return self.plugout(*args, **kwargs)
         del self._owner
+        return None
 
     @classmethod
     def get_instance(cls, *args, **kwargs):

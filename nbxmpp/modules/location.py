@@ -66,7 +66,7 @@ class Location:
     def set_location(self, data):
         item = Node('geoloc', {'xmlns': NS_LOCATION})
         if data is None:
-            return item
+            return
 
         data = data._asdict()
         for tag, value in data:
