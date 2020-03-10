@@ -93,7 +93,7 @@ class Connection(Observable):
 
         if Gio.TlsCertificateFlags.UNKNOWN_CA in self._peer_certificate_errors:
             for accepted_certificate in self._accepted_certificates:
-                if certificate.is_same(accepted_certificate):
+                if self._peer_certificate.is_same(accepted_certificate):
                     self._peer_certificate_errors.discard(
                         Gio.TlsCertificateFlags.UNKNOWN_CA)
                     break
