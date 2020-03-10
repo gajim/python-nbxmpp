@@ -21,9 +21,7 @@ run-build:
   stage: build
   script:
     - rm -rf dist
-    - export FN="nbxmpp-"$(date +%F)
     - python3 setup.py sdist
-    - scp dist/nbxmpp-*.tar.gz panoramix:/var/www/gajim/downloads/snap/ci/$FN-$CI_COMMIT_SHA.tar.gz
 
   artifacts:
     name: "nbxmpp-$CI_COMMIT_SHA"
