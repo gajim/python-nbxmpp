@@ -458,7 +458,6 @@ class XMPPDispatcher(PlugIn):
                     log.warning(
                         'Unregister failed: %s for "%s" type->%s ns->%s(%s)',
                         handler, name, typ, ns, xmlns)
-                    pass
 
     def RegisterDefaultHandler(self, handler):
         """

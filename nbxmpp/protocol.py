@@ -592,13 +592,11 @@ class NodeProcessed(Exception):
     Exception that should be raised by handler when the handling should be
     stopped
     """
-    pass
 
 class StreamError(Exception):
     """
     Base exception class for stream errors
     """
-    pass
 
 class BadFormat(StreamError):
     pass
@@ -2209,4 +2207,3 @@ class DataForm(Node):
         Simple dictionary interface for setting datafields values by their names
         """
         return self.setField(name).setValue(val)
-

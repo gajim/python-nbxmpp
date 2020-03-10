@@ -93,7 +93,7 @@ class Node:
         self.nsp_cache = {}
         if nsp:
             for k, v in nsp.items(): self.nsp_cache[k] = v
-           
+
         if attrs is not None:
             for attr, val in attrs.items():
                 if attr == 'xmlns':
@@ -688,7 +688,6 @@ class NodeBuilder:
         up with the built node as argument. Can be redefined to convert incoming
         XML stanzas to program events
         """
-        pass
 
     def stream_header_received(self):
         """
@@ -706,7 +705,7 @@ class NodeBuilder:
         """
         Return True if at least one end tag was seen (at level)
         """
-        return self.__depth <= level and self.__max_depth > level
+        return self.__depth <= level < self.__max_depth
 
     def _inc_depth(self):
         self.__last_depth = self.__depth

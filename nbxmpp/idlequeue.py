@@ -86,25 +86,21 @@ class IdleObject:
         """
         Called on stream failure
         """
-        pass
 
     def pollin(self):
         """
         Called on new read event
         """
-        pass
 
     def pollout(self):
         """
         Called on new write event (connect in sockets is a pollout)
         """
-        pass
 
     def read_timeout(self):
         """
         Called when timeout happened
         """
-        pass
 
 
 class IdleCommand(IdleObject):

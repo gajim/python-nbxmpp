@@ -35,7 +35,6 @@ class ILookupTable:
         """
         Return whether character is in this table
         """
-        pass
 
 
 class IMappingTable:
@@ -47,7 +46,6 @@ class IMappingTable:
         """
         Return mapping for character
         """
-        pass
 
 
 class LookupTableFromFunction:
