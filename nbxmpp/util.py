@@ -21,7 +21,6 @@ import weakref
 import hashlib
 import uuid
 import binascii
-import ipaddress
 import os
 import re
 from collections import defaultdict
@@ -29,7 +28,6 @@ from collections import defaultdict
 from functools import wraps
 from functools import lru_cache
 
-import precis_i18n.codec
 from gi.repository import Gio
 
 from nbxmpp.protocol import DiscoInfoMalformed
@@ -37,7 +35,6 @@ from nbxmpp.protocol import isErrorNode
 from nbxmpp.protocol import NS_DATA
 from nbxmpp.protocol import NS_HTTPUPLOAD_0
 from nbxmpp.const import GIO_TLS_ERRORS
-from nbxmpp.const import StreamState
 from nbxmpp.protocol import NS_STREAMS
 from nbxmpp.protocol import NS_CLIENT
 from nbxmpp.protocol import NS_FRAMING

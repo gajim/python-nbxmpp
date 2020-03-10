@@ -20,7 +20,6 @@ different handlers to different XMPP stanzas and namespaces
 """
 
 import sys
-import locale
 import re
 import uuid
 import logging
