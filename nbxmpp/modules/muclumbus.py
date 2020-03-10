@@ -18,8 +18,6 @@
 import logging
 import json
 
-import gi
-gi.require_version('Soup', '2.4')
 from gi.repository import Soup
 
 from nbxmpp.protocol import NS_MUCLUMBUS
