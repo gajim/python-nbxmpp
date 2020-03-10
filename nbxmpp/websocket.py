@@ -128,7 +128,7 @@ class WebsocketConnection(Connection):
     def _on_websocket_closing(_websocket):
         log.info('Closing')
 
-    def _on_websocket_error(self, websocket, error):
+    def _on_websocket_error(self, _websocket, error):
         log.error(error)
         if self._state not in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
             self._finalize('disconnected')

@@ -127,6 +127,7 @@ class GioResolver(metaclass=Singleton):
         for result in result_list:
             if result.startswith('_xmpp-client-websocket'):
                 return result.split('=')[1]
+        return None
 
 
 if __name__ == '__main__':

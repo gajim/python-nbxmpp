@@ -88,7 +88,7 @@ class Connection(Observable):
 
         if self._ignored_tls_errors:
             log.warning('Ignore TLS certificate errors: %s',
-                     self._ignored_tls_errors)
+                        self._ignored_tls_errors)
             self._peer_certificate_errors -= self._ignored_tls_errors
 
         if Gio.TlsCertificateFlags.UNKNOWN_CA in self._peer_certificate_errors:
