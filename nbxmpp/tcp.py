@@ -55,6 +55,7 @@ class TCPConnection(Connection):
         self._connect_cancellable = Gio.Cancellable()
         self._read_cancellable = Gio.Cancellable()
 
+        self._tls_handshake_in_progress = False
         self._input_closed = False
         self._output_closed = False
 
@@ -102,6 +103,7 @@ class TCPConnection(Connection):
         self._peer_certificate = connection.props.peer_certificate
         self._peer_certificate_errors = convert_tls_error_flags(
             connection.props.peer_certificate_errors)
+        self._tls_handshake_in_progress = False
         self.notify('certificate-set')
 
     def _on_connect_finished(self, client, result, _user_data):
@@ -153,6 +155,7 @@ class TCPConnection(Connection):
 
     def start_tls_negotiation(self):
         log.info('Start TLS negotiation')
+        self._tls_handshake_in_progress = True
         remote_address = self._con.get_remote_address()
         identity = Gio.NetworkAddress.new(self._address.domain,
                                           remote_address.props.port)
@@ -192,6 +195,12 @@ class TCPConnection(Connection):
                     return
 
             quark = GLib.quark_try_string('g-tls-error-quark')
+            if error.matches(quark, Gio.TlsError.MISC):
+                if self._tls_handshake_in_progress:
+                    log.error('Handshake failed: %s', error)
+                    self._finalize('connection-failed')
+                    return
+
             if error.matches(quark, Gio.TlsError.EOF):
                 log.info('Incoming stream closed: TLS EOF')
                 self._finalize('disconnected')

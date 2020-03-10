@@ -384,7 +384,6 @@ class Client(Observable):
         return self.send_stanza(stanza)
 
     def _on_connected(self, _connection, _signal_name):
-        self._connect_successful = True
         self.set_state(StreamState.CONNECTED)
 
     def _on_disconnected(self, _connection, _signal_name):
@@ -544,6 +543,14 @@ class Client(Observable):
                                             'stanza-malformed',
                                             'Invalid stream header')
                 return
+
+            if (self._stream_secure or
+                    self.current_connection_type == ConnectionType.PLAIN):
+                # TLS Negotiation succeeded or we are connected PLAIN
+                # We received the stream header and consider this as
+                # successfully connected, this means we will not try
+                # other connection methods if an error happensafterwards
+                self._connect_successful = True
 
             self.state = StreamState.WAIT_FOR_FEATURES
 
