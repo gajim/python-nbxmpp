@@ -307,7 +307,7 @@ class Client(Observable):
     def connect(self):
         if self._state != StreamState.DISCONNECTED:
             log.error('Stream can\'t reconnect, stream state: %s', self._state)
-            return         
+            return
 
         if self._connect_successful:
             log.info('Reconnect')
