@@ -158,27 +158,33 @@ class Muclumbus:
                                items=results)
 
     def _http_search_received(self, _session, message, callback, user_data):
+
+        def exec_callback(muclumbus_result):
+            if user_data is None:
+                callback(muclumbus_result)
+            else:
+                callback(muclumbus_result, user_data)
+
         soup_body = message.get_property('response-body')
 
         if message.status_code != 200:
             log.warning(soup_body.data)
-            return MuclumbusResult(first=None,
-                                   last=None,
-                                   max=None,
-                                   end=True,
-                                   items=[])
-
+            exec_callback(MuclumbusResult(first=None,
+                                          last=None,
+                                          max=None,
+                                          end=True,
+                                          items=[]))
 
         response = json.loads(soup_body.data)
 
         result = response['result']
         items = result.get('items')
         if items is None:
-            return MuclumbusResult(first=None,
-                                   last=None,
-                                   max=None,
-                                   end=True,
-                                   items=[])
+            exec_callback(MuclumbusResult(first=None,
+                                          last=None,
+                                          max=None,
+                                          end=True,
+                                          items=[]))
 
         results = []
         for item in items:
@@ -196,13 +202,8 @@ class Muclumbus:
                               is_open=item['is_open'],
                               anonymity_mode=anonymity_mode))
 
-        muclumbus_result = MuclumbusResult(first=None,
-                                           last=result['last'],
-                                           max=None,
-                                           end=not result['more'],
-                                           items=results)
-
-        if user_data is None:
-            callback(muclumbus_result)
-        else:
-            callback(muclumbus_result, user_data)
+        exec_callback(MuclumbusResult(first=None,
+                                      last=result['last'],
+                                      max=None,
+                                      end=not result['more'],
+                                      items=results))
