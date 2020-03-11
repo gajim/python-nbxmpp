@@ -16,7 +16,6 @@
 
 * [Downloads](https://dev.gajim.org/gajim/python-nbxmpp/tags)
 * You can also clone the [git repository](https://dev.gajim.org/gajim/python-nbxmpp.git)
-* [Examples](https://dev.gajim.org/gajim/python-nbxmpp/tree/master/doc/examples)
 
 ### Setup
 
@@ -26,4 +25,4 @@ Run the following:
 
 ### Usage
 
-To use python-nbxmpp, `import nbxmpp` in your application. Have a look at the [Examples](https://dev.gajim.org/gajim/python-nbxmpp/tree/master/doc/examples) in the doc folder.
+To use python-nbxmpp, `import nbxmpp` in your application.
