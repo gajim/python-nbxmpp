@@ -1021,8 +1021,10 @@ class Protocol(Node):
             self.setTo(self['to'])
         if self['from']:
             self.setFrom(self['from'])
-        if node and type(self) == type(node) and \
-        self.__class__ == node.__class__ and 'id' in self.attrs:
+        if (node and
+                isinstance(node, Protocol) and
+                self.__class__ == node.__class__
+                and 'id' in self.attrs):
             del self.attrs['id']
         self.timestamp = None
         for d in self.getTags('delay', namespace=NS_DELAY2):
@@ -1047,7 +1049,7 @@ class Protocol(Node):
         """
         try:
             return self['to']
-        except:
+        except Exception:
             pass
         return None
 
@@ -1057,7 +1059,7 @@ class Protocol(Node):
         """
         try:
             return self['from']
-        except:
+        except Exception:
             pass
         return None
 
@@ -1203,9 +1205,9 @@ class Protocol(Node):
                 error = ErrorNode(_errorcodes[str(code)], text=error)
             else:
                 error = ErrorNode(ERR_UNDEFINED_CONDITION, code=code,
-                    typ='cancel', text=error)
-        elif type(error)  == str:
-            error=ErrorNode(error)
+                                  typ='cancel', text=error)
+        elif isinstance(error, str):
+            error = ErrorNode(error)
         self.setType('error')
         self.addChild(node=error)
 
@@ -1677,7 +1679,7 @@ class Hashes(Node):
         hl = None
         hash_ = None
         # file_string can be a string or a file
-        if type(file_string) == str: # if it is a string
+        if isinstance(file_string, str):
             if algo == 'sha-1':
                 hl = hashlib.sha1()
             elif algo == 'md5':

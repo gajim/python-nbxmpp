@@ -185,7 +185,7 @@ class IdleCommand(IdleObject):
         self.idlequeue.unplug_idle(self.fd)
         try:
             self.pipe.close()
-        except:
+        except Exception:
             pass
 
     def pollend(self):

@@ -673,14 +673,13 @@ class XMPPDispatcher(PlugIn):
         sure stanzas get ID and from tag.
         """
         ID = None
-        if type(stanza) != str:
-            if isinstance(stanza, Protocol):
+        if isinstance(stanza, Protocol):
+            ID = stanza.getID()
+            if ID is None:
+                stanza.setID(self.getAnID())
                 ID = stanza.getID()
-                if ID is None:
-                    stanza.setID(self.getAnID())
-                    ID = stanza.getID()
-                if self._owner._registered_name and not stanza.getAttr('from'):
-                    stanza.setAttr('from', self._owner._registered_name)
+            if self._owner._registered_name and not stanza.getAttr('from'):
+                stanza.setAttr('from', self._owner._registered_name)
 
         self._owner.Connection.send(stanza, now)
 

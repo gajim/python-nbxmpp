@@ -305,7 +305,7 @@ class Node:
         """
         try:
             return self.getTag(tag, namespace=namespace).attrs[attr]
-        except:
+        except Exception:
             return None
 
     def getTagData(self, tag):
