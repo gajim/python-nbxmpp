@@ -79,7 +79,7 @@ def _max_safe_chroma_for_l(l):
         _g = _g + 1
         length = _distance_line_from_origin(bounds[i])
         if math.isnan(_hx_min):
-            _hx_min = _hx_min
+            pass
         elif math.isnan(length):
             _hx_min = length
         else:
@@ -98,7 +98,7 @@ def _max_chroma_for_lh(l, h):
         length = _length_of_ray_until_intersect(hrad, bound)
         if length >= 0:
             if math.isnan(_hx_min):
-                _hx_min = _hx_min
+                pass
             elif math.isnan(length):
                 _hx_min = length
             else:

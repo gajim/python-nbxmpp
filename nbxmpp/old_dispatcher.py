@@ -247,7 +247,7 @@ class XMPPDispatcher(PlugIn):
         self.RegisterEventHandler(self._owner._caller._event_dispatcher)
         self._register_modules()
 
-    def plugin(self, owner):
+    def plugin(self, _owner):
         """
         Plug the Dispatcher instance into Client class instance and send initial
         stream header. Used internally
@@ -343,7 +343,7 @@ class XMPPDispatcher(PlugIn):
             return '0'
         return len(data)
 
-    def RegisterNamespace(self, xmlns, order='info'):
+    def RegisterNamespace(self, xmlns):
         """
         Create internal structures for newly registered namespace
 
@@ -356,7 +356,7 @@ class XMPPDispatcher(PlugIn):
         self.RegisterProtocol('unknown', Protocol, xmlns=xmlns)
         self.RegisterProtocol('default', Protocol, xmlns=xmlns)
 
-    def RegisterProtocol(self, tag_name, proto, xmlns=None, order='info'):
+    def RegisterProtocol(self, tag_name, proto, xmlns=None):
         """
         Used to declare some top-level stanza name to dispatcher
 
@@ -406,9 +406,9 @@ class XMPPDispatcher(PlugIn):
             handler, name, typ, ns, xmlns, priority)
 
         if xmlns not in self.handlers:
-            self.RegisterNamespace(xmlns, 'warn')
+            self.RegisterNamespace(xmlns)
         if name not in self.handlers[xmlns]:
-            self.RegisterProtocol(name, Protocol, xmlns, 'warn')
+            self.RegisterProtocol(name, Protocol, xmlns)
 
         specific = typ + ns
         if specific not in self.handlers[xmlns][name]:

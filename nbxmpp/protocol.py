@@ -1919,7 +1919,7 @@ class Error(Protocol):
         if node.getType() == 'error':
             self.__str__ = self.__dupstr__
 
-    def __dupstr__(self, dup1=None, dup2=None):
+    def __dupstr__(self, _dup1=None, _dup2=None):
         """
         Dummy function used as preventor of creating error node in reply to error
         node. I.e. you will not be able to serialise "double" error into string.

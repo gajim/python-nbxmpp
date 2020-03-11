@@ -97,7 +97,7 @@ def call_on_response(cb):
             if isinstance(stanza, tuple):
                 stanza, attrs = stanza
             else:
-                stanza, attrs = stanza, {}
+                attrs = {}
 
             if user_data is not None:
                 attrs['user_data'] = user_data

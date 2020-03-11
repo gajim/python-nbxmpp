@@ -672,7 +672,7 @@ class NodeBuilder:
     def handle_invalid_xmpp_element(*args):
         raise ExpatError('Found invalid xmpp stream element: %s' % str(args))
 
-    def handle_namespace_start(self, prefix, uri):
+    def handle_namespace_start(self, _prefix, _uri):
         """
         XML Parser callback. Used internally
         """
