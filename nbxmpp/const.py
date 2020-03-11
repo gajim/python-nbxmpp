@@ -320,9 +320,9 @@ class AdHocNoteType(Enum):
 
 
 class ConnectionType(Enum):
-    DIRECT_TLS = 'ssl'
-    START_TLS = 'tls'
-    PLAIN = 'plain'
+    DIRECT_TLS = 'DIRECT TLS'
+    START_TLS = 'START TLS'
+    PLAIN = 'PLAIN'
 
     @property
     def is_direct_tls(self):
