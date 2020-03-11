@@ -21,7 +21,7 @@
 
 Run the following:
 
-    sudo python setup.py install
+    pip install .
 
 ### Usage
 
