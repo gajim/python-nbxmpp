@@ -187,7 +187,7 @@ class SASL:
 
     def _on_failure(self, stanza):
         text = stanza.getTagData('text')
-        reason = 'unknown-error'
+        reason = 'not-authorized'
         childs = stanza.getChildren()
         for child in childs:
             name = child.getName()
