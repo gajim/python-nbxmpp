@@ -415,6 +415,9 @@ class Client(Observable):
         self.disconnect()
 
     def _on_parsing_error(self, _dispatcher, _signal_name, error):
+        if self._state == StreamState.DISCONNECTING:
+            # Don't notify about parsing errors if we already ended the stream
+            return
         self._disconnect_with_error(StreamError.PARSING, 'parsing-error', error)
 
     def _on_stream_end(self, _dispatcher, _signal_name, error):
@@ -604,6 +607,9 @@ class Client(Observable):
             self._stream_authenticated = True
             if self._mode.is_login_test:
                 self.notify('login-successful')
+                # Reset parser because we will receive a new stream header
+                # which will otherwise lead to a parsing error
+                self._dispatcher.reset_parser()
                 self.disconnect()
                 return
 
