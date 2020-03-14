@@ -180,6 +180,10 @@ class Client(Observable):
         self._sasl.set_password(password)
 
     @property
+    def password(self):
+        return self._sasl.password
+
+    @property
     def peer_certificate(self):
         return self._peer_certificate, self._peer_certificate_errors
 
@@ -255,6 +259,10 @@ class Client(Observable):
     def set_proxy(self, proxy):
         self._proxy = proxy
         self._dispatcher.get_module('Muclumbus').set_proxy(proxy)
+
+    @property
+    def proxy(self):
+        return self._proxy
 
     def get_bound_jid(self):
         return self._jid

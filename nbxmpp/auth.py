@@ -65,6 +65,10 @@ class SASL:
     def set_password(self, password):
         self._password = password
 
+    @property
+    def password(self):
+        return self._password
+
     def delegate(self, stanza):
         if stanza.getNamespace() != NS_SASL:
             return
