@@ -662,7 +662,7 @@ class Client(Observable):
 
         elif self.is_stream_secure:
             if self._mode.is_register:
-                if features.has_register:
+                if features.has_register():
                     self.state = StreamState.ACTIVE
                     self._dispatcher.set_dispatch_callback(None)
                     self.notify('connected')
