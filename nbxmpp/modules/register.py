@@ -45,8 +45,8 @@ class Register:
 
     @call_on_response('_default_response')
     def unregister(self):
-        hostname = self._client.get_bound_jid().getDomain()
-        iq = Iq('set', to=hostname)
+        domain = self._client.get_bound_jid().getDomain()
+        iq = Iq('set', to=domain)
         query = iq.setQuery()
         query.setNamespace(NS_REGISTER)
         query.addChild('remove')
@@ -55,7 +55,7 @@ class Register:
     @call_on_response('_on_register_form')
     def request_register_form(self, jid=None):
         if jid is None:
-            jid = self._client.Server
+            jid = self._client.domain
         return Iq('get', NS_REGISTER, to=jid)
 
     @callback
@@ -124,9 +124,9 @@ class Register:
 
     @call_on_response('_on_password_change')
     def change_password(self, password):
-        hostname = self._client.get_bound_jid().getDomain()
+        domain = self._client.get_bound_jid().getDomain()
         username = self._client.get_bound_jid().getNode()
-        iq = Iq('set', NS_REGISTER, to=hostname)
+        iq = Iq('set', NS_REGISTER, to=domain)
         query = iq.getQuery()
         query.setTagData('username', username)
         query.setTagData('password', password)
@@ -148,7 +148,7 @@ class Register:
 
     @call_on_response('_default_response')
     def change_password_with_form(self, form):
-        hostname = self._client.get_bound_jid().getDomain()
-        iq = Iq('set', NS_REGISTER, to=hostname)
+        domain = self._client.get_bound_jid().getDomain()
+        iq = Iq('set', NS_REGISTER, to=domain)
         iq.setQueryPayload(form)
         return iq
