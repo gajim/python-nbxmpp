@@ -38,6 +38,7 @@ class TCPConnection(Connection):
         Connection.__init__(self, *args, **kwargs)
 
         self._client = Gio.SocketClient.new()
+        self._client.set_timeout(10)
 
         if self._address.proxy is not None:
             self._proxy_resolver = self._address.proxy.get_resolver()
