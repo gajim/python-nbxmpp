@@ -113,7 +113,8 @@ class PubSub:
         jid = stanza.getFrom()
         pubsub = stanza.getTag('pubsub', namespace=NS_PUBSUB)
         if pubsub is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            # XEP-0060: IQ payload is not mandatory on result
+            return PubSubPublishResult(jid, None, None)
 
         publish = pubsub.getTag('publish')
         if publish is None:
