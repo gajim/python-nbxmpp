@@ -118,7 +118,7 @@ class TCPConnection(Connection):
             else:
                 raise ValueError('Address must be a service or host')
         except GLib.Error as error:
-            log.error('Connect Error: %s', error)
+            log.info('Connect Error: %s', error)
             self._finalize('connection-failed')
             return
 

@@ -72,7 +72,7 @@ class WebsocketConnection(Connection):
                 self._finalize('disconnected')
                 return
 
-            log.error('Connection Error: %s', error)
+            log.info('Connection Error: %s', error)
             self._finalize('connection-failed')
             return
 
