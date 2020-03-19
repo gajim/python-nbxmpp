@@ -167,7 +167,6 @@ class TCPConnection(Connection):
 
         if self._address.type == ConnectionType.DIRECT_TLS:
             tls_client.set_advertised_protocols(['xmpp-client'])
-        tls_client.set_rehandshake_mode(Gio.TlsRehandshakeMode.NEVER)
         tls_client.set_validation_flags(Gio.TlsCertificateFlags.VALIDATE_ALL)
         tls_client.connect('accept-certificate', self._check_certificate)
         tls_client.connect('notify::peer-certificate', self._on_certificate_set)
