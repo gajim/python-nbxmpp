@@ -104,8 +104,7 @@ class GioResolver(metaclass=Singleton):
         try:
             results = resolver.lookup_records_finish(result)
         except GLib.Error as error:
-            log.warning(error.message)
-            log.warning(error.code)
+            log.info(error)
             request.finalize()
             return
 
