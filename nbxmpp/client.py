@@ -638,9 +638,6 @@ class Client(Observable):
         elif self.state == StreamState.WAIT_FOR_BIND:
             self._on_bind(stanza)
 
-        elif self.state == StreamState.BIND_FAILED:
-            self._disconnect_with_error(StreamError.BIND, 'bind-failed')
-
         elif self.state == StreamState.BIND_SUCCESSFUL:
             self._smacks.send_enable()
             self._dispatcher.set_dispatch_callback(None)
@@ -649,9 +646,6 @@ class Client(Observable):
 
         elif self.state == StreamState.WAIT_FOR_SESSION:
             self._on_session(stanza)
-
-        elif self.state == StreamState.SESSION_FAILED:
-            self._disconnect_with_error(StreamError.SESSION, 'session-failed')
 
         elif self.state == StreamState.WAIT_FOR_RESUMED:
             self._smacks.delegate(stanza)
@@ -735,12 +729,9 @@ class Client(Observable):
 
     def _on_bind(self, stanza):
         if not isResultNode(stanza):
-            self._log.error('Binding failed: %s.', stanza.getTag('error'))
-            if stanza.getError() == 'conflict' and self.resource is not None:
-                self._log.info('Try to request server generated resource')
-                self._start_bind()
-                return
-            self.set_state(StreamState.BIND_FAILED)
+            self._disconnect_with_error(StreamError.BIND,
+                                        stanza.getError(),
+                                        stanza.getErrorMsg())
             return
 
         jid = stanza.getTag('bind').getTagData('jid')
@@ -762,7 +753,9 @@ class Client(Observable):
             self.set_state(StreamState.BIND_SUCCESSFUL)
         else:
             self._log.error('Session open failed')
-            self.set_state(StreamState.SESSION_FAILED)
+            self._disconnect_with_error(StreamError.SESSION,
+                                        stanza.getError(),
+                                        stanza.getErrorMsg())
 
     def _ping(self):
         iq = Iq('get', to=self._jid.getBare())
