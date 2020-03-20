@@ -117,13 +117,13 @@ class Client(Observable):
 
         self._ping_source_id = None
 
-        self._dispatcher = StanzaDispatcher(self, self._log_context)
+        self._dispatcher = StanzaDispatcher(self)
         self._dispatcher.subscribe('before-dispatch', self._on_before_dispatch)
         self._dispatcher.subscribe('parsing-error', self._on_parsing_error)
         self._dispatcher.subscribe('stream-end', self._on_stream_end)
 
-        self._smacks = Smacks(self, self._log_context)
-        self._sasl = SASL(self, self._log_context)
+        self._smacks = Smacks(self)
+        self._sasl = SASL(self)
 
         self._state = StreamState.DISCONNECTED
 

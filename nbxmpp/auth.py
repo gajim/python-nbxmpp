@@ -46,7 +46,7 @@ class SASL:
     """
     Implements SASL authentication.
     """
-    def __init__(self, client, log_context):
+    def __init__(self, client):
         self._client = client
 
         self._password = None
@@ -56,7 +56,7 @@ class SASL:
         self._method = None
         self._error = None
 
-        self._log = LogAdapter(log, {'context': log_context})
+        self._log = LogAdapter(log, {'context': client.log_context})
 
     @property
     def error(self):

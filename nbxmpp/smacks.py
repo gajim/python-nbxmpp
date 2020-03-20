@@ -37,7 +37,7 @@ class Smacks:
     number of handled stanzas
     """
 
-    def __init__(self, client, log_context):
+    def __init__(self, client):
         self._client = client
         self._out_h = 0  # Outgoing stanzas handled
         self._in_h = 0  # Incoming stanzas handled
@@ -59,7 +59,7 @@ class Smacks:
         self._session_id = None
         self._location = None
 
-        self._log = LogAdapter(log, {'context': log_context})
+        self._log = LogAdapter(log, {'context': client.log_context})
 
         self.register_handlers()
 

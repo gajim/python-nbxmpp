@@ -101,14 +101,14 @@ class StanzaDispatcher(Observable):
 
     """
 
-    def __init__(self, client, log_context):
+    def __init__(self, client):
         Observable.__init__(self, log)
         self._client = client
         self._modules = {}
         self._parser = None
         self._websocket_stream_error = None
 
-        self._log = LogAdapter(log, {'context': log_context})
+        self._log = LogAdapter(log, {'context': client.log_context})
 
         self._handlers = {}
 
