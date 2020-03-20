@@ -118,10 +118,7 @@ class Connection(Observable):
 
     def _log_stanza(self, data, received=True):
         direction = 'RECEIVED' if received else 'SENT'
-        message = ('::::: DATA %s ::::'
-                   '\n_____________\n'
-                   '%s'
-                   '\n_____________')
+        message = ('::::: DATA %s ::::\n\n%s\n')
         self._log.info(message, direction, data)
 
     def start_tls_negotiation(self):
