@@ -116,16 +116,14 @@ class WebsocketConnection(Connection):
 
         self.notify('data-received', data)
 
-    @staticmethod
-    def _on_websocket_pong(_websocket, _message):
+    def _on_websocket_pong(self, _websocket, _message):
         self._log.info('Pong received')
 
     def _on_websocket_closed(self, websocket):
         self._log.info('Closed %s', get_websocket_close_string(websocket))
         self._finalize('disconnected')
 
-    @staticmethod
-    def _on_websocket_closing(_websocket):
+    def _on_websocket_closing(self, _websocket):
         self._log.info('Closing')
 
     def _on_websocket_error(self, _websocket, error):
