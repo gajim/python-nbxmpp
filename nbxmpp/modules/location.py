@@ -15,20 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_LOCATION
 from nbxmpp.protocol import NS_PUBSUB_EVENT
 from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import LocationData
 from nbxmpp.const import LOCATION_DATA
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.location')
 
-
-class Location:
+class Location(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -51,7 +50,8 @@ class Location:
 
         location_node = item.getTag('geoloc', namespace=NS_LOCATION)
         if not location_node.getChildren():
-            log.info('Received location: %s - no location set', properties.jid)
+            self._log.info('Received location: %s - no location set',
+                           properties.jid)
             return
 
         location_dict = {}
@@ -59,7 +59,7 @@ class Location:
             location_dict[node] = location_node.getTagData(node)
         data = LocationData(**location_dict)
         pubsub_event = properties.pubsub_event._replace(data=data)
-        log.info('Received location: %s - %s', properties.jid, data)
+        self._log.info('Received location: %s - %s', properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 

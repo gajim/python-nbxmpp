@@ -15,20 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_CAPTCHA
 from nbxmpp.protocol import NS_DATA
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import CaptchaData
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.modules.bits_of_binary import parse_bob_data
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.captcha')
 
-
-class Captcha:
+class Captcha(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -37,16 +36,15 @@ class Captcha:
                           priority=40),
         ]
 
-    @staticmethod
-    def _process_captcha(_client, stanza, properties):
+    def _process_captcha(self, _client, stanza, properties):
         captcha = stanza.getTag('captcha', namespace=NS_CAPTCHA)
         if captcha is None:
             return
 
         data_form = captcha.getTag('x', namespace=NS_DATA)
         if data_form is None:
-            log.warning('Invalid captcha form')
-            log.warning(stanza)
+            self._log.warning('Invalid captcha form')
+            self._log.warning(stanza)
             return
 
         form = extend_form(node=data_form)

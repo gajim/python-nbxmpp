@@ -21,6 +21,7 @@ from gi.repository import Gio
 
 from nbxmpp.const import TCPState
 from nbxmpp.util import Observable
+from nbxmpp.util import LogAdapter
 
 log = logging.getLogger('nbxmpp.connection')
 
@@ -39,12 +40,16 @@ class Connection(Observable):
         disconnected
     '''
     def __init__(self,
+                 log_context,
                  address,
                  accepted_certificates,
                  ignore_tls_errors,
                  ignored_tls_errors,
                  client_cert):
-        Observable.__init__(self, log)
+
+        self._log = LogAdapter(log, {'context': log_context})
+
+        Observable.__init__(self, self._log)
 
         self._client_cert = client_cert
         self._address = address
@@ -72,23 +77,23 @@ class Connection(Observable):
 
     @state.setter
     def state(self, value):
-        log.info('Set Connection State: %s', value)
+        self._log.info('Set Connection State: %s', value)
         self._state = value
 
     def _accept_certificate(self):
         if not self._peer_certificate_errors:
             return True
 
-        log.info('Found TLS certificate errors: %s',
-                 self._peer_certificate_errors)
+        self._log.info('Found TLS certificate errors: %s',
+                       self._peer_certificate_errors)
 
         if self._ignore_tls_errors:
-            log.warning('Ignore all errors')
+            self._log.warning('Ignore all errors')
             return True
 
         if self._ignored_tls_errors:
-            log.warning('Ignore TLS certificate errors: %s',
-                        self._ignored_tls_errors)
+            self._log.warning('Ignore TLS certificate errors: %s',
+                              self._ignored_tls_errors)
             self._peer_certificate_errors -= self._ignored_tls_errors
 
         if Gio.TlsCertificateFlags.UNKNOWN_CA in self._peer_certificate_errors:
@@ -111,14 +116,13 @@ class Connection(Observable):
     def send(self, stanza, now=False):
         raise NotImplementedError
 
-    @staticmethod
-    def _log_stanza(data, received=True):
+    def _log_stanza(self, data, received=True):
         direction = 'RECEIVED' if received else 'SENT'
         message = ('::::: DATA %s ::::'
                    '\n_____________\n'
                    '%s'
                    '\n_____________')
-        log.info(message, direction, data)
+        self._log.info(message, direction, data)
 
     def start_tls_negotiation(self):
         raise NotImplementedError

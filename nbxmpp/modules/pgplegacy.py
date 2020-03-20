@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_SIGNED
 from nbxmpp.protocol import NS_ENCRYPTED
 from nbxmpp.structs import StanzaHandler
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.signed')
 
-
-class PGPLegacy:
+class PGPLegacy(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -46,19 +45,18 @@ class PGPLegacy:
 
         properties.signed = signed.getData()
 
-    @staticmethod
-    def _process_pgplegacy_message(_client, stanza, properties):
+    def _process_pgplegacy_message(self, _client, stanza, properties):
         pgplegacy = stanza.getTag('x', namespace=NS_ENCRYPTED)
         if pgplegacy is None:
-            log.warning('No x node found')
-            log.warning(stanza)
+            self._log.warning('No x node found')
+            self._log.warning(stanza)
             return
 
         data = pgplegacy.getData()
         if not data:
-            log.warning('No data in x node found')
-            log.warning(stanza)
+            self._log.warning('No data in x node found')
+            self._log.warning(stanza)
             return
 
-        log.info('Encrypted message received')
+        self._log.info('Encrypted message received')
         properties.pgp_legacy = data

@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_EME
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import EMEData
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.eme')
 
-
-class EME:
+class EME(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -34,8 +33,7 @@ class EME:
                           priority=40)
         ]
 
-    @staticmethod
-    def _process_eme(_client, stanza, properties):
+    def _process_eme(self, _client, stanza, properties):
         encryption = stanza.getTag('encryption', namespace=NS_EME)
         if encryption is None:
             return
@@ -43,8 +41,8 @@ class EME:
         name = encryption.getAttr('name')
         namespace = encryption.getAttr('namespace')
         if namespace is None:
-            log.warning('No namespace on message')
+            self._log.warning('No namespace on message')
             return
 
         properties.eme = EMEData(name=name, namespace=namespace)
-        log.info('Found data: %s', properties.eme)
+        self._log.info('Found data: %s', properties.eme)

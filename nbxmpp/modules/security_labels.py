@@ -15,18 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_SECLABEL
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import SecurityLabel
 from nbxmpp.structs import DisplayMarking
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.security_labels')
 
-
-class SecurityLabels:
+class SecurityLabels(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -46,8 +45,8 @@ class SecurityLabels:
 
         label = displaymarking.getData()
         if not label:
-            log.warning('No label found')
-            log.warning(stanza)
+            self._log.warning('No label found')
+            self._log.warning(stanza)
             return
 
         fgcolor = displaymarking.getAttr('fgcolor')

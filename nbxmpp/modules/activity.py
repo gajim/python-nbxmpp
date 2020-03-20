@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_ACTIVITY
 from nbxmpp.protocol import NS_PUBSUB_EVENT
 from nbxmpp.protocol import Node
@@ -24,12 +22,13 @@ from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ActivityData
 from nbxmpp.const import ACTIVITIES
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.activity')
 
-
-class Activity:
+class Activity(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -52,7 +51,8 @@ class Activity:
 
         activity_node = item.getTag('activity', namespace=NS_ACTIVITY)
         if not activity_node.getChildren():
-            log.info('Received activity: %s - no activity set', properties.jid)
+            self._log.info('Received activity: %s - no activity set',
+                           properties.jid)
             return
 
         activity, subactivity, text = None, None, None
@@ -65,13 +65,13 @@ class Activity:
                 subactivity = self._parse_sub_activity(child)
 
         if activity is None and activity_node.getPayload():
-            log.warning('No valid activity value found')
-            log.warning(stanza)
+            self._log.warning('No valid activity value found')
+            self._log.warning(stanza)
             raise NodeProcessed
 
         data = ActivityData(activity, subactivity, text)
         pubsub_event = properties.pubsub_event._replace(data=data)
-        log.info('Received activity: %s - %s', properties.jid, data)
+        self._log.info('Received activity: %s - %s', properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 

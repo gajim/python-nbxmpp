@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import Error as ErrorStanza
 from nbxmpp.protocol import ERR_BAD_REQUEST
 from nbxmpp.protocol import NodeProcessed
@@ -24,12 +22,13 @@ from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import error_factory
 from nbxmpp.const import PresenceType
 from nbxmpp.const import PresenceShow
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.presence')
 
-
-class BasePresence:
+class BasePresence(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='presence',
@@ -52,8 +51,7 @@ class BasePresence:
         properties.self_presence = own_jid == properties.jid
         properties.self_bare = properties.jid.bareMatch(own_jid)
 
-    @staticmethod
-    def _parse_priority(stanza):
+    def _parse_priority(self, stanza):
         priority = stanza.getPriority()
         if priority is None:
             return 0
@@ -61,13 +59,13 @@ class BasePresence:
         try:
             priority = int(priority)
         except Exception:
-            log.warning('Invalid priority value: %s', priority)
-            log.warning(stanza)
+            self._log.warning('Invalid priority value: %s', priority)
+            self._log.warning(stanza)
             return 0
 
         if priority not in range(-129, 128):
-            log.warning('Invalid priority value: %s', priority)
-            log.warning(stanza)
+            self._log.warning('Invalid priority value: %s', priority)
+            self._log.warning(stanza)
             return 0
 
         return priority
@@ -77,19 +75,18 @@ class BasePresence:
         try:
             return PresenceType(type_)
         except ValueError:
-            log.warning('Presence with invalid type received')
-            log.warning(stanza)
+            self._log.warning('Presence with invalid type received')
+            self._log.warning(stanza)
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
-    @staticmethod
-    def _parse_show(stanza):
+    def _parse_show(self, stanza):
         show = stanza.getShow()
         if show is None:
             return PresenceShow.ONLINE
         try:
             return PresenceShow(stanza.getShow())
         except ValueError:
-            log.warning('Presence with invalid show')
-            log.warning(stanza)
+            self._log.warning('Presence with invalid show')
+            self._log.warning(stanza)
             return PresenceShow.ONLINE

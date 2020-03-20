@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_PUBSUB
 from nbxmpp.protocol import NS_PUBSUB_EVENT
 from nbxmpp.protocol import NS_PUBSUB_PUBLISH_OPTIONS
@@ -35,13 +33,13 @@ from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
+from nbxmpp.modules.base import BaseModule
 
 
-log = logging.getLogger('nbxmpp.m.pubsub')
-
-
-class PubSub:
+class PubSub(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -79,14 +77,14 @@ class PubSub:
                 return
 
             if len(items.getChildren()) != 1:
-                log.warning('PubSub event with != 1 item')
-                log.warning(stanza)
+                self._log.warning('PubSub event with != 1 item')
+                self._log.warning(stanza)
                 return
 
             item = items.getTag('item')
             if item is None:
-                log.warning('No item node found')
-                log.warning(stanza)
+                self._log.warning('No item node found')
+                self._log.warning(stanza)
                 return
             id_ = item.getAttr('id')
             properties.pubsub_event = PubSubEventData(node, id_, item)
@@ -108,7 +106,7 @@ class PubSub:
     @callback
     def _publish_result_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.warning, stanza)
+            return raise_error(self._log.warning, stanza)
 
         jid = stanza.getFrom()
         pubsub = stanza.getTag('pubsub', namespace=NS_PUBSUB)
@@ -118,12 +116,12 @@ class PubSub:
 
         publish = pubsub.getTag('publish')
         if publish is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
         node = publish.getAttr('node')
         item = publish.getTag('item')
         if item is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
         id_ = item.getAttr('id')
         return PubSubPublishResult(jid, node, id_)
@@ -141,7 +139,7 @@ class PubSub:
 
     @call_on_response('_default_response')
     def set_node_configuration(self, jid, node, form):
-        log.info('Set configuration for %s %s', node, jid)
+        self._log.info('Set configuration for %s %s', node, jid)
         query = Iq('set', to=jid)
         pubsub = query.addChild('pubsub', namespace=NS_PUBSUB_OWNER)
         configure = pubsub.addChild('configure', {'node': node})
@@ -151,7 +149,7 @@ class PubSub:
 
     @call_on_response('_node_configuration_received')
     def get_node_configuration(self, jid, node):
-        log.info('Request node configuration')
+        self._log.info('Request node configuration')
         query = Iq('get', to=jid)
         pubsub = query.addChild('pubsub', namespace=NS_PUBSUB_OWNER)
         pubsub.addChild('configure', {'node': node})
@@ -160,17 +158,17 @@ class PubSub:
     @callback
     def _node_configuration_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.warning, stanza)
+            return raise_error(self._log.warning, stanza)
 
         jid = stanza.getFrom()
         pubsub = stanza.getTag('pubsub', namespace=NS_PUBSUB_OWNER)
         if pubsub is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'No pubsub node found')
 
         configure = pubsub.getTag('configure')
         if configure is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'No configure node found')
 
         node = configure.getAttr('node')
@@ -181,16 +179,16 @@ class PubSub:
             form_type = dataform.vars.get('FORM_TYPE')
             if form_type is None or form_type.value != NS_PUBSUB_CONFIG:
                 continue
-            log.info('Node configuration received from: %s', jid)
+            self._log.info('Node configuration received from: %s', jid)
             return PubSubConfigResult(jid=jid, node=node, form=dataform)
 
-        return raise_error(log.warning, stanza, 'stanza-malformed',
+        return raise_error(self._log.warning, stanza, 'stanza-malformed',
                            'No valid form type found')
 
     @callback
     def _default_response(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
         return CommonResult(jid=stanza.getFrom())
 
 

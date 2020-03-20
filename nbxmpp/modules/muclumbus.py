@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 import json
 
 from gi.repository import Soup
@@ -33,14 +32,16 @@ from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.muclumbus')
 
 # API Documentation
 # https://search.jabber.network/docs/api
 
-class Muclumbus:
+class Muclumbus(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = []
 
@@ -62,17 +63,17 @@ class Muclumbus:
     @callback
     def _parameters_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         search = stanza.getTag('search', namespace=NS_MUCLUMBUS)
         if search is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
         dataform = search.getTag('x', namespace=NS_DATA)
         if dataform is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
-        log.info('Muclumbus parameters received')
+        self._log.info('Muclumbus parameters received')
         return extend_form(node=dataform)
 
     @call_on_response('_search_received')
@@ -106,11 +107,11 @@ class Muclumbus:
     @callback
     def _search_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         result = stanza.getTag('result', namespace=NS_MUCLUMBUS)
         if result is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
         items = result.getTags('item')
         if not items:
@@ -122,14 +123,14 @@ class Muclumbus:
 
         set_ = result.getTag('set', namespace=NS_RSM)
         if set_ is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
         first = set_.getTagData('first')
         last = set_.getTagData('last')
         try:
             max_ = int(set_.getTagData('max'))
         except Exception:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
         results = []
         for item in items:
@@ -168,7 +169,7 @@ class Muclumbus:
         soup_body = message.get_property('response-body')
 
         if message.status_code != 200:
-            log.warning(soup_body.data)
+            self._log.warning(soup_body.data)
             exec_callback(MuclumbusResult(first=None,
                                           last=None,
                                           max=None,

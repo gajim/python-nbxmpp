@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 import base64
 import weakref
 import hashlib
@@ -23,6 +22,8 @@ import uuid
 import binascii
 import os
 import re
+import logging
+from logging import LoggerAdapter
 from collections import defaultdict
 
 from functools import wraps
@@ -490,3 +491,12 @@ class Observable:
         callbacks = self._callbacks.get(signal_name, [])
         for func in callbacks:
             func(self, signal_name, *args, **kwargs)
+
+
+class LogAdapter(LoggerAdapter):
+
+    def set_context(self, context):
+        self.extra['context'] = context
+
+    def process(self, msg, kwargs):
+        return '(%s) %s' % (self.extra['context'], msg), kwargs

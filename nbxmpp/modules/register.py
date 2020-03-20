@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_X_OOB
 from nbxmpp.protocol import NS_DATA
 from nbxmpp.protocol import NS_REGISTER
@@ -34,12 +32,13 @@ from nbxmpp.modules.bits_of_binary import parse_bob_data
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.modules.dataforms import create_field
 from nbxmpp.modules.dataforms import SimpleDataForm
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.register')
 
-
-class Register:
+class Register(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = []
 
@@ -73,7 +72,7 @@ class Register:
     @callback
     def _default_response(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
         return CommonResult(jid=stanza.getFrom())
 
     @staticmethod
@@ -83,8 +82,7 @@ class Register:
             return oob.getTagData('url') or None
         return None
 
-    @staticmethod
-    def _parse_form(stanza):
+    def _parse_form(self, stanza):
         form = stanza.getQuery().getTag('x', namespace=NS_DATA)
         if form is None:
             return None
@@ -92,8 +90,8 @@ class Register:
         form = extend_form(node=form)
         field = form.vars.get('FORM_TYPE')
         if field is None:
-            log.warning('No FORM_TYPE found')
-            log.warning(stanza)
+            self._log.warning('No FORM_TYPE found')
+            self._log.warning(stanza)
             return None
 
         # Invalid urn:xmpp:captcha used by ejabberd
@@ -138,12 +136,12 @@ class Register:
             return ChangePasswordResult(successful=True)
 
         if stanza.getQuery() is None:
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         form = get_form(stanza.getQuery(),
                         'jabber:iq:register:changepassword')
         if form is None:
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
         return ChangePasswordResult(successful=False, form=form)
 
     @call_on_response('_default_response')

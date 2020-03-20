@@ -24,6 +24,7 @@ from nbxmpp.protocol import NS_DISCO_ITEMS
 from nbxmpp.protocol import NS_DATA
 from nbxmpp.protocol import isResultNode
 from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.modules.base import BaseModule
 from nbxmpp.structs import DiscoIdentity
 from nbxmpp.structs import DiscoInfo
 from nbxmpp.structs import DiscoItems
@@ -36,31 +37,33 @@ from nbxmpp.util import raise_error
 log = logging.getLogger('nbxmpp.m.discovery')
 
 
-class Discovery:
+class Discovery(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = []
 
     @call_on_response('_disco_info_received')
     def disco_info(self, jid, node=None):
-        log.info('Disco info: %s, node: %s', jid, node)
+        self._log.info('Disco info: %s, node: %s', jid, node)
         return get_disco_request(NS_DISCO_INFO, jid, node)
 
     @callback
     def _disco_info_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
         return parse_disco_info(stanza)
 
     @call_on_response('_disco_items_received')
     def disco_items(self, jid, node=None):
-        log.info('Disco items: %s, node: %s', jid, node)
+        self._log.info('Disco items: %s, node: %s', jid, node)
         return get_disco_request(NS_DISCO_ITEMS, jid, node)
 
     @callback
     def _disco_items_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
         return parse_disco_items(stanza)
 
 

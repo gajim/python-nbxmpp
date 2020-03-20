@@ -37,7 +37,7 @@ class WebsocketConnection(Connection):
         self._session = Soup.Session()
         self._session.props.ssl_strict = False
 
-        if log.getEffectiveLevel() == logging.INFO:
+        if self._log.getEffectiveLevel() == logging.INFO:
             self._session.add_feature(
                 Soup.Logger.new(Soup.LoggerLogLevel.BODY, -1))
 
@@ -48,7 +48,7 @@ class WebsocketConnection(Connection):
         self._output_closed = False
 
     def connect(self):
-        log.info('Try to connect to %s', self._address.uri)
+        self._log.info('Try to connect to %s', self._address.uri)
 
         self.state = TCPState.CONNECTING
 
@@ -72,7 +72,7 @@ class WebsocketConnection(Connection):
                 self._finalize('disconnected')
                 return
 
-            log.info('Connection Error: %s', error)
+            self._log.info('Connection Error: %s', error)
             self._finalize('connection-failed')
             return
 
@@ -111,31 +111,31 @@ class WebsocketConnection(Connection):
         self._log_stanza(data)
 
         if self._input_closed:
-            log.warning('Received data after stream closed')
+            self._log.warning('Received data after stream closed')
             return
 
         self.notify('data-received', data)
 
     @staticmethod
     def _on_websocket_pong(_websocket, _message):
-        log.info('Pong received')
+        self._log.info('Pong received')
 
     def _on_websocket_closed(self, websocket):
-        log.info('Closed %s', get_websocket_close_string(websocket))
+        self._log.info('Closed %s', get_websocket_close_string(websocket))
         self._finalize('disconnected')
 
     @staticmethod
     def _on_websocket_closing(_websocket):
-        log.info('Closing')
+        self._log.info('Closing')
 
     def _on_websocket_error(self, _websocket, error):
-        log.error(error)
+        self._log.error(error)
         if self._state not in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
             self._finalize('disconnected')
 
     def send(self, stanza, now=False):
         if self._state in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
-            log.warning('send() not possible in state: %s', self._state)
+            self._log.warning('send() not possible in state: %s', self._state)
             return
 
         data = str(stanza)
@@ -150,7 +150,7 @@ class WebsocketConnection(Connection):
             return
 
         if self._state in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
-            log.warning('Called disconnect on state: %s', self._state)
+            self._log.warning('Called disconnect on state: %s', self._state)
             return
 
         self._websocket.close(Soup.WebsocketCloseCode.NORMAL, None)
@@ -161,13 +161,13 @@ class WebsocketConnection(Connection):
             self._websocket.close(Soup.WebsocketCloseCode.NORMAL, None)
 
     def shutdown_input(self):
-        log.info('Shutdown input')
+        self._log.info('Shutdown input')
         self._input_closed = True
         self._check_for_shutdown()
 
     def shutdown_output(self):
         self.state = TCPState.DISCONNECTING
-        log.info('Shutdown output')
+        self._log.info('Shutdown output')
         self._output_closed = True
 
     def _finalize(self, signal_name):

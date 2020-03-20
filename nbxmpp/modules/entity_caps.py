@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_CAPS
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import EntityCapsData
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.entity_caps')
 
-
-class EntityCaps:
+class EntityCaps(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='presence',

@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_MUC_USER
 from nbxmpp.protocol import NS_MUC
 from nbxmpp.protocol import NS_CONFERENCE
@@ -53,12 +51,13 @@ from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
 from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.muc')
 
-
-class MUC:
+class MUC(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='presence',
@@ -118,8 +117,9 @@ class MUC:
                 try:
                     alternate = JID(alternate)
                 except Exception as error:
-                    log.warning('Invalid alternate JID provided: %s', error)
-                    log.warning(stanza)
+                    self._log.warning('Invalid alternate JID provided: %s',
+                                      error)
+                    self._log.warning(stanza)
                     alternate = None
             properties.muc_destroyed = MucDestroyed(
                 alternate=alternate,
@@ -150,9 +150,9 @@ class MUC:
             try:
                 code = StatusCode(status.getAttr('code'))
             except ValueError:
-                log.warning('Received invalid status code: %s',
-                            status.getAttr('code'))
-                log.warning(stanza)
+                self._log.warning('Received invalid status code: %s',
+                                  status.getAttr('code'))
+                self._log.warning(stanza)
                 continue
             if code in message_status_codes:
                 codes.add(code)
@@ -178,8 +178,7 @@ class MUC:
             if address is not None:
                 properties.muc_ofrom = JID(address.getAttr('jid'))
 
-    @staticmethod
-    def _process_message(_client, stanza, properties):
+    def _process_message(self, _client, stanza, properties):
         muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
         if muc_user is None:
             return
@@ -219,9 +218,9 @@ class MUC:
             try:
                 code = StatusCode(status.getAttr('code'))
             except ValueError:
-                log.warning('Received invalid status code: %s',
-                            status.getAttr('code'))
-                log.warning(stanza)
+                self._log.warning('Received invalid status code: %s',
+                                  status.getAttr('code'))
+                self._log.warning(stanza)
                 continue
             if code in message_status_codes:
                 codes.add(code)
@@ -291,8 +290,7 @@ class MUC:
             properties.muc_decline = DeclineData(**data)
             return
 
-    @staticmethod
-    def _process_voice_request(_client, stanza, properties):
+    def _process_voice_request(self, _client, stanza, properties):
         data_form = stanza.getTag('x', namespace=NS_DATA)
         if data_form is None:
             return
@@ -309,8 +307,8 @@ class MUC:
         try:
             jid = JID(data_form['muc#jid'].value)
         except Exception:
-            log.warning('Invalid JID on voice request')
-            log.warning(stanza)
+            self._log.warning('Invalid JID on voice request')
+            self._log.warning(stanza)
             raise NodeProcessed
 
         properties.voice_request = VoiceRequest(jid=jid,
@@ -336,7 +334,7 @@ class MUC:
     @callback
     def _affiliation_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         room_jid = stanza.getFrom()
         query = stanza.getTag('query', namespace=NS_MUC_ADMIN)
@@ -346,8 +344,8 @@ class MUC:
             try:
                 jid = JID(item.getAttr('jid'))
             except Exception as error:
-                log.warning('Invalid JID: %s, %s',
-                            item.getAttr('jid'), error)
+                self._log.warning('Invalid JID: %s, %s',
+                                  item.getAttr('jid'), error)
                 continue
 
             users_dict[jid] = {}
@@ -359,8 +357,8 @@ class MUC:
             if reason:
                 users_dict[jid]['reason'] = reason
 
-        log.info('Affiliations received from %s: %s',
-                 room_jid, users_dict)
+        self._log.info('Affiliations received from %s: %s',
+                       room_jid, users_dict)
 
         return AffiliationResult(jid=room_jid, users=users_dict)
 
@@ -372,8 +370,8 @@ class MUC:
             destroy.setTagData('reason', reason)
         if jid:
             destroy.setAttr('jid', jid)
-        log.info('Destroy room: %s, reason: %s, alternate: %s',
-                 room_jid, reason, jid)
+        self._log.info('Destroy room: %s, reason: %s, alternate: %s',
+                       room_jid, reason, jid)
         return iq
 
     @call_on_response('_default_response')
@@ -382,7 +380,7 @@ class MUC:
         query = iq.setQuery()
         form.setAttr('type', 'submit')
         query.addChild(node=form)
-        log.info('Set config for %s', room_jid)
+        self._log.info('Set config for %s', room_jid)
         return iq
 
     @call_on_response('_config_received')
@@ -390,13 +388,13 @@ class MUC:
         iq = Iq(typ='get',
                 queryNS=NS_MUC_OWNER,
                 to=room_jid)
-        log.info('Request config for %s', room_jid)
+        self._log.info('Request config for %s', room_jid)
         return iq
 
     @callback
     def _config_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         jid = stanza.getFrom()
         payload = stanza.getQueryPayload()
@@ -404,7 +402,7 @@ class MUC:
         for form in payload:
             if form.getNamespace() == NS_DATA:
                 dataform = extend_form(node=form)
-                log.info('Config form received for %s', jid)
+                self._log.info('Config form received for %s', jid)
                 return MucConfigResult(jid=jid,
                                        form=dataform)
         return MucConfigResult(jid=jid)
@@ -416,7 +414,7 @@ class MUC:
                 queryNS=NS_MUC_OWNER,
                 payload=cancel,
                 to=room_jid)
-        log.info('Cancel config for %s', room_jid)
+        self._log.info('Cancel config for %s', room_jid)
         return iq
 
     @call_on_response('_default_response')
@@ -434,7 +432,7 @@ class MUC:
 
             if nick is not None:
                 item_tag.setAttr('nick', nick)
-        log.info('Set affiliation for %s: %s', room_jid, users_dict)
+        self._log.info('Set affiliation for %s: %s', room_jid, users_dict)
         return iq
 
     @call_on_response('_default_response')
@@ -445,12 +443,13 @@ class MUC:
         item.setAttr('role', role)
         if reason:
             item.addChild(name='reason', payload=reason)
-        log.info('Set role for %s: %s %s %s', room_jid, nick, role, reason)
+        self._log.info('Set role for %s: %s %s %s',
+                       room_jid, nick, role, reason)
         return iq
 
     def set_subject(self, room_jid, subject):
         message = Message(room_jid, typ='groupchat', subject=subject)
-        log.info('Set subject for %s', room_jid)
+        self._log.info('Set subject for %s', room_jid)
         self._client.send_stanza(message)
 
     def decline(self, room, to, reason=None):
@@ -525,7 +524,7 @@ class MUC:
     @callback
     def _default_response(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
         return CommonResult(jid=stanza.getFrom())
 
     @staticmethod

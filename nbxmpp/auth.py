@@ -28,6 +28,7 @@ from nbxmpp.protocol import SASL_ERROR_CONDITIONS
 from nbxmpp.protocol import SASL_AUTH_MECHS
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
+from nbxmpp.util import LogAdapter
 from nbxmpp.const import GSSAPIState
 from nbxmpp.const import StreamState
 
@@ -45,10 +46,7 @@ class SASL:
     """
     Implements SASL authentication.
     """
-    def __init__(self, client):
-        """
-        :param client:          Client object
-        """
+    def __init__(self, client, log_context):
         self._client = client
 
         self._password = None
@@ -57,6 +55,8 @@ class SASL:
         self._enabled_mechs = None
         self._method = None
         self._error = None
+
+        self._log = LogAdapter(log, {'context': log_context})
 
     @property
     def error(self):
@@ -95,14 +95,14 @@ class SASL:
             self._enabled_mechs.discard('GSSAPI')
 
         available_mechs = features.get_mechs() & self._enabled_mechs
-        log.info('Available mechanisms: %s', available_mechs)
+        self._log.info('Available mechanisms: %s', available_mechs)
 
         domain_based_name = features.get_domain_based_name()
         if domain_based_name is not None:
-            log.info('Found domain based name: %s', domain_based_name)
+            self._log.info('Found domain based name: %s', domain_based_name)
 
         if not available_mechs:
-            log.error('No available auth mechanisms found')
+            self._log.error('No available auth mechanisms found')
             self._abort_auth('invalid-mechanism')
             return
 
@@ -113,11 +113,11 @@ class SASL:
                 break
 
         if chosen_mechanism is None:
-            log.error('No available auth mechanisms found')
+            self._log.error('No available auth mechanisms found')
             self._abort_auth('invalid-mechanism')
             return
 
-        log.info('Chosen auth mechanism: %s', chosen_mechanism)
+        self._log.info('Chosen auth mechanism: %s', chosen_mechanism)
 
         if chosen_mechanism in ('SCRAM-SHA-256', 'SCRAM-SHA-1', 'PLAIN'):
             if not self._password:
@@ -160,26 +160,26 @@ class SASL:
                                   self._client.domain)
 
         else:
-            log.error('Unknown auth mech')
+            self._log.error('Unknown auth mech')
 
     def _on_challenge(self, stanza):
         try:
             self._method.response(stanza.getData())
         except AttributeError:
-            log.info('Mechanism has no response method')
+            self._log.info('Mechanism has no response method')
             self._abort_auth()
         except AuthFail as error:
-            log.error(error)
+            self._log.error(error)
             self._abort_auth()
 
     def _on_success(self, stanza):
-        log.info('Successfully authenticated with remote server')
+        self._log.info('Successfully authenticated with remote server')
         try:
             self._method.success(stanza.getData())
         except AttributeError:
             pass
         except AuthFail as error:
-            log.error(error)
+            self._log.error(error)
             self._abort_auth()
             return
 
@@ -197,7 +197,7 @@ class SASL:
                 reason = name
                 break
 
-        log.info('Failed SASL authentification: %s %s', reason, text)
+        self._log.info('Failed SASL authentification: %s %s', reason, text)
         self._abort_auth(reason, text)
 
     def _abort_auth(self, reason='malformed-request', text=None):
@@ -379,7 +379,6 @@ class SCRAM:
         server_key = self._hmac(salted_password, 'Server Key')
         self._server_signature = self._hmac(server_key, auth_message)
 
-        log.debug('Response: %s', client_finale_message)
         payload = b64encode(client_finale_message)
         node = Node('response',
                     attrs={'xmlns': NS_SASL},

@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_OMEMO_TEMP
 from nbxmpp.protocol import NS_OMEMO_TEMP_DL
 from nbxmpp.protocol import NS_OMEMO_TEMP_BUNDLE
@@ -37,12 +35,13 @@ from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import OMEMOMessage
 from nbxmpp.structs import OMEMOBundle
 from nbxmpp.modules.pubsub import get_pubsub_request
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.omemo')
 
-
-class OMEMO:
+class OMEMO(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -58,10 +57,10 @@ class OMEMO:
     def _process_omemo_message(self, _client, stanza, properties):
         try:
             properties.omemo = self._parse_omemo_message(stanza)
-            log.info('Received message')
+            self._log.info('Received message')
         except StanzaMalformed as error:
-            log.warning(error)
-            log.warning(stanza)
+            self._log.warning(error)
+            self._log.warning(stanza)
             return
 
     @staticmethod
@@ -141,18 +140,18 @@ class OMEMO:
         try:
             devices = self._parse_devicelist(item)
         except StanzaMalformed as error:
-            log.warning(error)
-            log.warning(stanza)
+            self._log.warning(error)
+            self._log.warning(stanza)
             raise NodeProcessed
 
         if not devices:
-            log.info('Received OMEMO devicelist: %s - no devices set',
-                     properties.jid)
+            self._log.info('Received OMEMO devicelist: %s - no devices set',
+                           properties.jid)
             return
 
         pubsub_event = properties.pubsub_event._replace(data=devices)
-        log.info('Received OMEMO devicelist: %s - %s',
-                 properties.jid, devices)
+        self._log.info('Received OMEMO devicelist: %s - %s',
+                       properties.jid, devices)
 
         properties.pubsub_event = pubsub_event
 
@@ -189,7 +188,7 @@ class OMEMO:
         for device in devicelist:
             item.addChild('device').setAttr('id', device)
 
-        log.info('Set devicelist: %s', devicelist)
+        self._log.info('Set devicelist: %s', devicelist)
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
             jid, NS_OMEMO_TEMP_DL, item, id_='current')
@@ -198,13 +197,13 @@ class OMEMO:
     def request_devicelist(self, jid=None):
         if jid is None:
             jid = self._client.get_bound_jid().getBare()
-        log.info('Request devicelist from: %s', jid)
+        self._log.info('Request devicelist from: %s', jid)
         return get_pubsub_request(jid, NS_OMEMO_TEMP_DL, max_items=1)
 
     @callback
     def _devicelist_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         pubsub_node = stanza.getTag('pubsub')
         items_node = pubsub_node.getTag('items')
@@ -215,12 +214,12 @@ class OMEMO:
         try:
             return self._parse_devicelist(item)
         except StanzaMalformed as error:
-            return raise_error(log.warning, stanza,
+            return raise_error(self._log.warning, stanza,
                                'stanza-malformed', str(error))
 
     def set_bundle(self, bundle, device_id):
         item = self._create_bundle(bundle)
-        log.info('Set bundle')
+        self._log.info('Set bundle')
 
         node = '%s:%s' % (NS_OMEMO_TEMP_BUNDLE, device_id)
         jid = self._client.get_bound_jid().getBare()
@@ -279,14 +278,14 @@ class OMEMO:
 
     @call_on_response('_bundle_received')
     def request_bundle(self, jid, device_id):
-        log.info('Request bundle from: %s %s', jid, device_id)
+        self._log.info('Request bundle from: %s %s', jid, device_id)
         node = '%s:%s' % (NS_OMEMO_TEMP_BUNDLE, device_id)
         return get_pubsub_request(jid, node, max_items=1)
 
     @callback
     def _bundle_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         pubsub_node = stanza.getTag('pubsub')
         items_node = pubsub_node.getTag('items')
@@ -295,7 +294,7 @@ class OMEMO:
         try:
             return self._parse_bundle(item)
         except StanzaMalformed as error:
-            return raise_error(log.warning, stanza,
+            return raise_error(self._log.warning, stanza,
                                'stanza-malformed', str(error))
 
     @staticmethod

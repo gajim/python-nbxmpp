@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_HTTPUPLOAD_0
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
@@ -24,15 +22,16 @@ from nbxmpp.structs import HTTPUploadData
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
+from nbxmpp.modules.base import BaseModule
 
 
 ALLOWED_HEADERS = ['Authorization', 'Cookie', 'Expires']
 
-log = logging.getLogger('nbxmpp.m.http_upload')
 
-
-class HTTPUpload:
+class HTTPUpload(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = []
 
@@ -50,32 +49,32 @@ class HTTPUpload:
     @callback
     def _received_slot(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         slot = stanza.getTag('slot', namespace=NS_HTTPUPLOAD_0)
         if slot is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'No slot node found')
 
         put_uri = slot.getTagAttr('put', 'url')
         if put_uri is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'No put uri found')
 
         get_uri = slot.getTagAttr('get', 'url')
         if get_uri is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'No get uri found')
 
         headers = {}
         for header in slot.getTag('put').getTags('header'):
             name = header.getAttr('name')
             if name not in ALLOWED_HEADERS:
-                return raise_error(log.warning, stanza, 'stanza-malformed',
+                return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                    'Not allowed header found: %s' % name)
             data = header.getData()
             if '\n' in data:
-                return raise_error(log.warning, stanza, 'stanza-malformed',
+                return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                    'NNewline in header data found')
 
             headers[name] = data

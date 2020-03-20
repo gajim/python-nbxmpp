@@ -25,8 +25,9 @@ log = logging.getLogger('nbxmpp')
 log.setLevel('INFO')
 log.addHandler(consoleloghandler)
 
-formatter = logging.Formatter('%(asctime)s %(levelname)-7s %(name)-18s %(message)s',
-                              datefmt='%H:%M:%S')
+formatter = logging.Formatter(
+    '%(asctime)s %(levelname)-7s %(name)-25s %(message)s',
+    datefmt='%H:%M:%S')
 consoleloghandler.setFormatter(formatter)
 
 
@@ -77,7 +78,7 @@ class TestClient(Gtk.Window):
         self._load_config()
 
     def _create_client(self):
-        self._client = Client()
+        self._client = Client(log_context='TEST')
         self._client.set_domain(self.address.getDomain())
         self._client.set_username(self.address.getNode())
         self._client.set_resource('test')

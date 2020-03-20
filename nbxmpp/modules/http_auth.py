@@ -15,17 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_HTTP_AUTH
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import HTTPAuthData
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.http_auth')
 
-
-class HTTPAuth:
+class HTTPAuth(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -39,8 +37,7 @@ class HTTPAuth:
                           priority=40)
         ]
 
-    @staticmethod
-    def _process_http_auth(_client, stanza, properties):
+    def _process_http_auth(self, _client, stanza, properties):
         confirm = stanza.getTag('confirm', namespace=NS_HTTP_AUTH)
         if confirm is None:
             return
@@ -51,4 +48,5 @@ class HTTPAuth:
         method = attrs.get('method')
         url = attrs.get('url')
         properties.http_auth = HTTPAuthData(id_, method, url, body)
-        log.info('HTTPAuth received: %s %s %s %s', id_, method, url, body)
+        self._log.info('HTTPAuth received: %s %s %s %s',
+                       id_, method, url, body)

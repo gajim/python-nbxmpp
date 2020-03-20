@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import Error as ErrorStanza
 from nbxmpp.protocol import ERR_BAD_REQUEST
 from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
@@ -32,12 +30,13 @@ from nbxmpp.util import b64encode
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.ibb')
 
-
-class IBB:
+class IBB(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='iq',
@@ -68,19 +67,19 @@ class IBB:
         try:
             block_size = int(attrs.get('block-size'))
         except Exception as error:
-            log.warning(error)
-            log.warning(stanza)
+            self._log.warning(error)
+            self._log.warning(stanza)
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
         if block_size > 65535:
-            log.warning('Invalid block-size')
+            self._log.warning('Invalid block-size')
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
         sid = attrs.get('sid')
         if not sid:
-            log.warning('Invalid sid')
+            self._log.warning('Invalid sid')
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
@@ -95,7 +94,7 @@ class IBB:
     def _parse_close(self, stanza, close):
         sid = close.getAttrs().get('sid')
         if sid is None:
-            log.warning('Invalid sid')
+            self._log.warning('Invalid sid')
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
         return IBBData(type='close', sid=sid)
@@ -105,21 +104,21 @@ class IBB:
 
         sid = attrs.get('sid')
         if sid is None:
-            log.warning('Invalid sid')
+            self._log.warning('Invalid sid')
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
         try:
             seq = int(attrs.get('seq'))
         except Exception:
-            log.exception('Invalid seq')
+            self._log.exception('Invalid seq')
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
         try:
             decoded_data = b64decode(data.getData(), return_type=bytes)
         except Exception:
-            log.exception('Failed to decode IBB data')
+            self._log.exception('Failed to decode IBB data')
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
@@ -157,5 +156,5 @@ class IBB:
     @callback
     def _default_response(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
         return CommonResult(jid=stanza.getFrom())

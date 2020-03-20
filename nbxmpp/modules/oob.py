@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_X_OOB
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import OOBData
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.oob')
 
-
-class OOB:
+class OOB(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -41,8 +40,8 @@ class OOB:
 
         url = oob.getTagData('url')
         if url is None:
-            log.warning('OOB data without url')
-            log.warning(stanza)
+            self._log.warning('OOB data without url')
+            self._log.warning(stanza)
             return
 
         desc = oob.getTagData('desc')

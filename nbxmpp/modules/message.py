@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import NS_DATA
 from nbxmpp.protocol import NS_XHTML
@@ -25,12 +23,13 @@ from nbxmpp.structs import StanzaIDData
 from nbxmpp.structs import XHTMLData
 from nbxmpp.util import error_factory
 from nbxmpp.const import MessageType
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.message')
 
-
-class BaseMessage:
+class BaseMessage(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -71,8 +70,7 @@ class BaseMessage:
         if properties.type.is_error:
             properties.error = error_factory(stanza)
 
-    @staticmethod
-    def _process_message_after_base(_client, stanza, properties):
+    def _process_message_after_base(self, _client, stanza, properties):
         # This handler runs after decryption handlers had the chance
         # to decrypt the body
         properties.body = stanza.getBody()
@@ -87,14 +85,13 @@ class BaseMessage:
             return
 
         if xhtml.getTag('body', namespace=NS_XHTML) is None:
-            log.warning('xhtml without body found')
-            log.warning(stanza)
+            self._log.warning('xhtml without body found')
+            self._log.warning(stanza)
             return
 
         properties.xhtml = XHTMLData(xhtml)
 
-    @staticmethod
-    def _parse_type(stanza):
+    def _parse_type(self, stanza):
         type_ = stanza.getType()
         if type_ is None:
             return MessageType.NORMAL
@@ -102,8 +99,8 @@ class BaseMessage:
         try:
             return MessageType(type_)
         except ValueError:
-            log.warning('Message with invalid type: %s', type_)
-            log.warning(stanza)
+            self._log.warning('Message with invalid type: %s', type_)
+            self._log.warning(stanza)
             raise NodeProcessed
 
     @staticmethod

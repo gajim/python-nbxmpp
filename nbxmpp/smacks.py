@@ -22,6 +22,7 @@ from nbxmpp.protocol import NS_STREAM_MGMT
 from nbxmpp.protocol import NS_DELAY2
 from nbxmpp.simplexml import Node
 from nbxmpp.const import StreamState
+from nbxmpp.util import LogAdapter
 
 
 log = logging.getLogger('nbxmpp.smacks')
@@ -36,7 +37,7 @@ class Smacks:
     number of handled stanzas
     """
 
-    def __init__(self, client):
+    def __init__(self, client, log_context):
         self._client = client
         self._out_h = 0  # Outgoing stanzas handled
         self._in_h = 0  # Incoming stanzas handled
@@ -58,6 +59,8 @@ class Smacks:
         self._session_id = None
         self._location = None
 
+        self._log = LogAdapter(log, {'context': log_context})
+
         self.register_handlers()
 
     @property
@@ -66,7 +69,7 @@ class Smacks:
 
     @sm_supported.setter
     def sm_supported(self, value):
-        log.info('Server supports detected: %s', value)
+        self._log.info('Server supports detected: %s', value)
         self._sm_supported = value
 
     def delegate(self, stanza):
@@ -92,12 +95,12 @@ class Smacks:
             return
         enable = Node(NS_STREAM_MGMT + ' enable', attrs={'resume': 'true'})
         self._client.send_nonza(enable, now=False)
-        log.debug('Send enable')
+        self._log.debug('Send enable')
         self._enable_sent = True
 
     def _on_enabled(self, _con, stanza, _properties):
         if self.enabled:
-            log.error('Received "enabled", but SM is already enabled')
+            self._log.error('Received "enabled", but SM is already enabled')
             return
         resume = stanza.getAttr('resume')
         if resume in ('true', 'True', '1'):
@@ -106,8 +109,8 @@ class Smacks:
 
         self._location = stanza.getAttr('location')
         self.enabled = True
-        log.info('Received enabled, location: %s, resume supported: %s, '
-                 'session-id: %s', self._location, resume, self._session_id)
+        self._log.info('Received enabled, location: %s, resume supported: %s, '
+                       'session-id: %s', self._location, resume, self._session_id)
 
     def count_incoming(self, name):
         if not self.enabled:
@@ -115,7 +118,7 @@ class Smacks:
             return
         if name in ('a', 'r', 'resumed', 'enabled'):
             return
-        log.debug('IN, %s', name)
+        self._log.debug('IN, %s', name)
         self._in_h += 1
 
     def save_in_queue(self, stanza):
@@ -132,7 +135,7 @@ class Smacks:
                 attrs['from'] = stanza.getAttr('from')
             stanza.addChild('delay', namespace=NS_DELAY2, attrs=attrs)
         self._uqueue.append(stanza)
-        log.debug('OUT, %s', stanza.getName())
+        self._log.debug('OUT, %s', stanza.getName())
         self._out_h += 1
 
         if len(self._uqueue) > self.max_queue:
@@ -149,7 +152,7 @@ class Smacks:
         """
         if not self._old_uqueue:
             return
-        log.info('Resend %s stanzas', len(self._old_uqueue))
+        self._log.info('Resend %s stanzas', len(self._old_uqueue))
         for stanza in self._old_uqueue:
             # Use dispatcher so we increment the counter
             self._client.send_stanza(stanza)
@@ -157,7 +160,7 @@ class Smacks:
 
     def resume_request(self):
         if self._session_id is None:
-            log.error('Attempted to resume without a valid session id')
+            self._log.error('Attempted to resume without a valid session id')
             return
 
         # Save old messages in an extra "queue" to avoid race conditions
@@ -181,8 +184,8 @@ class Smacks:
         number of stanzas received by the server. Resends stanzas not received
         by the server in the last session.
         """
-        log.info('Session resumption succeeded, session-id: %s',
-                 self._session_id)
+        self._log.info('Session resumption succeeded, session-id: %s',
+                       self._session_id)
         self._validate_ack(stanza, self._old_uqueue)
         # Set our out h to the h we received
         self._out_h = int(stanza.getAttr('h'))
@@ -195,24 +198,24 @@ class Smacks:
     def _send_ack(self, *args):
         ack = Node(NS_STREAM_MGMT + ' a', attrs={'h': self._in_h})
         self._acked_h = self._in_h
-        log.debug('Send ack, h: %s', self._in_h)
+        self._log.debug('Send ack, h: %s', self._in_h)
         self._client.send_nonza(ack, now=False)
 
     def close_session(self):
         # We end the connection deliberately
         # Reset the state -> no resume
-        log.info('Close session')
+        self._log.info('Close session')
         self._reset_state()
 
     def _request_ack(self):
         request = Node(NS_STREAM_MGMT + ' r')
-        log.debug('Request ack')
+        self._log.debug('Request ack')
         self._client.send_nonza(request, now=False)
 
     def _on_ack(self, _stream, stanza, _properties):
         if not self.enabled:
             return
-        log.debug('Ack received, h: %s', stanza.getAttr('h'))
+        self._log.debug('Ack received, h: %s', stanza.getAttr('h'))
         self._validate_ack(stanza, self._uqueue)
 
     def _validate_ack(self, stanza, queue):
@@ -223,26 +226,26 @@ class Smacks:
         """
         count_server = stanza.getAttr('h')
         if count_server is None:
-            log.error('Server did not send h attribute')
+            self._log.error('Server did not send h attribute')
             return
 
         count_server = int(count_server)
         diff = self._out_h - count_server
         queue_size = len(queue)
         if diff < 0:
-            log.error('Mismatch detected, our h: %d, server h: %d, queue: %d',
-                      self._out_h, count_server, queue_size)
+            self._log.error('Mismatch detected, our h: %d, server h: %d, queue: %d',
+                            self._out_h, count_server, queue_size)
             # Don't accumulate all messages in this case
             # (they would otherwise all be resent on the next reconnect)
             queue = []
 
         elif queue_size < diff:
-            log.error('Mismatch detected, our h: %d, server h: %d, queue: %d',
-                      self._out_h, count_server, queue_size)
+            self._log.error('Mismatch detected, our h: %d, server h: %d, queue: %d',
+                            self._out_h, count_server, queue_size)
         else:
-            log.debug('Validate ack, our h: %d, server h: %d, queue: %d',
-                      self._out_h, count_server, queue_size)
-            log.debug('Removing %d stanzas from queue', queue_size - diff)
+            self._log.debug('Validate ack, our h: %d, server h: %d, queue: %d',
+                            self._out_h, count_server, queue_size)
+            self._log.debug('Removing %d stanzas from queue', queue_size - diff)
 
             while len(queue) > diff:
                 queue.pop(0)
@@ -252,19 +255,19 @@ class Smacks:
         This can be called after 'enable' and 'resume'
         '''
 
-        log.info('Negotiation failed')
+        self._log.info('Negotiation failed')
         error_text = stanza.getTagData('text')
         if error_text is not None:
-            log.info(error_text)
+            self._log.info(error_text)
 
         if stanza.getTag('item-not-found') is not None:
-            log.info('Session timed out, last server h: %s',
-                     stanza.getAttr('h'))
+            self._log.info('Session timed out, last server h: %s',
+                           stanza.getAttr('h'))
             self._validate_ack(stanza, self._old_uqueue)
         else:
             for tag in stanza.getChildren():
                 if tag.getName() != 'text':
-                    log.info(tag.getName())
+                    self._log.info(tag.getName())
 
         if self.resume_in_progress:
             # Reset state before sending Bind, because otherwise stanza

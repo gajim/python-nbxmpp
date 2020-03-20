@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_MOOD
 from nbxmpp.protocol import NS_PUBSUB_EVENT
 from nbxmpp.protocol import Node
@@ -24,12 +22,13 @@ from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import MoodData
 from nbxmpp.const import MOODS
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.mood')
 
-
-class Mood:
+class Mood(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -52,7 +51,7 @@ class Mood:
 
         mood_node = item.getTag('mood', namespace=NS_MOOD)
         if not mood_node.getChildren():
-            log.info('Received mood: %s - removed mood', properties.jid)
+            self._log.info('Received mood: %s - removed mood', properties.jid)
             return
 
         mood, text = None, None
@@ -64,13 +63,13 @@ class Mood:
                 mood = name
 
         if mood is None and mood_node.getPayload():
-            log.warning('No valid mood value found')
-            log.warning(stanza)
+            self._log.warning('No valid mood value found')
+            self._log.warning(stanza)
             raise NodeProcessed
 
         data = MoodData(mood, text)
         pubsub_event = properties.pubsub_event._replace(data=data)
-        log.info('Received mood: %s - %s', properties.jid, data)
+        self._log.info('Received mood: %s - %s', properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 

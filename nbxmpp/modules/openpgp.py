@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 import time
 import random
 import string
@@ -41,12 +40,13 @@ from nbxmpp.structs import PGPKeyMetadata
 from nbxmpp.structs import PGPPublicKey
 from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.modules.pubsub import get_pubsub_request
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.openpgp')
 
-
-class OpenPGP:
+class OpenPGP(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -62,22 +62,22 @@ class OpenPGP:
     def _process_openpgp_message(self, _client, stanza, properties):
         openpgp = stanza.getTag('openpgp', namespace=NS_OPENPGP)
         if openpgp is None:
-            log.warning('No openpgp node found')
-            log.warning(stanza)
+            self._log.warning('No openpgp node found')
+            self._log.warning(stanza)
             return
 
         data = openpgp.getData()
         if not data:
-            log.warning('No data in openpgp node found')
-            log.warning(stanza)
+            self._log.warning('No data in openpgp node found')
+            self._log.warning(stanza)
             return
 
-        log.info('Encrypted message received')
+        self._log.info('Encrypted message received')
         try:
             properties.openpgp = b64decode(data, return_type=bytes)
         except Exception:
-            log.warning('b64decode failed')
-            log.warning(stanza)
+            self._log.warning('b64decode failed')
+            self._log.warning(stanza)
             return
 
     def _process_pubsub_openpgp(self, _client, stanza, properties):
@@ -110,16 +110,17 @@ class OpenPGP:
         try:
             data = self._parse_keylist(properties.jid, item)
         except StanzaMalformed as error:
-            log.warning(error)
-            log.warning(stanza)
+            self._log.warning(error)
+            self._log.warning(stanza)
             raise NodeProcessed
 
         if data is None:
-            log.info('Received PGP keylist: %s - no keys set', properties.jid)
+            self._log.info('Received PGP keylist: %s - no keys set',
+                           properties.jid)
             return
 
         pubsub_event = properties.pubsub_event._replace(data=data)
-        log.info('Received PGP keylist: %s - %s', properties.jid, data)
+        self._log.info('Received PGP keylist: %s - %s', properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 
@@ -157,7 +158,7 @@ class OpenPGP:
                          'date': date}
                 item.addChild('pubkey-metadata', attrs=attrs)
 
-        log.info('Set keylist: %s', keylist)
+        self._log.info('Set keylist: %s', keylist)
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
             jid, NS_OPENPGP_PK, item, id_='current')
@@ -171,14 +172,14 @@ class OpenPGP:
         data.addData(b64encode(key))
         node = '%s:%s' % (NS_OPENPGP_PK, fingerprint)
 
-        log.info('Set public key')
+        self._log.info('Set public key')
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
             jid, node, item, id_='current')
 
     @call_on_response('_public_key_received')
     def request_public_key(self, jid, fingerprint):
-        log.info('Request public key from: %s %s', jid, fingerprint)
+        self._log.info('Request public key from: %s %s', jid, fingerprint)
         node = '%s:%s' % (NS_OPENPGP_PK, fingerprint)
         return get_pubsub_request(jid, node, max_items=1)
 
@@ -187,7 +188,7 @@ class OpenPGP:
         jid = JID(stanza.getFrom().getBare())
 
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         pubsub_node = stanza.getTag('pubsub')
         items_node = pubsub_node.getTag('items')
@@ -195,29 +196,29 @@ class OpenPGP:
 
         pub_key = item.getTag('pubkey', namespace=NS_OPENPGP)
         if pub_key is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'PGP public key has no pubkey node')
 
         date = parse_datetime(pub_key.getAttr('date'), epoch=True)
 
         data = pub_key.getTag('data')
         if data is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'PGP public key has no data node')
 
         try:
             key = b64decode(data.getData(), return_type=bytes)
         except Exception as error:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                str(error))
 
         key = PGPPublicKey(jid, key, date)
-        log.info('Received public key: %s %s', key.jid, key.date)
+        self._log.info('Received public key: %s %s', key.jid, key.date)
         return key
 
     @call_on_response('_keylist_received')
     def request_keylist(self, jid):
-        log.info('Request keylist from: %s', jid)
+        self._log.info('Request keylist from: %s', jid)
         return get_pubsub_request(jid, NS_OPENPGP_PK, max_items=1)
 
     @callback
@@ -225,7 +226,7 @@ class OpenPGP:
         jid = JID(stanza.getFrom().getBare())
 
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         pubsub_node = stanza.getTag('pubsub')
         items_node = pubsub_node.getTag('items')
@@ -234,21 +235,21 @@ class OpenPGP:
         try:
             keylist = self._parse_keylist(jid, item)
         except StanzaMalformed as error:
-            return raise_error(log.warning, stanza,
+            return raise_error(self._log.warning, stanza,
                                'stanza-malformed', str(error))
-        log.info('Received keylist: %s', keylist)
+        self._log.info('Received keylist: %s', keylist)
         return keylist
 
     @call_on_response('_secret_key_received')
     def request_secret_key(self):
-        log.info('Request secret key')
+        self._log.info('Request secret key')
         jid = self._client.get_bound_jid().getBare()
         return get_pubsub_request(jid, NS_OPENPGP_SK, max_items=1)
 
     @callback
     def _secret_key_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         pubsub_node = stanza.getTag('pubsub')
         items_node = pubsub_node.getTag('items')
@@ -256,20 +257,20 @@ class OpenPGP:
 
         sec_key = item.getTag('secretkey', namespace=NS_OPENPGP)
         if sec_key is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'PGP secretkey node not found')
 
         data = sec_key.getData()
         if not data:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'PGP secretkey has no data')
 
         try:
             key = b64decode(data, return_type=bytes)
         except Exception as error:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                str(error))
-        log.info('Received secret key')
+        self._log.info('Received secret key')
         return key
 
     def set_secret_key(self, secret_key):
@@ -277,7 +278,7 @@ class OpenPGP:
         if secret_key is not None:
             item.setData(b64encode(secret_key))
 
-        log.info('Set secret key')
+        self._log.info('Set secret key')
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
             jid, NS_OPENPGP_SK, item, id_='current')

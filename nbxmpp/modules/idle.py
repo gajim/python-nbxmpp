@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_IDLE
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.modules.date_and_time import parse_datetime
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.idle')
 
-
-class Idle:
+class Idle(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='presence',
@@ -34,21 +33,20 @@ class Idle:
                           priority=15)
         ]
 
-    @staticmethod
-    def _process_idle(_client, stanza, properties):
+    def _process_idle(self, _client, stanza, properties):
         idle_tag = stanza.getTag('idle', namespace=NS_IDLE)
         if idle_tag is None:
             return
 
         since = idle_tag.getAttr('since')
         if since is None:
-            log.warning('No since attr in idle node')
-            log.warning(stanza)
+            self._log.warning('No since attr in idle node')
+            self._log.warning(stanza)
             return
 
         timestamp = parse_datetime(since, convert='utc', epoch=True)
         if timestamp is None:
-            log.warning('Invalid timestamp received: %s', since)
-            log.warning(stanza)
+            self._log.warning('Invalid timestamp received: %s', since)
+            self._log.warning(stanza)
 
         properties.idle_timestamp = timestamp

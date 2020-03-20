@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_BLOCKING
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
@@ -25,12 +23,13 @@ from nbxmpp.structs import CommonResult
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.blocking')
 
-
-class Blocking:
+class Blocking(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = []
 
@@ -44,21 +43,21 @@ class Blocking:
     def _blocking_list_received(self, stanza):
         blocked = []
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         blocklist = stanza.getTag('blocklist', namespace=NS_BLOCKING)
         if blocklist is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
         for item in blocklist.getTags('item'):
             blocked.append(item.getAttr('jid'))
 
-        log.info('Received blocking list: %s', blocked)
+        self._log.info('Received blocking list: %s', blocked)
         return BlockingListResult(blocking_list=blocked)
 
     @call_on_response('_default_response')
     def block(self, jids):
-        log.info('Block: %s', jids)
+        self._log.info('Block: %s', jids)
         iq = Iq('set', NS_BLOCKING)
         query = iq.setQuery(name='block')
         for jid in jids:
@@ -67,7 +66,7 @@ class Blocking:
 
     @call_on_response('_default_response')
     def unblock(self, jids):
-        log.info('Unblock: %s', jids)
+        self._log.info('Unblock: %s', jids)
         iq = Iq('set', NS_BLOCKING)
         query = iq.setQuery(name='unblock')
         for jid in jids:
@@ -77,5 +76,5 @@ class Blocking:
     @callback
     def _default_response(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
         return CommonResult(jid=stanza.getFrom())

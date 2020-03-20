@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_CHATMARKERS
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ChatMarker
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.chat_markers')
 
-
-class ChatMarkers:
+class ChatMarkers(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -34,8 +33,7 @@ class ChatMarkers:
                           priority=15),
         ]
 
-    @staticmethod
-    def _process_message_marker(_client, stanza, properties):
+    def _process_message_marker(self, _client, stanza, properties):
         type_ = stanza.getTag('received', namespace=NS_CHATMARKERS)
         if type_ is None:
             type_ = stanza.getTag('displayed', namespace=NS_CHATMARKERS)
@@ -47,8 +45,8 @@ class ChatMarkers:
         name = type_.getName()
         id_ = type_.getAttr('id')
         if id_ is None:
-            log.warning('Chatmarker without id')
-            log.warning(stanza)
+            self._log.warning('Chatmarker without id')
+            self._log.warning(stanza)
             return
 
         properties.marker = ChatMarker(name, id_)

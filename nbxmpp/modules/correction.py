@@ -15,17 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_CORRECT
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import CorrectionData
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.correction')
 
-
-class Correction:
+class Correction(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -41,8 +40,8 @@ class Correction:
 
         id_ = replace.getAttr('id')
         if id_ is None:
-            log.warning('Correcton without id attribute')
-            log.warning(stanza)
+            self._log.warning('Correcton without id attribute')
+            self._log.warning(stanza)
             return
 
         properties.correction = CorrectionData(id_)

@@ -86,9 +86,9 @@ class TCPConnection(Connection):
             remote_address = connection.get_remote_address()
             use_proxy = self._address.proxy is not None
             target = 'proxy' if use_proxy else self._address.domain
-            log.info('Connecting to %s (%s)',
-                     target,
-                     remote_address.to_string())
+            self._log.info('Connecting to %s (%s)',
+                           target,
+                           remote_address.to_string())
 
     def _check_certificate(self, _connection, certificate, errors):
         self._peer_certificate = certificate
@@ -118,7 +118,7 @@ class TCPConnection(Connection):
             else:
                 raise ValueError('Address must be a service or host')
         except GLib.Error as error:
-            log.info('Connect Error: %s', error)
+            self._log.info('Connect Error: %s', error)
             self._finalize('connection-failed')
             return
 
@@ -131,9 +131,9 @@ class TCPConnection(Connection):
 
         use_proxy = self._address.proxy is not None
         target = 'proxy' if use_proxy else self._address.domain
-        log.info('Connected to %s (%s)',
-                 target,
-                 self._con.get_remote_address().to_string())
+        self._log.info('Connected to %s (%s)',
+                       target,
+                       self._con.get_remote_address().to_string())
 
         self._on_connected()
 
@@ -151,13 +151,13 @@ class TCPConnection(Connection):
         self._keepalive_id = GLib.timeout_add_seconds(5, self._send_keepalive)
 
     def _send_keepalive(self):
-        log.info('Send keepalive')
+        self._log.info('Send keepalive')
         self._keepalive_id = None
         if not self._con.get_output_stream().has_pending():
             self._write_all_async(' '.encode())
 
     def start_tls_negotiation(self):
-        log.info('Start TLS negotiation')
+        self._log.info('Start TLS negotiation')
         self._tls_handshake_in_progress = True
         remote_address = self._con.get_remote_address()
         identity = Gio.NetworkAddress.new(self._address.domain,
@@ -199,30 +199,30 @@ class TCPConnection(Connection):
             quark = GLib.quark_try_string('g-tls-error-quark')
             if error.matches(quark, Gio.TlsError.MISC):
                 if self._tls_handshake_in_progress:
-                    log.error('Handshake failed: %s', error)
+                    self._log.error('Handshake failed: %s', error)
                     self._finalize('connection-failed')
                     return
 
             if error.matches(quark, Gio.TlsError.EOF):
-                log.info('Incoming stream closed: TLS EOF')
+                self._log.info('Incoming stream closed: TLS EOF')
                 self._finalize('disconnected')
                 return
 
             if error.matches(quark, Gio.TlsError.BAD_CERTIFICATE):
-                log.info('Certificate Error: %s', error)
+                self._log.info('Certificate Error: %s', error)
                 self._finalize('disconnected')
                 return
 
-            log.error('Read Error: %s', error)
+            self._log.error('Read Error: %s', error)
             return
 
         data = data.get_data()
         if not data:
             if self._state == TCPState.DISCONNECTING:
-                log.info('Reveived zero data on _read_async()')
+                self._log.info('Reveived zero data on _read_async()')
                 self._finalize('disconnected')
             else:
-                log.warning('Reveived zero data on _read_async()')
+                self._log.warning('Reveived zero data on _read_async()')
             return
 
         self._renew_keepalive_timer()
@@ -235,7 +235,7 @@ class TCPConnection(Connection):
         try:
             self.notify('data-received', data)
         except Exception:
-            log.exception('Error while executing data-received:')
+            self._log.exception('Error while executing data-received:')
 
         self._read_async()
 
@@ -265,7 +265,7 @@ class TCPConnection(Connection):
                 self._write_stanza_buffer = None
                 return
 
-            log.error('Write Error: %s', error)
+            self._log.error('Write Error: %s', error)
             return
 
         self._renew_keepalive_timer()
@@ -282,7 +282,7 @@ class TCPConnection(Connection):
         try:
             self.notify('data-sent', data)
         except Exception:
-            log.exception('Error while executing data-sent:')
+            self._log.exception('Error while executing data-sent:')
 
         if self._output_closed and not self._write_queue:
             self._check_for_shutdown()
@@ -293,7 +293,7 @@ class TCPConnection(Connection):
 
     def send(self, stanza, now=False):
         if self._state in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
-            log.warning('send() not possible in state: %s', self._state)
+            self._log.warning('send() not possible in state: %s', self._state)
             return
 
         if now:
@@ -312,7 +312,7 @@ class TCPConnection(Connection):
             return
 
         if self._state in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
-            log.warning('Called disconnect on state: %s', self._state)
+            self._log.warning('Called disconnect on state: %s', self._state)
             return
 
         self.state = TCPState.DISCONNECTING
@@ -324,7 +324,7 @@ class TCPConnection(Connection):
 
     def shutdown_input(self):
         self._remove_keepalive_timer()
-        log.info('Shutdown input')
+        self._log.info('Shutdown input')
         self._input_closed = True
         self._read_cancellable.cancel()
         self._check_for_shutdown()
@@ -332,7 +332,7 @@ class TCPConnection(Connection):
     def shutdown_output(self):
         self._remove_keepalive_timer()
         self.state = TCPState.DISCONNECTING
-        log.info('Shutdown output')
+        self._log.info('Shutdown output')
         self._output_closed = True
 
     def _finalize(self, signal_name):
@@ -341,7 +341,7 @@ class TCPConnection(Connection):
             try:
                 self._con.get_socket().shutdown(True, True)
             except GLib.Error as error:
-                log.info(error)
+                self._log.info(error)
         self.state = TCPState.DISCONNECTED
         self.notify(signal_name)
         self.destroy()

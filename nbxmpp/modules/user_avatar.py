@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 import base64
 
 from nbxmpp.protocol import NS_AVATAR_DATA
@@ -31,12 +30,13 @@ from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
 from nbxmpp.modules.pubsub import get_pubsub_request
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.user_avatar')
 
-
-class UserAvatar:
+class UserAvatar(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -59,25 +59,26 @@ class UserAvatar:
 
         metadata = item.getTag('metadata', namespace=NS_AVATAR_METADATA)
         if metadata is None:
-            log.warning('No metadata node found')
-            log.warning(stanza)
+            self._log.warning('No metadata node found')
+            self._log.warning(stanza)
             raise NodeProcessed
 
         if not metadata.getChildren():
-            log.info('Received avatar metadata: %s - no avatar set',
-                     properties.jid)
+            self._log.info('Received avatar metadata: %s - no avatar set',
+                           properties.jid)
             return
 
         info = metadata.getTags('info', one=True)
         try:
             data = AvatarMetaData(**info.getAttrs())
         except Exception:
-            log.warning('Malformed user avatar data')
-            log.warning(stanza)
+            self._log.warning('Malformed user avatar data')
+            self._log.warning(stanza)
             raise NodeProcessed
 
         pubsub_event = properties.pubsub_event._replace(data=data)
-        log.info('Received avatar metadata: %s - %s', properties.jid, data)
+        self._log.info('Received avatar metadata: %s - %s',
+                       properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 
@@ -92,31 +93,31 @@ class UserAvatar:
             jid = JID(self._client.get_bound_jid().getBare())
 
         if not isResultNode(stanza):
-            return raise_error(log.warning, stanza)
+            return raise_error(self._log.warning, stanza)
 
         pubsub_node = stanza.getTag('pubsub')
         items_node = pubsub_node.getTag('items')
         item = items_node.getTag('item')
         if item is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'No item in node found')
 
         sha = item.getAttr('id')
         data_node = item.getTag('data', namespace=NS_AVATAR_DATA)
         if data_node is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'No data node found')
 
         data = data_node.getData()
         if data is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'Data node empty')
 
         try:
             data = base64.b64decode(data.encode('utf-8'))
         except Exception as error:
-            return raise_error(log.warning, stanza,
+            return raise_error(self._log.warning, stanza,
                                'stanza-malformed', str(error))
 
-        log.info('Received avatar data: %s %s', jid, sha)
+        self._log.info('Received avatar data: %s %s', jid, sha)
         return AvatarData(jid, sha, data)

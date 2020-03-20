@@ -15,18 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_VCARD_UPDATE
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import PresenceType
 from nbxmpp.const import AvatarState
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.vcard_avatar')
 
-
-class VCardAvatar:
+class VCardAvatar(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='presence',
@@ -35,8 +34,7 @@ class VCardAvatar:
                           priority=15)
         ]
 
-    @staticmethod
-    def _process_avatar(_client, stanza, properties):
+    def _process_avatar(self, _client, stanza, properties):
         if properties.type != PresenceType.AVAILABLE:
             return
 
@@ -47,15 +45,16 @@ class VCardAvatar:
         avatar_sha = update.getTagData('photo')
         if avatar_sha is None:
             properties.avatar_state = AvatarState.NOT_READY
-            log.info('%s is not ready to promote an avatar', stanza.getFrom())
+            self._log.info('%s is not ready to promote an avatar',
+                           stanza.getFrom())
             # Empty update element, ignore
             return
 
         if avatar_sha == '':
             properties.avatar_state = AvatarState.EMPTY
-            log.info('%s empty avatar advertised', stanza.getFrom())
+            self._log.info('%s empty avatar advertised', stanza.getFrom())
             return
 
         properties.avatar_sha = avatar_sha
         properties.avatar_state = AvatarState.ADVERTISED
-        log.info('%s advertises %s', stanza.getFrom(), avatar_sha)
+        self._log.info('%s advertises %s', stanza.getFrom(), avatar_sha)

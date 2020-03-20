@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_BOOKMARKS
 from nbxmpp.protocol import NS_BOOKMARKS_2
 from nbxmpp.protocol import NS_PUBSUB_EVENT
@@ -39,9 +37,7 @@ from nbxmpp.modules.pubsub import get_pubsub_item
 from nbxmpp.modules.pubsub import get_pubsub_items
 from nbxmpp.modules.pubsub import get_pubsub_request
 from nbxmpp.modules.pubsub import get_publish_options
-
-
-log = logging.getLogger('nbxmpp.m.bookmarks')
+from nbxmpp.modules.base import BaseModule
 
 
 BOOKMARK_1_OPTIONS = {
@@ -59,8 +55,10 @@ BOOKMARK_2_OPTIONS = {
 }
 
 
-class Bookmarks:
+class Bookmarks(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -92,19 +90,19 @@ class Bookmarks:
 
         storage_node = item.getTag('storage', namespace=NS_BOOKMARKS)
         if storage_node is None:
-            log.warning('No storage node found')
-            log.warning(stanza)
+            self._log.warning('No storage node found')
+            self._log.warning(stanza)
             raise NodeProcessed
 
         bookmarks = self._parse_bookmarks(storage_node)
         if not bookmarks:
-            log.info('Bookmarks removed')
+            self._log.info('Bookmarks removed')
             return
 
         pubsub_event = properties.pubsub_event._replace(data=bookmarks)
-        log.info('Received bookmarks from: %s', properties.jid)
+        self._log.info('Received bookmarks from: %s', properties.jid)
         for bookmark in bookmarks:
-            log.info(bookmark)
+            self._log.info(bookmark)
 
         properties.pubsub_event = pubsub_event
 
@@ -125,13 +123,12 @@ class Bookmarks:
             raise NodeProcessed
 
         pubsub_event = properties.pubsub_event._replace(data=bookmark_item)
-        log.info('Received bookmark item from: %s', properties.jid)
-        log.info(bookmark_item)
+        self._log.info('Received bookmark item from: %s', properties.jid)
+        self._log.info(bookmark_item)
 
         properties.pubsub_event = pubsub_event
 
-    @staticmethod
-    def _parse_bookmarks(storage):
+    def _parse_bookmarks(self, storage):
         bookmarks = []
         confs = storage.getTags('conference')
         for conf in confs:
@@ -142,15 +139,15 @@ class Bookmarks:
                 try:
                     autojoin = from_xs_boolean(autojoin)
                 except ValueError as error:
-                    log.warning(error)
-                    log.warning(storage)
+                    self._log.warning(error)
+                    self._log.warning(storage)
                     autojoin = False
 
             try:
                 jid = JID(conf.getAttr('jid'))
             except Exception as error:
-                log.warning('Invalid JID: %s, %s',
-                            conf.getAttr('jid'), error)
+                self._log.warning('Invalid JID: %s, %s',
+                                  conf.getAttr('jid'), error)
                 continue
 
             bookmark = BookmarkData(
@@ -163,24 +160,23 @@ class Bookmarks:
 
         return bookmarks
 
-    @staticmethod
-    def _parse_bookmarks2(item):
+    def _parse_bookmarks2(self, item):
         jid = item.getAttr('id')
         if jid is None:
-            log.warning('No id attr found')
+            self._log.warning('No id attr found')
             return None
 
         try:
             jid = JID(jid)
         except Exception as error:
-            log.warning('Invalid JID: %s', error)
-            log.warning(item)
+            self._log.warning('Invalid JID: %s', error)
+            self._log.warning(item)
             return None
 
         conference = item.getTag('conference', namespace=NS_BOOKMARKS_2)
         if conference is None:
-            log.warning('No conference node found')
-            log.warning(item)
+            self._log.warning('No conference node found')
+            self._log.warning(item)
             return None
 
         autojoin = conference.getAttr('autojoin') in ('True', 'true', '1')
@@ -203,30 +199,32 @@ class Bookmarks:
     def request_bookmarks(self, type_):
         jid = self._client.get_bound_jid().getBare()
         if type_ == BookmarkStoreType.PUBSUB_BOOKMARK_2:
-            log.info('Request bookmarks 2 (PubSub)')
+            self._log.info('Request bookmarks 2 (PubSub)')
             request = get_pubsub_request(jid, NS_BOOKMARKS_2)
             return request, {'type_': type_}
 
         if type_ == BookmarkStoreType.PUBSUB_BOOKMARK_1:
-            log.info('Request bookmarks (PubSub)')
+            self._log.info('Request bookmarks (PubSub)')
             request = get_pubsub_request(jid, NS_BOOKMARKS, max_items=1)
             return request, {'type_': type_}
 
         if type_ == BookmarkStoreType.PRIVATE:
-            log.info('Request bookmarks (Private Storage)')
+            self._log.info('Request bookmarks (Private Storage)')
             return self.get_private_request(), {'type_': type_}
         return None
 
     @callback
     def _bookmarks_received(self, stanza, type_):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         bookmarks = []
         if type_ == BookmarkStoreType.PUBSUB_BOOKMARK_2:
             items = get_pubsub_items(stanza, NS_BOOKMARKS_2)
             if items is None:
-                return raise_error(log.warning, stanza, 'stanza-malformed')
+                return raise_error(self._log.warning,
+                                   stanza,
+                                   'stanza-malformed')
 
             for item in items:
                 bookmark_item = self._parse_bookmarks2(item)
@@ -238,7 +236,9 @@ class Bookmarks:
             if item is not None:
                 storage_node = item.getTag('storage', namespace=NS_BOOKMARKS)
                 if storage_node is None:
-                    return raise_error(log.warning, stanza, 'stanza-malformed',
+                    return raise_error(self._log.warning,
+                                       stanza,
+                                       'stanza-malformed',
                                        'No storage node')
 
                 if storage_node.getChildren():
@@ -248,7 +248,9 @@ class Bookmarks:
             query = stanza.getQuery()
             storage_node = query.getTag('storage', namespace=NS_BOOKMARKS)
             if storage_node is None:
-                return raise_error(log.warning, stanza, 'stanza-malformed',
+                return raise_error(self._log.warning,
+                                   stanza,
+                                   'stanza-malformed',
                                    'No storage node')
 
             if storage_node.getChildren():
@@ -257,9 +259,9 @@ class Bookmarks:
         from_ = stanza.getFrom()
         if from_ is None:
             from_ = self._client.get_bound_jid().getBare()
-        log.info('Received bookmarks from: %s', from_)
+        self._log.info('Received bookmarks from: %s', from_)
         for bookmark in bookmarks:
-            log.info(bookmark)
+            self._log.info(bookmark)
         return bookmarks
 
     @staticmethod
@@ -298,14 +300,14 @@ class Bookmarks:
             self._store_with_private(bookmarks)
 
     def retract_bookmark(self, bookmark_jid):
-        log.info('Retract Bookmark: %s', bookmark_jid)
+        self._log.info('Retract Bookmark: %s', bookmark_jid)
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').retract(jid,
                                                   NS_BOOKMARKS_2,
                                                   str(bookmark_jid))
 
     def _store_bookmark_1(self, bookmarks):
-        log.info('Store Bookmarks 1 (PubSub)')
+        self._log.info('Store Bookmarks 1 (PubSub)')
         jid = self._client.get_bound_jid().getBare()
         self._bookmark_1_queue = bookmarks
         item = self._build_storage_node(bookmarks)
@@ -321,10 +323,10 @@ class Bookmarks:
 
     def _store_bookmark_2(self, bookmarks):
         if self._node_configuration_not_possible:
-            log.warning('Node configuration not possible')
+            self._log.warning('Node configuration not possible')
             return
 
-        log.info('Store Bookmarks 2 (PubSub)')
+        self._log.info('Store Bookmarks 2 (PubSub)')
         jid = self._client.get_bound_jid().getBare()
         for bookmark in bookmarks:
             self._bookmark_2_queue[bookmark.jid] = bookmark
@@ -360,11 +362,11 @@ class Bookmarks:
         else:
             self._bookmark_1_queue = []
             self._bookmark_2_queue.pop(result.id, None)
-            log.warning(result)
+            self._log.warning(result)
 
     def _on_node_configuration_received(self, result):
         if is_error_result(result):
-            log.warning(result)
+            self._log.warning(result)
             self._bookmark_1_queue = []
             self._bookmark_2_queue.clear()
             return
@@ -383,13 +385,13 @@ class Bookmarks:
     def _on_node_configuration_finished(self, result):
         self._node_configuration_in_progress = False
         if is_error_result(result):
-            log.warning(result)
+            self._log.warning(result)
             self._bookmark_2_queue.clear()
             self._bookmark_1_queue = []
             self._node_configuration_not_possible = True
             return
 
-        log.info('Republish bookmarks')
+        self._log.info('Republish bookmarks')
         if self._bookmark_2_queue:
             bookmarks = self._bookmark_2_queue.copy()
             self._bookmark_2_queue.clear()
@@ -411,12 +413,11 @@ class Bookmarks:
 
     @call_on_response('_on_private_store_result')
     def _store_with_private(self, bookmarks):
-        log.info('Store Bookmarks (Private Storage)')
+        self._log.info('Store Bookmarks (Private Storage)')
         storage_node = self._build_storage_node(bookmarks)
         return Iq('set', NS_PRIVATE, payload=storage_node)
 
-    @staticmethod
-    def _on_private_store_result(_client, stanza):
+    def _on_private_store_result(self, _client, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
         return None

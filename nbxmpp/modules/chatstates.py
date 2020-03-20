@@ -15,18 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_CHATSTATES
 from nbxmpp.protocol import NS_DELAY2
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import CHATSTATES
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.chatstates')
 
-
-class Chatstates:
+class Chatstates(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -47,8 +46,8 @@ class Chatstates:
             return
 
         if chatstate not in CHATSTATES:
-            log.warning('Invalid chatstate: %s', chatstate)
-            log.warning(stanza)
+            self._log.warning('Invalid chatstate: %s', chatstate)
+            self._log.warning(stanza)
             return
 
         properties.chatstate = chatstate

@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_VERSION
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
@@ -28,12 +26,13 @@ from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.software_version')
 
-
-class SoftwareVersion:
+class SoftwareVersion(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='iq',
@@ -53,19 +52,19 @@ class SoftwareVersion:
 
     @call_on_response('_software_version_received')
     def request_software_version(self, jid):
-        log.info('Request software version for %s', jid)
+        self._log.info('Request software version for %s', jid)
         return Iq(typ='get', to=jid, queryNS=NS_VERSION)
 
     @callback
     def _software_version_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         try:
             return SoftwareVersionResult(*self._parse_info(stanza))
         except Exception as error:
-            log.warning(error)
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            self._log.warning(error)
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
     @staticmethod
     def _parse_info(stanza):
@@ -83,13 +82,13 @@ class SoftwareVersion:
         self._enabled = True
 
     def _answer_request(self, _con, stanza, _properties):
-        log.info('Request received from %s', stanza.getFrom())
+        self._log.info('Request received from %s', stanza.getFrom())
         if (not self._enabled or
                 self._name is None or
                 self._version is None):
             iq = stanza.buildReply('error')
             iq.addChild(node=ErrorNode(ERR_SERVICE_UNAVAILABLE))
-            log.info('Send service-unavailable')
+            self._log.info('Send service-unavailable')
 
         else:
             iq = stanza.buildReply('result')
@@ -98,8 +97,8 @@ class SoftwareVersion:
             query.setTagData('version', self._version)
             if self._os is not None:
                 query.setTagData('os', self._os)
-            log.info('Send software version: %s %s %s',
-                     self._name, self._version, self._os)
+            self._log.info('Send software version: %s %s %s',
+                           self._name, self._version, self._os)
 
         self._client.send_stanza(iq)
         raise NodeProcessed

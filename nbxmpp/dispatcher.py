@@ -84,6 +84,7 @@ from nbxmpp.util import get_invalid_xml_regex
 from nbxmpp.util import is_websocket_close
 from nbxmpp.util import is_websocket_stream_error
 from nbxmpp.util import Observable
+from nbxmpp.util import LogAdapter
 
 
 log = logging.getLogger('nbxmpp.dispatcher')
@@ -100,12 +101,14 @@ class StanzaDispatcher(Observable):
 
     """
 
-    def __init__(self, client):
+    def __init__(self, client, log_context):
         Observable.__init__(self, log)
         self._client = client
         self._modules = {}
         self._parser = None
         self._websocket_stream_error = None
+
+        self._log = LogAdapter(log, {'context': log_context})
 
         self._handlers = {}
 
@@ -132,7 +135,7 @@ class StanzaDispatcher(Observable):
         self._register_modules()
 
     def set_dispatch_callback(self, callback):
-        log.info('Set dispatch callback: %s', callback)
+        self._log.info('Set dispatch callback: %s', callback)
         self._dispatch_callback = callback
 
     def get_module(self, name):
@@ -212,7 +215,7 @@ class StanzaDispatcher(Observable):
                         self._websocket_stream_error = name
 
             elif is_websocket_close(stanza):
-                log.info('Stream <close> received')
+                self._log.info('Stream <close> received')
                 self.notify('stream-end', self._websocket_stream_error)
                 return
 
@@ -222,13 +225,13 @@ class StanzaDispatcher(Observable):
         try:
             self._parser.Parse(data)
         except (ExpatError, ValueError) as error:
-            log.error('XML parsing error: %s', error)
+            self._log.error('XML parsing error: %s', error)
             self.notify('parsing-error', error)
             return
 
         # end stream:stream tag received
         if self._parser.has_received_endtag():
-            log.info('End of stream: %s', self._parser.streamError)
+            self._log.info('End of stream: %s', self._parser.streamError)
             self.notify('stream-end', self._parser.streamError)
             return
 
@@ -236,7 +239,7 @@ class StanzaDispatcher(Observable):
         """
         Setup handler structure for namespace
         """
-        log.debug('Register namespace "%s"', xmlns)
+        self._log.debug('Register namespace "%s"', xmlns)
         self._handlers[xmlns] = {}
         self._register_protocol('error', Protocol, xmlns=xmlns)
         self._register_protocol('unknown', Protocol, xmlns=xmlns)
@@ -248,8 +251,8 @@ class StanzaDispatcher(Observable):
         """
         if xmlns is None:
             xmlns = NS_CLIENT
-        log.debug('Register protocol "%s (%s)" as %s',
-                  tag_name, xmlns, protocol)
+        self._log.debug('Register protocol "%s (%s)" as %s',
+                        tag_name, xmlns, protocol)
         self._handlers[xmlns][tag_name] = {'type': protocol, 'default': []}
 
     def register_handler(self, name, handler, typ='', ns='',
@@ -272,8 +275,8 @@ class StanzaDispatcher(Observable):
         if not typ and not ns:
             typ = 'default'
 
-        log.debug('Register handler %s for "%s" type->%s ns->%s(%s) priority->%s',
-                  handler, name, typ, ns, xmlns, priority)
+        self._log.debug('Register handler %s for "%s" type->%s ns->%s(%s) priority->%s',
+                        handler, name, typ, ns, xmlns, priority)
 
         if xmlns not in self._handlers:
             self._register_namespace(xmlns)
@@ -313,11 +316,11 @@ class StanzaDispatcher(Observable):
             try:
                 self._handlers[xmlns][name][specific].remove(handler_dict)
             except ValueError:
-                log.warning('Unregister failed: %s for "%s" type->%s ns->%s(%s)',
-                            handler, name, typ, ns, xmlns)
+                self._log.warning('Unregister failed: %s for "%s" type->%s ns->%s(%s)',
+                                  handler, name, typ, ns, xmlns)
             else:
-                log.debug('Unregister handler %s for "%s" type->%s ns->%s(%s)',
-                          handler, name, typ, ns, xmlns)
+                self._log.debug('Unregister handler %s for "%s" type->%s ns->%s(%s)',
+                                handler, name, typ, ns, xmlns)
 
     def _default_handler(self, stanza):
         """
@@ -344,19 +347,19 @@ class StanzaDispatcher(Observable):
         xmlns = stanza.getNamespace()
 
         if xmlns not in self._handlers:
-            log.warning('Unknown namespace: %s', xmlns)
+            self._log.warning('Unknown namespace: %s', xmlns)
             xmlns = 'unknown'
 
         if name not in self._handlers[xmlns]:
-            log.warning('Unknown stanza: %s', stanza)
+            self._log.warning('Unknown stanza: %s', stanza)
             name = 'unknown'
 
         # Convert simplexml to Protocol object
         try:
             stanza = self._handlers[xmlns][name]['type'](node=stanza)
         except InvalidJid:
-            log.warning('Invalid JID, ignoring stanza')
-            log.warning(stanza)
+            self._log.warning('Invalid JID, ignoring stanza')
+            self._log.warning(stanza)
             return
 
         own_jid = self._client.get_bound_jid()
@@ -376,7 +379,8 @@ class StanzaDispatcher(Observable):
             if to is None:
                 stanza.setTo(own_jid)
             elif not to.bareMatch(own_jid):
-                log.warning('Message addressed to someone else: %s', stanza)
+                self._log.warning('Message addressed to someone else: %s',
+                                  stanza)
                 return
 
             if stanza.getFrom() is None:
@@ -386,19 +390,19 @@ class StanzaDispatcher(Observable):
             try:
                 stanza, properties.carbon = unwrap_carbon(stanza, own_jid)
             except (InvalidFrom, InvalidJid) as exc:
-                log.warning(exc)
-                log.warning(stanza)
+                self._log.warning(exc)
+                self._log.warning(stanza)
                 return
             except NodeProcessed as exc:
-                log.info(exc)
+                self._log.info(exc)
                 return
 
             # Unwrap mam
             try:
                 stanza, properties.mam = unwrap_mam(stanza, own_jid)
             except (InvalidStanza, InvalidJid) as exc:
-                log.warning(exc)
-                log.warning(stanza)
+                self._log.warning(exc)
+                self._log.warning(stanza)
                 return
 
         typ = stanza.getType()
@@ -408,7 +412,7 @@ class StanzaDispatcher(Observable):
             typ = ''
 
         stanza.props = stanza.getProperties()
-        log.debug('type: %s, properties: %s', typ, stanza.props)
+        self._log.debug('type: %s, properties: %s', typ, stanza.props)
 
         # Process callbacks
         _id = stanza.getID()
@@ -421,7 +425,7 @@ class StanzaDispatcher(Observable):
             try:
                 func(self._client, stanza, **user_data)
             except Exception:
-                log.exception('Error while handling stanza')
+                self._log.exception('Error while handling stanza')
             return
 
         # Gather specifics depending on stanza properties
@@ -444,13 +448,13 @@ class StanzaDispatcher(Observable):
         chain.sort(key=lambda x: x['priority'])
 
         for handler in chain:
-            log.info('Call handler: %s', handler['func'].__qualname__)
+            self._log.info('Call handler: %s', handler['func'].__qualname__)
             try:
                 handler['func'](self._client, stanza, properties)
             except NodeProcessed:
                 return
             except Exception:
-                log.exception('Handler exception:')
+                self._log.exception('Handler exception:')
                 return
 
         # Stanza was not processed call default handler
@@ -458,16 +462,16 @@ class StanzaDispatcher(Observable):
 
     def add_callback_for_id(self, id_, func, timeout, user_data):
         if timeout is not None and self._timeout_id is None:
-            log.info('Add timeout source')
+            self._log.info('Add timeout source')
             self._timeout_id = GLib.timeout_add_seconds(
                 1, self._timeout_check)
             timeout = time.monotonic() + timeout
         self._id_callbacks[id_] = (func, timeout, user_data)
 
     def _timeout_check(self):
-        log.info('Run timeout check')
+        self._log.info('Run timeout check')
         if not self._id_callbacks:
-            log.info('Remove timeout source, no callbacks scheduled')
+            self._log.info('Remove timeout source, no callbacks scheduled')
             self._timeout_id = None
             return False
 

@@ -48,6 +48,7 @@ from nbxmpp.util import get_stanza_id
 from nbxmpp.util import Observable
 from nbxmpp.util import validate_stream_header
 from nbxmpp.util import is_error_result
+from nbxmpp.util import LogAdapter
 
 log = logging.getLogger('nbxmpp.stream')
 
@@ -55,7 +56,7 @@ log = logging.getLogger('nbxmpp.stream')
 
 
 class Client(Observable):
-    def __init__(self):
+    def __init__(self, log_context=None):
         '''
         Signals:
             resume-failed
@@ -67,7 +68,15 @@ class Client(Observable):
             stanza-sent
             stanza-received
         '''
-        Observable.__init__(self, log)
+
+        self._log_context = log_context
+        if log_context is None:
+            self._log_context = str(id(self))
+
+        self._log = LogAdapter(log, {'context': self._log_context})
+
+        Observable.__init__(self, self._log)
+
         self._jid = None
         self._lang = 'en'
         self._domain = None
@@ -108,15 +117,19 @@ class Client(Observable):
 
         self._ping_source_id = None
 
-        self._dispatcher = StanzaDispatcher(self)
+        self._dispatcher = StanzaDispatcher(self, self._log_context)
         self._dispatcher.subscribe('before-dispatch', self._on_before_dispatch)
         self._dispatcher.subscribe('parsing-error', self._on_parsing_error)
         self._dispatcher.subscribe('stream-end', self._on_stream_end)
 
-        self._smacks = Smacks(self)
-        self._sasl = SASL(self)
+        self._smacks = Smacks(self, self._log_context)
+        self._sasl = SASL(self, self._log_context)
 
         self._state = StreamState.DISCONNECTED
+
+    @property
+    def log_context(self):
+        return self._log_context
 
     @property
     def features(self):
@@ -215,7 +228,7 @@ class Client(Observable):
     @state.setter
     def state(self, value):
         self._state = value
-        log.info('Set state: %s', value)
+        self._log.info('Set state: %s', value)
 
     def set_state(self, state):
         self.state = state
@@ -281,18 +294,20 @@ class Client(Observable):
         self._error = None, None, None
 
     def _set_error(self, domain, error, text=None):
-        log.info('Set error: %s, %s, %s', domain, error, text)
+        self._log.info('Set error: %s, %s, %s', domain, error, text)
         self._error = domain, error, text
 
     def _connect(self):
         if self._state not in (StreamState.DISCONNECTED, StreamState.RESOLVED):
-            log.error('Stream can\'t connect, stream state: %s', self._state)
+            self._log.error('Stream can\'t connect, stream state: %s',
+                            self._state)
             return
 
         self.state = StreamState.CONNECTING
         self._reset_error()
 
-        self._con = self._get_connection(self._current_address,
+        self._con = self._get_connection(self._log_context,
+                                         self._current_address,
                                          self._accepted_certificates,
                                          self._ignore_tls_errors,
                                          self._ignored_tls_errors,
@@ -314,15 +329,16 @@ class Client(Observable):
 
     def connect(self):
         if self._state != StreamState.DISCONNECTED:
-            log.error('Stream can\'t reconnect, stream state: %s', self._state)
+            self._log.error('Stream can\'t reconnect, stream state: %s',
+                            self._state)
             return
 
         if self._connect_successful:
-            log.info('Reconnect')
+            self._log.info('Reconnect')
             self._connect()
             return
 
-        log.info('Connect')
+        self._log.info('Connect')
         self._reset_error()
         self.state = StreamState.RESOLVE
 
@@ -333,8 +349,8 @@ class Client(Observable):
         self._addresses.resolve()
 
     def _on_addresses_resolved(self, _addresses, _signal_name):
-        log.info('Domain resolved')
-        log.info(self._addresses)
+        self._log.info('Domain resolved')
+        self._log.info(self._addresses)
         self.state = StreamState.RESOLVED
         self._address_generator = self._addresses.get_next_address(
             self.connection_types,
@@ -348,14 +364,14 @@ class Client(Observable):
         except NoMoreAddresses:
             self._current_address = None
             self.state = StreamState.DISCONNECTED
-            log.error('Unable to connect to %s', self._addresses.domain)
+            self._log.error('Unable to connect to %s', self._addresses.domain)
             self._set_error(StreamError.CONNECTION_FAILED,
                             'connection-failed',
                             'Unable to connect to %s' % self._addresses.domain)
             self.notify('connection-failed')
             return
 
-        log.info('Current address: %s', self._current_address)
+        self._log.info('Current address: %s', self._current_address)
         self._connect()
 
     def disconnect(self, immediate=False):
@@ -370,8 +386,8 @@ class Client(Observable):
 
         if self._state in (StreamState.DISCONNECTED,
                            StreamState.DISCONNECTING):
-            log.warning('Stream can\'t disconnect, stream state: %s',
-                        self._state)
+            self._log.warning('Stream can\'t disconnect, stream state: %s',
+                              self._state)
             return
 
         self._disconnect(immediate=immediate)
@@ -457,7 +473,7 @@ class Client(Observable):
         self._peer_certificate, self._peer_certificate_errors = connection.peer_certificate
 
     def accept_certificate(self):
-        log.info('Certificate accepted')
+        self._log.info('Certificate accepted')
         self._accepted_certificates.append(self._peer_certificate)
         self._connect()
 
@@ -482,17 +498,17 @@ class Client(Observable):
             return
 
         if self._ping_source_id is not None:
-            log.info('Remove ping timer')
+            self._log.info('Remove ping timer')
             GLib.source_remove(self._ping_source_id)
             self._ping_source_id = None
 
-        log.info('Start ping timer')
+        self._log.info('Start ping timer')
         self._ping_source_id = GLib.timeout_add_seconds(180, self._ping)
 
     def _remove_ping_timer(self):
         if self._ping_source_id is None:
             return
-        log.info('Remove ping timer')
+        self._log.info('Remove ping timer')
         GLib.source_remove(self._ping_source_id)
         self._ping_source_id = None
 
@@ -523,10 +539,10 @@ class Client(Observable):
         self._con.send(nonza, now)
 
     def _xmpp_state_machine(self, stanza=None):
-        log.info('Execute state machine')
+        self._log.info('Execute state machine')
         if stanza is not None:
             if stanza.getName() == 'error':
-                log.info('Stream error')
+                self._log.info('Stream error')
                 # TODO:
                 # self._disconnect_with_error(StreamError.SASL,
                 #                             stanza.get_condition())
@@ -549,7 +565,7 @@ class Client(Observable):
                                                          self._domain,
                                                          self.is_websocket)
             except StanzaMalformed as error:
-                log.error(error)
+                self._log.error(error)
                 self._disconnect_with_error(StreamError.STREAM,
                                             'stanza-malformed',
                                             'Invalid stream header')
@@ -567,7 +583,7 @@ class Client(Observable):
 
         elif self.state == StreamState.WAIT_FOR_FEATURES:
             if stanza.getName() != 'features':
-                log.error('Invalid response: %s', stanza)
+                self._log.error('Invalid response: %s', stanza)
                 self._disconnect_with_error(
                     StreamError.STREAM,
                     'stanza-malformed',
@@ -594,7 +610,7 @@ class Client(Observable):
                 self._start_stream()
                 return
 
-            log.error('Invalid response')
+            self._log.error('Invalid response')
             self._disconnect_with_error(StreamError.TLS,
                                         'stanza-malformed',
                                         'Invalid TLS response')
@@ -677,21 +693,21 @@ class Client(Observable):
             tls_supported, required = features.has_starttls()
             if self._current_address.type == ConnectionType.PLAIN:
                 if tls_supported and required:
-                    log.error('Server requires TLS')
+                    self._log.error('Server requires TLS')
                     self._disconnect_with_error(StreamError.TLS, 'tls-required')
                     return
                 self._start_auth(features)
                 return
 
             if not tls_supported:
-                log.error('Server does not support TLS')
+                self._log.error('Server does not support TLS')
                 self._disconnect_with_error(StreamError.TLS,
                                             'tls-not-supported')
                 return
             self._start_tls()
 
     def _start_stream(self):
-        log.info('Start stream')
+        self._log.info('Start stream')
         self._stream_id = None
         self._dispatcher.reset_parser()
         header = get_stream_header(self._domain, self._lang, self.is_websocket)
@@ -704,7 +720,7 @@ class Client(Observable):
 
     def _start_auth(self, features):
         if not features.has_sasl():
-            log.error('Server does not support SASL')
+            self._log.error('Server does not support SASL')
             self._disconnect_with_error(StreamError.SASL,
                                         'sasl-not-supported')
             return
@@ -712,28 +728,28 @@ class Client(Observable):
         self._sasl.start_auth(features)
 
     def _start_bind(self):
-        log.info('Send bind')
+        self._log.info('Send bind')
         bind_request = BindRequest(self.resource)
         self.send_stanza(bind_request)
         self.state = StreamState.WAIT_FOR_BIND
 
     def _on_bind(self, stanza):
         if not isResultNode(stanza):
-            log.error('Binding failed: %s.', stanza.getTag('error'))
+            self._log.error('Binding failed: %s.', stanza.getTag('error'))
             if stanza.getError() == 'conflict' and self.resource is not None:
-                log.info('Try to request server generated resource')
+                self._log.info('Try to request server generated resource')
                 self._start_bind()
                 return
             self.set_state(StreamState.BIND_FAILED)
             return
 
         jid = stanza.getTag('bind').getTagData('jid')
-        log.info('Successfully bound %s', jid)
+        self._log.info('Successfully bound %s', jid)
         self._set_bound_jid(jid)
 
         if not self._session_required:
             # Server don't want us to initialize a session
-            log.info('No session required')
+            self._log.info('No session required')
             self.set_state(StreamState.BIND_SUCCESSFUL)
         else:
             session_request = SessionRequest()
@@ -742,26 +758,26 @@ class Client(Observable):
 
     def _on_session(self, stanza):
         if isResultNode(stanza):
-            log.info('Successfully started session')
+            self._log.info('Successfully started session')
             self.set_state(StreamState.BIND_SUCCESSFUL)
         else:
-            log.error('Session open failed')
+            self._log.error('Session open failed')
             self.set_state(StreamState.SESSION_FAILED)
 
     def _ping(self):
         iq = Iq('get', to=self._jid.getBare())
         iq.addChild(name='ping', namespace=NS_PING)
         self.send_stanza(iq, timeout=10, callback=self._on_pong)
-        log.info('Ping')
+        self._log.info('Ping')
 
     def _on_pong(self, _client, result):
         self._ping_source_id = None
         if is_error_result(result):
             if result.condition == 'timeout':
-                log.info('Ping timeout')
+                self._log.info('Ping timeout')
                 self._disconnect(immediate=True)
                 return
-        log.info('Pong')
+        self._log.info('Pong')
 
     def register_handler(self, *args, **kwargs):
         self._dispatcher.register_handler(*args, **kwargs)

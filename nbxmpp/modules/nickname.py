@@ -15,19 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_NICK
 from nbxmpp.protocol import NS_PUBSUB_EVENT
 from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import PresenceType
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.nickname')
 
-
-class Nickname:
+class Nickname(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -71,10 +70,11 @@ class Nickname:
 
         nick = self._parse_nickname(item)
         if nick is None:
-            log.info('Received nickname: %s - nickname removed', properties.jid)
+            self._log.info('Received nickname: %s - nickname removed',
+                           properties.jid)
             return
 
-        log.info('Received nickname: %s - %s', properties.jid, nick)
+        self._log.info('Received nickname: %s - %s', properties.jid, nick)
         properties.pubsub_event = properties.pubsub_event._replace(data=nick)
 
     @staticmethod

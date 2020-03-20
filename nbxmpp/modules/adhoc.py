@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_COMMANDS
 from nbxmpp.protocol import NS_DISCO_ITEMS
 from nbxmpp.protocol import NS_DATA
@@ -32,13 +30,13 @@ from nbxmpp.const import AdHocStatus
 from nbxmpp.const import AdHocAction
 from nbxmpp.const import AdHocNoteType
 from nbxmpp.modules.discovery import get_disco_request
+from nbxmpp.modules.base import BaseModule
 
 
-log = logging.getLogger('nbxmpp.m.adhoc')
-
-
-class AdHoc:
+class AdHoc(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = []
 
@@ -51,11 +49,11 @@ class AdHoc:
     @callback
     def _command_list_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         payload = stanza.getQueryPayload()
         if payload is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
         command_list = []
         for item in payload:
@@ -64,8 +62,10 @@ class AdHoc:
             try:
                 command_list.append(AdHocCommand(**item.getAttrs()))
             except Exception as error:
-                log.warning(error)
-                return raise_error(log.warning, stanza, 'stanza-malformed')
+                self._log.warning(error)
+                return raise_error(self._log.warning,
+                                   stanza,
+                                   'stanza-malformed')
 
         return command_list
 
@@ -89,11 +89,11 @@ class AdHoc:
     @callback
     def _command_result_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         command = stanza.getTag('command', namespace=NS_COMMANDS)
         if command is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
         attrs = command.getAttrs()
         notes = []
@@ -121,5 +121,5 @@ class AdHoc:
                 actions=actions,
                 notes=notes)
         except Exception as error:
-            log.warning(error)
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            self._log.warning(error)
+            return raise_error(self._log.warning, stanza, 'stanza-malformed')

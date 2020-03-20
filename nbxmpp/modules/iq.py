@@ -15,20 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import Error as ErrorStanza
 from nbxmpp.protocol import ERR_BAD_REQUEST
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import error_factory
 from nbxmpp.const import IqType
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.iq')
 
-
-class BaseIq:
+class BaseIq(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='iq',
@@ -40,8 +39,8 @@ class BaseIq:
         try:
             properties.type = IqType(stanza.getType())
         except ValueError:
-            log.warning('Message with invalid type: %s', stanza.getType())
-            log.warning(stanza)
+            self._log.warning('Message with invalid type: %s', stanza.getType())
+            self._log.warning(stanza)
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 

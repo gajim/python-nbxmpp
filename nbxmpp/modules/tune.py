@@ -15,20 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_TUNE
 from nbxmpp.protocol import NS_PUBSUB_EVENT
 from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import TuneData
 from nbxmpp.const import TUNE_DATA
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.tune')
 
-
-class Tune:
+class Tune(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -51,7 +50,7 @@ class Tune:
 
         tune_node = item.getTag('tune', namespace=NS_TUNE)
         if not tune_node.getChildren():
-            log.info('Received tune: %s - no tune set', properties.jid)
+            self._log.info('Received tune: %s - no tune set', properties.jid)
             return
 
         tune_dict = {}
@@ -60,7 +59,7 @@ class Tune:
 
         data = TuneData(**tune_dict)
         pubsub_event = properties.pubsub_event._replace(data=data)
-        log.info('Received tune: %s - %s', properties.jid, data)
+        self._log.info('Received tune: %s - %s', properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 

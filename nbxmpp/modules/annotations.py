@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_PRIVATE
 from nbxmpp.protocol import NS_ROSTERNOTES
 from nbxmpp.protocol import Iq
@@ -29,12 +27,13 @@ from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.annotations')
 
-
-class Annotations:
+class Annotations(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = []
 
@@ -44,18 +43,18 @@ class Annotations:
 
     @call_on_response('_annotations_received')
     def request_annotations(self):
-        log.info('Request annotations for %s', self.domain)
+        self._log.info('Request annotations for %s', self.domain)
         payload = Node('storage', attrs={'xmlns': NS_ROSTERNOTES})
         return Iq(typ='get', queryNS=NS_PRIVATE, payload=payload)
 
     @callback
     def _annotations_received(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
 
         storage = stanza.getQueryChild('storage')
         if storage is None:
-            return raise_error(log.warning, stanza, 'stanza-malformed',
+            return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'No annotations found')
 
         notes = []
@@ -63,8 +62,8 @@ class Annotations:
             try:
                 jid = JID(note.getAttr('jid'))
             except Exception as error:
-                log.warning('Invalid JID: %s, %s',
-                            note.getAttr('jid'), error)
+                self._log.warning('Invalid JID: %s, %s',
+                                  note.getAttr('jid'), error)
                 continue
 
             cdate = note.getAttr('cdate')
@@ -79,16 +78,16 @@ class Annotations:
             notes.append(AnnotationNote(jid=jid, cdate=cdate,
                                         mdate=mdate, data=data))
 
-        log.info('Received annotations from %s:', self.domain)
+        self._log.info('Received annotations from %s:', self.domain)
         for note in notes:
-            log.info(note)
+            self._log.info(note)
         return notes
 
     @call_on_response('_default_response')
     def set_annotations(self, notes):
-        log.info('Set annotations for %s:', self.domain)
+        self._log.info('Set annotations for %s:', self.domain)
         for note in notes:
-            log.info(note)
+            self._log.info(note)
         storage = Node('storage', attrs={'xmlns': NS_ROSTERNOTES})
         for note in notes:
             node = Node('note', attrs={'jid': note.jid})
@@ -103,5 +102,5 @@ class Annotations:
     @callback
     def _default_response(self, stanza):
         if not isResultNode(stanza):
-            return raise_error(log.info, stanza)
+            return raise_error(self._log.info, stanza)
         return CommonResult(jid=stanza.getFrom())

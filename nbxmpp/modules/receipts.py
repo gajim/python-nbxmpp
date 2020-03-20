@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
-
 from nbxmpp.protocol import NS_RECEIPTS
 from nbxmpp.protocol import NS_MUC_USER
 from nbxmpp.protocol import isMucPM
@@ -24,12 +22,13 @@ from nbxmpp.protocol import Message
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ReceiptData
 from nbxmpp.util import generate_id
+from nbxmpp.modules.base import BaseModule
 
-log = logging.getLogger('nbxmpp.m.receipts')
 
-
-class Receipts:
+class Receipts(BaseModule):
     def __init__(self, client):
+        BaseModule.__init__(self, client)
+
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
@@ -48,8 +47,8 @@ class Receipts:
         if received is not None:
             id_ = received.getAttr('id')
             if id_ is None:
-                log.warning('Receipt without id attr')
-                log.warning(stanza)
+                self._log.warning('Receipt without id attr')
+                self._log.warning(stanza)
                 return
 
             properties.receipt = ReceiptData(received.getName(), id_)
