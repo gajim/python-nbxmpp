@@ -438,7 +438,7 @@ class Client(Observable):
 
     def _on_stream_end(self, _dispatcher, _signal_name, error):
         if not self.has_error:
-            self._set_error(StreamError.STREAM, 'stream-end', error)
+            self._set_error(StreamError.STREAM, error or 'stream-end')
 
         self._con.shutdown_input()
         if not self._stream_close_initiated:
