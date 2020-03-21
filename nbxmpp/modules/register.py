@@ -21,6 +21,7 @@ from nbxmpp.protocol import NS_REGISTER
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
 from nbxmpp.structs import CommonResult
+from nbxmpp.structs import CommonError
 from nbxmpp.structs import RegisterData
 from nbxmpp.structs import ChangePasswordResult
 from nbxmpp.util import call_on_response
@@ -63,11 +64,42 @@ class Register(BaseModule):
 
         instructions = query.getTagData('instructions') or None
 
-        return RegisterData(instructions=instructions,
+        data = RegisterData(instructions=instructions,
                             form=self._parse_form(stanza),
                             fields_form=self._parse_fields_form(query),
                             oob_url=self._parse_oob_url(query),
                             bob_data=parse_bob_data(query))
+
+        if (data.form is None and
+                data.fields_form is None and
+                data.oob_url is None):
+            return raise_error(self._log.info, stanza, 'stanza-malformed')
+        return data
+
+    @call_on_response('_on_submit_result')
+    def submit_register_form(self, form):
+        iq = Iq('set', NS_REGISTER, to=self._client.domain)
+        iq.setQueryPayload(form)
+        return iq
+
+    @callback
+    def _on_submit_result(self, stanza):
+        if isResultNode(stanza):
+            return CommonResult(jid=stanza.getFrom())
+
+        query = stanza.getTag('query', namespace=NS_REGISTER)
+        if query is None:
+            return RegisterError(stanza, None)
+
+        instructions = query.getTagData('instructions') or None
+
+        data = RegisterData(instructions=instructions,
+                            form=self._parse_form(stanza),
+                            fields_form=self._parse_fields_form(query),
+                            oob_url=self._parse_oob_url(query),
+                            bob_data=parse_bob_data(query))
+
+        return RegisterError(stanza, data)
 
     @callback
     def _default_response(self, stanza):
@@ -83,7 +115,8 @@ class Register(BaseModule):
         return None
 
     def _parse_form(self, stanza):
-        form = stanza.getQuery().getTag('x', namespace=NS_DATA)
+        query = stanza.getTag('query', namespace=NS_REGISTER)
+        form = query.getTag('x', namespace=NS_DATA)
         if form is None:
             return None
 
@@ -150,3 +183,12 @@ class Register(BaseModule):
         iq = Iq('set', NS_REGISTER, to=domain)
         iq.setQueryPayload(form)
         return iq
+
+
+class RegisterError(CommonError):
+    def __init__(self, stanza, data):
+        CommonError.__init__(self, stanza)
+        self._data = data
+
+    def get_data(self):
+        return self._data
