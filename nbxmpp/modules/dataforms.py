@@ -544,8 +544,6 @@ class DataRecord(ExtendedNode):
                         extend_field(field)
                     self.vars[field.var] = field
             else:
-                for field in self.getTags('field'):
-                    self.delChild(field)
                 self.fields = fields
 
     @property
@@ -562,11 +560,13 @@ class DataRecord(ExtendedNode):
             if not isinstance(field, DataField):
                 extend_field(field)
             self.addChild(node=field)
+            self.vars[field.var] = field
 
     @fields.deleter
     def fields(self):
         for element in self.getTags('field'):
             self.delChild(element)
+            self.vars.clear()
 
     def iter_fields(self):
         """
