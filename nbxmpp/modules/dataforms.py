@@ -592,6 +592,9 @@ class DataRecord(ExtendedNode):
                 return False
         return True
 
+    def is_fake_form(self):
+        return bool(self.vars.get('fakeform', False))
+
 
 class DataForm(ExtendedNode):
     def __init__(self, type_=None, title=None, instructions=None, extend=None):
