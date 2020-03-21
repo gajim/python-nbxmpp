@@ -79,6 +79,15 @@ class Register(BaseModule):
     @call_on_response('_on_submit_result')
     def submit_register_form(self, form):
         iq = Iq('set', NS_REGISTER, to=self._client.domain)
+
+        if form.is_fake_form():
+            query = iq.getTag('query')
+            for field in form.iter_fields():
+                if field.var == 'fakeform':
+                    continue
+                query.addChild(field.var, payload=[field.value])
+            return iq
+
         iq.setQueryPayload(form)
         return iq
 
