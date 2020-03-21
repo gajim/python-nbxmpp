@@ -151,7 +151,9 @@ class Register(BaseModule):
             return None
 
         fields.append(create_field(typ='hidden', var='fakeform'))
-        return SimpleDataForm(type_='form', fields=fields)
+        return SimpleDataForm(type_='form',
+                              instructions=query.getTagData('instructions'),
+                              fields=fields)
 
     @call_on_response('_on_password_change')
     def change_password(self, password):
