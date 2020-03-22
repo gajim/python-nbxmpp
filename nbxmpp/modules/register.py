@@ -44,9 +44,8 @@ class Register(BaseModule):
         self.handlers = []
 
     @call_on_response('_default_response')
-    def unregister(self):
-        domain = self._client.get_bound_jid().getDomain()
-        iq = Iq('set', to=domain)
+    def unregister(self, jid=None):
+        iq = Iq('set', to=jid)
         query = iq.setQuery()
         query.setNamespace(NS_REGISTER)
         query.addChild('remove')
@@ -77,8 +76,11 @@ class Register(BaseModule):
         return data
 
     @call_on_response('_on_submit_result')
-    def submit_register_form(self, form):
-        iq = Iq('set', NS_REGISTER, to=self._client.domain)
+    def submit_register_form(self, jid, form):
+        if jid is None:
+            jid = self._client.domain
+
+        iq = Iq('set', NS_REGISTER, to=jid)
 
         if form.is_fake_form():
             query = iq.getTag('query')
