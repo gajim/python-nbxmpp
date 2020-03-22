@@ -167,6 +167,10 @@ class Client(Observable):
     def set_mode(self, mode):
         self._mode = mode
 
+    @property
+    def custom_host(self):
+        return self._custom_host
+
     def set_custom_host(self, host, protocol, type_):
         if self._domain is None:
             raise ValueError('Call set_domain() first before set_custom_host()')
