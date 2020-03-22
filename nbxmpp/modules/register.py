@@ -59,8 +59,10 @@ class Register(BaseModule):
 
     @callback
     def _on_register_form(self, stanza):
-        query = stanza.getQuery()
+        if not isResultNode(stanza):
+            return raise_error(self._log.info, stanza)
 
+        query = stanza.getQuery()
         instructions = query.getTagData('instructions') or None
 
         data = RegisterData(instructions=instructions,
