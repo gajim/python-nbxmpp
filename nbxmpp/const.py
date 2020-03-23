@@ -391,6 +391,7 @@ class Mode(IntEnum):
     CLIENT = 0
     REGISTER = 1
     LOGIN_TEST = 2
+    ANONYMOUS_TEST = 3
 
     @property
     def is_client(self):
@@ -403,6 +404,10 @@ class Mode(IntEnum):
     @property
     def is_login_test(self):
         return self == Mode.LOGIN_TEST
+
+    @property
+    def is_anonymous_test(self):
+        return self == Mode.ANONYMOUS_TEST
 
 
 MOODS = [

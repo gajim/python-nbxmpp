@@ -62,6 +62,7 @@ class Client(Observable):
             resume-failed
             resume-successful
             login-successful
+            anonymous-supported
             disconnected
             connected
             connection-failed
@@ -683,6 +684,15 @@ class Client(Observable):
                 else:
                     self._disconnect_with_error(StreamError.REGISTER,
                                                 'register-not-supported')
+                return
+
+            if self._mode.is_anonymous_test:
+                if features.has_anonymous():
+                    self.notify('anonymous-supported')
+                    self.disconnect()
+                else:
+                    self._disconnect_with_error(StreamError.SASL,
+                                                'anonymous-not-supported')
                 return
 
             self._start_auth(features)

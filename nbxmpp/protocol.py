@@ -1833,6 +1833,8 @@ class Features(Node):
 
     def get_mechs(self):
         mechanisms = self.getTag('mechanisms', namespace=NS_SASL)
+        if mechanisms is None:
+            return set()
         mechanisms = mechanisms.getTags('mechanism')
         return set(mech.getData() for mech in mechanisms)
 
@@ -1861,6 +1863,9 @@ class Features(Node):
     def has_register(self):
         return self.getTag(
             'register', namespace=NS_REGISTER_FEATURE) is not None
+
+    def has_anonymous(self):
+        return 'ANONYMOUS' in self.get_mechs()
 
 
 class ErrorNode(Node):
