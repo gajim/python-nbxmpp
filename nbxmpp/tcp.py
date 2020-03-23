@@ -214,6 +214,10 @@ class TCPConnection(Connection):
                 return
 
             self._log.error('Read Error: %s', error)
+
+            if self._state not in (TCPState.DISCONNECTING,
+                                   TCPState.DISCONNECTED):
+                self._finalize('disconnected')
             return
 
         data = data.get_data()
