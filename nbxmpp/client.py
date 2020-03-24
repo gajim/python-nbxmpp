@@ -448,6 +448,7 @@ class Client(Observable):
         self._con.shutdown_input()
         if not self._stream_close_initiated:
             self.state = StreamState.DISCONNECTING
+            self._remove_ping_timer()
             self._smacks.close_session()
             self._end_stream()
             self._con.shutdown_output()
