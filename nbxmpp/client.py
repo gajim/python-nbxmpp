@@ -52,8 +52,6 @@ from nbxmpp.util import LogAdapter
 
 log = logging.getLogger('nbxmpp.stream')
 
-# TODO: check if signals make sense
-
 
 class Client(Observable):
     def __init__(self, log_context=None):
