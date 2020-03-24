@@ -269,6 +269,10 @@ class TCPConnection(Connection):
                 self._write_stanza_buffer = None
                 return
 
+            if self._output_closed:
+                self._check_for_shutdown()
+                return
+
             self._log.error('Write Error: %s', error)
             return
 
