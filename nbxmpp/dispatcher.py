@@ -459,23 +459,28 @@ class StanzaDispatcher(Observable):
 
     def add_callback_for_id(self, id_, func, timeout, user_data):
         if timeout is not None and self._timeout_id is None:
-            self._log.info('Add timeout source')
+            self._log.info('Add timeout check')
             self._timeout_id = GLib.timeout_add_seconds(
                 1, self._timeout_check)
             timeout = time.monotonic() + timeout
         self._id_callbacks[id_] = (func, timeout, user_data)
 
     def _timeout_check(self):
-        self._log.info('Run timeout check')
-        if not self._id_callbacks:
-            self._log.info('Remove timeout source, no callbacks scheduled')
+        timeouts = {}
+        for id_, data in self._id_callbacks.items():
+            if data[1] is not None:
+                timeouts[id_] = data
+
+        if not timeouts:
+            self._log.info('Remove timeout check, no timeouts scheduled')
             self._timeout_id = None
             return False
 
-        for id_ in list(self._id_callbacks.keys()):
-            func, timeout, user_data = self._id_callbacks.get(id_)
+        for id_, data in timeouts.items():
+            func, timeout, user_data = data
             if timeout is None:
                 continue
+            has_timeout = True
 
             if user_data is None:
                 user_data = {}
