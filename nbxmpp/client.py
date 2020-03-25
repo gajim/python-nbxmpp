@@ -103,6 +103,7 @@ class Client(Observable):
         self._session_required = False
         self._connect_successful = False
         self._stream_close_initiated = False
+        self._ping_id = None
         self._error = None, None, None
 
         self._ignored_tls_errors = []
@@ -398,6 +399,7 @@ class Client(Observable):
     def _disconnect(self, immediate=True):
         self.state = StreamState.DISCONNECTING
         self._remove_ping_timer()
+        self._dispatcher.remove_ping_callback(self._ping_id)
         if not immediate:
             self._stream_close_initiated = True
             self._smacks.close_session()
@@ -772,9 +774,12 @@ class Client(Observable):
                                         stanza.getErrorMsg())
 
     def _ping(self):
-        iq = Iq('get', to=self._jid.getBare())
+        self._ping_source_id = None
+        iq = Iq('get', to=self.domain)
         iq.addChild(name='ping', namespace=NS_PING)
-        self.send_stanza(iq, timeout=10, callback=self._on_pong)
+        self._ping_id = self.send_stanza(iq,
+                                         timeout=10,
+                                         callback=self._on_pong)
         self._log.info('Ping')
 
     def _on_pong(self, _client, result):

@@ -490,6 +490,9 @@ class StanzaDispatcher(Observable):
             GLib.source_remove(self._timeout_id)
             self._timeout_id = None
 
+    def remove_ping_callback(self, id_):
+        self._id_callbacks.pop(id_, None)
+
     def clear_iq_callbacks(self):
         self._log.info('Clear IQ callbacks')
         self._id_callbacks.clear()
