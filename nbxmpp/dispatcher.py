@@ -478,9 +478,6 @@ class StanzaDispatcher(Observable):
 
         for id_, data in timeouts.items():
             func, timeout, user_data = data
-            if timeout is None:
-                continue
-            has_timeout = True
 
             if user_data is None:
                 user_data = {}
