@@ -777,7 +777,6 @@ class Client(Observable):
         self._log.info('Ping')
 
     def _on_pong(self, _client, result):
-        self._ping_source_id = None
         if is_error_result(result):
             if result.condition == 'timeout':
                 self._log.info('Ping timeout')
