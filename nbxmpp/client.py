@@ -643,8 +643,9 @@ class Client(Observable):
             self._on_bind(stanza)
 
         elif self.state == StreamState.BIND_SUCCESSFUL:
-            self._smacks.send_enable()
+            self._dispatcher.clear_iq_callbacks()
             self._dispatcher.set_dispatch_callback(None)
+            self._smacks.send_enable()
             self.state = StreamState.ACTIVE
             self.notify('connected')
 

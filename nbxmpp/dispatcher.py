@@ -186,13 +186,10 @@ class StanzaDispatcher(Observable):
                 self.register_handler(*handler)
 
     def reset_parser(self):
-        self._remove_timeout_source()
         if self._parser is not None:
             self._parser.dispatch = None
             self._parser.destroy()
             self._parser = None
-
-        self._id_callbacks.clear()
 
         self._parser = NodeBuilder(dispatch_depth=2,
                                    finished=False)
@@ -493,11 +490,15 @@ class StanzaDispatcher(Observable):
             GLib.source_remove(self._timeout_id)
             self._timeout_id = None
 
+    def clear_iq_callbacks(self):
+        self._log.info('Clear IQ callbacks')
+        self._id_callbacks.clear()
+
     def cleanup(self):
         self._client = None
         self._modules = {}
         self._parser = None
-        self._id_callbacks.clear()
+        self.clear_iq_callbacks()
         self._dispatch_callback = None
         self._handlers.clear()
         self._remove_timeout_source()
