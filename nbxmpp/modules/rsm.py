@@ -20,7 +20,6 @@ from nbxmpp.protocol import NS_RSM
 from nbxmpp.structs import RSMData
 
 
-@staticmethod
 def parse_rsm(stanza):
     set_ = stanza.getTag('set', namespace=NS_RSM)
     if set_ is None:
@@ -30,12 +29,13 @@ def parse_rsm(stanza):
     before = stanza.getTagData('before') or None
     last = stanza.getTagData('last') or None
 
+    first_index = None
     first = stanza.getTagData('first') or None
     if first is not None:
         try:
             first_index = int(first.getAttr('index'))
         except Exception:
-            first_index = None
+            pass
 
     try:
         count = int(stanza.getTagData('count'))

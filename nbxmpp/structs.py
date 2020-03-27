@@ -144,6 +144,12 @@ ChangePasswordResult.__new__.__defaults__ = (None,)
 HTTPUploadData = namedtuple('HTTPUploadData', 'put_uri get_uri headers')
 HTTPUploadData.__new__.__defaults__ = (None,)
 
+RSMData = namedtuple('RSMData', 'after before last first first_index count max index')
+
+MAMQueryData = namedtuple('MAMQueryData', 'jid rsm complete')
+
+MAMPreferencesData = namedtuple('MAMPreferencesData', 'default always never')
+
 
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
 
