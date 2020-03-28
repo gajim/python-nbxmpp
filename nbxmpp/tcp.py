@@ -236,12 +236,12 @@ class TCPConnection(Connection):
 
         self._log_stanza(data, received=True)
 
+        self._read_async()
+
         try:
             self.notify('data-received', data)
         except Exception:
             self._log.exception('Error while executing data-received:')
-
-        self._read_async()
 
     def _write_stanzas(self):
         self._write_stanza_buffer = self._write_queue
