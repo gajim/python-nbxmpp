@@ -118,7 +118,7 @@ class MAM(BaseModule):
                                'stanza-malformed',
                                'rsm set missing')
 
-        complete = bool(fin.getAttr('complete'))
+        complete = fin.getAttr('complete') == 'true'
 
         return MAMQueryData(jid=jid,
                             complete=complete,
