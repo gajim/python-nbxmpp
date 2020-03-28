@@ -241,6 +241,10 @@ class TCPConnection(Connection):
         except Exception:
             self._log.exception('Error while executing data-received:')
 
+        # Call next async read only after the received data is processed
+        # otherwise this can lead to problems if we call
+        # start_tls_negotiation() while we have a pending read which is
+        # the case for START TLS because its triggered by <proceed>
         self._read_async()
 
     def _write_stanzas(self):
