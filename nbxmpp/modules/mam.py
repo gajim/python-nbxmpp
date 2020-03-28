@@ -44,7 +44,7 @@ class MAM(BaseModule):
     @call_on_response('_query_result')
     def make_query(self,
                    jid,
-                   queryid,
+                   queryid=None,
                    start=None,
                    end=None,
                    with_=None,
@@ -52,7 +52,8 @@ class MAM(BaseModule):
                    max_=70):
 
         iq = Iq(typ='set', to=jid, queryNS=NS_MAM_2)
-        iq.getQuery().setAttr('queryid', queryid)
+        if queryid is not None:
+            iq.getQuery().setAttr('queryid', queryid)
 
         payload = [
             self._make_query_form(start, end, with_),
