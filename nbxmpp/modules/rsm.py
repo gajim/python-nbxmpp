@@ -21,8 +21,8 @@ from nbxmpp.structs import RSMData
 
 
 def parse_rsm(stanza):
-    set_ = stanza.getTag('set', namespace=NS_RSM)
-    if set_ is None:
+    stanza = stanza.getTag('set', namespace=NS_RSM)
+    if stanza is None:
         return None
 
     after = stanza.getTagData('after') or None
