@@ -32,6 +32,8 @@ from nbxmpp.protocol import DataForm
 from nbxmpp.protocol import DataField
 from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import StanzaMalformed
+from nbxmpp.protocol import InvalidJid
 from nbxmpp.simplexml import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import InviteType
@@ -160,7 +162,12 @@ class MUC(BaseModule):
         if codes:
             properties.muc_status_codes = codes
 
-        properties.muc_user = self._parse_muc_user(muc_user)
+        try:
+            properties.muc_user = self._parse_muc_user(muc_user)
+        except StanzaMalformed as error:
+            self._log.warning(error)
+            self._log.warning(stanza)
+            raise NodeProcessed
 
     def _process_groupchat_message(self, _client, stanza, properties):
         properties.from_muc = True
@@ -170,7 +177,12 @@ class MUC(BaseModule):
 
         muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
         if muc_user is not None:
-            properties.muc_user = self._parse_muc_user(muc_user)
+            try:
+                properties.muc_user = self._parse_muc_user(muc_user)
+            except StanzaMalformed as error:
+                self._log.warning(error)
+                self._log.warning(stanza)
+                raise NodeProcessed
 
         addresses = stanza.getTag('addresses', namespace=NS_ADDRESS)
         if addresses is not None:
@@ -533,22 +545,36 @@ class MUC(BaseModule):
         if item is None:
             return None
 
-        item_dict = item.getAttrs(copy=True)
-        if 'role' in item_dict:
-            item_dict['role'] = Role(item_dict['role'])
-        else:
-            item_dict['role'] = None
+        item_dict = item.getAttrs()
 
-        if 'affiliation' in item_dict:
-            item_dict['affiliation'] = Affiliation(item_dict['affiliation'])
-        else:
-            item_dict['affiliation'] = None
+        role = item_dict.get('role')
+        if role is None:
+            raise StanzaMalformed('role attr missing')
 
-        if 'jid' in item_dict:
-            item_dict['jid'] = JID(item_dict['jid'])
-        else:
-            item_dict['jid'] = None
+        try:
+            role = Role(role)
+        except ValueError:
+            raise StanzaMalformed('invalid role %s' % role)
 
-        item_dict['actor'] = item.getTagAttr('actor', 'nick')
-        item_dict['reason'] = item.getTagData('reason')
-        return MucUserData(**item_dict)
+        affiliation = item_dict.get('affiliation')
+        if affiliation is None:
+            raise StanzaMalformed('affiliation attr missing')
+
+        try:
+            affiliation = Affiliation(affiliation)
+        except ValueError:
+            raise StanzaMalformed('invalid affiliation %s' % affiliation)
+
+        jid = item_dict.get('jid')
+        if jid is not None:
+            try:
+                jid = JID(jid)
+            except InvalidJid as error:
+                raise StanzaMalformed('invalid jid %s, %s' % (jid, error))
+
+        return MucUserData(affiliation=affiliation,
+                           jid=jid,
+                           nick=item.getAttr('nick'),
+                           role=role,
+                           actor=item.getTagAttr('actor', 'nick'),
+                           reason=item.getTagData('reason'))
