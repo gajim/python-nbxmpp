@@ -352,6 +352,27 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
         return 'muc_unsecured' in self.features
 
     @property
+    def is_gateway(self):
+        for identity in self.identities:
+            if identity.category == 'gateway':
+                return True
+        return False
+
+    @property
+    def gateway_name(self):
+        for identity in self.identities:
+            if identity.category == 'gateway':
+                return identity.name
+        return None
+
+    @property
+    def gateway_type(self):
+        for identity in self.identities:
+            if identity.category == 'gateway':
+                return identity.type
+        return None
+
+    @property
     def httpupload_max_file_size(self):
         size = self.get_field_value(NS_HTTPUPLOAD_0, 'max-file-size')
         try:
