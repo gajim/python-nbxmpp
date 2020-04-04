@@ -23,12 +23,16 @@ from nbxmpp.protocol import NS_DISCO_INFO
 from nbxmpp.protocol import NS_DISCO_ITEMS
 from nbxmpp.protocol import NS_DATA
 from nbxmpp.protocol import isResultNode
+from nbxmpp.protocol import ErrorNode
+from nbxmpp.protocol import ERR_ITEM_NOT_FOUND
+from nbxmpp.protocol import NodeProcessed
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.structs import DiscoIdentity
 from nbxmpp.structs import DiscoInfo
 from nbxmpp.structs import DiscoItems
 from nbxmpp.structs import DiscoItem
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
@@ -42,7 +46,19 @@ class Discovery(BaseModule):
         BaseModule.__init__(self, client)
 
         self._client = client
-        self.handlers = []
+        self.handlers = [
+            StanzaHandler(name='iq',
+                          callback=self._process_disco_info,
+                          ns=NS_DISCO_INFO,
+                          priority=90),
+        ]
+
+    @staticmethod
+    def _process_disco_info(client, stanza, properties):
+        iq = stanza.buildReply('error')
+        iq.addChild(node=ErrorNode(ERR_ITEM_NOT_FOUND))
+        client.send_stanza(iq)
+        raise NodeProcessed
 
     @call_on_response('_disco_info_received')
     def disco_info(self, jid, node=None):

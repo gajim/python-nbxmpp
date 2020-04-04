@@ -33,6 +33,7 @@ from nbxmpp.protocol import NS_CLIENT
 from nbxmpp.protocol import NS_XHTML
 from nbxmpp.protocol import NS_HTTPUPLOAD_0
 from nbxmpp.protocol import Protocol
+from nbxmpp.protocol import Node
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
 from nbxmpp.const import StatusCode
@@ -365,6 +366,17 @@ class DiscoIdentity(namedtuple('DiscoIdentity', 'category type name lang')):
 
     def __new__(cls, category, type, name=None, lang=None):
         return super(DiscoIdentity, cls).__new__(cls, category, type, name, lang)
+
+    def get_node(self):
+        identity = Node('identity',
+                        attrs={'category': self.category,
+                               'type': self.type})
+        if self.name is not None:
+            identity.setAttr('name', self.name)
+
+        if self.lang is not None:
+            identity.setAttr('xml:lang', self.lang)
+        return identity
 
     def __eq__(self, other):
         return str(self) == str(other)

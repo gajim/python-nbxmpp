@@ -16,8 +16,12 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from nbxmpp.protocol import NS_CAPS
+from nbxmpp.protocol import NS_DISCO_INFO
+from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import EntityCapsData
+from nbxmpp.structs import DiscoInfo
+from nbxmpp.util import compute_caps_hash
 from nbxmpp.modules.base import BaseModule
 
 
@@ -31,7 +35,38 @@ class EntityCaps(BaseModule):
                           callback=self._process_entity_caps,
                           ns=NS_CAPS,
                           priority=15),
+            StanzaHandler(name='iq',
+                          callback=self._process_disco_info,
+                          ns=NS_DISCO_INFO,
+                          priority=20),
         ]
+
+        self._identities = []
+        self._features = []
+
+        self._uri = None
+        self._node = None
+        self._caps = None
+        self._caps_hash = None
+
+    def _process_disco_info(self, client, stanza, _properties):
+        if self._caps is None:
+            return
+
+        if self._node != stanza.getQuerynode():
+            return
+
+        iq = stanza.buildReply('result')
+        query = iq.getQuery()
+        for identity in self._caps.identities:
+            query.addChild(node=identity.get_node())
+
+        for feature in self._caps.features:
+            query.addChild('feature', attrs={'var': feature})
+
+        self._log.info('Respond with entity caps')
+        client.send_stanza(iq)
+        raise NodeProcessed
 
     @staticmethod
     def _process_entity_caps(_client, stanza, properties):
@@ -45,3 +80,17 @@ class EntityCaps(BaseModule):
             node=caps.getAttr('node'),
             ver=caps.getAttr('ver')
         )
+
+    @property
+    def caps(self):
+        if self._caps is None:
+            return None
+        return EntityCapsData(hash='sha-1',
+                              node=self._uri,
+                              ver=self._caps_hash)
+
+    def set_caps(self, identities, features, uri):
+        self._uri = uri
+        self._caps = DiscoInfo(None, identities, features, [])
+        self._caps_hash = compute_caps_hash(self._caps, compare=False)
+        self._node = '%s#%s' % (uri, self._caps_hash)
