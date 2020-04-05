@@ -142,14 +142,18 @@ class ServerAddresses(Observable):
         if address is None:
             return
 
-        host, protocol, type_ = address
+        host_or_uri, protocol, type_ = address
+        if protocol == ConnectionProtocol.WEBSOCKET:
+            host, uri = None, host_or_uri
+        else:
+            host, uri = host_or_uri, None
 
         self._fallback_addresses = []
         self._addresses = [
             ServerAddress(domain=self._domain,
                           service=None,
                           host=host,
-                          uri=None,
+                          uri=uri,
                           protocol=protocol,
                           type=type_,
                           proxy=None)]

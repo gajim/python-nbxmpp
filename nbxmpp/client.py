@@ -171,10 +171,10 @@ class Client(Observable):
     def custom_host(self):
         return self._custom_host
 
-    def set_custom_host(self, host, protocol, type_):
+    def set_custom_host(self, host_or_uri, protocol, type_):
         if self._domain is None:
             raise ValueError('Call set_domain() first before set_custom_host()')
-        self._custom_host = (host, protocol, type_)
+        self._custom_host = (host_or_uri, protocol, type_)
 
     def set_accepted_certificates(self, certificates):
         self._accepted_certificates = certificates
