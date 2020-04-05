@@ -178,7 +178,8 @@ class MUC(BaseModule):
         muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
         if muc_user is not None:
             try:
-                properties.muc_user = self._parse_muc_user(muc_user)
+                properties.muc_user = self._parse_muc_user(muc_user,
+                                                           is_presence=False)
             except StanzaMalformed as error:
                 self._log.warning(error)
                 self._log.warning(stanza)
@@ -540,7 +541,7 @@ class MUC(BaseModule):
         return CommonResult(jid=stanza.getFrom())
 
     @staticmethod
-    def _parse_muc_user(muc_user):
+    def _parse_muc_user(muc_user, is_presence=True):
         item = muc_user.getTag('item')
         if item is None:
             return None
@@ -548,22 +549,26 @@ class MUC(BaseModule):
         item_dict = item.getAttrs()
 
         role = item_dict.get('role')
-        if role is None:
+        if role is not None:
+            try:
+                role = Role(role)
+            except ValueError:
+                raise StanzaMalformed('invalid role %s' % role)
+
+        elif is_presence:
+            # role attr MUST be included in all presence broadcasts
             raise StanzaMalformed('role attr missing')
 
-        try:
-            role = Role(role)
-        except ValueError:
-            raise StanzaMalformed('invalid role %s' % role)
-
         affiliation = item_dict.get('affiliation')
-        if affiliation is None:
-            raise StanzaMalformed('affiliation attr missing')
+        if affiliation is not None:
+            try:
+                affiliation = Affiliation(affiliation)
+            except ValueError:
+                raise StanzaMalformed('invalid affiliation %s' % affiliation)
 
-        try:
-            affiliation = Affiliation(affiliation)
-        except ValueError:
-            raise StanzaMalformed('invalid affiliation %s' % affiliation)
+        elif is_presence:
+            # affiliation attr MUST be included in all presence broadcasts
+            raise StanzaMalformed('affiliation attr missing')
 
         jid = item_dict.get('jid')
         if jid is not None:
