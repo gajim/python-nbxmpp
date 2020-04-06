@@ -132,7 +132,7 @@ class Smacks:
             attrs = {'stamp': timestamp}
             if stanza.getType() != 'groupchat':
                 # Dont leak our JID to Groupchats
-                attrs['from'] = stanza.getAttr('from')
+                attrs['from'] = str(self._client.get_bound_jid())
             stanza.addChild('delay', namespace=NS_DELAY2, attrs=attrs)
         self._uqueue.append(stanza)
         self._log.debug('OUT, %s', stanza.getName())
