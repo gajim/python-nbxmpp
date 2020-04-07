@@ -285,6 +285,8 @@ class TCPConnection(Connection):
         data = data.decode()
         if data == ' ':
             # keepalive whitespace
+            if self._write_queue:
+                self._write_stanzas()
             return
 
         for stanza in self._write_stanza_buffer:
