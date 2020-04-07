@@ -468,6 +468,7 @@ class StanzaDispatcher(Observable):
         self._id_callbacks[id_] = (func, timeout, user_data)
 
     def _timeout_check(self):
+        self._log.info('Run timeout check')
         timeouts = {}
         for id_, data in self._id_callbacks.items():
             if data[1] is not None:
