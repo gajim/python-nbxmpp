@@ -289,14 +289,13 @@ class TCPConnection(Connection):
                 self._write_stanzas()
             return
 
-        for stanza in self._write_stanza_buffer:
-            self._log_stanza(stanza, received=False)
-        self._write_stanza_buffer = None
+        self._log_stanza(data, received=False)
 
-        try:
-            self.notify('data-sent', data)
-        except Exception:
-            self._log.exception('Error while executing data-sent:')
+        for stanza in self._write_stanza_buffer:
+            try:
+                self.notify('data-sent', stanza)
+            except Exception:
+                self._log.exception('Error while executing data-sent:')
 
         if self._output_closed and not self._write_queue:
             self._check_for_shutdown()
