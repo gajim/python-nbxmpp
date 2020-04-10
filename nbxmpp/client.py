@@ -417,6 +417,8 @@ class Client(Observable):
 
     def _on_disconnected(self, _connection, _signal_name):
         self.state = StreamState.DISCONNECTED
+        self._remove_ping_timer()
+        self._dispatcher.remove_ping_callback(self._ping_id)
         self._reset_stream()
         self.notify('disconnected')
 
@@ -449,6 +451,7 @@ class Client(Observable):
         if not self._stream_close_initiated:
             self.state = StreamState.DISCONNECTING
             self._remove_ping_timer()
+            self._dispatcher.remove_ping_callback(self._ping_id)
             self._smacks.close_session()
             self._end_stream()
             self._con.shutdown_output()
