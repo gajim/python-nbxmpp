@@ -126,14 +126,13 @@ class Smacks:
             # We did not yet sent 'enable' so the server
             # will not count our stanzas
             return
-        if (stanza.getName() == 'message' and
-                stanza.getType() in ('chat', 'groupchat')):
-            timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-            attrs = {'stamp': timestamp}
-            if stanza.getType() != 'groupchat':
-                # Dont leak our JID to Groupchats
-                attrs['from'] = str(self._client.get_bound_jid())
-            stanza.addChild('delay', namespace=NS_DELAY2, attrs=attrs)
+
+        # Make a full copy so we dont run into problems when
+        # the stanza is modified after sending for some reason
+        stanza = type(stanza)(node=str(stanza))
+
+        self._add_delay(stanza)
+
         self._uqueue.append(stanza)
         self._log.debug('OUT, %s', stanza.getName())
         self._out_h += 1
@@ -143,6 +142,22 @@ class Smacks:
         # Send an ack after 100 unacked messages
         if (self._in_h - self._acked_h) > 100:
             self._send_ack()
+
+    def _add_delay(self, stanza):
+        if stanza.getName() != 'message':
+            return
+
+        if stanza.getType() not in ('chat', 'groupchat'):
+            return
+
+        timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+        attrs = {'stamp': timestamp}
+
+        if stanza.getType() != 'groupchat':
+            # Dont leak our JID to Groupchats
+            attrs['from'] = str(self._client.get_bound_jid())
+
+        stanza.addChild('delay', namespace=NS_DELAY2, attrs=attrs)
 
     def _resend_queue(self):
         """
