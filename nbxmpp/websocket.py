@@ -139,7 +139,7 @@ class WebsocketConnection(Connection):
         data = str(stanza)
         self._websocket.send_text(data)
         self._log_stanza(data, received=False)
-        self.notify('data-sent', data)
+        self.notify('data-sent', stanza)
 
     def disconnect(self):
         if self._state == TCPState.CONNECTING:
