@@ -119,6 +119,12 @@ class MAM(BaseModule):
                                'rsm set missing')
 
         complete = fin.getAttr('complete') == 'true'
+        if not complete:
+            if rsm.first is None or rsm.last is None:
+                return raise_error(self._log.warning,
+                                   stanza,
+                                   'stanza-malformed',
+                                   'missing first or last element')
 
         return MAMQueryData(jid=jid,
                             complete=complete,
