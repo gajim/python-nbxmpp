@@ -57,6 +57,7 @@ class EntityCaps(BaseModule):
             return
 
         iq = stanza.buildReply('result')
+        iq.setQuerynode(self._node)
         query = iq.getQuery()
         for identity in self._caps.identities:
             query.addChild(node=identity.get_node())
