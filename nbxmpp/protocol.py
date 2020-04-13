@@ -760,6 +760,7 @@ def parse_jid(jid):
     return localpart, domainpart, resourcepart
 
 
+@functools.lru_cache(maxsize=32768)
 def validate_localpart(localpart):
     if not localpart or len(localpart.encode()) > 1023:
         raise LocalpartByteLimit
@@ -774,6 +775,7 @@ def validate_localpart(localpart):
         raise LocalpartNotAllowedChar
 
 
+@functools.lru_cache(maxsize=32768)
 def validate_resourcepart(resourcepart):
     if not resourcepart or len(resourcepart.encode()) > 1023:
         raise ResourcepartByteLimit
@@ -785,6 +787,7 @@ def validate_resourcepart(resourcepart):
         raise ResourcepartNotAllowedChar
 
 
+@functools.lru_cache(maxsize=4096)
 def validate_domainpart(domainpart):
     # Check if this is a IPV4 address
     try:
