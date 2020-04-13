@@ -905,7 +905,7 @@ class JID:
 
     @property
     def isFull(self):
-        return self.domain and self.node and self.resource
+        return bool(self.domain and self.node and self.resource)
 
     def __eq__(self, other):
         """
