@@ -911,12 +911,15 @@ class JID:
         """
         Compare the JID to another instance or to string for equality
         """
-        try:
-            other = JID(other)
-        except ValueError:
-            return 0
-        return self.resource == other.resource and \
-            self.__str__(0) == other.__str__(0)
+        if not isinstance(other, JID):
+            try:
+                other = JID(other)
+            except Exception:
+                return False
+
+        return (self.node == other.node and
+                self.domain == other.domain and
+                self.resource == other.resource)
 
     def __ne__(self, other):
         """
