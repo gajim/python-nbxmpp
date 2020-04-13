@@ -58,3 +58,13 @@ class JIDParsing(unittest.TestCase):
 
         for jid in tests:
             JID(jid)
+
+    def test_jid_equality(self):
+        tests = [
+            'juliet@example.com',
+            'juliet@example.com/foo',
+            'example.com',
+        ]
+
+        for jid in tests:
+            self.assertTrue(JID(jid) == jid)
