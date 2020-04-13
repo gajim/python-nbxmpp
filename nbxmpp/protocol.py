@@ -22,10 +22,11 @@ import time
 import hashlib
 import socket
 import functools
+import stringprep
 from base64 import b64encode
+from encodings import idna
 
 from precis_i18n import get_profile
-from nbxmpp.stringprepare import nameprep
 from nbxmpp.simplexml import Node
 
 def ascii_upper(s):
@@ -807,7 +808,17 @@ def validate_domainpart(domainpart):
         domainpart = domainpart[:-1]
 
     try:
-        return nameprep.prepare(domainpart)
+        new_labels = []
+        for label in idna.dots.split(domainpart):
+            new_label = idna.nameprep(label)
+
+            # Check unassigned
+            if any(stringprep.in_table_a1(x) for x in new_label):
+                raise DomainpartNotAllowedChar
+
+            new_labels.append(new_label)
+
+        return ".".join(new_labels)
     except Exception:
         raise DomainpartNotAllowedChar
 
