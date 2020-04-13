@@ -21,6 +21,7 @@ sub- stanzas) handling routines
 import time
 import hashlib
 import socket
+import functools
 from base64 import b64encode
 
 from precis_i18n import get_profile
@@ -732,6 +733,7 @@ stream_exceptions = {'bad-format': BadFormat,
                     'xml-not-well-formed': XMLNotWellFormed}
 
 
+@functools.lru_cache(maxsize=None)
 def parse_jid(jid):
     # https://tools.ietf.org/html/rfc7622#section-3.2
 
