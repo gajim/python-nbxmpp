@@ -881,13 +881,13 @@ class JID:
         """
         Return the bare representation of JID. I.e. string value w/o resource
         """
-        return self.__str__(0)
+        return '%s@%s' % (self.node, self.domain)
 
     def getBare(self):
         """
         Return the bare representation of JID. I.e. string value w/o resource
         """
-        return self.__str__(0)
+        return '%s@%s' % (self.node, self.domain)
 
     def setBare(self):
         """
@@ -931,18 +931,26 @@ class JID:
         """
         Compare the node and domain parts of the JID's for equality
         """
-        return self.__str__(0) == JID(other).__str__(0)
+        if not isinstance(other, JID):
+            try:
+                other = JID(other)
+            except Exception:
+                return False
 
-    def __str__(self, wresource=1):
+        return (self.node == other.node and
+                self.domain == other.domain)
+
+    def __str__(self):
         """
         Serialise JID into string
         """
         if self.node:
-            jid = self.node + '@' + self.domain
+            jid = '%s@%s' % (self.node, self.domain)
         else:
             jid = self.domain
-        if wresource and self.resource:
-            return jid + '/' + self.resource
+
+        if self.resource:
+            return '%s/%s' % (jid, self.resource)
         return jid
 
     def __hash__(self):
