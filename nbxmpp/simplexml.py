@@ -625,6 +625,8 @@ class NodeBuilder:
             except ValueError as e:
                 self._document_attrs = None
                 raise ValueError(str(e))
+        if not self.last_is_data and self._ptr.parent:
+            self._ptr.parent.data.append('')
         self.last_is_data = 0
 
     def _check_stream_start(self, ns, tag):
