@@ -143,11 +143,13 @@ class TCPConnection(Connection):
 
     def _remove_keepalive_timer(self):
         if self._keepalive_id is not None:
+            self._log.info('Remove keepalive timer')
             GLib.source_remove(self._keepalive_id)
             self._keepalive_id = None
 
     def _renew_keepalive_timer(self):
         self._remove_keepalive_timer()
+        self._log.info('Add keepalive timer')
         self._keepalive_id = GLib.timeout_add_seconds(5, self._send_keepalive)
 
     def _send_keepalive(self):
