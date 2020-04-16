@@ -148,6 +148,8 @@ class TCPConnection(Connection):
             self._keepalive_id = None
 
     def _renew_keepalive_timer(self):
+        if self._con is None:
+            return
         self._remove_keepalive_timer()
         self._log.info('Add keepalive timer')
         self._keepalive_id = GLib.timeout_add_seconds(5, self._send_keepalive)
@@ -282,22 +284,19 @@ class TCPConnection(Connection):
             self._log.error('Write Error: %s', error)
             return
 
-        self._renew_keepalive_timer()
-
         data = data.decode()
-        if data == ' ':
-            # keepalive whitespace
-            if self._write_queue:
-                self._write_stanzas()
-            return
-
         self._log_stanza(data, received=False)
 
-        for stanza in self._write_stanza_buffer:
-            try:
-                self.notify('data-sent', stanza)
-            except Exception:
-                self._log.exception('Error while executing data-sent:')
+        if data == ' ':
+            # keepalive whitespace
+            self._renew_keepalive_timer()
+
+        else:
+            for stanza in self._write_stanza_buffer:
+                try:
+                    self.notify('data-sent', stanza)
+                except Exception:
+                    self._log.exception('Error while executing data-sent:')
 
         if self._output_closed and not self._write_queue:
             self._check_for_shutdown()
@@ -365,3 +364,4 @@ class TCPConnection(Connection):
         super().destroy()
         self._con = None
         self._client = None
+        self._write_queue = None
