@@ -895,12 +895,16 @@ class JID:
         """
         Return the bare representation of JID. I.e. string value w/o resource
         """
+        if not self.node:
+            return self.domain
         return '%s@%s' % (self.node, self.domain)
 
     def getBare(self):
         """
         Return the bare representation of JID. I.e. string value w/o resource
         """
+        if not self.node:
+            return self.domain
         return '%s@%s' % (self.node, self.domain)
 
     def setBare(self):
