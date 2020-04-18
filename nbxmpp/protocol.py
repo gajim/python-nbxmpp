@@ -22,9 +22,9 @@ import time
 import hashlib
 import socket
 import functools
-import idna
 from base64 import b64encode
 
+import idna
 from precis_i18n import get_profile
 from nbxmpp.simplexml import Node
 
