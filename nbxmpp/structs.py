@@ -372,6 +372,12 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
                 return identity.type
         return None
 
+    def has_category(self, category):
+        for identity in self.identities:
+            if identity.category == category:
+                return True
+        return False
+
     @property
     def httpupload_max_file_size(self):
         size = self.get_field_value(NS_HTTPUPLOAD_0, 'max-file-size')
