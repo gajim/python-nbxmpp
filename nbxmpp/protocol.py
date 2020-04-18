@@ -22,9 +22,8 @@ import time
 import hashlib
 import socket
 import functools
-import stringprep
+import idna
 from base64 import b64encode
-from encodings import idna
 
 from precis_i18n import get_profile
 from nbxmpp.simplexml import Node
@@ -789,6 +788,9 @@ def validate_resourcepart(resourcepart):
 
 @functools.lru_cache(maxsize=4096)
 def validate_domainpart(domainpart):
+    if not domainpart:
+        raise DomainpartByteLimit
+
     # Check if this is a IPV4 address
     try:
         socket.inet_aton(domainpart)
@@ -804,26 +806,19 @@ def validate_domainpart(domainpart):
         except Exception:
             pass
 
-    if not domainpart or len(domainpart.encode()) > 1023:
-        raise DomainpartByteLimit
-
     if domainpart.endswith('.'):  # RFC7622, 3.2
         domainpart = domainpart[:-1]
 
     try:
-        new_labels = []
-        for label in idna.dots.split(domainpart):
-            new_label = idna.nameprep(label)
-
-            # Check unassigned
-            if any(stringprep.in_table_a1(x) for x in new_label):
-                raise DomainpartNotAllowedChar
-
-            new_labels.append(new_label)
-
-        return ".".join(new_labels)
+        domainpart = idna.encode(domainpart)
     except Exception:
         raise DomainpartNotAllowedChar
+
+    length = len(domainpart)
+    if length == 0 or length > 1023:
+        raise DomainpartByteLimit
+
+    return domainpart.decode()
 
 
 class JID:
