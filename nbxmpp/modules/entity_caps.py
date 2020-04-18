@@ -69,18 +69,31 @@ class EntityCaps(BaseModule):
         client.send_stanza(iq)
         raise NodeProcessed
 
-    @staticmethod
-    def _process_entity_caps(_client, stanza, properties):
+    def _process_entity_caps(self, _client, stanza, properties):
         caps = stanza.getTag('c', namespace=NS_CAPS)
         if caps is None:
-            properties.entity_caps = EntityCapsData()
+            return
+
+        hash_algo = caps.getAttr('hash')
+        if hash_algo != 'sha-1':
+            self._log.warning('Unsupported hashing algorithm used: %s',
+                              hash_algo)
+            return
+
+        node = caps.getAttr('node')
+        if not node:
+            self._log.warning('node attribute missing')
+            return
+
+        ver = caps.getAttr('ver')
+        if not ver:
+            self._log.warning('ver attribute missing')
             return
 
         properties.entity_caps = EntityCapsData(
-            hash=caps.getAttr('hash'),
-            node=caps.getAttr('node'),
-            ver=caps.getAttr('ver')
-        )
+            hash=hash_algo,
+            node=node,
+            ver=ver)
 
     @property
     def caps(self):
