@@ -4,6 +4,7 @@
 
 ## Runtime Requirements
 
+- python >= 3.7.0
 - PyGObject
 - GLib >= 2.60
 - libsoup
