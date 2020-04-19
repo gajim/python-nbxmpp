@@ -20,23 +20,34 @@ projects. It is designed to be as standalone as possible
 
 from __future__ import annotations
 
+from typing import Dict
+from typing import List
+from typing import Optional
+from typing import Union
+from typing import Iterator
+from typing import Callable
+from typing import Any
+
 import logging
 import xml.parsers.expat
 from xml.parsers.expat import ExpatError
 from copy import deepcopy
-from typing import Dict, List, Optional, Union, Iterator, Callable, Any
+
+from nbxmpp.const import NOT_ALLOWED_XML_CHARS
+
 
 Attrs = Dict[str, str]
 
 log = logging.getLogger('nbxmpp.simplexml')
 
-def XMLescape(txt: str) -> str:
+def XMLescape(text: str) -> str:
     """
-    Return provided string with symbols & < > " replaced by their respective XML
-    entities
+    Return escaped text
     """
-    # replace also FORM FEED and ESC, because they are not valid XML chars
-    return txt.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace('\x0C', "").replace('\x1B', "")
+
+    for key, value in NOT_ALLOWED_XML_CHARS.items():
+        text = text.replace(key, value)
+    return text
 
 class Node:
     """
@@ -70,15 +81,22 @@ class Node:
 
     FORCE_NODE_RECREATION = False
 
-    def __init__(self, tag: Optional[str] = None, attrs: Optional[Attrs] = None, payload: Optional[Union[Node, str, List[Union[Node, str]]]] = None, parent: Optional[Node] = None, nsp: Optional[Dict[Any, Any]] = None,
-            node_built: bool = False, node: Optional[Union[Node, Any]] = None) -> None:
+    def __init__(
+            self,
+            tag: Optional[str] = None,
+            attrs: Optional[Attrs] = None,
+            payload: Optional[Union[Node, str, List[Union[Node, str]]]] = None,
+            parent: Optional[Node] = None,
+            nsp: Optional[Dict[Any, Any]] = None,
+            node_built: bool = False,
+            node: Optional[Union[Node, Any]] = None) -> None:
         """
         Takes "tag" argument as the name of node (prepended by namespace, if
         needed and separated from it by a space), attrs dictionary as the set of
         arguments, payload list as the set of textual strings and child nodes
         that this node carries within itself and "parent" argument that is
-        another node that this one will be the child of. Also the __init__ can be
-        provided with "node" argument that is either a text string containing
+        another node that this one will be the child of. Also the __init__ can
+        be provided with "node" argument that is either a text string containing
         exactly one node or another Node instance to begin with. If both "node"
         and other arguments is provided then the node initially created as
         replica of "node" provided and then modified to be compliant with other
@@ -91,23 +109,35 @@ class Node:
                 node = NodeBuilder(node, self)
                 node_built = True
             else:
-                self.name, self.namespace, self.attrs, self.data, self.kids, self.parent, self.nsd = node.name, node.namespace, {}, [], [], node.parent, {}
+                self.name = node.name
+                self.namespace = node.namespace
+                self.attrs = {}
+                self.data = []
+                self.kids = []
+                self.parent = node.parent
+                self.nsd = {}
                 for key in node.attrs.keys():
                     self.attrs[key] = node.attrs[key]
                 for data in node.data:
                     self.data.append(data)
                 for kid in node.kids:
                     self.kids.append(kid)
-                for k, v in node.nsd.items():
-                    self.nsd[k] = v
+                for key, value in node.nsd.items():
+                    self.nsd[key] = value
         else:
-            self.name, self.namespace, self.attrs, self.data, self.kids, self.parent, self.nsd = 'tag', '', {}, [], [], None, {}
+            self.name = 'tag'
+            self.namespace = ''
+            self.attrs = {}
+            self.data = []
+            self.kids = []
+            self.parent = None
+            self.nsd = {}
         if parent:
             self.parent = parent
         self.nsp_cache = {}
         if nsp:
-            for k, v in nsp.items():
-                self.nsp_cache[k] = v
+            for key, value in nsp.items():
+                self.nsp_cache[key] = value
 
         if attrs is not None:
             for attr, val in attrs.items():
@@ -149,8 +179,8 @@ class Node:
 
     def __str__(self, fancy: int = 0) -> str:
         """
-        Method used to dump node into textual representation. If "fancy" argument
-        is set to True produces indented output for readability
+        Method used to dump node into textual representation. If "fancy"
+        argument is set to True produces indented output for readability
         """
         s = (fancy-1) * 2 * ' ' + "<" + self.name
         if self.namespace:
@@ -192,7 +222,12 @@ class Node:
                 s += "\n"
         return s
 
-    def addChild(self, name: Optional[str] = None, attrs: Optional[Attrs] = None, payload: Optional[List[Any]] = None, namespace: Optional[str] = None, node: Optional[Node] = None) -> Node:
+    def addChild(self,
+                 name: Optional[str] = None,
+                 attrs: Optional[Attrs] = None,
+                 payload: Optional[List[Any]] = None,
+                 namespace: Optional[str] = None,
+                 node: Optional[Node] = None) -> Node:
         """
         If "node" argument is provided, adds it as child node. Else creates new
         node from the other arguments' values and adds it as well
@@ -231,7 +266,9 @@ class Node:
         """
         del self.attrs[key]
 
-    def delChild(self, node: Union[Node, str], attrs: Optional[Attrs] = None) -> Optional[Node]:
+    def delChild(self,
+                 node: Union[Node, str],
+                 attrs: Optional[Attrs] = None) -> Optional[Node]:
         """
         Delete the "node" from the node's childs list, if "node" is an instance.
         Else delete the first node that have specified name and (optionally)
@@ -306,7 +343,10 @@ class Node:
                 pass
         return ret
 
-    def getTag(self, name: str, attrs: Optional[Attrs] = None, namespace: Optional[str] = None) -> Optional[Node]:
+    def getTag(self,
+               name: str,
+               attrs: Optional[Attrs] = None,
+               namespace: Optional[str] = None) -> Optional[Node]:
         """
         Filter all child nodes using specified arguments as filter. Return the
         first found or None if not found
@@ -315,7 +355,10 @@ class Node:
         assert not isinstance(tag, list)
         return tag
 
-    def getTagAttr(self, tag: str, attr: str, namespace: Optional[str] = None) -> Optional[str]:
+    def getTagAttr(self,
+                   tag: str,
+                   attr: str,
+                   namespace: Optional[str] = None) -> Optional[str]:
         """
         Return attribute value of the child with specified name (or None if no
         such attribute)
@@ -334,7 +377,11 @@ class Node:
             return None
         return node.getData()
 
-    def getTags(self, name: str, attrs: Optional[Attrs] = None, namespace: Optional[str] = None, one: bool = False) -> Union[List[Node], Node, None]:
+    def getTags(self,
+                name: str,
+                attrs: Optional[Attrs] = None,
+                namespace: Optional[str] = None,
+                one: bool = False) -> Union[List[Node], Node, None]:
         """
         Filter all child nodes using specified arguments as filter. Returns the
         list of nodes found
@@ -347,7 +394,7 @@ class Node:
                 if attrs is None:
                     attrs = {}
                 for key in attrs.keys():
-                    if key not in node.attrs or node.attrs[key]!=attrs[key]:
+                    if key not in node.attrs or node.attrs[key] != attrs[key]:
                         break
                 else:
                     nodes.append(node)
@@ -357,7 +404,10 @@ class Node:
             return nodes
         return None
 
-    def iterTags(self, name: str, attrs: Optional[Attrs] = None, namespace: Optional[str] = None) -> Iterator[Node]:
+    def iterTags(self,
+                 name: str,
+                 attrs: Optional[Attrs] = None,
+                 namespace: Optional[str] = None) -> Iterator[Node]:
         """
         Iterate over all children using specified arguments as filter
         """
@@ -400,13 +450,15 @@ class Node:
 
     def setParent(self, node: Node) -> None:
         """
-        Set node's parent to "node". WARNING: do not checks if the parent already
-        present and not removes the node from the list of childs of previous
-        parent
+        Set node's parent to "node". WARNING: do not checks if the parent
+        already present and not removes the node from the list of childs of
+        previous parent
         """
         self.parent = node
 
-    def setPayload(self, payload: Union[List[Union[Node, str]], Node, str], add: bool = False) -> None:
+    def setPayload(self,
+                   payload: Union[List[Union[Node, str]], Node, str],
+                   add: bool = False) -> None:
         """
         Set node payload according to the list specified. WARNING: completely
         replaces all node's previous content. If you wish just to add child or
@@ -419,7 +471,10 @@ class Node:
         else:
             self.kids = payload
 
-    def setTag(self, name: str, attrs: Optional[Attrs] = None, namespace: Optional[str] = None) -> Node:
+    def setTag(self,
+               name: str,
+               attrs: Optional[Attrs] = None,
+               namespace: Optional[str] = None) -> Node:
         """
         Same as getTag but if the node with specified namespace/attributes not
         found, creates such node and returns it
@@ -429,7 +484,11 @@ class Node:
             return node
         return self.addChild(name, attrs, namespace=namespace)
 
-    def setTagAttr(self, tag: str, attr: str, val: str, namespace: Optional[str] = None) -> None:
+    def setTagAttr(self,
+                   tag: str,
+                   attr: str,
+                   val: str,
+                   namespace: Optional[str] = None) -> None:
         """
         Create new node (if not already present) with name "tag" and set it's
         attribute "attr" to value "val"
@@ -439,7 +498,10 @@ class Node:
         except Exception:
             self.addChild(tag, namespace=namespace, attrs={attr: val})
 
-    def setTagData(self, tag: str, val: str, attrs: Optional[Attrs] = None) -> None:
+    def setTagData(self,
+                   tag: str,
+                   val: str,
+                   attrs: Optional[Attrs] = None) -> None:
         """
         Creates new node (if not already present) with name "tag" and
         (optionally) attributes "attrs" and sets it's CDATA to string "val"
@@ -565,8 +627,11 @@ class NodeBuilder:
     streamError: str
     _is_stream: bool
 
-    def __init__(self, data: Optional[str] = None, initial_node: Optional[Node] = None,
-                 dispatch_depth: int = 1, finished: bool = True) -> None:
+    def __init__(self,
+                 data: Optional[str] = None,
+                 initial_node: Optional[Node] = None,
+                 dispatch_depth: int = 1,
+                 finished: bool = True) -> None:
         """
         Take two optional parameters: "data" and "initial_node"
 
@@ -586,7 +651,8 @@ class NodeBuilder:
         self._parser.CommentHandler = self.handle_invalid_xmpp_element
         self._parser.ExternalEntityRefHandler = self.handle_invalid_xmpp_element
         self._parser.AttlistDeclHandler = self.handle_invalid_xmpp_element
-        self._parser.ProcessingInstructionHandler = self.handle_invalid_xmpp_element
+        self._parser.ProcessingInstructionHandler = \
+            self.handle_invalid_xmpp_element
         self._parser.buffer_text = True
         self.Parse = self._parser.Parse
 
@@ -627,15 +693,26 @@ class NodeBuilder:
         """
         self.check_data_buffer()
         self._inc_depth()
-        log.debug("STARTTAG.. DEPTH -> %i , tag -> %s, attrs -> %s" % (self.__depth, tag, attrs))
+        log.debug("STARTTAG.. DEPTH -> %i , tag -> %s, attrs -> %s",
+                  self.__depth, tag, attrs)
         if self.__depth == self._dispatch_depth:
-            if not self._mini_dom :
-                self._mini_dom = Node(tag=tag, attrs=attrs, nsp = self._document_nsp, node_built=True)
+            if not self._mini_dom:
+                self._mini_dom = Node(tag=tag,
+                                      attrs=attrs,
+                                      nsp=self._document_nsp,
+                                      node_built=True)
             else:
-                Node.__init__(self._mini_dom, tag=tag, attrs=attrs, nsp = self._document_nsp, node_built=True)
+                Node.__init__(self._mini_dom,
+                              tag=tag,
+                              attrs=attrs,
+                              nsp=self._document_nsp,
+                              node_built=True)
             self._ptr = self._mini_dom
         elif self.__depth > self._dispatch_depth:
-            self._ptr.kids.append(Node(tag=tag, parent=self._ptr, attrs=attrs, node_built=True))
+            self._ptr.kids.append(Node(tag=tag,
+                                       parent=self._ptr,
+                                       attrs=attrs,
+                                       node_built=True))
             self._ptr = self._ptr.kids[-1]
         if self.__depth == 1:
             self._document_attrs = {}
@@ -648,15 +725,17 @@ class NodeBuilder:
                     self._document_nsp[attr[6:]] = val
                 else:
                     self._document_attrs[attr] = val
-            ns = self._document_nsp.get(nsp, 'http://www.gajim.org/xmlns/undeclared-root')
+            ns = self._document_nsp.get(
+                nsp, 'http://www.gajim.org/xmlns/undeclared-root')
             try:
-                header = Node(tag=tag, attrs=attrs,
+                header = Node(tag=tag,
+                              attrs=attrs,
                               nsp=self._document_nsp, node_built=True)
                 self.dispatch(header)
                 self._check_stream_start(ns, name)
-            except ValueError as e:
+            except ValueError as error:
                 self._document_attrs = None
-                raise ValueError(str(e))
+                raise ValueError(str(error))
         if not self.last_is_data and self._ptr.parent:
             self._ptr.parent.data.append('')
         self.last_is_data = False
@@ -673,7 +752,7 @@ class NodeBuilder:
         """
         XML Parser callback. Used internally
         """
-        log.debug("DEPTH -> %i , tag -> %s" % (self.__depth, tag))
+        log.debug("DEPTH -> %i , tag -> %s", self.__depth, tag)
         self.check_data_buffer()
         if self.__depth == self._dispatch_depth:
             if self._mini_dom.getName() == 'error':
@@ -751,19 +830,19 @@ class NodeBuilder:
         self.__last_depth = self.__depth
         self.__depth -= 1
 
-def XML2Node(xml: str) -> Optional[Node]:
+def XML2Node(xml_str: str) -> Optional[Node]:
     """
     Convert supplied textual string into XML node. Handy f.e. for reading
     configuration file. Raises xml.parser.expat.parsererror if provided string
     is not well-formed XML
     """
-    return NodeBuilder(xml).getDom()
+    return NodeBuilder(xml_str).getDom()
 
-def BadXML2Node(xml: str) -> Optional[Node]:
+def BadXML2Node(xml_str: str) -> Optional[Node]:
     """
     Convert supplied textual string into XML node. Survives if xml data is
     cutted half way round. I.e. "<html>some text <br>some more text". Will raise
     xml.parser.expat.parsererror on misplaced tags though. F.e. "<b>some text
     <br>some more text</b>" will not work
     """
-    return NodeBuilder(xml).getDom()
+    return NodeBuilder(xml_str).getDom()

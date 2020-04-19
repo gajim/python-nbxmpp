@@ -652,3 +652,12 @@ GIO_TLS_ERRORS = {
     Gio.TlsCertificateFlags.EXPIRED: 'The certificate has expired',
 }
 # pylint: enable=line-too-long
+
+NOT_ALLOWED_XML_CHARS = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    '\x0C': '',
+    '\x1B': ''
+}
