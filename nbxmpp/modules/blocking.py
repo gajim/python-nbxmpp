@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_BLOCKING
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
 from nbxmpp.structs import BlockingListResult
@@ -35,7 +35,7 @@ class Blocking(BaseModule):
 
     @call_on_response('_blocking_list_received')
     def get_blocking_list(self):
-        iq = Iq('get', NS_BLOCKING)
+        iq = Iq('get', Namespace.BLOCKING)
         iq.setQuery('blocklist')
         return iq
 
@@ -45,7 +45,7 @@ class Blocking(BaseModule):
         if not isResultNode(stanza):
             return raise_error(self._log.info, stanza)
 
-        blocklist = stanza.getTag('blocklist', namespace=NS_BLOCKING)
+        blocklist = stanza.getTag('blocklist', namespace=Namespace.BLOCKING)
         if blocklist is None:
             return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
@@ -58,7 +58,7 @@ class Blocking(BaseModule):
     @call_on_response('_default_response')
     def block(self, jids):
         self._log.info('Block: %s', jids)
-        iq = Iq('set', NS_BLOCKING)
+        iq = Iq('set', Namespace.BLOCKING)
         query = iq.setQuery(name='block')
         for jid in jids:
             query.addChild(name='item', attrs={'jid': jid})
@@ -67,7 +67,7 @@ class Blocking(BaseModule):
     @call_on_response('_default_response')
     def unblock(self, jids):
         self._log.info('Unblock: %s', jids)
-        iq = Iq('set', NS_BLOCKING)
+        iq = Iq('set', Namespace.BLOCKING)
         query = iq.setQuery(name='unblock')
         for jid in jids:
             query.addChild(name='item', attrs={'jid': jid})

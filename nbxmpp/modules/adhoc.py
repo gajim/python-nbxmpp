@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_COMMANDS
-from nbxmpp.protocol import NS_DISCO_ITEMS
-from nbxmpp.protocol import NS_DATA
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import Node
@@ -44,7 +42,9 @@ class AdHoc(BaseModule):
     def request_command_list(self, jid=None):
         if jid is None:
             jid = self._client.get_bound_jid().getBare()
-        return get_disco_request(NS_DISCO_ITEMS, jid, node=NS_COMMANDS)
+        return get_disco_request(Namespace.DISCO_ITEMS,
+                                 jid,
+                                 node=Namespace.COMMANDS)
 
     @callback
     def _command_list_received(self, stanza):
@@ -74,7 +74,7 @@ class AdHoc(BaseModule):
         if action is None:
             action = AdHocAction.EXECUTE
         attrs = {'node': command.node,
-                 'xmlns': NS_COMMANDS,
+                 'xmlns': Namespace.COMMANDS,
                  'action': action.value}
         if command.sessionid is not None:
             attrs['sessionid'] = command.sessionid
@@ -91,7 +91,7 @@ class AdHoc(BaseModule):
         if not isResultNode(stanza):
             return raise_error(self._log.info, stanza)
 
-        command = stanza.getTag('command', namespace=NS_COMMANDS)
+        command = stanza.getTag('command', namespace=Namespace.COMMANDS)
         if command is None:
             return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
@@ -117,7 +117,7 @@ class AdHoc(BaseModule):
                 node=attrs['node'],
                 sessionid=attrs.get('sessionid'),
                 status=AdHocStatus(attrs['status']),
-                data=command.getTag('x', namespace=NS_DATA),
+                data=command.getTag('x', namespace=Namespace.DATA),
                 actions=actions,
                 notes=notes)
         except Exception as error:

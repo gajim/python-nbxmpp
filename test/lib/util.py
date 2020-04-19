@@ -4,7 +4,6 @@ from unittest.mock import Mock
 from test.lib.const import STREAM_START
 
 from nbxmpp.dispatcher import StanzaDispatcher
-from nbxmpp.protocol import NS_CLIENT
 from nbxmpp.protocol import JID
 
 

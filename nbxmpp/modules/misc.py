@@ -17,12 +17,7 @@
 
 import logging
 
-from nbxmpp.protocol import NS_CARBONS
-from nbxmpp.protocol import NS_FORWARD
-from nbxmpp.protocol import NS_MUC_USER
-from nbxmpp.protocol import NS_MAM_1
-from nbxmpp.protocol import NS_MAM_2
-from nbxmpp.protocol import NS_XHTML
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import InvalidFrom
 from nbxmpp.protocol import InvalidStanza
@@ -36,9 +31,9 @@ log = logging.getLogger('nbxmpp.m.misc')
 
 
 def unwrap_carbon(stanza, own_jid):
-    carbon = stanza.getTag('received', namespace=NS_CARBONS)
+    carbon = stanza.getTag('received', namespace=Namespace.CARBONS)
     if carbon is None:
-        carbon = stanza.getTag('sent', namespace=NS_CARBONS)
+        carbon = stanza.getTag('sent', namespace=Namespace.CARBONS)
         if carbon is None:
             return stanza, None
 
@@ -46,7 +41,7 @@ def unwrap_carbon(stanza, own_jid):
     if not stanza.getFrom() == own_jid.getBare():
         raise InvalidFrom('Invalid from: %s' % stanza.getAttr('from'))
 
-    forwarded = carbon.getTag('forwarded', namespace=NS_FORWARD)
+    forwarded = carbon.getTag('forwarded', namespace=Namespace.FORWARD)
     message = Message(node=forwarded.getTag('message'))
 
     type_ = carbon.getName()
@@ -67,7 +62,7 @@ def unwrap_carbon(stanza, own_jid):
             # message itself
             raise NodeProcessed('Drop "received"-Carbon from ourself')
 
-        if message.getTag('x', namespace=NS_MUC_USER) is not None:
+        if message.getTag('x', namespace=Namespace.MUC_USER) is not None:
             # A MUC broadcasts messages sent to us to all resources
             # there is no need to process the received carbon
             raise NodeProcessed('Drop MUC-PM "received"-Carbon')
@@ -76,9 +71,9 @@ def unwrap_carbon(stanza, own_jid):
 
 
 def unwrap_mam(stanza, own_jid):
-    result = stanza.getTag('result', namespace=NS_MAM_2)
+    result = stanza.getTag('result', namespace=Namespace.MAM_2)
     if result is None:
-        result = stanza.getTag('result', namespace=NS_MAM_1)
+        result = stanza.getTag('result', namespace=Namespace.MAM_1)
         if result is None:
             return stanza, None
 
@@ -94,7 +89,7 @@ def unwrap_mam(stanza, own_jid):
         log.warning(stanza)
         raise InvalidStanza
 
-    forwarded = result.getTag('forwarded', namespace=NS_FORWARD)
+    forwarded = result.getTag('forwarded', namespace=Namespace.FORWARD)
     message = Message(node=forwarded.getTag('message'))
 
     # Fill missing to/from
@@ -125,9 +120,9 @@ def build_xhtml_body(xhtml, xmllang=None):
     try:
         if xmllang is not None:
             body = '<body xmlns="%s" xml:lang="%s">%s</body>' % (
-                NS_XHTML, xmllang, xhtml)
+                Namespace.XHTML, xmllang, xhtml)
         else:
-            body = '<body xmlns="%s">%s</body>' % (NS_XHTML, xhtml)
+            body = '<body xmlns="%s">%s</body>' % (Namespace.XHTML, xhtml)
     except Exception as error:
         log.error('Error while building xhtml node: %s', error)
         return None

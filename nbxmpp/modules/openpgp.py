@@ -19,12 +19,7 @@ import time
 import random
 import string
 
-from nbxmpp.protocol import NS_OPENPGP
-from nbxmpp.protocol import NS_OPENPGP_PK
-from nbxmpp.protocol import NS_OPENPGP_SK
-from nbxmpp.protocol import NS_PUBSUB_EVENT
-from nbxmpp.protocol import NS_CLIENT
-from nbxmpp.protocol import NS_EME
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import isResultNode
@@ -51,16 +46,16 @@ class OpenPGP(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_pubsub_openpgp,
-                          ns=NS_PUBSUB_EVENT,
+                          ns=Namespace.PUBSUB_EVENT,
                           priority=16),
             StanzaHandler(name='message',
                           callback=self._process_openpgp_message,
-                          ns=NS_OPENPGP,
+                          ns=Namespace.OPENPGP,
                           priority=7),
         ]
 
     def _process_openpgp_message(self, _client, stanza, properties):
-        openpgp = stanza.getTag('openpgp', namespace=NS_OPENPGP)
+        openpgp = stanza.getTag('openpgp', namespace=Namespace.OPENPGP)
         if openpgp is None:
             self._log.warning('No openpgp node found')
             self._log.warning(stanza)
@@ -99,7 +94,7 @@ class OpenPGP(BaseModule):
         if not properties.is_pubsub_event:
             return
 
-        if properties.pubsub_event.node != NS_OPENPGP_PK:
+        if properties.pubsub_event.node != Namespace.OPENPGP_PK:
             return
 
         item = properties.pubsub_event.item
@@ -126,7 +121,8 @@ class OpenPGP(BaseModule):
 
     @staticmethod
     def _parse_keylist(jid, item):
-        keylist_node = item.getTag('public-keys-list', namespace=NS_OPENPGP)
+        keylist_node = item.getTag('public-keys-list',
+                                   namespace=Namespace.OPENPGP)
         if keylist_node is None:
             raise StanzaMalformed('No public-keys-list node found')
 
@@ -149,7 +145,7 @@ class OpenPGP(BaseModule):
         return data
 
     def set_keylist(self, keylist):
-        item = Node('public-keys-list', {'xmlns': NS_OPENPGP})
+        item = Node('public-keys-list', {'xmlns': Namespace.OPENPGP})
         if keylist is not None:
             for key in keylist:
                 date = time.strftime('%Y-%m-%dT%H:%M:%SZ',
@@ -161,16 +157,16 @@ class OpenPGP(BaseModule):
         self._log.info('Set keylist: %s', keylist)
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
-            jid, NS_OPENPGP_PK, item, id_='current')
+            jid, Namespace.OPENPGP_PK, item, id_='current')
 
     def set_public_key(self, key, fingerprint, date):
         date = time.strftime(
             '%Y-%m-%dT%H:%M:%SZ', time.gmtime(date))
-        item = Node('pubkey', attrs={'xmlns': NS_OPENPGP,
+        item = Node('pubkey', attrs={'xmlns': Namespace.OPENPGP,
                                      'date': date})
         data = item.addChild('data')
         data.addData(b64encode(key))
-        node = '%s:%s' % (NS_OPENPGP_PK, fingerprint)
+        node = '%s:%s' % (Namespace.OPENPGP_PK, fingerprint)
 
         self._log.info('Set public key')
         jid = self._client.get_bound_jid().getBare()
@@ -180,7 +176,7 @@ class OpenPGP(BaseModule):
     @call_on_response('_public_key_received')
     def request_public_key(self, jid, fingerprint):
         self._log.info('Request public key from: %s %s', jid, fingerprint)
-        node = '%s:%s' % (NS_OPENPGP_PK, fingerprint)
+        node = '%s:%s' % (Namespace.OPENPGP_PK, fingerprint)
         return get_pubsub_request(jid, node, max_items=1)
 
     @callback
@@ -194,7 +190,7 @@ class OpenPGP(BaseModule):
         items_node = pubsub_node.getTag('items')
         item = items_node.getTag('item')
 
-        pub_key = item.getTag('pubkey', namespace=NS_OPENPGP)
+        pub_key = item.getTag('pubkey', namespace=Namespace.OPENPGP)
         if pub_key is None:
             return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'PGP public key has no pubkey node')
@@ -219,7 +215,7 @@ class OpenPGP(BaseModule):
     @call_on_response('_keylist_received')
     def request_keylist(self, jid):
         self._log.info('Request keylist from: %s', jid)
-        return get_pubsub_request(jid, NS_OPENPGP_PK, max_items=1)
+        return get_pubsub_request(jid, Namespace.OPENPGP_PK, max_items=1)
 
     @callback
     def _keylist_received(self, stanza):
@@ -244,7 +240,7 @@ class OpenPGP(BaseModule):
     def request_secret_key(self):
         self._log.info('Request secret key')
         jid = self._client.get_bound_jid().getBare()
-        return get_pubsub_request(jid, NS_OPENPGP_SK, max_items=1)
+        return get_pubsub_request(jid, Namespace.OPENPGP_SK, max_items=1)
 
     @callback
     def _secret_key_received(self, stanza):
@@ -255,7 +251,7 @@ class OpenPGP(BaseModule):
         items_node = pubsub_node.getTag('items')
         item = items_node.getTag('item')
 
-        sec_key = item.getTag('secretkey', namespace=NS_OPENPGP)
+        sec_key = item.getTag('secretkey', namespace=Namespace.OPENPGP)
         if sec_key is None:
             return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'PGP secretkey node not found')
@@ -274,14 +270,14 @@ class OpenPGP(BaseModule):
         return key
 
     def set_secret_key(self, secret_key):
-        item = Node('secretkey', {'xmlns': NS_OPENPGP})
+        item = Node('secretkey', {'xmlns': Namespace.OPENPGP})
         if secret_key is not None:
             item.setData(b64encode(secret_key))
 
         self._log.info('Set secret key')
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
-            jid, NS_OPENPGP_SK, item, id_='current')
+            jid, Namespace.OPENPGP_SK, item, id_='current')
 
 
 def parse_signcrypt(stanza):
@@ -299,7 +295,8 @@ def parse_signcrypt(stanza):
       </payload>
     </signcrypt>
     '''
-    if stanza.getName() != 'signcrypt' or stanza.getNamespace() != NS_OPENPGP:
+    if (stanza.getName() != 'signcrypt' or
+            stanza.getNamespace() != Namespace.OPENPGP):
         raise StanzaMalformed('Invalid signcrypt node')
 
     to = stanza.getTagAttr('to', 'jid')
@@ -336,11 +333,11 @@ def create_signcrypt_node(stanza, not_encrypted_nodes):
     for node in child_nodes:
         if (node.getName(), node.getNamespace()) not in not_encrypted_nodes:
             if not node.getNamespace():
-                node.setNamespace(NS_CLIENT)
+                node.setNamespace(Namespace.CLIENT)
             encrypted_nodes.append(node)
             stanza.delChild(node)
 
-    signcrypt = Node('signcrypt', attrs={'xmlns': NS_OPENPGP})
+    signcrypt = Node('signcrypt', attrs={'xmlns': Namespace.OPENPGP})
     signcrypt.addChild('to', attrs={'jid': stanza.getTo().getBare()})
 
     timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
@@ -365,12 +362,12 @@ def get_rpad():
 def create_message_stanza(stanza, encrypted_payload, with_fallback_text):
     b64encoded_payload = b64encode(encrypted_payload)
 
-    openpgp_node = Node('openpgp', attrs={'xmlns': NS_OPENPGP})
+    openpgp_node = Node('openpgp', attrs={'xmlns': Namespace.OPENPGP})
     openpgp_node.addData(b64encoded_payload)
     stanza.addChild(node=openpgp_node)
 
-    eme_node = Node('encryption', attrs={'xmlns': NS_EME,
-                                         'namespace': NS_OPENPGP})
+    eme_node = Node('encryption', attrs={'xmlns': Namespace.EME,
+                                         'namespace': Namespace.OPENPGP})
     stanza.addChild(node=eme_node)
 
     if with_fallback_text:

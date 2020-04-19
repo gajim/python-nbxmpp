@@ -17,7 +17,7 @@
 
 import logging
 
-from nbxmpp.protocol import NS_DELAY2
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.modules.base import BaseModule
@@ -33,11 +33,11 @@ class Delay(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_message_delay,
-                          ns=NS_DELAY2,
+                          ns=Namespace.DELAY2,
                           priority=15),
             StanzaHandler(name='presence',
                           callback=self._process_presence_delay,
-                          ns=NS_DELAY2,
+                          ns=Namespace.DELAY2,
                           priority=15)
         ]
 
@@ -86,7 +86,7 @@ def parse_delay(stanza, epoch=True, convert='utc', from_=None, not_from=None):
     :param not_from:   Matches only delays that have the according
                        from attr not set
     '''
-    delays = stanza.getTags('delay', namespace=NS_DELAY2)
+    delays = stanza.getTags('delay', namespace=Namespace.DELAY2)
 
     for delay in delays:
         stamp = delay.getAttr('stamp')

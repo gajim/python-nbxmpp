@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_RECEIPTS
-from nbxmpp.protocol import NS_MUC_USER
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import isMucPM
 from nbxmpp.protocol import Message
 from nbxmpp.structs import StanzaHandler
@@ -33,17 +32,17 @@ class Receipts(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_message_receipt,
-                          ns=NS_RECEIPTS,
+                          ns=Namespace.RECEIPTS,
                           priority=15),
         ]
 
     def _process_message_receipt(self, _client, stanza, properties):
-        request = stanza.getTag('request', namespace=NS_RECEIPTS)
+        request = stanza.getTag('request', namespace=Namespace.RECEIPTS)
         if request is not None:
             properties.receipt = ReceiptData(request.getName())
             return
 
-        received = stanza.getTag('received', namespace=NS_RECEIPTS)
+        received = stanza.getTag('received', namespace=Namespace.RECEIPTS)
         if received is not None:
             id_ = received.getAttr('id')
             if id_ is None:
@@ -64,7 +63,7 @@ def build_receipt(stanza):
     if stanza.getID() is None:
         raise ValueError('Receipt can not be generated for messages without id')
 
-    if stanza.getTag('received', namespace=NS_RECEIPTS) is not None:
+    if stanza.getTag('received', namespace=Namespace.RECEIPTS) is not None:
         raise ValueError('Receipt can not be generated for receipts')
 
     is_muc_pm = isMucPM(stanza)
@@ -76,7 +75,7 @@ def build_receipt(stanza):
 
     message = Message(to=jid, typ=typ)
     if is_muc_pm:
-        message.setTag('x', namespace=NS_MUC_USER)
+        message.setTag('x', namespace=Namespace.MUC_USER)
     message_id = generate_id()
     message.setID(message_id)
     message.setReceiptReceived(stanza.getID())

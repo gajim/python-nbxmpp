@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_MOOD
-from nbxmpp.protocol import NS_PUBSUB_EVENT
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
@@ -33,7 +32,7 @@ class Mood(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_pubsub_mood,
-                          ns=NS_PUBSUB_EVENT,
+                          ns=Namespace.PUBSUB_EVENT,
                           priority=16),
         ]
 
@@ -41,7 +40,7 @@ class Mood(BaseModule):
         if not properties.is_pubsub_event:
             return
 
-        if properties.pubsub_event.node != NS_MOOD:
+        if properties.pubsub_event.node != Namespace.MOOD:
             return
 
         item = properties.pubsub_event.item
@@ -49,7 +48,7 @@ class Mood(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        mood_node = item.getTag('mood', namespace=NS_MOOD)
+        mood_node = item.getTag('mood', namespace=Namespace.MOOD)
         if not mood_node.getChildren():
             self._log.info('Received mood: %s - removed mood', properties.jid)
             return
@@ -74,7 +73,7 @@ class Mood(BaseModule):
         properties.pubsub_event = pubsub_event
 
     def set_mood(self, data):
-        item = Node('mood', {'xmlns': NS_MOOD})
+        item = Node('mood', {'xmlns': Namespace.MOOD})
         if data is not None and data.mood:
             item.addChild(data.mood)
 
@@ -83,4 +82,4 @@ class Mood(BaseModule):
 
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
-            jid, NS_MOOD, item, id_='current')
+            jid, Namespace.MOOD, item, id_='current')

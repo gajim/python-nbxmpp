@@ -19,9 +19,7 @@ import json
 
 from gi.repository import Soup
 
-from nbxmpp.protocol import NS_MUCLUMBUS
-from nbxmpp.protocol import NS_DATA
-from nbxmpp.protocol import NS_RSM
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
@@ -57,7 +55,8 @@ class Muclumbus(BaseModule):
     @call_on_response('_parameters_received')
     def request_parameters(self, jid):
         query = Iq(to=jid, typ='get')
-        query.addChild(node=Node('search', attrs={'xmlns': NS_MUCLUMBUS}))
+        query.addChild(node=Node('search',
+                                 attrs={'xmlns': Namespace.MUCLUMBUS}))
         return query
 
     @callback
@@ -65,11 +64,11 @@ class Muclumbus(BaseModule):
         if not isResultNode(stanza):
             return raise_error(self._log.info, stanza)
 
-        search = stanza.getTag('search', namespace=NS_MUCLUMBUS)
+        search = stanza.getTag('search', namespace=Namespace.MUCLUMBUS)
         if search is None:
             return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
-        dataform = search.getTag('x', namespace=NS_DATA)
+        dataform = search.getTag('x', namespace=Namespace.DATA)
         if dataform is None:
             return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
@@ -78,9 +77,9 @@ class Muclumbus(BaseModule):
 
     @call_on_response('_search_received')
     def set_search(self, jid, dataform, items_per_page=50, after=None):
-        search = Node('search', attrs={'xmlns': NS_MUCLUMBUS})
+        search = Node('search', attrs={'xmlns': Namespace.MUCLUMBUS})
         search.addChild(node=dataform)
-        rsm = search.addChild('set', namespace=NS_RSM)
+        rsm = search.addChild('set', namespace=Namespace.RSM)
         rsm.addChild('max').setData(items_per_page)
         if after is not None:
             rsm.addChild('after').setData(after)
@@ -109,7 +108,7 @@ class Muclumbus(BaseModule):
         if not isResultNode(stanza):
             return raise_error(self._log.info, stanza)
 
-        result = stanza.getTag('result', namespace=NS_MUCLUMBUS)
+        result = stanza.getTag('result', namespace=Namespace.MUCLUMBUS)
         if result is None:
             return raise_error(self._log.warning, stanza, 'stanza-malformed')
 
@@ -121,7 +120,7 @@ class Muclumbus(BaseModule):
                                    end=True,
                                    items=[])
 
-        set_ = result.getTag('set', namespace=NS_RSM)
+        set_ = result.getTag('set', namespace=Namespace.RSM)
         if set_ is None:
             return raise_error(self._log.warning, stanza, 'stanza-malformed')
 

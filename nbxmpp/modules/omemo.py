@@ -15,12 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_OMEMO_TEMP
-from nbxmpp.protocol import NS_OMEMO_TEMP_DL
-from nbxmpp.protocol import NS_OMEMO_TEMP_BUNDLE
-from nbxmpp.protocol import NS_PUBSUB_EVENT
-from nbxmpp.protocol import NS_EME
-from nbxmpp.protocol import NS_HINTS
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import Message
@@ -46,11 +41,11 @@ class OMEMO(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_omemo_devicelist,
-                          ns=NS_PUBSUB_EVENT,
+                          ns=Namespace.PUBSUB_EVENT,
                           priority=16),
             StanzaHandler(name='message',
                           callback=self._process_omemo_message,
-                          ns=NS_OMEMO_TEMP,
+                          ns=Namespace.OMEMO_TEMP,
                           priority=7),
         ]
 
@@ -79,7 +74,7 @@ class OMEMO(BaseModule):
           <store xmlns='urn:xmpp:hints'/>
         </message>
         '''
-        encrypted = stanza.getTag('encrypted', namespace=NS_OMEMO_TEMP)
+        encrypted = stanza.getTag('encrypted', namespace=Namespace.OMEMO_TEMP)
         if encrypted is None:
             raise StanzaMalformed('No encrypted node found')
 
@@ -129,7 +124,7 @@ class OMEMO(BaseModule):
         if not properties.is_pubsub_event:
             return
 
-        if properties.pubsub_event.node != NS_OMEMO_TEMP_DL:
+        if properties.pubsub_event.node != Namespace.OMEMO_TEMP_DL:
             return
 
         item = properties.pubsub_event.item
@@ -167,7 +162,7 @@ class OMEMO(BaseModule):
           </item>
         </items>
         '''
-        list_node = item.getTag('list', namespace=NS_OMEMO_TEMP)
+        list_node = item.getTag('list', namespace=Namespace.OMEMO_TEMP)
         if list_node is None:
             raise StanzaMalformed('No list node found')
 
@@ -184,21 +179,21 @@ class OMEMO(BaseModule):
         return result
 
     def set_devicelist(self, devicelist=None):
-        item = Node('list', attrs={'xmlns': NS_OMEMO_TEMP})
+        item = Node('list', attrs={'xmlns': Namespace.OMEMO_TEMP})
         for device in devicelist:
             item.addChild('device').setAttr('id', device)
 
         self._log.info('Set devicelist: %s', devicelist)
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
-            jid, NS_OMEMO_TEMP_DL, item, id_='current')
+            jid, Namespace.OMEMO_TEMP_DL, item, id_='current')
 
     @call_on_response('_devicelist_received')
     def request_devicelist(self, jid=None):
         if jid is None:
             jid = self._client.get_bound_jid().getBare()
         self._log.info('Request devicelist from: %s', jid)
-        return get_pubsub_request(jid, NS_OMEMO_TEMP_DL, max_items=1)
+        return get_pubsub_request(jid, Namespace.OMEMO_TEMP_DL, max_items=1)
 
     @callback
     def _devicelist_received(self, stanza):
@@ -221,7 +216,7 @@ class OMEMO(BaseModule):
         item = self._create_bundle(bundle)
         self._log.info('Set bundle')
 
-        node = '%s:%s' % (NS_OMEMO_TEMP_BUNDLE, device_id)
+        node = '%s:%s' % (Namespace.OMEMO_TEMP_BUNDLE, device_id)
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
             jid, node, item, id_='current')
@@ -257,7 +252,7 @@ class OMEMO(BaseModule):
           </item>
         </publish>
         '''
-        bundle_node = Node('bundle', attrs={'xmlns': NS_OMEMO_TEMP})
+        bundle_node = Node('bundle', attrs={'xmlns': Namespace.OMEMO_TEMP})
         prekey_pub_node = bundle_node.addChild(
             'signedPreKeyPublic',
             attrs={'signedPreKeyId': bundle.spk['id']})
@@ -279,7 +274,7 @@ class OMEMO(BaseModule):
     @call_on_response('_bundle_received')
     def request_bundle(self, jid, device_id):
         self._log.info('Request bundle from: %s %s', jid, device_id)
-        node = '%s:%s' % (NS_OMEMO_TEMP_BUNDLE, device_id)
+        node = '%s:%s' % (Namespace.OMEMO_TEMP_BUNDLE, device_id)
         return get_pubsub_request(jid, node, max_items=1)
 
     @callback
@@ -329,7 +324,7 @@ class OMEMO(BaseModule):
         if item is None:
             raise StanzaMalformed('No item in node found')
 
-        bundle = item.getTag('bundle', namespace=NS_OMEMO_TEMP)
+        bundle = item.getTag('bundle', namespace=Namespace.OMEMO_TEMP)
         if bundle is None:
             raise StanzaMalformed('No bundle node found')
 
@@ -405,7 +400,7 @@ def create_omemo_message(stanza, omemo_message, store_hint=True,
     if node_whitelist is not None:
         cleanup_stanza(stanza, node_whitelist)
 
-    encrypted = Node('encrypted', attrs={'xmlns': NS_OMEMO_TEMP})
+    encrypted = Node('encrypted', attrs={'xmlns': Namespace.OMEMO_TEMP})
     header = Node('header', attrs={'sid': omemo_message.sid})
     for rid, (key, prekey) in omemo_message.keys.items():
         attrs = {'rid': rid}
@@ -422,21 +417,22 @@ def create_omemo_message(stanza, omemo_message, store_hint=True,
 
     stanza.addChild(node=encrypted)
 
-    stanza.addChild(node=Node('encryption', attrs={'xmlns': NS_EME,
-                                                   'name': 'OMEMO',
-                                                   'namespace': NS_OMEMO_TEMP}))
+    stanza.addChild(node=Node('encryption',
+                              attrs={'xmlns': Namespace.EME,
+                                     'name': 'OMEMO',
+                                     'namespace': Namespace.OMEMO_TEMP}))
 
     stanza.setBody("You received a message encrypted with "
                    "OMEMO but your client doesn't support OMEMO.")
 
     if store_hint:
-        stanza.addChild(node=Node('store', attrs={'xmlns': NS_HINTS}))
+        stanza.addChild(node=Node('store', attrs={'xmlns': Namespace.HINTS}))
 
 
 def get_key_transport_message(typ, jid, omemo_message):
     message = Message(typ=typ, to=jid)
 
-    encrypted = Node('encrypted', attrs={'xmlns': NS_OMEMO_TEMP})
+    encrypted = Node('encrypted', attrs={'xmlns': Namespace.OMEMO_TEMP})
     header = Node('header', attrs={'sid': omemo_message.sid})
     for rid, (key, prekey) in omemo_message.keys.items():
         attrs = {'rid': rid}

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_CHATMARKERS
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ChatMarker
 from nbxmpp.modules.base import BaseModule
@@ -29,16 +29,17 @@ class ChatMarkers(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_message_marker,
-                          ns=NS_CHATMARKERS,
+                          ns=Namespace.CHATMARKERS,
                           priority=15),
         ]
 
     def _process_message_marker(self, _client, stanza, properties):
-        type_ = stanza.getTag('received', namespace=NS_CHATMARKERS)
+        type_ = stanza.getTag('received', namespace=Namespace.CHATMARKERS)
         if type_ is None:
-            type_ = stanza.getTag('displayed', namespace=NS_CHATMARKERS)
+            type_ = stanza.getTag('displayed', namespace=Namespace.CHATMARKERS)
             if type_ is None:
-                type_ = stanza.getTag('acknowledged', namespace=NS_CHATMARKERS)
+                type_ = stanza.getTag('acknowledged',
+                                      namespace=Namespace.CHATMARKERS)
                 if type_ is None:
                     return
 

@@ -1,6 +1,6 @@
 from test.lib.util import StanzaHandlerTest
 
-from nbxmpp.protocol import NS_PUBSUB_EVENT
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import LocationData
 from nbxmpp.structs import PubSubEventData
@@ -89,6 +89,6 @@ class LocationTest(StanzaHandlerTest):
         self.dispatcher.register_handler(
             *StanzaHandler(name='message',
                            callback=_on_message,
-                           ns=NS_PUBSUB_EVENT))
+                           ns=Namespace.PUBSUB_EVENT))
 
         self.dispatcher.process_data(event)

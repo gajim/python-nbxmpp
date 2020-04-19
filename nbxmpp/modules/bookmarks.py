@@ -15,10 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_BOOKMARKS
-from nbxmpp.protocol import NS_BOOKMARKS_2
-from nbxmpp.protocol import NS_PUBSUB_EVENT
-from nbxmpp.protocol import NS_PRIVATE
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import Iq
@@ -63,11 +60,11 @@ class Bookmarks(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_pubsub_bookmarks,
-                          ns=NS_PUBSUB_EVENT,
+                          ns=Namespace.PUBSUB_EVENT,
                           priority=16),
             StanzaHandler(name='message',
                           callback=self._process_pubsub_bookmarks2,
-                          ns=NS_PUBSUB_EVENT,
+                          ns=Namespace.PUBSUB_EVENT,
                           priority=16),
         ]
 
@@ -80,7 +77,7 @@ class Bookmarks(BaseModule):
         if not properties.is_pubsub_event:
             return
 
-        if properties.pubsub_event.node != NS_BOOKMARKS:
+        if properties.pubsub_event.node != Namespace.BOOKMARKS:
             return
 
         item = properties.pubsub_event.item
@@ -88,7 +85,7 @@ class Bookmarks(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        storage_node = item.getTag('storage', namespace=NS_BOOKMARKS)
+        storage_node = item.getTag('storage', namespace=Namespace.BOOKMARKS)
         if storage_node is None:
             self._log.warning('No storage node found')
             self._log.warning(stanza)
@@ -110,7 +107,7 @@ class Bookmarks(BaseModule):
         if not properties.is_pubsub_event:
             return
 
-        if properties.pubsub_event.node != NS_BOOKMARKS_2:
+        if properties.pubsub_event.node != Namespace.BOOKMARKS_2:
             return
 
         item = properties.pubsub_event.item
@@ -173,7 +170,7 @@ class Bookmarks(BaseModule):
             self._log.warning(item)
             return None
 
-        conference = item.getTag('conference', namespace=NS_BOOKMARKS_2)
+        conference = item.getTag('conference', namespace=Namespace.BOOKMARKS_2)
         if conference is None:
             self._log.warning('No conference node found')
             self._log.warning(item)
@@ -191,8 +188,8 @@ class Bookmarks(BaseModule):
     @staticmethod
     def get_private_request():
         iq = Iq(typ='get')
-        query = iq.addChild(name='query', namespace=NS_PRIVATE)
-        query.addChild(name='storage', namespace=NS_BOOKMARKS)
+        query = iq.addChild(name='query', namespace=Namespace.PRIVATE)
+        query.addChild(name='storage', namespace=Namespace.BOOKMARKS)
         return iq
 
     @call_on_response('_bookmarks_received')
@@ -200,12 +197,12 @@ class Bookmarks(BaseModule):
         jid = self._client.get_bound_jid().getBare()
         if type_ == BookmarkStoreType.PUBSUB_BOOKMARK_2:
             self._log.info('Request bookmarks 2 (PubSub)')
-            request = get_pubsub_request(jid, NS_BOOKMARKS_2)
+            request = get_pubsub_request(jid, Namespace.BOOKMARKS_2)
             return request, {'type_': type_}
 
         if type_ == BookmarkStoreType.PUBSUB_BOOKMARK_1:
             self._log.info('Request bookmarks (PubSub)')
-            request = get_pubsub_request(jid, NS_BOOKMARKS, max_items=1)
+            request = get_pubsub_request(jid, Namespace.BOOKMARKS, max_items=1)
             return request, {'type_': type_}
 
         if type_ == BookmarkStoreType.PRIVATE:
@@ -220,7 +217,7 @@ class Bookmarks(BaseModule):
 
         bookmarks = []
         if type_ == BookmarkStoreType.PUBSUB_BOOKMARK_2:
-            items = get_pubsub_items(stanza, NS_BOOKMARKS_2)
+            items = get_pubsub_items(stanza, Namespace.BOOKMARKS_2)
             if items is None:
                 return raise_error(self._log.warning,
                                    stanza,
@@ -234,7 +231,8 @@ class Bookmarks(BaseModule):
         elif type_ == BookmarkStoreType.PUBSUB_BOOKMARK_1:
             item = get_pubsub_item(stanza)
             if item is not None:
-                storage_node = item.getTag('storage', namespace=NS_BOOKMARKS)
+                storage_node = item.getTag('storage',
+                                           namespace=Namespace.BOOKMARKS)
                 if storage_node is None:
                     return raise_error(self._log.warning,
                                        stanza,
@@ -246,7 +244,8 @@ class Bookmarks(BaseModule):
 
         elif type_ == BookmarkStoreType.PRIVATE:
             query = stanza.getQuery()
-            storage_node = query.getTag('storage', namespace=NS_BOOKMARKS)
+            storage_node = query.getTag('storage',
+                                        namespace=Namespace.BOOKMARKS)
             if storage_node is None:
                 return raise_error(self._log.warning,
                                    stanza,
@@ -266,7 +265,7 @@ class Bookmarks(BaseModule):
 
     @staticmethod
     def _build_storage_node(bookmarks):
-        storage_node = Node(tag='storage', attrs={'xmlns': NS_BOOKMARKS})
+        storage_node = Node(tag='storage', attrs={'xmlns': Namespace.BOOKMARKS})
         for bookmark in bookmarks:
             conf_node = storage_node.addChild(name="conference")
             conf_node.setAttr('jid', bookmark.jid)
@@ -281,7 +280,7 @@ class Bookmarks(BaseModule):
 
     @staticmethod
     def _build_conference_node(bookmark):
-        attrs = {'xmlns': NS_BOOKMARKS_2}
+        attrs = {'xmlns': Namespace.BOOKMARKS_2}
         if bookmark.autojoin:
             attrs['autojoin'] = 'true'
         if bookmark.name:
@@ -303,7 +302,7 @@ class Bookmarks(BaseModule):
         self._log.info('Retract Bookmark: %s', bookmark_jid)
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').retract(jid,
-                                                  NS_BOOKMARKS_2,
+                                                  Namespace.BOOKMARKS_2,
                                                   str(bookmark_jid))
 
     def _store_bookmark_1(self, bookmarks):
@@ -314,12 +313,12 @@ class Bookmarks(BaseModule):
         options = get_publish_options(BOOKMARK_1_OPTIONS)
         self._client.get_module('PubSub').publish(
             jid,
-            NS_BOOKMARKS,
+            Namespace.BOOKMARKS,
             item,
             id_='current',
             options=options,
             callback=self._on_store_bookmark_result,
-            user_data=NS_BOOKMARKS)
+            user_data=Namespace.BOOKMARKS)
 
     def _store_bookmark_2(self, bookmarks):
         if self._node_configuration_not_possible:
@@ -334,12 +333,12 @@ class Bookmarks(BaseModule):
             options = get_publish_options(BOOKMARK_2_OPTIONS)
             self._client.get_module('PubSub').publish(
                 jid,
-                NS_BOOKMARKS_2,
+                Namespace.BOOKMARKS_2,
                 item,
                 id_=str(bookmark.jid),
                 options=options,
                 callback=self._on_store_bookmark_result,
-                user_data=NS_BOOKMARKS_2)
+                user_data=Namespace.BOOKMARKS_2)
 
     def _on_store_bookmark_result(self, result, node):
         if not is_error_result(result):
@@ -371,7 +370,7 @@ class Bookmarks(BaseModule):
             self._bookmark_2_queue.clear()
             return
 
-        if result.node == NS_BOOKMARKS:
+        if result.node == Namespace.BOOKMARKS:
             config = BOOKMARK_1_OPTIONS
         else:
             config = BOOKMARK_2_OPTIONS
@@ -415,7 +414,7 @@ class Bookmarks(BaseModule):
     def _store_with_private(self, bookmarks):
         self._log.info('Store Bookmarks (Private Storage)')
         storage_node = self._build_storage_node(bookmarks)
-        return Iq('set', NS_PRIVATE, payload=storage_node)
+        return Iq('set', Namespace.PRIVATE, payload=storage_node)
 
     def _on_private_store_result(self, _client, stanza):
         if not isResultNode(stanza):

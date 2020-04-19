@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_NICK
-from nbxmpp.protocol import NS_PUBSUB_EVENT
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import PresenceType
@@ -31,15 +30,15 @@ class Nickname(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_pubsub_nickname,
-                          ns=NS_PUBSUB_EVENT,
+                          ns=Namespace.PUBSUB_EVENT,
                           priority=16),
             StanzaHandler(name='message',
                           callback=self._process_nickname,
-                          ns=NS_NICK,
+                          ns=Namespace.NICK,
                           priority=40),
             StanzaHandler(name='presence',
                           callback=self._process_nickname,
-                          ns=NS_NICK,
+                          ns=Namespace.NICK,
                           priority=40),
         ]
 
@@ -60,7 +59,7 @@ class Nickname(BaseModule):
         if not properties.is_pubsub_event:
             return
 
-        if properties.pubsub_event.node != NS_NICK:
+        if properties.pubsub_event.node != Namespace.NICK:
             return
 
         item = properties.pubsub_event.item
@@ -79,15 +78,15 @@ class Nickname(BaseModule):
 
     @staticmethod
     def _parse_nickname(stanza):
-        nickname = stanza.getTag('nick', namespace=NS_NICK)
+        nickname = stanza.getTag('nick', namespace=Namespace.NICK)
         if nickname is None:
             return None
         return nickname.getData() or None
 
     def set_nickname(self, nickname):
-        item = Node('nick', {'xmlns': NS_NICK})
+        item = Node('nick', {'xmlns': Namespace.NICK})
         if nickname is not None:
             item.addData(nickname)
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
-            jid, NS_NICK, item, id_='current')
+            jid, Namespace.NICK, item, id_='current')

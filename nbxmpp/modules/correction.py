@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_CORRECT
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import CorrectionData
 from nbxmpp.modules.base import BaseModule
@@ -29,12 +29,12 @@ class Correction(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_message_correction,
-                          ns=NS_CORRECT,
+                          ns=Namespace.CORRECT,
                           priority=15),
         ]
 
     def _process_message_correction(self, _client, stanza, properties):
-        replace = stanza.getTag('replace', namespace=NS_CORRECT)
+        replace = stanza.getTag('replace', namespace=Namespace.CORRECT)
         if replace is None:
             return
 

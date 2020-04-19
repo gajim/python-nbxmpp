@@ -15,12 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_PUBSUB
-from nbxmpp.protocol import NS_PUBSUB_EVENT
-from nbxmpp.protocol import NS_PUBSUB_PUBLISH_OPTIONS
-from nbxmpp.protocol import NS_PUBSUB_OWNER
-from nbxmpp.protocol import NS_PUBSUB_CONFIG
-from nbxmpp.protocol import NS_DATA
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
@@ -44,13 +39,13 @@ class PubSub(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_pubsub_base,
-                          ns=NS_PUBSUB_EVENT,
+                          ns=Namespace.PUBSUB_EVENT,
                           priority=15),
         ]
 
     def _process_pubsub_base(self, _client, stanza, properties):
         properties.pubsub = True
-        event = stanza.getTag('event', namespace=NS_PUBSUB_EVENT)
+        event = stanza.getTag('event', namespace=Namespace.PUBSUB_EVENT)
 
         delete = event.getTag('delete')
         if delete is not None:
@@ -92,7 +87,7 @@ class PubSub(BaseModule):
     @call_on_response('_publish_result_received')
     def publish(self, jid, node, item, id_=None, options=None):
         query = Iq('set', to=jid)
-        pubsub = query.addChild('pubsub', namespace=NS_PUBSUB)
+        pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
         publish = pubsub.addChild('publish', {'node': node})
         attrs = {}
         if id_ is not None:
@@ -109,7 +104,7 @@ class PubSub(BaseModule):
             return raise_error(self._log.warning, stanza)
 
         jid = stanza.getFrom()
-        pubsub = stanza.getTag('pubsub', namespace=NS_PUBSUB)
+        pubsub = stanza.getTag('pubsub', namespace=Namespace.PUBSUB)
         if pubsub is None:
             # XEP-0060: IQ payload is not mandatory on result
             return PubSubPublishResult(jid, None, None)
@@ -129,7 +124,7 @@ class PubSub(BaseModule):
     @call_on_response('_default_response')
     def retract(self, jid, node, id_, notify=True):
         query = Iq('set', to=jid)
-        pubsub = query.addChild('pubsub', namespace=NS_PUBSUB)
+        pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
         attrs = {'node': node}
         if notify:
             attrs['notify'] = 'true'
@@ -141,7 +136,7 @@ class PubSub(BaseModule):
     def set_node_configuration(self, jid, node, form):
         self._log.info('Set configuration for %s %s', node, jid)
         query = Iq('set', to=jid)
-        pubsub = query.addChild('pubsub', namespace=NS_PUBSUB_OWNER)
+        pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB_OWNER)
         configure = pubsub.addChild('configure', {'node': node})
         form.setAttr('type', 'submit')
         configure.addChild(node=form)
@@ -151,7 +146,7 @@ class PubSub(BaseModule):
     def get_node_configuration(self, jid, node):
         self._log.info('Request node configuration')
         query = Iq('get', to=jid)
-        pubsub = query.addChild('pubsub', namespace=NS_PUBSUB_OWNER)
+        pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB_OWNER)
         pubsub.addChild('configure', {'node': node})
         return query
 
@@ -161,7 +156,7 @@ class PubSub(BaseModule):
             return raise_error(self._log.warning, stanza)
 
         jid = stanza.getFrom()
-        pubsub = stanza.getTag('pubsub', namespace=NS_PUBSUB_OWNER)
+        pubsub = stanza.getTag('pubsub', namespace=Namespace.PUBSUB_OWNER)
         if pubsub is None:
             return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'No pubsub node found')
@@ -173,11 +168,11 @@ class PubSub(BaseModule):
 
         node = configure.getAttr('node')
 
-        forms = configure.getTags('x', namespace=NS_DATA)
+        forms = configure.getTags('x', namespace=Namespace.DATA)
         for form in forms:
             dataform = extend_form(node=form)
             form_type = dataform.vars.get('FORM_TYPE')
-            if form_type is None or form_type.value != NS_PUBSUB_CONFIG:
+            if form_type is None or form_type.value != Namespace.PUBSUB_CONFIG:
                 continue
             self._log.info('Node configuration received from: %s', jid)
             return PubSubConfigResult(jid=jid, node=node, form=dataform)
@@ -194,7 +189,7 @@ class PubSub(BaseModule):
 
 def get_pubsub_request(jid, node, id_=None, max_items=None):
     query = Iq('get', to=jid)
-    pubsub = query.addChild('pubsub', namespace=NS_PUBSUB)
+    pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
     items = pubsub.addChild('items', {'node': node})
     if max_items is not None:
         items.setAttr('max_items', max_items)
@@ -221,10 +216,10 @@ def get_pubsub_items(stanza, node=None):
 
 
 def get_publish_options(config):
-    options = Node(NS_DATA + ' x', attrs={'type': 'submit'})
+    options = Node(Namespace.DATA + ' x', attrs={'type': 'submit'})
     field = options.addChild('field',
                              attrs={'var': 'FORM_TYPE', 'type': 'hidden'})
-    field.setTagData('value', NS_PUBSUB_PUBLISH_OPTIONS)
+    field.setTagData('value', Namespace.PUBSUB_PUBLISH_OPTIONS)
 
     for var, value in config.items():
         field = options.addChild('field', attrs={'var': var})

@@ -28,8 +28,7 @@ from xml.parsers.expat import ExpatError
 
 from nbxmpp.simplexml import NodeBuilder
 from nbxmpp.plugin import PlugIn
-from nbxmpp.protocol import NS_STREAMS
-from nbxmpp.protocol import NS_HTTP_BIND
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import InvalidFrom
 from nbxmpp.protocol import InvalidJid
@@ -240,7 +239,7 @@ class XMPPDispatcher(PlugIn):
         # FIXME: inject dependencies, do not rely that they are defined by our
         # owner
         self.RegisterNamespace('unknown')
-        self.RegisterNamespace(NS_STREAMS)
+        self.RegisterNamespace(Namespace.STREAMS)
         self.RegisterNamespace(self._owner.defaultNamespace)
         self.RegisterProtocol('iq', Iq)
         self.RegisterProtocol('presence', Presence)
@@ -287,14 +286,14 @@ class XMPPDispatcher(PlugIn):
         self._metastream = Node('stream:stream')
         self._metastream.setNamespace(self._owner.Namespace)
         self._metastream.setAttr('version', '1.0')
-        self._metastream.setAttr('xmlns:stream', NS_STREAMS)
+        self._metastream.setAttr('xmlns:stream', Namespace.STREAMS)
         self._metastream.setAttr('to', self._owner.Server)
         self._metastream.setAttr('xml:lang', self._owner.lang)
         self._owner.send("%s%s>" % (XML_DECLARATION,
                                     str(self._metastream)[:-2]))
 
     def _check_stream_start(self, ns, tag, attrs):
-        if ns != NS_STREAMS or tag != 'stream':
+        if ns != Namespace.STREAMS or tag != 'stream':
             raise ValueError('Incorrect stream start: '
                              '(%s,%s). Terminating.' % (tag, ns))
 
@@ -715,7 +714,7 @@ class BOSHDispatcher(XMPPDispatcher):
         self._metastream = Node('stream:stream')
         self._metastream.setNamespace(self._owner.Namespace)
         self._metastream.setAttr('version', '1.0')
-        self._metastream.setAttr('xmlns:stream', NS_STREAMS)
+        self._metastream.setAttr('xmlns:stream', Namespace.STREAMS)
         self._metastream.setAttr('to', self._owner.Server)
         self._metastream.setAttr('xml:lang', self._owner.lang)
 
@@ -738,7 +737,7 @@ class BOSHDispatcher(XMPPDispatcher):
         return XMPPDispatcher.ProcessNonBlocking(self, data)
 
     def dispatch(self, stanza):
-        if stanza.getName() == 'body' and stanza.getNamespace() == NS_HTTP_BIND:
+        if stanza.getName() == 'body' and stanza.getNamespace() == Namespace.HTTP_BIND:
 
             stanza_attrs = stanza.getAttrs()
             if 'authid' in stanza_attrs:
@@ -753,7 +752,7 @@ class BOSHDispatcher(XMPPDispatcher):
                     # if child doesn't have any ns specified, simplexml
                     # (or expat) thinks it's of parent's (BOSH body) namespace,
                     # so we have to rewrite it to jabber:client
-                    if child.getNamespace() == NS_HTTP_BIND:
+                    if child.getNamespace() == Namespace.HTTP_BIND:
                         child.setNamespace(self._owner.defaultNamespace)
                     XMPPDispatcher.dispatch(self, child)
         else:

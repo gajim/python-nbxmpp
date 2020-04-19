@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_IDLE
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.modules.base import BaseModule
@@ -29,12 +29,12 @@ class Idle(BaseModule):
         self.handlers = [
             StanzaHandler(name='presence',
                           callback=self._process_idle,
-                          ns=NS_IDLE,
+                          ns=Namespace.IDLE,
                           priority=15)
         ]
 
     def _process_idle(self, _client, stanza, properties):
-        idle_tag = stanza.getTag('idle', namespace=NS_IDLE)
+        idle_tag = stanza.getTag('idle', namespace=Namespace.IDLE)
         if idle_tag is None:
             return
 

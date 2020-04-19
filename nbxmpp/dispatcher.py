@@ -24,9 +24,7 @@ from gi.repository import GLib
 
 from nbxmpp.simplexml import NodeBuilder
 from nbxmpp.simplexml import Node
-from nbxmpp.protocol import NS_STREAMS
-from nbxmpp.protocol import NS_CLIENT
-from nbxmpp.protocol import NS_XMPP_STREAMS
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import InvalidFrom
 from nbxmpp.protocol import InvalidJid
@@ -127,8 +125,8 @@ class StanzaDispatcher(Observable):
         self.invalid_chars_re = get_invalid_xml_regex()
 
         self._register_namespace('unknown')
-        self._register_namespace(NS_STREAMS)
-        self._register_namespace(NS_CLIENT)
+        self._register_namespace(Namespace.STREAMS)
+        self._register_namespace(Namespace.CLIENT)
         self._register_protocol('iq', Iq)
         self._register_protocol('presence', Presence)
         self._register_protocol('message', Message)
@@ -210,7 +208,8 @@ class StanzaDispatcher(Observable):
             if is_websocket_stream_error(stanza):
                 for tag in stanza.getChildren():
                     name = tag.getName()
-                    if name != 'text' and tag.getNamespace() == NS_XMPP_STREAMS:
+                    if (name != 'text' and
+                            tag.getNamespace() == Namespace.XMPP_STREAMS):
                         self._websocket_stream_error = name
 
             elif is_websocket_close(stanza):
@@ -249,7 +248,7 @@ class StanzaDispatcher(Observable):
         Register protocol for top level tag names
         """
         if xmlns is None:
-            xmlns = NS_CLIENT
+            xmlns = Namespace.CLIENT
         self._log.debug('Register protocol "%s (%s)" as %s',
                         tag_name, xmlns, protocol)
         self._handlers[xmlns][tag_name] = {'type': protocol, 'default': []}
@@ -269,7 +268,7 @@ class StanzaDispatcher(Observable):
         """
 
         if not xmlns:
-            xmlns = NS_CLIENT
+            xmlns = Namespace.CLIENT
 
         if not typ and not ns:
             typ = 'default'
@@ -298,7 +297,7 @@ class StanzaDispatcher(Observable):
         """
 
         if not xmlns:
-            xmlns = NS_CLIENT
+            xmlns = Namespace.CLIENT
 
         if not typ and not ns:
             typ = 'default'

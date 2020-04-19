@@ -18,8 +18,7 @@
 import time
 import logging
 
-from nbxmpp.protocol import NS_STREAM_MGMT
-from nbxmpp.protocol import NS_DELAY2
+from nbxmpp.namespaces import Namespace
 from nbxmpp.simplexml import Node
 from nbxmpp.const import StreamState
 from nbxmpp.util import LogAdapter
@@ -73,7 +72,7 @@ class Smacks:
         self._sm_supported = value
 
     def delegate(self, stanza):
-        if stanza.getNamespace() != NS_STREAM_MGMT:
+        if stanza.getNamespace() != Namespace.STREAM_MGMT:
             return
         if stanza.getName() == 'resumed':
             self._on_resumed(stanza)
@@ -82,18 +81,18 @@ class Smacks:
 
     def register_handlers(self):
         self._client.register_handler(
-            'enabled', self._on_enabled, xmlns=NS_STREAM_MGMT)
+            'enabled', self._on_enabled, xmlns=Namespace.STREAM_MGMT)
         self._client.register_handler(
-            'failed', self._on_failed, xmlns=NS_STREAM_MGMT)
+            'failed', self._on_failed, xmlns=Namespace.STREAM_MGMT)
         self._client.register_handler(
-            'r', self._send_ack, xmlns=NS_STREAM_MGMT)
+            'r', self._send_ack, xmlns=Namespace.STREAM_MGMT)
         self._client.register_handler(
-            'a', self._on_ack, xmlns=NS_STREAM_MGMT)
+            'a', self._on_ack, xmlns=Namespace.STREAM_MGMT)
 
     def send_enable(self):
         if not self.sm_supported:
             return
-        enable = Node(NS_STREAM_MGMT + ' enable', attrs={'resume': 'true'})
+        enable = Node(Namespace.STREAM_MGMT + ' enable', attrs={'resume': 'true'})
         self._client.send_nonza(enable, now=False)
         self._log.debug('Send enable')
         self._enable_sent = True
@@ -158,7 +157,7 @@ class Smacks:
             # Dont leak our JID to Groupchats
             attrs['from'] = str(self._client.get_bound_jid())
 
-        stanza.addChild('delay', namespace=NS_DELAY2, attrs=attrs)
+        stanza.addChild('delay', namespace=Namespace.DELAY2, attrs=attrs)
 
     def _resend_queue(self):
         """
@@ -187,7 +186,7 @@ class Smacks:
         self._old_uqueue += self._uqueue
         self._uqueue = []
 
-        resume = Node(NS_STREAM_MGMT + ' resume',
+        resume = Node(Namespace.STREAM_MGMT + ' resume',
                       attrs={'h': self._in_h, 'previd': self._session_id})
 
         self._acked_h = self._in_h
@@ -212,7 +211,7 @@ class Smacks:
         self._resend_queue()
 
     def _send_ack(self, *args):
-        ack = Node(NS_STREAM_MGMT + ' a', attrs={'h': self._in_h})
+        ack = Node(Namespace.STREAM_MGMT + ' a', attrs={'h': self._in_h})
         self._acked_h = self._in_h
         self._log.debug('Send ack, h: %s', self._in_h)
         self._client.send_nonza(ack, now=False)
@@ -224,7 +223,7 @@ class Smacks:
         self._reset_state()
 
     def _request_ack(self):
-        request = Node(NS_STREAM_MGMT + ' r')
+        request = Node(Namespace.STREAM_MGMT + ' r')
         self._log.debug('Request ack')
         self._client.send_nonza(request, now=False)
 

@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_CAPTCHA
-from nbxmpp.protocol import NS_DATA
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import CaptchaData
 from nbxmpp.modules.dataforms import extend_form
@@ -32,16 +31,16 @@ class Captcha(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_captcha,
-                          ns=NS_CAPTCHA,
+                          ns=Namespace.CAPTCHA,
                           priority=40),
         ]
 
     def _process_captcha(self, _client, stanza, properties):
-        captcha = stanza.getTag('captcha', namespace=NS_CAPTCHA)
+        captcha = stanza.getTag('captcha', namespace=Namespace.CAPTCHA)
         if captcha is None:
             return
 
-        data_form = captcha.getTag('x', namespace=NS_DATA)
+        data_form = captcha.getTag('x', namespace=Namespace.DATA)
         if data_form is None:
             self._log.warning('Invalid captcha form')
             self._log.warning(stanza)

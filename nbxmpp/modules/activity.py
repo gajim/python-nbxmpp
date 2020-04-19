@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_ACTIVITY
-from nbxmpp.protocol import NS_PUBSUB_EVENT
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
@@ -33,7 +32,7 @@ class Activity(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_pubsub_activity,
-                          ns=NS_PUBSUB_EVENT,
+                          ns=Namespace.PUBSUB_EVENT,
                           priority=16),
         ]
 
@@ -41,7 +40,7 @@ class Activity(BaseModule):
         if not properties.is_pubsub_event:
             return
 
-        if properties.pubsub_event.node != NS_ACTIVITY:
+        if properties.pubsub_event.node != Namespace.ACTIVITY:
             return
 
         item = properties.pubsub_event.item
@@ -49,7 +48,7 @@ class Activity(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        activity_node = item.getTag('activity', namespace=NS_ACTIVITY)
+        activity_node = item.getTag('activity', namespace=Namespace.ACTIVITY)
         if not activity_node.getChildren():
             self._log.info('Received activity: %s - no activity set',
                            properties.jid)
@@ -84,7 +83,7 @@ class Activity(BaseModule):
         return None
 
     def set_activity(self, data):
-        item = Node('activity', {'xmlns': NS_ACTIVITY})
+        item = Node('activity', {'xmlns': Namespace.ACTIVITY})
         if data is not None and data.activity:
             activity_node = item.addChild(data.activity)
             if data.subactivity:
@@ -94,4 +93,4 @@ class Activity(BaseModule):
 
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
-            jid, NS_ACTIVITY, item, id_='current')
+            jid, Namespace.ACTIVITY, item, id_='current')

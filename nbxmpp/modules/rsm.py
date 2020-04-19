@@ -15,13 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_RSM
-
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import RSMData
 
 
 def parse_rsm(stanza):
-    stanza = stanza.getTag('set', namespace=NS_RSM)
+    stanza = stanza.getTag('set', namespace=Namespace.RSM)
     if stanza is None:
         return None
 

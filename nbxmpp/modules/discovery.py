@@ -19,9 +19,7 @@ import time
 import logging
 
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import NS_DISCO_INFO
-from nbxmpp.protocol import NS_DISCO_ITEMS
-from nbxmpp.protocol import NS_DATA
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import ErrorNode
 from nbxmpp.protocol import ERR_ITEM_NOT_FOUND
@@ -49,7 +47,7 @@ class Discovery(BaseModule):
         self.handlers = [
             StanzaHandler(name='iq',
                           callback=self._process_disco_info,
-                          ns=NS_DISCO_INFO,
+                          ns=Namespace.DISCO_INFO,
                           priority=90),
         ]
 
@@ -63,7 +61,7 @@ class Discovery(BaseModule):
     @call_on_response('_disco_info_received')
     def disco_info(self, jid, node=None):
         self._log.info('Disco info: %s, node: %s', jid, node)
-        return get_disco_request(NS_DISCO_INFO, jid, node)
+        return get_disco_request(Namespace.DISCO_INFO, jid, node)
 
     @callback
     def _disco_info_received(self, stanza):
@@ -74,7 +72,7 @@ class Discovery(BaseModule):
     @call_on_response('_disco_items_received')
     def disco_items(self, jid, node=None):
         self._log.info('Disco items: %s, node: %s', jid, node)
-        return get_disco_request(NS_DISCO_ITEMS, jid, node)
+        return get_disco_request(Namespace.DISCO_ITEMS, jid, node)
 
     @callback
     def _disco_items_received(self, stanza):
@@ -109,7 +107,7 @@ def parse_disco_info(stanza, timestamp=None):
         except Exception:
             return raise_error(log.warning, stanza, 'stanza-malformed')
 
-    for node in query.getTags('x', namespace=NS_DATA):
+    for node in query.getTags('x', namespace=Namespace.DATA):
         dataforms.append(extend_form(node))
 
     return DiscoInfo(stanza=stanza,

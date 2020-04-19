@@ -20,8 +20,7 @@ from nbxmpp.protocol import JID
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import Node
-from nbxmpp.protocol import NS_MAM_2
-from nbxmpp.protocol import NS_RSM
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import MAMQueryData
 from nbxmpp.structs import MAMPreferencesData
 from nbxmpp.structs import CommonResult
@@ -51,7 +50,7 @@ class MAM(BaseModule):
                    after=None,
                    max_=70):
 
-        iq = Iq(typ='set', to=jid, queryNS=NS_MAM_2)
+        iq = Iq(typ='set', to=jid, queryNS=Namespace.MAM_2)
         if queryid is not None:
             iq.getQuery().setAttr('queryid', queryid)
 
@@ -66,7 +65,7 @@ class MAM(BaseModule):
     @staticmethod
     def _make_query_form(start, end, with_):
         fields = [
-            create_field(typ='hidden', var='FORM_TYPE', value=NS_MAM_2)
+            create_field(typ='hidden', var='FORM_TYPE', value=Namespace.MAM_2)
         ]
 
         if start:
@@ -91,7 +90,7 @@ class MAM(BaseModule):
 
     @staticmethod
     def _make_rsm_query(max_, after):
-        rsm_set = Node('set', attrs={'xmlns': NS_RSM})
+        rsm_set = Node('set', attrs={'xmlns': Namespace.RSM})
         if max_ is not None:
             rsm_set.setTagData('max', max_)
         if after is not None:
@@ -104,7 +103,7 @@ class MAM(BaseModule):
             return raise_error(self._log.info, stanza)
 
         jid = stanza.getFrom()
-        fin = stanza.getTag('fin', namespace=NS_MAM_2)
+        fin = stanza.getTag('fin', namespace=Namespace.MAM_2)
         if fin is None:
             return raise_error(self._log.warning,
                                stanza,
@@ -132,7 +131,7 @@ class MAM(BaseModule):
 
     @call_on_response('_preferences_result')
     def request_preferences(self):
-        iq = Iq('get', queryNS=NS_MAM_2)
+        iq = Iq('get', queryNS=Namespace.MAM_2)
         iq.setQuery('prefs')
         return iq
 
@@ -141,7 +140,7 @@ class MAM(BaseModule):
         if not isResultNode(stanza):
             return raise_error(self._log.info, stanza)
 
-        prefs = stanza.getTag('prefs', namespace=NS_MAM_2)
+        prefs = stanza.getTag('prefs', namespace=Namespace.MAM_2)
         if prefs is None:
             return raise_error(self._log.warning,
                                stanza,
@@ -198,7 +197,7 @@ class MAM(BaseModule):
 
         iq = Iq(typ='set')
         prefs = iq.addChild(name='prefs',
-                            namespace=NS_MAM_2,
+                            namespace=Namespace.MAM_2,
                             attrs={'default': default})
         always_node = prefs.addChild(name='always')
         never_node = prefs.addChild(name='never')

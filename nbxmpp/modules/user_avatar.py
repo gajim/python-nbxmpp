@@ -17,9 +17,7 @@
 
 import base64
 
-from nbxmpp.protocol import NS_AVATAR_DATA
-from nbxmpp.protocol import NS_AVATAR_METADATA
-from nbxmpp.protocol import NS_PUBSUB_EVENT
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import JID
@@ -41,7 +39,7 @@ class UserAvatar(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_pubsub_avatar,
-                          ns=NS_PUBSUB_EVENT,
+                          ns=Namespace.PUBSUB_EVENT,
                           priority=16),
         ]
 
@@ -49,7 +47,7 @@ class UserAvatar(BaseModule):
         if not properties.is_pubsub_event:
             return
 
-        if properties.pubsub_event.node != NS_AVATAR_METADATA:
+        if properties.pubsub_event.node != Namespace.AVATAR_METADATA:
             return
 
         item = properties.pubsub_event.item
@@ -57,7 +55,7 @@ class UserAvatar(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        metadata = item.getTag('metadata', namespace=NS_AVATAR_METADATA)
+        metadata = item.getTag('metadata', namespace=Namespace.AVATAR_METADATA)
         if metadata is None:
             self._log.warning('No metadata node found')
             self._log.warning(stanza)
@@ -84,7 +82,7 @@ class UserAvatar(BaseModule):
 
     @call_on_response('_avatar_data_received')
     def request_avatar(self, jid, id_):
-        return get_pubsub_request(jid, NS_AVATAR_DATA, id_=id_)
+        return get_pubsub_request(jid, Namespace.AVATAR_DATA, id_=id_)
 
     @callback
     def _avatar_data_received(self, stanza):
@@ -103,7 +101,7 @@ class UserAvatar(BaseModule):
                                'No item in node found')
 
         sha = item.getAttr('id')
-        data_node = item.getTag('data', namespace=NS_AVATAR_DATA)
+        data_node = item.getTag('data', namespace=Namespace.AVATAR_DATA)
         if data_node is None:
             return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'No data node found')

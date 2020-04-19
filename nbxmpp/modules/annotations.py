@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_PRIVATE
-from nbxmpp.protocol import NS_ROSTERNOTES
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import isResultNode
@@ -44,8 +43,8 @@ class Annotations(BaseModule):
     @call_on_response('_annotations_received')
     def request_annotations(self):
         self._log.info('Request annotations for %s', self.domain)
-        payload = Node('storage', attrs={'xmlns': NS_ROSTERNOTES})
-        return Iq(typ='get', queryNS=NS_PRIVATE, payload=payload)
+        payload = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
+        return Iq(typ='get', queryNS=Namespace.PRIVATE, payload=payload)
 
     @callback
     def _annotations_received(self, stanza):
@@ -88,7 +87,7 @@ class Annotations(BaseModule):
         self._log.info('Set annotations for %s:', self.domain)
         for note in notes:
             self._log.info(note)
-        storage = Node('storage', attrs={'xmlns': NS_ROSTERNOTES})
+        storage = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
         for note in notes:
             node = Node('note', attrs={'jid': note.jid})
             node.setData(note.data)
@@ -97,7 +96,7 @@ class Annotations(BaseModule):
             if note.mdate is not None:
                 node.setAttr('mdate', note.mdate)
             storage.addChild(node=node)
-        return Iq(typ='set', queryNS=NS_PRIVATE, payload=storage)
+        return Iq(typ='set', queryNS=Namespace.PRIVATE, payload=storage)
 
     @callback
     def _default_response(self, stanza):

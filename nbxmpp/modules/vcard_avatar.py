@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_VCARD_UPDATE
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import PresenceType
 from nbxmpp.const import AvatarState
@@ -30,7 +30,7 @@ class VCardAvatar(BaseModule):
         self.handlers = [
             StanzaHandler(name='presence',
                           callback=self._process_avatar,
-                          ns=NS_VCARD_UPDATE,
+                          ns=Namespace.VCARD_UPDATE,
                           priority=15)
         ]
 
@@ -38,7 +38,7 @@ class VCardAvatar(BaseModule):
         if properties.type != PresenceType.AVAILABLE:
             return
 
-        update = stanza.getTag('x', namespace=NS_VCARD_UPDATE)
+        update = stanza.getTag('x', namespace=Namespace.VCARD_UPDATE)
         if update is None:
             return
 

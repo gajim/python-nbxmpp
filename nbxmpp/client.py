@@ -19,8 +19,7 @@ import logging
 
 from gi.repository import GLib
 
-from nbxmpp.protocol import NS_TLS
-from nbxmpp.protocol import NS_PING
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Features
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.protocol import SessionRequest
@@ -604,7 +603,7 @@ class Client(Observable):
             self._on_stream_features(Features(stanza))
 
         elif self.state == StreamState.WAIT_FOR_TLS_PROCEED:
-            if stanza.getNamespace() != NS_TLS:
+            if stanza.getNamespace() != Namespace.TLS:
                 self._disconnect_with_error(
                     StreamError.TLS,
                     'stanza-malformed',
@@ -782,7 +781,7 @@ class Client(Observable):
     def _ping(self):
         self._ping_source_id = None
         iq = Iq('get', to=self.domain)
-        iq.addChild(name='ping', namespace=NS_PING)
+        iq.addChild(name='ping', namespace=Namespace.PING)
         self._ping_id = self.send_stanza(iq,
                                          timeout=10,
                                          callback=self._on_pong)

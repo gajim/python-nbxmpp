@@ -15,15 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_MUC_USER
-from nbxmpp.protocol import NS_MUC
-from nbxmpp.protocol import NS_CONFERENCE
-from nbxmpp.protocol import NS_DATA
-from nbxmpp.protocol import NS_MUC_REQUEST
-from nbxmpp.protocol import NS_MUC_ADMIN
-from nbxmpp.protocol import NS_MUC_OWNER
-from nbxmpp.protocol import NS_CAPTCHA
-from nbxmpp.protocol import NS_ADDRESS
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import ERR_NOT_ACCEPTABLE
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import Iq
@@ -64,11 +56,11 @@ class MUC(BaseModule):
         self.handlers = [
             StanzaHandler(name='presence',
                           callback=self._process_muc_presence,
-                          ns=NS_MUC,
+                          ns=Namespace.MUC,
                           priority=11),
             StanzaHandler(name='presence',
                           callback=self._process_muc_user_presence,
-                          ns=NS_MUC_USER,
+                          ns=Namespace.MUC_USER,
                           priority=11),
             StanzaHandler(name='message',
                           callback=self._process_groupchat_message,
@@ -77,26 +69,26 @@ class MUC(BaseModule):
             StanzaHandler(name='message',
                           callback=self._process_mediated_invite,
                           typ='normal',
-                          ns=NS_MUC_USER,
+                          ns=Namespace.MUC_USER,
                           priority=11),
             StanzaHandler(name='message',
                           callback=self._process_direct_invite,
                           typ='normal',
-                          ns=NS_CONFERENCE,
+                          ns=Namespace.CONFERENCE,
                           priority=12),
             StanzaHandler(name='message',
                           callback=self._process_voice_request,
-                          ns=NS_DATA,
+                          ns=Namespace.DATA,
                           priority=11),
             StanzaHandler(name='message',
                           callback=self._process_message,
-                          ns=NS_MUC_USER,
+                          ns=Namespace.MUC_USER,
                           priority=13),
         ]
 
     @staticmethod
     def _process_muc_presence(_client, stanza, properties):
-        muc = stanza.getTag('x', namespace=NS_MUC)
+        muc = stanza.getTag('x', namespace=Namespace.MUC)
         if muc is None:
             return
         properties.from_muc = True
@@ -105,7 +97,7 @@ class MUC(BaseModule):
         properties.muc_nickname = properties.jid.getResource()
 
     def _process_muc_user_presence(self, _client, stanza, properties):
-        muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
+        muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
         properties.from_muc = True
@@ -175,7 +167,7 @@ class MUC(BaseModule):
         properties.muc_jid.setBare()
         properties.muc_nickname = properties.jid.getResource() or None
 
-        muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
+        muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is not None:
             try:
                 properties.muc_user = self._parse_muc_user(muc_user,
@@ -185,14 +177,14 @@ class MUC(BaseModule):
                 self._log.warning(stanza)
                 raise NodeProcessed
 
-        addresses = stanza.getTag('addresses', namespace=NS_ADDRESS)
+        addresses = stanza.getTag('addresses', namespace=Namespace.ADDRESS)
         if addresses is not None:
             address = addresses.getTag('address', attrs={'type': 'ofrom'})
             if address is not None:
                 properties.muc_ofrom = JID(address.getAttr('jid'))
 
     def _process_message(self, _client, stanza, properties):
-        muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
+        muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
 
@@ -243,11 +235,11 @@ class MUC(BaseModule):
 
     @staticmethod
     def _process_direct_invite(_client, stanza, properties):
-        direct = stanza.getTag('x', namespace=NS_CONFERENCE)
+        direct = stanza.getTag('x', namespace=Namespace.CONFERENCE)
         if direct is None:
             return
 
-        if stanza.getTag('x', namespace=NS_MUC_USER) is not None:
+        if stanza.getTag('x', namespace=Namespace.MUC_USER) is not None:
             # not a direct invite
             # See https://xmpp.org/extensions/xep-0045.html#example-57
             # read implementation notes
@@ -265,7 +257,7 @@ class MUC(BaseModule):
 
     @staticmethod
     def _process_mediated_invite(_client, stanza, properties):
-        muc_user = stanza.getTag('x', namespace=NS_MUC_USER)
+        muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
 
@@ -304,13 +296,13 @@ class MUC(BaseModule):
             return
 
     def _process_voice_request(self, _client, stanza, properties):
-        data_form = stanza.getTag('x', namespace=NS_DATA)
+        data_form = stanza.getTag('x', namespace=Namespace.DATA)
         if data_form is None:
             return
 
         data_form = extend_form(data_form)
         try:
-            if data_form['FORM_TYPE'].value != NS_MUC_REQUEST:
+            if data_form['FORM_TYPE'].value != Namespace.MUC_REQUEST:
                 return
         except KeyError:
             return
@@ -339,7 +331,7 @@ class MUC(BaseModule):
 
     @call_on_response('_affiliation_received')
     def get_affiliation(self, jid, affiliation):
-        iq = Iq(typ='get', to=jid, queryNS=NS_MUC_ADMIN)
+        iq = Iq(typ='get', to=jid, queryNS=Namespace.MUC_ADMIN)
         item = iq.setQuery().setTag('item')
         item.setAttr('affiliation', affiliation)
         return iq
@@ -350,7 +342,7 @@ class MUC(BaseModule):
             return raise_error(self._log.info, stanza)
 
         room_jid = stanza.getFrom()
-        query = stanza.getTag('query', namespace=NS_MUC_ADMIN)
+        query = stanza.getTag('query', namespace=Namespace.MUC_ADMIN)
         items = query.getTags('item')
         users_dict = {}
         for item in items:
@@ -377,7 +369,7 @@ class MUC(BaseModule):
 
     @call_on_response('_default_response')
     def destroy(self, room_jid, reason='', jid=''):
-        iq = Iq(typ='set', queryNS=NS_MUC_OWNER, to=room_jid)
+        iq = Iq(typ='set', queryNS=Namespace.MUC_OWNER, to=room_jid)
         destroy = iq.setQuery().setTag('destroy')
         if reason:
             destroy.setTagData('reason', reason)
@@ -389,7 +381,7 @@ class MUC(BaseModule):
 
     @call_on_response('_default_response')
     def set_config(self, room_jid, form):
-        iq = Iq(typ='set', to=room_jid, queryNS=NS_MUC_OWNER)
+        iq = Iq(typ='set', to=room_jid, queryNS=Namespace.MUC_OWNER)
         query = iq.setQuery()
         form.setAttr('type', 'submit')
         query.addChild(node=form)
@@ -399,7 +391,7 @@ class MUC(BaseModule):
     @call_on_response('_config_received')
     def request_config(self, room_jid):
         iq = Iq(typ='get',
-                queryNS=NS_MUC_OWNER,
+                queryNS=Namespace.MUC_OWNER,
                 to=room_jid)
         self._log.info('Request config for %s', room_jid)
         return iq
@@ -413,7 +405,7 @@ class MUC(BaseModule):
         payload = stanza.getQueryPayload()
 
         for form in payload:
-            if form.getNamespace() == NS_DATA:
+            if form.getNamespace() == Namespace.DATA:
                 dataform = extend_form(node=form)
                 self._log.info('Config form received for %s', jid)
                 return MucConfigResult(jid=jid,
@@ -422,9 +414,10 @@ class MUC(BaseModule):
 
     @call_on_response('_default_response')
     def cancel_config(self, room_jid):
-        cancel = Node(tag='x', attrs={'xmlns': NS_DATA, 'type': 'cancel'})
+        cancel = Node(tag='x', attrs={'xmlns': Namespace.DATA,
+                                      'type': 'cancel'})
         iq = Iq(typ='set',
-                queryNS=NS_MUC_OWNER,
+                queryNS=Namespace.MUC_OWNER,
                 payload=cancel,
                 to=room_jid)
         self._log.info('Cancel config for %s', room_jid)
@@ -432,7 +425,7 @@ class MUC(BaseModule):
 
     @call_on_response('_default_response')
     def set_affiliation(self, room_jid, users_dict):
-        iq = Iq(typ='set', to=room_jid, queryNS=NS_MUC_ADMIN)
+        iq = Iq(typ='set', to=room_jid, queryNS=Namespace.MUC_ADMIN)
         item = iq.setQuery()
         for jid in users_dict:
             affiliation = users_dict[jid].get('affiliation')
@@ -450,7 +443,7 @@ class MUC(BaseModule):
 
     @call_on_response('_default_response')
     def set_role(self, room_jid, nick, role, reason=''):
-        iq = Iq(typ='set', to=room_jid, queryNS=NS_MUC_ADMIN)
+        iq = Iq(typ='set', to=room_jid, queryNS=Namespace.MUC_ADMIN)
         item = iq.setQuery().setTag('item')
         item.setAttr('nick', nick)
         item.setAttr('role', role)
@@ -467,7 +460,7 @@ class MUC(BaseModule):
 
     def decline(self, room, to, reason=None):
         message = Message(to=room)
-        muc_user = message.addChild('x', namespace=NS_MUC_USER)
+        muc_user = message.addChild('x', namespace=Namespace.MUC_USER)
         decline = muc_user.addChild('decline', attrs={'to': to})
         if reason:
             decline.setTagData('reason', reason)
@@ -477,7 +470,7 @@ class MUC(BaseModule):
         message = Message(to=room)
         xdata = DataForm(typ='submit')
         xdata.addChild(node=DataField(name='FORM_TYPE',
-                                      value=NS_MUC_REQUEST))
+                                      value=Namespace.MUC_REQUEST))
         xdata.addChild(node=DataField(name='muc#role',
                                       value='participant',
                                       typ='text-single'))
@@ -505,13 +498,13 @@ class MUC(BaseModule):
         if password:
             attrs['password'] = password
         message.addChild(name='x', attrs=attrs,
-                         namespace=NS_CONFERENCE)
+                         namespace=Namespace.CONFERENCE)
         return message
 
     @staticmethod
     def _build_mediated_invite(room, to, reason, password, continue_):
         message = Message(to=room)
-        muc_user = message.addChild('x', namespace=NS_MUC_USER)
+        muc_user = message.addChild('x', namespace=Namespace.MUC_USER)
         invite = muc_user.addChild('invite', attrs={'to': to})
         if continue_:
             invite.addChild(name='continue')
@@ -524,7 +517,7 @@ class MUC(BaseModule):
     @call_on_response('_default_response')
     def send_captcha(self, room_jid, form_node):
         iq = Iq(typ='set', to=room_jid)
-        captcha = iq.addChild(name='captcha', namespace=NS_CAPTCHA)
+        captcha = iq.addChild(name='captcha', namespace=Namespace.CAPTCHA)
         captcha.addChild(node=form_node)
         return iq
 

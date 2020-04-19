@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_HTTPUPLOAD_0
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
 from nbxmpp.structs import HTTPUploadData
@@ -42,7 +42,7 @@ class HTTPUpload(BaseModule):
                 'size': size,
                 'content-type': content_type}
         iq.setTag(name="request",
-                  namespace=NS_HTTPUPLOAD_0,
+                  namespace=Namespace.HTTPUPLOAD_0,
                   attrs=attr)
         return iq
 
@@ -51,7 +51,7 @@ class HTTPUpload(BaseModule):
         if not isResultNode(stanza):
             return raise_error(self._log.info, stanza)
 
-        slot = stanza.getTag('slot', namespace=NS_HTTPUPLOAD_0)
+        slot = stanza.getTag('slot', namespace=Namespace.HTTPUPLOAD_0)
         if slot is None:
             return raise_error(self._log.warning, stanza, 'stanza-malformed',
                                'No slot node found')

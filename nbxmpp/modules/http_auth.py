@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_HTTP_AUTH
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import HTTPAuthData
 from nbxmpp.modules.base import BaseModule
@@ -28,17 +28,17 @@ class HTTPAuth(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_http_auth,
-                          ns=NS_HTTP_AUTH,
+                          ns=Namespace.HTTP_AUTH,
                           priority=40),
             StanzaHandler(name='iq',
                           callback=self._process_http_auth,
                           typ='get',
-                          ns=NS_HTTP_AUTH,
+                          ns=Namespace.HTTP_AUTH,
                           priority=40)
         ]
 
     def _process_http_auth(self, _client, stanza, properties):
-        confirm = stanza.getTag('confirm', namespace=NS_HTTP_AUTH)
+        confirm = stanza.getTag('confirm', namespace=Namespace.HTTP_AUTH)
         if confirm is None:
             return
 

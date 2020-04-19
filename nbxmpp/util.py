@@ -33,12 +33,8 @@ from gi.repository import Gio
 
 from nbxmpp.protocol import DiscoInfoMalformed
 from nbxmpp.protocol import isErrorNode
-from nbxmpp.protocol import NS_DATA
-from nbxmpp.protocol import NS_HTTPUPLOAD_0
 from nbxmpp.const import GIO_TLS_ERRORS
-from nbxmpp.protocol import NS_STREAMS
-from nbxmpp.protocol import NS_CLIENT
-from nbxmpp.protocol import NS_FRAMING
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.protocol import StreamHeader
 from nbxmpp.protocol import WebsocketOpenHeader
@@ -155,7 +151,7 @@ def to_xs_boolean(value):
 
 
 error_classes = {
-    NS_HTTPUPLOAD_0: HTTPUploadError
+    Namespace.HTTPUPLOAD_0: HTTPUploadError
 }
 
 def error_factory(stanza, condition=None, text=None):
@@ -343,7 +339,7 @@ def generate_id():
 
 
 def get_form(stanza, form_type):
-    forms = stanza.getTags('x', namespace=NS_DATA)
+    forms = stanza.getTags('x', namespace=Namespace.DATA)
     if not forms:
         return None
 
@@ -364,12 +360,12 @@ def validate_stream_header(stanza, domain, is_websocket):
         raise StanzaMalformed('Invalid from attr in stream header')
 
     if is_websocket:
-        if attrs.get('xmlns') != NS_FRAMING:
+        if attrs.get('xmlns') != Namespace.FRAMING:
             raise StanzaMalformed('Invalid namespace in stream header')
     else:
-        if attrs.get('xmlns:stream') != NS_STREAMS:
+        if attrs.get('xmlns:stream') != Namespace.STREAMS:
             raise StanzaMalformed('Invalid stream namespace in stream header')
-        if attrs.get('xmlns') != NS_CLIENT:
+        if attrs.get('xmlns') != Namespace.CLIENT:
             raise StanzaMalformed('Invalid namespace in stream header')
 
     if attrs.get('version') != '1.0':
@@ -463,11 +459,13 @@ def get_websocket_close_string(websocket):
 
 
 def is_websocket_close(stanza):
-    return stanza.getName() == 'close' and stanza.getNamespace() == NS_FRAMING
+    return (stanza.getName() == 'close' and
+            stanza.getNamespace() == Namespace.FRAMING)
 
 
 def is_websocket_stream_error(stanza):
-    return stanza.getName() == 'error' and stanza.getNamespace() == NS_STREAMS
+    return (stanza.getName() == 'error' and
+            stanza.getNamespace() == Namespace.STREAMS)
 
 
 class Observable:

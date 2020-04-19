@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_CHATSTATES
-from nbxmpp.protocol import NS_DELAY2
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import CHATSTATES
 from nbxmpp.modules.base import BaseModule
@@ -30,7 +29,7 @@ class Chatstates(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_message_chatstate,
-                          ns=NS_CHATSTATES,
+                          ns=Namespace.CHATSTATES,
                           priority=15),
         ]
 
@@ -42,7 +41,7 @@ class Chatstates(BaseModule):
         if properties.is_mam_message:
             return
 
-        if stanza.getTag('delay', namespace=NS_DELAY2) is not None:
+        if stanza.getTag('delay', namespace=Namespace.DELAY2) is not None:
             return
 
         if chatstate not in CHATSTATES:
@@ -56,6 +55,6 @@ class Chatstates(BaseModule):
 def parse_chatstate(stanza):
     children = stanza.getChildren()
     for child in children:
-        if child.getNamespace() == NS_CHATSTATES:
+        if child.getNamespace() == Namespace.CHATSTATES:
             return child.getName()
     return None

@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_TUNE
-from nbxmpp.protocol import NS_PUBSUB_EVENT
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import TuneData
@@ -32,7 +31,7 @@ class Tune(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_pubsub_tune,
-                          ns=NS_PUBSUB_EVENT,
+                          ns=Namespace.PUBSUB_EVENT,
                           priority=16),
         ]
 
@@ -40,7 +39,7 @@ class Tune(BaseModule):
         if not properties.is_pubsub_event:
             return
 
-        if properties.pubsub_event.node != NS_TUNE:
+        if properties.pubsub_event.node != Namespace.TUNE:
             return
 
         item = properties.pubsub_event.item
@@ -48,7 +47,7 @@ class Tune(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        tune_node = item.getTag('tune', namespace=NS_TUNE)
+        tune_node = item.getTag('tune', namespace=Namespace.TUNE)
         if not tune_node.getChildren():
             self._log.info('Received tune: %s - no tune set', properties.jid)
             return
@@ -64,7 +63,7 @@ class Tune(BaseModule):
         properties.pubsub_event = pubsub_event
 
     def set_tune(self, data):
-        item = Node('tune', {'xmlns': NS_TUNE})
+        item = Node('tune', {'xmlns': Namespace.TUNE})
         if data is None:
             return
 
@@ -75,4 +74,4 @@ class Tune(BaseModule):
 
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
-            jid, NS_TUNE, item, id_='current')
+            jid, Namespace.TUNE, item, id_='current')

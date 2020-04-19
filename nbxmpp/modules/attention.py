@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_ATTENTION
-from nbxmpp.protocol import NS_DELAY2
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.modules.base import BaseModule
 
@@ -29,12 +28,12 @@ class Attention(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_message_attention,
-                          ns=NS_ATTENTION,
+                          ns=Namespace.ATTENTION,
                           priority=15),
         ]
 
     def _process_message_attention(self, _client, stanza, properties):
-        attention = stanza.getTag('attention', namespace=NS_ATTENTION)
+        attention = stanza.getTag('attention', namespace=Namespace.ATTENTION)
         if attention is None:
             return
 
@@ -44,7 +43,7 @@ class Attention(BaseModule):
         if properties.is_carbon_message and properties.carbon.is_sent:
             return
 
-        if stanza.getTag('delay', namespace=NS_DELAY2) is not None:
+        if stanza.getTag('delay', namespace=Namespace.DELAY2) is not None:
             return
 
         properties.attention = True

@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_X_OOB
-from nbxmpp.protocol import NS_DATA
-from nbxmpp.protocol import NS_REGISTER
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
 from nbxmpp.structs import CommonResult
@@ -47,7 +45,7 @@ class Register(BaseModule):
     def unregister(self, jid=None):
         iq = Iq('set', to=jid)
         query = iq.setQuery()
-        query.setNamespace(NS_REGISTER)
+        query.setNamespace(Namespace.REGISTER)
         query.addChild('remove')
         return iq
 
@@ -55,7 +53,7 @@ class Register(BaseModule):
     def request_register_form(self, jid=None):
         if jid is None:
             jid = self._client.domain
-        return Iq('get', NS_REGISTER, to=jid)
+        return Iq('get', Namespace.REGISTER, to=jid)
 
     @callback
     def _on_register_form(self, stanza):
@@ -82,7 +80,7 @@ class Register(BaseModule):
         if jid is None:
             jid = self._client.domain
 
-        iq = Iq('set', NS_REGISTER, to=jid)
+        iq = Iq('set', Namespace.REGISTER, to=jid)
 
         if form.is_fake_form():
             query = iq.getTag('query')
@@ -100,7 +98,7 @@ class Register(BaseModule):
         if isResultNode(stanza):
             return CommonResult(jid=stanza.getFrom())
 
-        query = stanza.getTag('query', namespace=NS_REGISTER)
+        query = stanza.getTag('query', namespace=Namespace.REGISTER)
         if query is None:
             return RegisterError(stanza, None)
 
@@ -122,14 +120,14 @@ class Register(BaseModule):
 
     @staticmethod
     def _parse_oob_url(query):
-        oob = query.getTag('x', namespace=NS_X_OOB)
+        oob = query.getTag('x', namespace=Namespace.X_OOB)
         if oob is not None:
             return oob.getTagData('url') or None
         return None
 
     def _parse_form(self, stanza):
-        query = stanza.getTag('query', namespace=NS_REGISTER)
-        form = query.getTag('x', namespace=NS_DATA)
+        query = stanza.getTag('query', namespace=Namespace.REGISTER)
+        form = query.getTag('x', namespace=Namespace.DATA)
         if form is None:
             return None
 
@@ -172,7 +170,7 @@ class Register(BaseModule):
     def change_password(self, password):
         domain = self._client.get_bound_jid().getDomain()
         username = self._client.get_bound_jid().getNode()
-        iq = Iq('set', NS_REGISTER, to=domain)
+        iq = Iq('set', Namespace.REGISTER, to=domain)
         query = iq.getQuery()
         query.setTagData('username', username)
         query.setTagData('password', password)
@@ -195,7 +193,7 @@ class Register(BaseModule):
     @call_on_response('_default_response')
     def change_password_with_form(self, form):
         domain = self._client.get_bound_jid().getDomain()
-        iq = Iq('set', NS_REGISTER, to=domain)
+        iq = Iq('set', Namespace.REGISTER, to=domain)
         iq.setQueryPayload(form)
         return iq
 

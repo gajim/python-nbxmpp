@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_LOCATION
-from nbxmpp.protocol import NS_PUBSUB_EVENT
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import LocationData
@@ -32,7 +31,7 @@ class Location(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_pubsub_location,
-                          ns=NS_PUBSUB_EVENT,
+                          ns=Namespace.PUBSUB_EVENT,
                           priority=16),
         ]
 
@@ -40,7 +39,7 @@ class Location(BaseModule):
         if not properties.is_pubsub_event:
             return
 
-        if properties.pubsub_event.node != NS_LOCATION:
+        if properties.pubsub_event.node != Namespace.LOCATION:
             return
 
         item = properties.pubsub_event.item
@@ -48,7 +47,7 @@ class Location(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        location_node = item.getTag('geoloc', namespace=NS_LOCATION)
+        location_node = item.getTag('geoloc', namespace=Namespace.LOCATION)
         if not location_node.getChildren():
             self._log.info('Received location: %s - no location set',
                            properties.jid)
@@ -64,7 +63,7 @@ class Location(BaseModule):
         properties.pubsub_event = pubsub_event
 
     def set_location(self, data):
-        item = Node('geoloc', {'xmlns': NS_LOCATION})
+        item = Node('geoloc', {'xmlns': Namespace.LOCATION})
         if data is None:
             return
 
@@ -75,4 +74,4 @@ class Location(BaseModule):
 
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
-            jid, NS_LOCATION, item, id_='current')
+            jid, Namespace.LOCATION, item, id_='current')

@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_CAPS
-from nbxmpp.protocol import NS_DISCO_INFO
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import EntityCapsData
@@ -33,11 +32,11 @@ class EntityCaps(BaseModule):
         self.handlers = [
             StanzaHandler(name='presence',
                           callback=self._process_entity_caps,
-                          ns=NS_CAPS,
+                          ns=Namespace.CAPS,
                           priority=15),
             StanzaHandler(name='iq',
                           callback=self._process_disco_info,
-                          ns=NS_DISCO_INFO,
+                          ns=Namespace.DISCO_INFO,
                           priority=20),
         ]
 
@@ -71,7 +70,7 @@ class EntityCaps(BaseModule):
         raise NodeProcessed
 
     def _process_entity_caps(self, _client, stanza, properties):
-        caps = stanza.getTag('c', namespace=NS_CAPS)
+        caps = stanza.getTag('c', namespace=Namespace.CAPS)
         if caps is None:
             return
 

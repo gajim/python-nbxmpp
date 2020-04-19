@@ -16,8 +16,7 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import NS_DATA
-from nbxmpp.protocol import NS_XHTML
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import StanzaIDData
 from nbxmpp.structs import XHTMLData
@@ -76,7 +75,7 @@ class BaseMessage(BaseModule):
         properties.body = stanza.getBody()
         properties.thread = stanza.getThread()
         properties.subject = stanza.getSubject()
-        forms = stanza.getTags('x', namespace=NS_DATA)
+        forms = stanza.getTags('x', namespace=Namespace.DATA)
         if forms:
             properties.forms = forms
 
@@ -84,7 +83,7 @@ class BaseMessage(BaseModule):
         if xhtml is None:
             return
 
-        if xhtml.getTag('body', namespace=NS_XHTML) is None:
+        if xhtml.getTag('body', namespace=Namespace.XHTML) is None:
             self._log.warning('xhtml without body found')
             self._log.warning(stanza)
             return

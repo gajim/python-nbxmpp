@@ -18,7 +18,7 @@
 import logging
 import hashlib
 
-from nbxmpp.protocol import NS_BOB
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import BobData
 from nbxmpp.util import b64decode
 
@@ -26,7 +26,7 @@ log = logging.getLogger('nbxmpp.m.bob')
 
 
 def parse_bob_data(stanza):
-    data_node = stanza.getTag('data', namespace=NS_BOB)
+    data_node = stanza.getTag('data', namespace=Namespace.BOB)
     if data_node is None:
         return None
 

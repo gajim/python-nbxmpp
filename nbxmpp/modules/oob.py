@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_X_OOB
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import OOBData
 from nbxmpp.modules.base import BaseModule
@@ -29,12 +29,12 @@ class OOB(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_message_oob,
-                          ns=NS_X_OOB,
+                          ns=Namespace.X_OOB,
                           priority=15),
         ]
 
     def _process_message_oob(self, _client, stanza, properties):
-        oob = stanza.getTag('x', namespace=NS_X_OOB)
+        oob = stanza.getTag('x', namespace=Namespace.X_OOB)
         if oob is None:
             return
 

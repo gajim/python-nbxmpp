@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_SECLABEL
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import SecurityLabel
 from nbxmpp.structs import DisplayMarking
@@ -30,12 +30,12 @@ class SecurityLabels(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_message_security_label,
-                          ns=NS_SECLABEL,
+                          ns=Namespace.SECLABEL,
                           priority=15),
         ]
 
     def _process_message_security_label(self, _client, stanza, properties):
-        security = stanza.getTag('securitylabel', namespace=NS_SECLABEL)
+        security = stanza.getTag('securitylabel', namespace=Namespace.SECLABEL)
         if security is None:
             return
 

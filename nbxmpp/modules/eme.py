@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_EME
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import EMEData
 from nbxmpp.modules.base import BaseModule
@@ -29,12 +29,12 @@ class EME(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_eme,
-                          ns=NS_EME,
+                          ns=Namespace.EME,
                           priority=40)
         ]
 
     def _process_eme(self, _client, stanza, properties):
-        encryption = stanza.getTag('encryption', namespace=NS_EME)
+        encryption = stanza.getTag('encryption', namespace=Namespace.EME)
         if encryption is None:
             return
 

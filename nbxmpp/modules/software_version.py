@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_VERSION
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import ErrorNode
@@ -38,7 +38,7 @@ class SoftwareVersion(BaseModule):
             StanzaHandler(name='iq',
                           callback=self._answer_request,
                           typ='get',
-                          ns=NS_VERSION),
+                          ns=Namespace.VERSION),
         ]
 
         self._name = None
@@ -53,7 +53,7 @@ class SoftwareVersion(BaseModule):
     @call_on_response('_software_version_received')
     def request_software_version(self, jid):
         self._log.info('Request software version for %s', jid)
-        return Iq(typ='get', to=jid, queryNS=NS_VERSION)
+        return Iq(typ='get', to=jid, queryNS=Namespace.VERSION)
 
     @callback
     def _software_version_received(self, stanza):

@@ -22,7 +22,7 @@ import logging
 import hashlib
 from hashlib import pbkdf2_hmac
 
-from nbxmpp.protocol import NS_SASL
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import SASL_ERROR_CONDITIONS
 from nbxmpp.protocol import SASL_AUTH_MECHS
@@ -70,7 +70,7 @@ class SASL:
         return self._password
 
     def delegate(self, stanza):
-        if stanza.getNamespace() != NS_SASL:
+        if stanza.getNamespace() != Namespace.SASL:
             return
         if stanza.getName() == 'challenge':
             self._on_challenge(stanza)
@@ -201,7 +201,7 @@ class SASL:
         self._abort_auth(reason, text)
 
     def _abort_auth(self, reason='malformed-request', text=None):
-        node = Node('abort', attrs={'xmlns': NS_SASL})
+        node = Node('abort', attrs={'xmlns': Namespace.SASL})
         self._client.send_nonza(node)
         self._on_sasl_finished(False, reason, text)
 
@@ -223,7 +223,7 @@ class PLAIN:
     def initiate(self, username, password):
         payload = b64encode('\x00%s\x00%s' % (username, password))
         node = Node('auth',
-                    attrs={'xmlns': NS_SASL, 'mechanism': 'PLAIN'},
+                    attrs={'xmlns': Namespace.SASL, 'mechanism': 'PLAIN'},
                     payload=[payload])
         self._client.send_nonza(node)
 
@@ -238,7 +238,7 @@ class EXTERNAL:
     def initiate(self, username, server):
         payload = b64encode('%s@%s' % (username, server))
         node = Node('auth',
-                    attrs={'xmlns': NS_SASL, 'mechanism': 'EXTERNAL'},
+                    attrs={'xmlns': Namespace.SASL, 'mechanism': 'EXTERNAL'},
                     payload=[payload])
         self._client.send_nonza(node)
 
@@ -251,7 +251,8 @@ class ANONYMOUS:
         self._client = client
 
     def initiate(self):
-        node = Node('auth', attrs={'xmlns': NS_SASL, 'mechanism': 'ANONYMOUS'})
+        node = Node('auth', attrs={'xmlns': Namespace.SASL,
+                                   'mechanism': 'ANONYMOUS'})
         self._client.send_nonza(node)
 
 
@@ -269,7 +270,7 @@ class GSSAPI:
         kerberos.authGSSClientStep(self._gss_vc, '')
         response = kerberos.authGSSClientResponse(self._gss_vc)
         node = Node('auth',
-                    attrs={'xmlns': NS_SASL, 'mechanism': 'GSSAPI'},
+                    attrs={'xmlns': Namespace.SASL, 'mechanism': 'GSSAPI'},
                     payload=(response or ''))
         self._client.send_nonza(node)
 
@@ -291,7 +292,7 @@ class GSSAPI:
             response = ''
 
         node = Node('response',
-                    attrs={'xmlns': NS_SASL},
+                    attrs={'xmlns': Namespace.SASL},
                     payload=response)
         self._client.send_nonza(node)
 
@@ -334,7 +335,8 @@ class SCRAM:
 
         payload = b64encode(client_first_message)
         node = Node('auth',
-                    attrs={'xmlns': NS_SASL, 'mechanism': self._mechanism},
+                    attrs={'xmlns': Namespace.SASL,
+                           'mechanism': self._mechanism},
                     payload=[payload])
         self._client.send_nonza(node)
 
@@ -381,7 +383,7 @@ class SCRAM:
 
         payload = b64encode(client_finale_message)
         node = Node('response',
-                    attrs={'xmlns': NS_SASL},
+                    attrs={'xmlns': Namespace.SASL},
                     payload=[payload])
         self._client.send_nonza(node)
 

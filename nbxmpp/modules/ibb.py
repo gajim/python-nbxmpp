@@ -20,7 +20,7 @@ from nbxmpp.protocol import ERR_BAD_REQUEST
 from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import NS_IBB
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import isResultNode
 from nbxmpp.structs import CommonResult
 from nbxmpp.structs import StanzaHandler
@@ -41,23 +41,23 @@ class IBB(BaseModule):
         self.handlers = [
             StanzaHandler(name='iq',
                           callback=self._process_ibb,
-                          ns=NS_IBB,
+                          ns=Namespace.IBB,
                           priority=20),
         ]
 
     def _process_ibb(self, _client, stanza, properties):
         if properties.type.is_set:
-            open_ = stanza.getTag('open', namespace=NS_IBB)
+            open_ = stanza.getTag('open', namespace=Namespace.IBB)
             if open_ is not None:
                 properties.ibb = self._parse_open(stanza, open_)
                 return
 
-            close = stanza.getTag('close', namespace=NS_IBB)
+            close = stanza.getTag('close', namespace=Namespace.IBB)
             if close is not None:
                 properties.ibb = self._parse_close(stanza, close)
                 return
 
-            data = stanza.getTag('data', namespace=NS_IBB)
+            data = stanza.getTag('data', namespace=Namespace.IBB)
             if data is not None:
                 properties.ibb = self._parse_data(stanza, data)
                 return
@@ -137,13 +137,13 @@ class IBB(BaseModule):
         iq = Iq('set', to=jid)
         iq.addChild('open',
                     {'block-size': block_size, 'sid': sid, 'stanza': 'iq'},
-                    namespace=NS_IBB)
+                    namespace=Namespace.IBB)
         return iq
 
     @call_on_response('_default_response')
     def send_close(self, jid, sid):
         iq = Iq('set', to=jid)
-        iq.addChild('close', {'sid': sid}, namespace=NS_IBB)
+        iq.addChild('close', {'sid': sid}, namespace=Namespace.IBB)
         return iq
 
     @call_on_response('_default_response')
@@ -151,7 +151,7 @@ class IBB(BaseModule):
         iq = Iq('set', to=jid)
         ibb_data = iq.addChild('data',
                                {'sid': sid, 'seq': seq},
-                               namespace=NS_IBB)
+                               namespace=Namespace.IBB)
         ibb_data.setData(b64encode(data))
         return iq
 

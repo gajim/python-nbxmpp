@@ -27,6 +27,7 @@ from base64 import b64encode
 import idna
 from precis_i18n import get_profile
 from nbxmpp.simplexml import Node
+from nbxmpp.namespaces import Namespace
 
 def ascii_upper(s):
     return s.upper()
@@ -506,7 +507,7 @@ def isErrorNode(node):
     return node and node.getType() == 'error'
 
 def isMucPM(message):
-    muc_user = message.getTag('x', namespace=NS_MUC_USER)
+    muc_user = message.getTag('x', namespace=Namespace.MUC_USER)
     return (message.getType() in ('chat', 'error') and
             muc_user is not None and
             not muc_user.getChildren())
@@ -907,7 +908,7 @@ class StreamErrorNode(Node):
 
         self._text = {}
 
-        text_elements = self.getTags('text', namespace=NS_XMPP_STREAMS)
+        text_elements = self.getTags('text', namespace=Namespace.XMPP_STREAMS)
         for element in text_elements:
             lang = element.getXmlLang()
             text = element.getData()
@@ -916,7 +917,7 @@ class StreamErrorNode(Node):
     def get_condition(self):
         for tag in self.getChildren():
             if (tag.getName() != 'text' and
-                    tag.getNamespace() == NS_XMPP_STREAMS):
+                    tag.getNamespace() == Namespace.XMPP_STREAMS):
                 return tag.getName()
         return None
 
@@ -986,14 +987,14 @@ class Protocol(Node):
                 and 'id' in self.attrs):
             del self.attrs['id']
         self.timestamp = None
-        for d in self.getTags('delay', namespace=NS_DELAY2):
+        for d in self.getTags('delay', namespace=Namespace.DELAY2):
             try:
                 if d.getAttr('stamp') < self.getTimestamp2():
                     self.setTimestamp(d.getAttr('stamp'))
             except Exception:
                 pass
         if not self.timestamp:
-            for x in self.getTags('x', namespace=NS_DELAY):
+            for x in self.getTags('x', namespace=Namespace.DELAY):
                 try:
                     if x.getAttr('stamp') < self.getTimestamp():
                         self.setTimestamp(x.getAttr('stamp'))
@@ -1092,7 +1093,8 @@ class Protocol(Node):
         if errtag is None:
             return None
         for tag in errtag.getChildren():
-            if tag.getName() != 'text' and tag.getNamespace() == NS_STANZAS:
+            if (tag.getName() != 'text' and
+                    tag.getNamespace() == Namespace.STANZAS):
                 return tag.getName()
         return None
 
@@ -1101,7 +1103,8 @@ class Protocol(Node):
         if errtag is None:
             return None
         for tag in errtag.getChildren():
-            if tag.getName() != 'text' and tag.getNamespace() != NS_STANZAS:
+            if (tag.getName() != 'text' and
+                    tag.getNamespace() != Namespace.STANZAS):
                 return tag.getName()
         return None
 
@@ -1110,7 +1113,8 @@ class Protocol(Node):
         if errtag is None:
             return None
         for tag in errtag.getChildren():
-            if tag.getName() != 'text' and tag.getNamespace() != NS_STANZAS:
+            if (tag.getName() != 'text' and
+                    tag.getNamespace() != Namespace.STANZAS):
                 return tag.getNamespace()
         return None
 
@@ -1177,7 +1181,7 @@ class Protocol(Node):
         if not val:
             val = time.strftime('%Y%m%dT%H:%M:%S', time.gmtime())
         self.timestamp=val
-        self.setTag('x', {'stamp': self.timestamp}, namespace=NS_DELAY)
+        self.setTag('x', {'stamp': self.timestamp}, namespace=Namespace.DELAY)
 
     def getProperties(self):
         """
@@ -1227,7 +1231,7 @@ class Message(Protocol):
                  frm=None,
                  payload=None,
                  timestamp=None,
-                 xmlns=NS_CLIENT,
+                 xmlns=Namespace.CLIENT,
                  node=None):
         """
         You can specify recipient, text of message, type of message any
@@ -1261,7 +1265,7 @@ class Message(Protocol):
         return self.getTagData('body')
 
     def getXHTML(self):
-        return self.getTag('html', namespace=NS_XHTML_IM)
+        return self.getTag('html', namespace=Namespace.XHTML_IM)
 
     def getSubject(self):
         """
@@ -1279,14 +1283,14 @@ class Message(Protocol):
         """
         Return origin-id of the message
         """
-        return self.getTagAttr('origin-id', namespace=NS_SID, attr='id')
+        return self.getTagAttr('origin-id', namespace=Namespace.SID, attr='id')
 
     def getStanzaIDAttrs(self):
         """
         Return the stanza-id attributes of the message
         """
         try:
-            attrs = self.getTag('stanza-id', namespace=NS_SID).getAttrs()
+            attrs = self.getTag('stanza-id', namespace=Namespace.SID).getAttrs()
         except Exception:
             return None, None
         return attrs['id'], attrs['by']
@@ -1300,16 +1304,18 @@ class Message(Protocol):
         if isinstance(body, str):
             body = Node(node=body)
         if add:
-            xhtml = self.getTag('html', namespace=NS_XHTML_IM)
+            xhtml = self.getTag('html', namespace=Namespace.XHTML_IM)
             if xhtml is not None:
                 xhtml.addChild(node=body)
             else:
-                self.addChild('html', namespace=NS_XHTML_IM, payload=body)
+                self.addChild('html',
+                              namespace=Namespace.XHTML_IM,
+                              payload=body)
         else:
-            xhtml_nodes = self.getTags('html', namespace=NS_XHTML_IM)
+            xhtml_nodes = self.getTags('html', namespace=Namespace.XHTML_IM)
             for xhtml in xhtml_nodes:
                 self.delChild(xhtml)
-            self.addChild('html', namespace=NS_XHTML_IM, payload=body)
+            self.addChild('html', namespace=Namespace.XHTML_IM, payload=body)
 
     def setSubject(self, val):
         """
@@ -1327,7 +1333,7 @@ class Message(Protocol):
         """
         Sets the origin-id of the message
         """
-        self.setTag('origin-id', namespace=NS_SID, attrs={'id': val})
+        self.setTag('origin-id', namespace=Namespace.SID, attrs={'id': val})
 
     def buildReply(self, text=None):
         """
@@ -1355,31 +1361,31 @@ class Message(Protocol):
         return attrs
 
     def setMarker(self, type_, id_):
-        self.setTag(type_, namespace=NS_CHATMARKERS, attrs={'id': id_})
+        self.setTag(type_, namespace=Namespace.CHATMARKERS, attrs={'id': id_})
 
     def setMarkable(self):
-        self.setTag('markable', namespace=NS_CHATMARKERS)
+        self.setTag('markable', namespace=Namespace.CHATMARKERS)
 
     def setReceiptRequest(self):
-        self.setTag('request', namespace=NS_RECEIPTS)
+        self.setTag('request', namespace=Namespace.RECEIPTS)
 
     def setReceiptReceived(self, id_):
-        self.setTag('received', namespace=NS_RECEIPTS, attrs={'id': id_})
+        self.setTag('received', namespace=Namespace.RECEIPTS, attrs={'id': id_})
 
     def setOOB(self, url, desc=None):
-        oob = self.setTag('x', namespace=NS_X_OOB)
+        oob = self.setTag('x', namespace=Namespace.X_OOB)
         oob.setTagData('url', url)
         if desc is not None:
             oob.setTagData('desc', desc)
 
     def setCorrection(self, id_):
-        self.setTag('replace', namespace=NS_CORRECT, attrs={'id': id_})
+        self.setTag('replace', namespace=Namespace.CORRECT, attrs={'id': id_})
 
     def setAttention(self):
-        self.setTag('attention', namespace=NS_ATTENTION)
+        self.setTag('attention', namespace=Namespace.ATTENTION)
 
     def setHint(self, hint):
-        self.setTag(hint, namespace=NS_HINTS)
+        self.setTag(hint, namespace=Namespace.HINTS)
 
 
 class Presence(Protocol):
@@ -1394,7 +1400,7 @@ class Presence(Protocol):
                  frm=None,
                  timestamp=None,
                  payload=None,
-                 xmlns=NS_CLIENT,
+                 xmlns=Namespace.CLIENT,
                  node=None):
         """
         You can specify recipient, type of message, priority, show and status
@@ -1460,14 +1466,16 @@ class Presence(Protocol):
 
     def _muc_getItemAttr(self, tag, attr):
         for xtag in self.getTags('x'):
-            if xtag.getNamespace() not in (NS_MUC_USER, NS_MUC_ADMIN):
+            if xtag.getNamespace() not in (Namespace.MUC_USER,
+                                           Namespace.MUC_ADMIN):
                 continue
             for child in xtag.getTags(tag):
                 return child.getAttr(attr)
 
     def _muc_getSubTagDataAttr(self, tag, attr):
         for xtag in self.getTags('x'):
-            if xtag.getNamespace() not in (NS_MUC_USER, NS_MUC_ADMIN):
+            if xtag.getNamespace() not in (Namespace.MUC_USER,
+                                           Namespace.MUC_ADMIN):
                 continue
             for child in xtag.getTags('item'):
                 for cchild in child.getTags(tag):
@@ -1532,7 +1540,7 @@ class Iq(Protocol):
                  to=None,
                  frm=None,
                  payload=None,
-                 xmlns=NS_CLIENT,
+                 xmlns=Namespace.CLIENT,
                  node=None):
         """
         You can specify type, query namespace any additional attributes,
@@ -1677,7 +1685,7 @@ class Hashes(Node):
 
     supported = ('md5', 'sha-1', 'sha-256', 'sha-512')
 
-    def __init__(self, nsp=NS_HASHES):
+    def __init__(self, nsp=Namespace.HASHES):
         Node.__init__(self, None, {}, [], None, None, False, None)
         self.setNamespace(nsp)
         self.setName('hash')
@@ -1742,7 +1750,7 @@ class Hashes2(Node):
     supported = ('sha-256', 'sha-512', 'sha3-256',
                  'sha3-512', 'blake2b-256', 'blake2b-512')
 
-    def __init__(self, nsp=NS_HASHES_2):
+    def __init__(self, nsp=Namespace.HASHES_2):
         Node.__init__(self, None, {}, [], None, None, False, None)
         self.setNamespace(nsp)
         self.setName('hash')
@@ -1786,18 +1794,20 @@ class BindRequest(Iq):
         if resource is not None:
             resource = Node('resource', payload=resource)
         Iq.__init__(self, typ='set')
-        self.addChild(node=Node('bind', {'xmlns': NS_BIND}, payload=resource))
+        self.addChild(node=Node('bind',
+                                {'xmlns': Namespace.BIND},
+                                payload=resource))
 
 
 class TLSRequest(Node):
     def __init__(self):
-        Node.__init__(self, tag='starttls', attrs={'xmlns': NS_TLS})
+        Node.__init__(self, tag='starttls', attrs={'xmlns': Namespace.TLS})
 
 
 class SessionRequest(Iq):
     def __init__(self):
         Iq.__init__(self, typ='set')
-        self.addChild(node=Node('session', attrs={'xmlns': NS_SESSION}))
+        self.addChild(node=Node('session', attrs={'xmlns': Namespace.SESSION}))
 
 
 class StreamHeader(Node):
@@ -1806,9 +1816,9 @@ class StreamHeader(Node):
             lang = 'en'
         Node.__init__(self,
                       tag='stream:stream',
-                      attrs={'xmlns': NS_CLIENT,
+                      attrs={'xmlns': Namespace.CLIENT,
                              'version': '1.0',
-                             'xmlns:stream': NS_STREAMS,
+                             'xmlns:stream': Namespace.STREAMS,
                              'to': domain,
                              'xml:lang': lang})
 
@@ -1819,14 +1829,14 @@ class WebsocketOpenHeader(Node):
             lang = 'en'
         Node.__init__(self,
                       tag='open',
-                      attrs={'xmlns': NS_FRAMING,
+                      attrs={'xmlns': Namespace.FRAMING,
                              'version': '1.0',
                              'to': domain,
                              'xml:lang': lang})
 
 class WebsocketCloseHeader(Node):
     def __init__(self):
-        Node.__init__(self, tag='close', attrs={'xmlns': NS_FRAMING})
+        Node.__init__(self, tag='close', attrs={'xmlns': Namespace.FRAMING})
 
 
 class Features(Node):
@@ -1834,47 +1844,48 @@ class Features(Node):
         Node.__init__(self, node=node)
 
     def has_starttls(self):
-        tls = self.getTag('starttls', namespace=NS_TLS)
+        tls = self.getTag('starttls', namespace=Namespace.TLS)
         if tls is not None:
             required = tls.getTag('required') is not None
             return True, required
         return False, False
 
     def has_sasl(self):
-        return self.getTag('mechanisms', namespace=NS_SASL) is not None
+        return self.getTag('mechanisms', namespace=Namespace.SASL) is not None
 
     def get_mechs(self):
-        mechanisms = self.getTag('mechanisms', namespace=NS_SASL)
+        mechanisms = self.getTag('mechanisms', namespace=Namespace.SASL)
         if mechanisms is None:
             return set()
         mechanisms = mechanisms.getTags('mechanism')
         return set(mech.getData() for mech in mechanisms)
 
     def get_domain_based_name(self):
-        hostname = self.getTag('hostname', namespace=NS_DOMAIN_BASED_NAME)
+        hostname = self.getTag('hostname',
+                               namespace=Namespace.DOMAIN_BASED_NAME)
         if hostname is not None:
             return hostname.getData()
         return None
 
     def has_bind(self):
-        return self.getTag('bind', namespace=NS_BIND) is not None
+        return self.getTag('bind', namespace=Namespace.BIND) is not None
 
     def session_required(self):
-        session = self.getTag('session', namespace=NS_SESSION)
+        session = self.getTag('session', namespace=Namespace.SESSION)
         if session is not None:
             optional = session.getTag('optional') is not None
             return not optional
         return False
 
     def has_sm(self):
-        return self.getTag('sm', namespace=NS_STREAM_MGMT) is not None
+        return self.getTag('sm', namespace=Namespace.STREAM_MGMT) is not None
 
     def has_roster_version(self):
-        return self.getTag('ver', namespace=NS_ROSTER_VER) is not None
+        return self.getTag('ver', namespace=Namespace.ROSTER_VER) is not None
 
     def has_register(self):
         return self.getTag(
-            'register', namespace=NS_REGISTER_FEATURE) is not None
+            'register', namespace=Namespace.REGISTER_FEATURE) is not None
 
     def has_anonymous(self):
         return 'ANONYMOUS' in self.get_mechs()
@@ -1898,7 +1909,7 @@ class ErrorNode(Node):
             cod, type_, txt = ERRORS[name]
             ns = name.split()[0]
         else:
-            cod, ns, type_, txt = '500', NS_STANZAS, 'cancel', ''
+            cod, ns, type_, txt = '500', Namespace.STANZAS, 'cancel', ''
         if typ:
             type_ = typ
         if code:
@@ -2138,7 +2149,7 @@ class DataForm(Node):
             self.kids = newkids
         if typ:
             self.setType(typ)
-        self.setNamespace(NS_DATA)
+        self.setNamespace(Namespace.DATA)
         if title:
             self.setTitle(title)
         if data is not None:

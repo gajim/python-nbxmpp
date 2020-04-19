@@ -23,15 +23,7 @@ from gi.repository import Soup
 from gi.repository import Gio
 
 from nbxmpp.protocol import JID
-from nbxmpp.protocol import NS_STANZAS
-from nbxmpp.protocol import NS_STREAMS
-from nbxmpp.protocol import NS_MAM_1
-from nbxmpp.protocol import NS_MAM_2
-from nbxmpp.protocol import NS_MUC
-from nbxmpp.protocol import NS_MUC_INFO
-from nbxmpp.protocol import NS_CLIENT
-from nbxmpp.protocol import NS_XHTML
-from nbxmpp.protocol import NS_HTTPUPLOAD_0
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import Node
 from nbxmpp.const import MessageType
@@ -219,19 +211,19 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
 
     @property
     def mam_namespace(self):
-        if NS_MAM_2 in self.features:
-            return NS_MAM_2
-        if NS_MAM_1 in self.features:
-            return NS_MAM_1
+        if Namespace.MAM_2 in self.features:
+            return Namespace.MAM_2
+        if Namespace.MAM_1 in self.features:
+            return Namespace.MAM_1
         return None
 
     @property
     def has_mam_2(self):
-        return NS_MAM_2 in self.features
+        return Namespace.MAM_2 in self.features
 
     @property
     def has_mam_1(self):
-        return NS_MAM_1 in self.features
+        return Namespace.MAM_1 in self.features
 
     @property
     def has_mam(self):
@@ -239,13 +231,13 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
 
     @property
     def has_httpupload(self):
-        return NS_HTTPUPLOAD_0 in self.features
+        return Namespace.HTTPUPLOAD_0 in self.features
 
     @property
     def is_muc(self):
         for identity in self.identities:
             if identity.category == 'conference':
-                if NS_MUC in self.features:
+                if Namespace.MUC in self.features:
                     return True
         return False
 
@@ -270,38 +262,38 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
 
     @property
     def muc_room_name(self):
-        return self.get_field_value(NS_MUC_INFO, 'muc#roomconfig_roomname')
+        return self.get_field_value(Namespace.MUC_INFO, 'muc#roomconfig_roomname')
 
     @property
     def muc_description(self):
-        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_description')
+        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_description')
 
     @property
     def muc_log_uri(self):
-        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_logs')
+        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_logs')
 
     @property
     def muc_users(self):
-        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_occupants')
+        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_occupants')
 
     @property
     def muc_contacts(self):
-        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_contactjid')
+        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_contactjid')
 
     @property
     def muc_subject(self):
-        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_subject')
+        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_subject')
 
     @property
     def muc_subjectmod(self):
         # muc#roominfo_changesubject stems from a wrong example in the MUC XEP
         # Ejabberd and Prosody use this value
-        return (self.get_field_value(NS_MUC_INFO, 'muc#roominfo_subjectmod') or
-                self.get_field_value(NS_MUC_INFO, 'muc#roominfo_changesubject'))
+        return (self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_subjectmod') or
+                self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_changesubject'))
 
     @property
     def muc_lang(self):
-        return self.get_field_value(NS_MUC_INFO, 'muc#roominfo_lang')
+        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_lang')
 
     @property
     def muc_is_persistent(self):
@@ -380,7 +372,7 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
 
     @property
     def httpupload_max_file_size(self):
-        size = self.get_field_value(NS_HTTPUPLOAD_0, 'max-file-size')
+        size = self.get_field_value(Namespace.HTTPUPLOAD_0, 'max-file-size')
         try:
             return float(size)
         except Exception:
@@ -488,7 +480,7 @@ class CommonError:
         self.id = stanza.getID()
         self._text = {}
 
-        text_elements = self._error_node.getTags('text', namespace=NS_STANZAS)
+        text_elements = self._error_node.getTags('text', namespace=Namespace.STANZAS)
         for element in text_elements:
             lang = element.getXmlLang()
             text = element.getData()
@@ -530,7 +522,7 @@ class CommonError:
     def serialize(self):
         return str(Protocol(name=self._stanza_name,
                             frm=self.jid,
-                            xmlns=NS_CLIENT,
+                            xmlns=Namespace.CLIENT,
                             attrs={'id': self.id},
                             payload=self._error_node))
 
@@ -607,7 +599,7 @@ class StreamError(CommonError):
         self.id = stanza.getID()
         self._text = {}
 
-        text_elements = self._error_node.getTags('text', namespace=NS_STREAMS)
+        text_elements = self._error_node.getTags('text', namespace=Namespace.STREAMS)
         for element in text_elements:
             lang = element.getXmlLang()
             text = element.getData()
@@ -649,11 +641,11 @@ class MAMData(namedtuple('MAMData', 'id query_id archive namespace timestamp')):
 
     @property
     def is_ver_1(self):
-        return self.namespace == NS_MAM_1
+        return self.namespace == Namespace.MAM_1
 
     @property
     def is_ver_2(self):
-        return self.namespace == NS_MAM_2
+        return self.namespace == Namespace.MAM_2
 
 
 class CarbonData(namedtuple('MAMData', 'type')):
@@ -992,7 +984,7 @@ class PresenceProperties:
 class XHTMLData:
     def __init__(self, xhtml):
         self._bodys = {}
-        for body in xhtml.getTags('body', namespace=NS_XHTML):
+        for body in xhtml.getTags('body', namespace=Namespace.XHTML):
             lang = body.getXmlLang()
             self._bodys[lang] = body
 

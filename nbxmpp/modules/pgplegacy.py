@@ -15,8 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NS_SIGNED
-from nbxmpp.protocol import NS_ENCRYPTED
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.modules.base import BaseModule
 
@@ -29,24 +28,24 @@ class PGPLegacy(BaseModule):
         self.handlers = [
             StanzaHandler(name='message',
                           callback=self._process_pgplegacy_message,
-                          ns=NS_ENCRYPTED,
+                          ns=Namespace.ENCRYPTED,
                           priority=7),
             StanzaHandler(name='presence',
                           callback=self._process_signed,
-                          ns=NS_SIGNED,
+                          ns=Namespace.SIGNED,
                           priority=15)
         ]
 
     @staticmethod
     def _process_signed(_client, stanza, properties):
-        signed = stanza.getTag('x', namespace=NS_SIGNED)
+        signed = stanza.getTag('x', namespace=Namespace.SIGNED)
         if signed is None:
             return
 
         properties.signed = signed.getData()
 
     def _process_pgplegacy_message(self, _client, stanza, properties):
-        pgplegacy = stanza.getTag('x', namespace=NS_ENCRYPTED)
+        pgplegacy = stanza.getTag('x', namespace=Namespace.ENCRYPTED)
         if pgplegacy is None:
             self._log.warning('No x node found')
             self._log.warning(stanza)

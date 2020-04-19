@@ -19,8 +19,7 @@
 
 # XEP-0004: Data Forms
 
-from nbxmpp.protocol import NS_DATA
-from nbxmpp.protocol import NS_DATA_MEDIA
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import JID
 from nbxmpp.simplexml import Node
 
@@ -224,7 +223,7 @@ class DataField(ExtendedNode):
         """
         Media data
         """
-        media = self.getTag('media', namespace=NS_DATA_MEDIA)
+        media = self.getTag('media', namespace=Namespace.DATA_MEDIA)
         if media:
             return Media(media)
         return None
@@ -600,7 +599,7 @@ class DataForm(ExtendedNode):
     def __init__(self, type_=None, title=None, instructions=None, extend=None):
         if extend is None:
             # we have to build form from scratch
-            Node.__init__(self, 'x', attrs={'xmlns': NS_DATA})
+            Node.__init__(self, 'x', attrs={'xmlns': Namespace.DATA})
 
         if type_ is not None:
             self.type_ = type_
