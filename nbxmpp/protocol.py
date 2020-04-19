@@ -45,8 +45,8 @@ NS_ATOM           = 'http://www.w3.org/2005/Atom'
 NS_ATTENTION      = 'urn:xmpp:attention:0'                            # XEP-0224
 NS_AUTH           = 'jabber:iq:auth'
 NS_AVATAR         = 'http://www.xmpp.org/extensions/xep-0084.html#ns-metadata'
-NS_AVATAR_METADATA = 'urn:xmpp:avatar:metadata'						  # XEP-0084
-NS_AVATAR_DATA	  = 'urn:xmpp:avatar:data'						  	  # XEP-0084
+NS_AVATAR_METADATA = 'urn:xmpp:avatar:metadata'                       # XEP-0084
+NS_AVATAR_DATA    = 'urn:xmpp:avatar:data'                            # XEP-0084
 NS_BIND           = 'urn:ietf:params:xml:ns:xmpp-bind'
 NS_BLOCKING       = 'urn:xmpp:blocking'                               # XEP-0191
 NS_BOB            = 'urn:xmpp:bob'                                    # XEP-0231
@@ -94,7 +94,7 @@ NS_MSG_HINTS      = 'urn:xmpp:hints'                                  # XEP-0280
 NS_HTTP_AUTH      = 'http://jabber.org/protocol/http-auth'            # XEP-0070
 NS_HTTP_BIND      = 'http://jabber.org/protocol/httpbind'             # XEP-0124
 NS_HTTPUPLOAD     = 'urn:xmpp:http:upload'                            # XEP-0363
-NS_HTTPUPLOAD_0   = 'urn:xmpp:http:upload:0'						  # XEP-0363
+NS_HTTPUPLOAD_0   = 'urn:xmpp:http:upload:0'                          # XEP-0363
 NS_IBB            = 'http://jabber.org/protocol/ibb'
 NS_IDLE           = 'urn:xmpp:idle:1'                                 # XEP-0319
 NS_INVISIBLE      = 'presence-invisible'                              # Jabberd2
@@ -610,7 +610,8 @@ class LocalpartNotAllowedChar(InvalidJid):
 
 class ResourcepartByteLimit(InvalidJid):
     def __init__(self):
-        InvalidJid.__init__(self, 'Resourcepart must be between 1 and 1023 bytes')
+        InvalidJid.__init__(self,
+                            'Resourcepart must be between 1 and 1023 bytes')
 
 class ResourcepartNotAllowedChar(InvalidJid):
     def __init__(self):
@@ -804,8 +805,8 @@ class JID:
 
     def setResource(self, resource):
         """
-        Set the resource part of the JID to new value. Specify None to remove the
-        resource part
+        Set the resource part of the JID to new value.
+        Specify None to remove the resource part
         """
         self.resource = resource
 
@@ -914,7 +915,8 @@ class StreamErrorNode(Node):
 
     def get_condition(self):
         for tag in self.getChildren():
-            if tag.getName() != 'text' and tag.getNamespace() == NS_XMPP_STREAMS:
+            if (tag.getName() != 'text' and
+                    tag.getNamespace() == NS_XMPP_STREAMS):
                 return tag.getName()
         return None
 
@@ -942,8 +944,16 @@ class Protocol(Node):
     and messages
     """
 
-    def __init__(self, name=None, to=None, typ=None, frm=None, attrs=None,
-                    payload=None, timestamp=None, xmlns=None, node=None):
+    def __init__(self,
+                 name=None,
+                 to=None,
+                 typ=None,
+                 frm=None,
+                 attrs=None,
+                 payload=None,
+                 timestamp=None,
+                 xmlns=None,
+                 node=None):
         """
         Constructor, name is the name of the stanza
         i.e. 'message' or 'presence'or 'iq'
@@ -990,7 +1000,7 @@ class Protocol(Node):
                 except Exception:
                     pass
         if timestamp is not None:
-            self.setTimestamp(timestamp)  # To auto-timestamp stanza just pass timestamp=''
+            self.setTimestamp(timestamp)
 
     def getTo(self):
         """
@@ -1171,7 +1181,8 @@ class Protocol(Node):
 
     def getProperties(self):
         """
-        Return the list of namespaces to which belongs the direct childs of element
+        Return the list of namespaces to which belongs the
+        direct childs of element
         """
         props = []
         for child in self.getChildren():
@@ -1206,9 +1217,18 @@ class Message(Protocol):
     XMPP Message stanza - "push" mechanism
     """
 
-    def __init__(self, to=None, body=None, xhtml=None, typ=None, subject=None,
-        attrs=None, frm=None, payload=None, timestamp=None, xmlns=NS_CLIENT,
-        node=None):
+    def __init__(self,
+                 to=None,
+                 body=None,
+                 xhtml=None,
+                 typ=None,
+                 subject=None,
+                 attrs=None,
+                 frm=None,
+                 payload=None,
+                 timestamp=None,
+                 xmlns=NS_CLIENT,
+                 node=None):
         """
         You can specify recipient, text of message, type of message any
         additional attributes, sender of the message, any additional payload
@@ -1217,8 +1237,16 @@ class Message(Protocol):
         Alternatively you can pass in the other XML object as the 'node'
         parameted to replicate it as message
         """
-        Protocol.__init__(self, 'message', to=to, typ=typ, attrs=attrs, frm=frm,
-                payload=payload, timestamp=timestamp, xmlns=xmlns, node=node)
+        Protocol.__init__(self,
+                          'message',
+                          to=to,
+                          typ=typ,
+                          attrs=attrs,
+                          frm=frm,
+                          payload=payload,
+                          timestamp=timestamp,
+                          xmlns=xmlns,
+                          node=node)
         if body:
             self.setBody(body)
         if xhtml is not None:
@@ -1307,8 +1335,10 @@ class Message(Protocol):
         from, thread and type properties of new message are pre-set as reply to
         this message
         """
-        m = Message(to=self.getFrom(), frm=self.getTo(), body=text,
-            typ=self.getType())
+        m = Message(to=self.getFrom(),
+                    frm=self.getTo(),
+                    body=text,
+                    typ=self.getType())
         th = self.getThread()
         if th:
             m.setThread(th)
@@ -1354,18 +1384,35 @@ class Message(Protocol):
 
 class Presence(Protocol):
 
-    def __init__(self, to=None, typ=None, priority=None, show=None, status=None,
-        attrs=None, frm=None, timestamp=None, payload=None, xmlns=NS_CLIENT,
-        node=None):
+    def __init__(self,
+                 to=None,
+                 typ=None,
+                 priority=None,
+                 show=None,
+                 status=None,
+                 attrs=None,
+                 frm=None,
+                 timestamp=None,
+                 payload=None,
+                 xmlns=NS_CLIENT,
+                 node=None):
         """
         You can specify recipient, type of message, priority, show and status
         values any additional attributes, sender of the presence, timestamp, any
-        additional payload (f.e. jabber:x:delay element) and namespace in one go.
-        Alternatively you can pass in the other XML object as the 'node'
+        additional payload (f.e. jabber:x:delay element) and namespace in one
+        go. Alternatively you can pass in the other XML object as the 'node'
         parameted to replicate it as presence
         """
-        Protocol.__init__(self, 'presence', to=to, typ=typ, attrs=attrs, frm=frm,
-                payload=payload, timestamp=timestamp, xmlns=xmlns, node=node)
+        Protocol.__init__(self,
+                          'presence',
+                          to=to,
+                          typ=typ,
+                          attrs=attrs,
+                          frm=frm,
+                          payload=payload,
+                          timestamp=timestamp,
+                          xmlns=xmlns,
+                          node=node)
         if priority:
             self.setPriority(priority)
         if show:
@@ -1478,8 +1525,15 @@ class Iq(Protocol):
     XMPP Iq object - get/set dialog mechanism
     """
 
-    def __init__(self, typ=None, queryNS=None, attrs=None, to=None, frm=None,
-                    payload=None, xmlns=NS_CLIENT, node=None):
+    def __init__(self,
+                 typ=None,
+                 queryNS=None,
+                 attrs=None,
+                 to=None,
+                 frm=None,
+                 payload=None,
+                 xmlns=NS_CLIENT,
+                 node=None):
         """
         You can specify type, query namespace any additional attributes,
         recipient of the iq, sender of the iq, any additional payload (f.e.
@@ -1488,8 +1542,14 @@ class Iq(Protocol):
         Alternatively you can pass in the other XML object as the 'node'
         parameted to replicate it as an iq
         """
-        Protocol.__init__(self, 'iq', to=to, typ=typ, attrs=attrs, frm=frm,
-            xmlns=xmlns, node=node)
+        Protocol.__init__(self,
+                          'iq',
+                          to=to,
+                          typ=typ,
+                          attrs=attrs,
+                          frm=frm,
+                          xmlns=xmlns,
+                          node=node)
         if payload:
             self.setQueryPayload(payload)
         if queryNS:
@@ -1594,8 +1654,10 @@ class Iq(Protocol):
         Build and return another Iq object of specified type. The to, from and
         query child node of new Iq are pre-set as reply to this Iq.
         """
-        iq = Iq(typ, to=self.getFrom(), frm=self.getTo(),
-            attrs={'id': self.getID()})
+        iq = Iq(typ,
+                to=self.getFrom(),
+                frm=self.getTo(),
+                attrs={'id': self.getID()})
         iq.setQuery(self.getQuery().getName()).setNamespace(self.getQueryNS())
         return iq
 
@@ -1677,7 +1739,8 @@ class Hashes2(Node):
     BLAKE2b512    SHOULD
     """
 
-    supported = ('sha-256', 'sha-512', 'sha3-256', 'sha3-512', 'blake2b-256', 'blake2b-512')
+    supported = ('sha-256', 'sha-512', 'sha3-256',
+                 'sha3-512', 'blake2b-256', 'blake2b-512')
 
     def __init__(self, nsp=NS_HASHES_2):
         Node.__init__(self, None, {}, [], None, None, False, None)
@@ -1866,7 +1929,10 @@ class Error(Protocol):
         'from' fields needs not swapping) specify the 'reply' argument as false.
         """
         if reply:
-            Protocol.__init__(self, to=node.getFrom(), frm=node.getTo(), node=node)
+            Protocol.__init__(self,
+                              to=node.getFrom(),
+                              frm=node.getTo(),
+                              node=node)
         else:
             Protocol.__init__(self, node=node)
         self.setError(error)
@@ -1875,8 +1941,9 @@ class Error(Protocol):
 
     def __dupstr__(self, _dup1=None, _dup2=None):
         """
-        Dummy function used as preventor of creating error node in reply to error
-        node. I.e. you will not be able to serialise "double" error into string.
+        Dummy function used as preventor of creating error node in reply to
+        error node. I.e. you will not be able to serialise "double" error
+        into string.
         """
         return ''
 
@@ -1888,8 +1955,14 @@ class DataField(Node):
     you will need to work with instances of this class.
     """
 
-    def __init__(self, name=None, value=None, typ=None, required=0, desc=None,
-                    options=None, node=None):
+    def __init__(self,
+                 name=None,
+                 value=None,
+                 typ=None,
+                 required=0,
+                 desc=None,
+                 options=None,
+                 node=None):
         """
         Create new data field of specified name,value and type
 
@@ -2002,8 +2075,8 @@ class DataField(Node):
         Add one more label-option pair to this field
         """
         if isinstance(opt, list):
-            self.addChild('option', {'label': opt[0]}).setTagData('value',
-                opt[1])
+            self.addChild('option',
+                          {'label': opt[0]}).setTagData('value', opt[1])
         else:
             self.addChild('option').setTagData('value', opt)
 
@@ -2048,8 +2121,10 @@ class DataForm(Node):
         title and instructions is optional and SHOULD NOT contain newlines.
         Several instructions MAY be present.
         'typ' can be one of ('form' | 'submit' | 'cancel' | 'result' )
-        'typ' of reply iq can be ( 'result' | 'set' | 'set' | 'result' ) respectively.
-        'cancel' form can not contain any fields. All other forms contains AT LEAST one field.
+        'typ' of reply iq can be ( 'result' | 'set' | 'set' | 'result' )
+            respectively.
+        'cancel' form can not contain any fields. All other forms contains
+            AT LEAST one field.
         'title' MAY be included in forms of type "form" and "result"
         """
         Node.__init__(self, 'x', node=node)

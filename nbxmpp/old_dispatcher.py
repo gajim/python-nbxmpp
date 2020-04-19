@@ -99,10 +99,11 @@ class Dispatcher:
     is that reference used to access dispatcher instance is in Client attribute
     named by __class__.__name__ of the dispatcher instance .. long story short:
 
-    I wrote following to avoid changing each client.Dispatcher.whatever() in xmpp
+    I wrote following to avoid changing each client.Dispatcher.whatever() in
+    xmpp
 
-    If having two kinds of dispatcher will go well, I will rewrite the dispatcher
-    references in other scripts
+    If having two kinds of dispatcher will go well, I will rewrite the
+    dispatcher references in other scripts
     """
 
     def PlugIn(self, client_obj, after_SASL=False, old_features=None):
@@ -141,12 +142,13 @@ class XMPPDispatcher(PlugIn):
         self._pendingExceptions = []
         self._eventHandler = None
         self._cycleHandlers = []
-        self._exported_methods=[self.RegisterHandler, self.RegisterDefaultHandler,
-                self.RegisterEventHandler, self.UnregisterCycleHandler,
-                self.RegisterCycleHandler, self.RegisterHandlerOnce,
-                self.UnregisterHandler, self.RegisterProtocol,
-                self.SendAndCallForResponse,
-                self.getAnID, self.Event, self.send, self.get_module]
+        self._exported_methods = [
+            self.RegisterHandler, self.RegisterDefaultHandler,
+            self.RegisterEventHandler, self.UnregisterCycleHandler,
+            self.RegisterCycleHandler, self.RegisterHandlerOnce,
+            self.UnregisterHandler, self.RegisterProtocol,
+            self.SendAndCallForResponse,
+            self.getAnID, self.Event, self.send, self.get_module]
 
         # \ufddo -> \ufdef range
         c = '\ufdd0'
@@ -178,9 +180,9 @@ class XMPPDispatcher(PlugIn):
 
     def restoreHandlers(self, handlers):
         """
-        Restore user-registered callbacks structure from dump previously obtained
-        via dumpHandlers. Used within the library to carry user handlers set over
-        Dispatcher replugins.
+        Restore user-registered callbacks structure from dump previously
+        obtained via dumpHandlers. Used within the library to carry user
+        handlers set over Dispatcher replugins.
         """
         self.handlers = handlers
 
@@ -288,12 +290,13 @@ class XMPPDispatcher(PlugIn):
         self._metastream.setAttr('xmlns:stream', NS_STREAMS)
         self._metastream.setAttr('to', self._owner.Server)
         self._metastream.setAttr('xml:lang', self._owner.lang)
-        self._owner.send("%s%s>" % (XML_DECLARATION, str(self._metastream)[:-2]))
+        self._owner.send("%s%s>" % (XML_DECLARATION,
+                                    str(self._metastream)[:-2]))
 
     def _check_stream_start(self, ns, tag, attrs):
-        if ns != NS_STREAMS or tag!='stream':
-            raise ValueError('Incorrect stream start: (%s,%s). Terminating.'
-                    % (tag, ns))
+        if ns != NS_STREAMS or tag != 'stream':
+            raise ValueError('Incorrect stream start: '
+                             '(%s,%s). Terminating.' % (tag, ns))
 
     def replace_non_character(self, data):
         return re.sub(self.invalid_chars_re, '\ufffd', data)
@@ -331,8 +334,8 @@ class XMPPDispatcher(PlugIn):
             log.error(error)
             self._owner.Connection.disconnect()
             return 0
-        except ValueError as e:
-            log.debug('ValueError: %s', e)
+        except ValueError as error:
+            log.debug('ValueError: %s', error)
             self._owner.Connection.pollend()
             return 0
         if len(self._pendingExceptions) > 0:
@@ -380,10 +383,11 @@ class XMPPDispatcher(PlugIn):
         Register user callback as stanzas handler of declared type
 
         Callback arguments:
-        dispatcher instance (for replying), incoming return of previous handlers.
-        The callback must raise xmpp.NodeProcessed just before return if it wants
-        to prevent other callbacks to be called with the same stanza as argument
-        _and_, more     importantly     library from returning stanza to sender with error set.
+        dispatcher instance (for replying), incoming return of previous
+        handlers. The callback must raise xmpp.NodeProcessed just before return
+        if it wants to prevent other callbacks to be called with the same stanza
+        as argument _and_, more     importantly     library from returning
+        stanza to sender with error set.
 
         :param name: name of stanza. F.e. "iq".
         :param handler: user callback.
@@ -468,8 +472,8 @@ class XMPPDispatcher(PlugIn):
 
     def RegisterEventHandler(self, handler):
         """
-        Register handler that will process events. F.e. "FILERECEIVED" event. See
-        common/connection: _event_dispatcher()
+        Register handler that will process events. F.e. "FILERECEIVED" event.
+        See common/connection: _event_dispatcher()
         """
         self._eventHandler = handler
 
@@ -490,7 +494,8 @@ class XMPPDispatcher(PlugIn):
 
     def UnregisterCycleHandler(self, handler):
         """
-        Unregister handler that will be called on every Dispatcher.Process() call
+        Unregister handler that will be called on every Dispatcher.Process()
+        call
         """
         if handler in self._cycleHandlers:
             self._cycleHandlers.remove(handler)
@@ -745,9 +750,9 @@ class BOSHDispatcher(XMPPDispatcher):
             children = stanza.getChildren()
             if children:
                 for child in children:
-                    # if child doesn't have any ns specified, simplexml (or expat)
-                    # thinks it's of parent's (BOSH body) namespace, so we have to
-                    # rewrite it to jabber:client
+                    # if child doesn't have any ns specified, simplexml
+                    # (or expat) thinks it's of parent's (BOSH body) namespace,
+                    # so we have to rewrite it to jabber:client
                     if child.getNamespace() == NS_HTTP_BIND:
                         child.setNamespace(self._owner.defaultNamespace)
                     XMPPDispatcher.dispatch(self, child)
