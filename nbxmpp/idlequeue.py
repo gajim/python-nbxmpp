@@ -281,7 +281,7 @@ class IdleQueue:
         """
         Remove the read timeout
         """
-        log.debug('read timeout removed for fd %s' % fd)
+        log.debug('read timeout removed for fd %s', fd)
         if fd in self.read_timeouts:
             if timeout:
                 if timeout in self.read_timeouts[fd]:
@@ -323,10 +323,10 @@ class IdleQueue:
                 if timeout > current_time:
                     continue
                 if func:
-                    log.debug('Calling %s for fd %s' % (func, fd))
+                    log.debug('Calling %s for fd %s', func, fd)
                     func()
                 else:
-                    log.debug('Calling read_timeout for fd %s' % fd)
+                    log.debug('Calling read_timeout for fd %s', fd)
                     self.queue[fd].read_timeout()
                 self.remove_timeout(fd, timeout)
 

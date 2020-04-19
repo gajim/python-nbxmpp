@@ -42,7 +42,7 @@ class PlugIn:
         code after plugging
         """
         self._owner=owner
-        log.info('Plugging %s __INTO__ %s' % (self, self._owner))
+        log.info('Plugging %s __INTO__ %s', self, self._owner)
         if self.__class__.__name__ in owner.__dict__:
             log.debug('Plugging ignored: another instance already plugged.')
             return None
@@ -69,7 +69,7 @@ class PlugIn:
         If defined by a subclass, call self.plugout() after unplugging to execute
         hook code
         """
-        log.info('Plugging %s __OUT__ of %s.' % (self, self._owner))
+        log.info('Plugging %s __OUT__ of %s.', self, self._owner)
         for method in self._exported_methods:
             del self._owner.__dict__[method.__name__]
         for method in self._old_owners_methods:

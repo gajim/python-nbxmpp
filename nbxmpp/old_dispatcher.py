@@ -332,7 +332,7 @@ class XMPPDispatcher(PlugIn):
             self._owner.Connection.disconnect()
             return 0
         except ValueError as e:
-            log.debug('ValueError: %s' % str(e))
+            log.debug('ValueError: %s', e)
             self._owner.Connection.pollend()
             return 0
         if len(self._pendingExceptions) > 0:
@@ -351,7 +351,7 @@ class XMPPDispatcher(PlugIn):
         one namespace is already registered
         (jabber:client or jabber:component:accept depending on context.
         """
-        log.debug('Registering namespace "%s"' % xmlns)
+        log.debug('Registering namespace "%s"', xmlns)
         self.handlers[xmlns] = {}
         self.RegisterProtocol('unknown', Protocol, xmlns=xmlns)
         self.RegisterProtocol('default', Protocol, xmlns=xmlns)
@@ -506,7 +506,7 @@ class XMPPDispatcher(PlugIn):
         if self._eventHandler:
             self._eventHandler(realm, event, data)
         else:
-            log.warning('Received unhandled event: %s' % event)
+            log.warning('Received unhandled event: %s', event)
 
     def dispatch(self, stanza):
         """
