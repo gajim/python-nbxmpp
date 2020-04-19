@@ -37,6 +37,7 @@ class _Namespaces:
     BOOKMARKS_2: str = 'urn:xmpp:bookmarks:0'
     BOOKMARKS_COMPAT: str = 'urn:xmpp:bookmarks:0#compat'
     BOOKMARK_CONVERSION: str = 'urn:xmpp:bookmarks-conversion:0'
+    BROWSE: str = 'jabber:iq:browse'
     BYTESTREAM: str = 'http://jabber.org/protocol/bytestreams'
     CAPS: str = 'http://jabber.org/protocol/caps'
     CAPTCHA: str = 'urn:xmpp:captcha'
