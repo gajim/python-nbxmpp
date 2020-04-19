@@ -23,7 +23,7 @@ import errno
 import select
 import logging
 import time
-log = logging.getLogger('nbxmpp.idlequeue')
+import subprocess
 
 # needed for get_idleqeue
 try:
@@ -32,30 +32,30 @@ try:
 except ImportError:
     HAVE_GLIB = False
 
-# needed for idlecommand
-if os.name == 'nt':
-    from subprocess import * # python24 only. we ask this for Windows
-elif os.name == 'posix':
+
+if os.name == 'posix':
     import fcntl
+
+log = logging.getLogger('nbxmpp.idlequeue')
 
 if HAVE_GLIB:
     FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
-    FLAG_READ  = GLib.IOCondition.IN  | GLib.IOCondition.PRI | \
-                 GLib.IOCondition.HUP
+    FLAG_READ = GLib.IOCondition.IN  | GLib.IOCondition.PRI | \
+                GLib.IOCondition.HUP
     FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
                       GLib.IOCondition.PRI | GLib.IOCondition.HUP
-    FLAG_CLOSE     = GLib.IOCondition.HUP
-    PENDING_READ   = GLib.IOCondition.IN  # There is data to read.
-    PENDING_WRITE  = GLib.IOCondition.OUT # Data CAN be written without blocking
-    IS_CLOSED      = GLib.IOCondition.HUP # Hung up (connection broken)
+    FLAG_CLOSE = GLib.IOCondition.HUP
+    PENDING_READ = GLib.IOCondition.IN  # There is data to read.
+    PENDING_WRITE = GLib.IOCondition.OUT # Data CAN be written without blocking
+    IS_CLOSED = GLib.IOCondition.HUP # Hung up (connection broken)
 else:
-    FLAG_WRITE      = 20 # write only           10100
-    FLAG_READ       = 19 # read only            10011
-    FLAG_READ_WRITE = 23 # read and write       10111
-    FLAG_CLOSE      = 16 # wait for close       10000
-    PENDING_READ    =  3 # waiting read event      11
-    PENDING_WRITE   =  4 # waiting write event    100
-    IS_CLOSED       = 16 # channel closed       10000
+    FLAG_WRITE = 20         # write only           10100
+    FLAG_READ = 19          # read only            10011
+    FLAG_READ_WRITE = 23    # read and write       10111
+    FLAG_CLOSE = 16         # wait for close       10000
+    PENDING_READ = 3        # waiting read event      11
+    PENDING_WRITE = 4       # waiting write event    100
+    IS_CLOSED = 16          # channel closed       10000
 
 
 def get_idlequeue():
@@ -118,7 +118,9 @@ class IdleCommand(IdleObject):
         # if it is True, we can safetely execute the command
         self.canexecute = True
         self.idlequeue = None
-        self.result =''
+        self.result = ''
+        self.endtime = None
+        self.pipe = None
 
     def set_idlequeue(self, idlequeue):
         self.idlequeue = idlequeue
@@ -128,7 +130,8 @@ class IdleCommand(IdleObject):
             self.result_handler(self.result)
         self.result_handler = None
 
-    def _compose_command_args(self):
+    @staticmethod
+    def _compose_command_args():
         return ['echo', 'da']
 
     def _compose_command_line(self):
@@ -167,15 +170,19 @@ class IdleCommand(IdleObject):
     def _start_nt(self):
         # if program is started from noninteraactive shells stdin is closed and
         # cannot be forwarded, so we have to keep it open
-        self.pipe = Popen(self._compose_command_args(), stdout=PIPE,
-            bufsize=1024, shell=True, stderr=STDOUT, stdin=PIPE)
+        self.pipe = subprocess.Popen(self._compose_command_args(),
+                                     stdout=subprocess.PIPE,
+                                     bufsize=1024,
+                                     shell=True,
+                                     stderr=subprocess.STDOUT,
+                                     stdin=subprocess.PIPE)
         if self.commandtimeout >= 0:
             self.endtime = self.idlequeue.current_time() + self.commandtimeout
             self.idlequeue.set_alarm(self.wait_child, 0.1)
 
     def _start_posix(self):
         self.pipe = os.popen(self._compose_command_line())
-        self.fd = self.pipe.fileno()
+        self.fd = self.pipe.fileno()  # pylint: disable=no-member
         fcntl.fcntl(self.pipe, fcntl.F_SETFL, os.O_NONBLOCK)
         self.idlequeue.plug_idle(self, False, True)
         if self.commandtimeout >= 0:
@@ -195,7 +202,7 @@ class IdleCommand(IdleObject):
 
     def pollin(self):
         try:
-            res = self.pipe.read()
+            res = self.pipe.read()  # pylint: disable=no-member
         except Exception:
             res = ''
         if res == '':
@@ -286,11 +293,11 @@ class IdleQueue:
         if fd in self.read_timeouts:
             if timeout:
                 if timeout in self.read_timeouts[fd]:
-                    del(self.read_timeouts[fd][timeout])
+                    del self.read_timeouts[fd][timeout]
                 if len(self.read_timeouts[fd]) == 0:
-                    del(self.read_timeouts[fd])
+                    del self.read_timeouts[fd]
             else:
-                del(self.read_timeouts[fd])
+                del self.read_timeouts[fd]
 
     def set_read_timeout(self, fd, seconds, func=None):
         """
@@ -339,7 +346,7 @@ class IdleQueue:
                 for callback in self.alarms[alarm_time]:
                     callback()
                 if alarm_time in self.alarms:
-                    del(self.alarms[alarm_time])
+                    del self.alarms[alarm_time]
 
     def plug_idle(self, obj, writable=True, readable=True):
         """
@@ -378,10 +385,11 @@ class IdleQueue:
         Remove plugged IdleObject, specified by filedescriptor fd
         """
         if fd in self.queue:
-            del(self.queue[fd])
+            del self.queue[fd]
             self._remove_idle(fd)
 
-    def current_time(self):
+    @staticmethod
+    def current_time():
         return time.monotonic()
 
     def _remove_idle(self, fd):
@@ -443,19 +451,19 @@ class SelectIdleQueue(IdleQueue):
         check if they're valid. Greatly improves performance if the caller
         hands us and expects notification on an invalid file handle.
         """
-        bad_fds=[]
-        union={}
+        bad_fds = []
+        union = {}
         union.update(self.write_fds)
         union.update(self.read_fds)
         union.update(self.error_fds)
-        for fd in (union.keys()):
+        for fd in union:
             try:
                 _status = os.stat(fd)
             except OSError:
                 # This file descriptor is invalid. Add to list for closure.
                 bad_fds.append(fd)
 
-        for fd in (bad_fds):
+        for fd in bad_fds:
             obj = self.queue.get(fd)
             if obj is not None:
                 self.remove_timeout(fd)
@@ -486,36 +494,39 @@ class SelectIdleQueue(IdleQueue):
         Remove descriptor from read/write/error lists
         """
         if fd in self.read_fds:
-            del(self.read_fds[fd])
+            del self.read_fds[fd]
         if fd in self.write_fds:
-            del(self.write_fds[fd])
+            del self.write_fds[fd]
         if fd in self.error_fds:
-            del(self.error_fds[fd])
+            del self.error_fds[fd]
 
     def process(self):
         if not self.write_fds and not self.read_fds:
             self._check_time_events()
             return True
         try:
-            waiting_descriptors = select.select(list(self.read_fds.keys()),
-                    list(self.write_fds.keys()), list(self.error_fds.keys()), 0)
-        except OSError as e:
+            waiting_descriptors = select.select(
+                list(self.read_fds.keys()),
+                list(self.write_fds.keys()),
+                list(self.error_fds.keys()),
+                0)
+        except OSError as error:
             waiting_descriptors = ((), (), ())
-            if e.errno != errno.EINTR:
+            if error.errno != errno.EINTR:
                 self.checkQueue()
                 raise
         for fd in waiting_descriptors[0]:
-            q = self.queue.get(fd)
-            if q:
-                q.pollin()
+            idle_object = self.queue.get(fd)
+            if idle_object:
+                idle_object.pollin()
         for fd in waiting_descriptors[1]:
-            q = self.queue.get(fd)
-            if q:
-                q.pollout()
+            idle_object = self.queue.get(fd)
+            if idle_object:
+                idle_object.pollout()
         for fd in waiting_descriptors[2]:
-            q = self.queue.get(fd)
-            if q:
-                q.pollend()
+            idle_object = self.queue.get(fd)
+            if idle_object:
+                idle_object.pollend()
         self._check_time_events()
         return True
 
@@ -542,8 +553,10 @@ class GlibIdleQueue(IdleQueue):
         This method is called when we plug a new idle object.
         Start listening for events from fd
         """
-        res = GLib.io_add_watch(fd, GLib.PRIORITY_LOW, flags,
-            self._process_events)
+        res = GLib.io_add_watch(fd,
+                                GLib.PRIORITY_LOW,
+                                flags,
+                                self._process_events)
 
         # store the id of the watch, so that we can remove it on unplug
         self.events[fd] = res
@@ -565,7 +578,7 @@ class GlibIdleQueue(IdleQueue):
             return
 
         GLib.source_remove(self.events[fd])
-        del(self.events[fd])
+        del self.events[fd]
 
     def process(self):
         self._check_time_events()
