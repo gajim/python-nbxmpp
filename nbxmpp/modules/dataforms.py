@@ -108,8 +108,8 @@ def extend_form(node):
 class DataField(ExtendedNode):
     """
     Keeps data about one field - var, field type, labels, instructions... Base
-    class for different kinds of fields. Use create_field() function to construct one
-    of these
+    class for different kinds of fields. Use create_field() function to
+    construct one of these
     """
 
     def __init__(self, typ=None, var=None, value=None, label=None, desc=None,

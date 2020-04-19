@@ -66,8 +66,8 @@ class PlugIn:
     def PlugOut(self, *args, **kwargs):
         """
         Unregister our _exported_methods from owner and detach from it.
-        If defined by a subclass, call self.plugout() after unplugging to execute
-        hook code
+        If defined by a subclass, call self.plugout() after unplugging to
+        execute hook code
         """
         log.info('Plugging %s __OUT__ of %s.', self, self._owner)
         for method in self._exported_methods:

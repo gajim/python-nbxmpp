@@ -46,7 +46,7 @@ if HAVE_GLIB:
                       GLib.IOCondition.PRI | GLib.IOCondition.HUP
     FLAG_CLOSE     = GLib.IOCondition.HUP
     PENDING_READ   = GLib.IOCondition.IN  # There is data to read.
-    PENDING_WRITE  = GLib.IOCondition.OUT # Data CAN be written without blocking.
+    PENDING_WRITE  = GLib.IOCondition.OUT # Data CAN be written without blocking
     IS_CLOSED      = GLib.IOCondition.HUP # Hung up (connection broken)
 else:
     FLAG_WRITE      = 20 # write only           10100
@@ -222,7 +222,8 @@ class IdleQueue:
     """
 
     # (timeout, boolean)
-    # Boolean is True if timeout is specified in seconds, False means miliseconds
+    # Boolean is True if timeout is specified in seconds,
+    # False means miliseconds
     PROCESS_TIMEOUT = (100, False)
 
     def __init__(self):
@@ -438,8 +439,9 @@ class SelectIdleQueue(IdleQueue):
 
     def checkQueue(self):
         """
-        Iterates through all known file descriptors and uses os.stat to check if they're valid.
-        Greatly improves performance if the caller hands us and expects notification on an invalid file handle.
+        Iterates through all known file descriptors and uses os.stat to
+        check if they're valid. Greatly improves performance if the caller
+        hands us and expects notification on an invalid file handle.
         """
         bad_fds=[]
         union={}
@@ -480,8 +482,8 @@ class SelectIdleQueue(IdleQueue):
 
     def _remove_idle(self, fd):
         """
-        This method is called when we unplug a new idle object. Remove descriptor
-        from read/write/error lists
+        This method is called when we unplug a new idle object.
+        Remove descriptor from read/write/error lists
         """
         if fd in self.read_fds:
             del(self.read_fds[fd])
@@ -525,7 +527,8 @@ class GlibIdleQueue(IdleQueue):
     """
 
     # (timeout, boolean)
-    # Boolean is True if timeout is specified in seconds, False means miliseconds
+    # Boolean is True if timeout is specified in seconds,
+    # False means miliseconds
     PROCESS_TIMEOUT = (2, True)
 
     def _init_idle(self):
@@ -536,8 +539,8 @@ class GlibIdleQueue(IdleQueue):
 
     def _add_idle(self, fd, flags):
         """
-        This method is called when we plug a new idle object. Start listening for
-        events from fd
+        This method is called when we plug a new idle object.
+        Start listening for events from fd
         """
         res = GLib.io_add_watch(fd, GLib.PRIORITY_LOW, flags,
             self._process_events)

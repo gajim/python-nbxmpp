@@ -142,7 +142,8 @@ class Muclumbus(BaseModule):
             is_open = item.getTag('is-open') is not None
 
             try:
-                anonymity_mode = AnonymityMode(item.getTagData('anonymity-mode'))
+                anonymity_mode = AnonymityMode(
+                    item.getTagData('anonymity-mode'))
             except ValueError:
                 anonymity_mode = AnonymityMode.UNKNOWN
             results.append(MuclumbusItem(jid=jid,

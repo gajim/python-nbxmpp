@@ -336,7 +336,8 @@ class OMEMO(BaseModule):
         result = {}
         signed_prekey_node = bundle.getTag('signedPreKeyPublic')
         try:
-            result['spk'] = {'key': b64decode(signed_prekey_node.getData(), bytes)}
+            result['spk'] = {'key': b64decode(signed_prekey_node.getData(),
+                                              bytes)}
         except Exception as error:
             raise StanzaMalformed('Failed to decode '
                                   'signedPreKeyPublic: %s' % error)
@@ -349,7 +350,8 @@ class OMEMO(BaseModule):
 
         signed_signature_node = bundle.getTag('signedPreKeySignature')
         try:
-            result['spk_signature'] = b64decode(signed_signature_node.getData(), bytes)
+            result['spk_signature'] = b64decode(signed_signature_node.getData(),
+                                                bytes)
         except Exception as error:
             raise StanzaMalformed('Failed to decode '
                                   'signedPreKeySignature: %s' % error)
@@ -375,7 +377,8 @@ class OMEMO(BaseModule):
             try:
                 key = b64decode(prekey.getData(), bytes)
             except Exception as error:
-                raise StanzaMalformed('Failed to decode preKeyPublic: %s' % error)
+                raise StanzaMalformed(
+                    'Failed to decode preKeyPublic: %s' % error)
 
             result['otpks'].append({'key': key, 'id': id_})
 

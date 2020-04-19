@@ -149,7 +149,9 @@ class IBB(BaseModule):
     @call_on_response('_default_response')
     def send_data(self, jid, sid, seq, data):
         iq = Iq('set', to=jid)
-        ibb_data = iq.addChild('data', {'sid': sid, 'seq': seq}, namespace=NS_IBB)
+        ibb_data = iq.addChild('data',
+                               {'sid': sid, 'seq': seq},
+                               namespace=NS_IBB)
         ibb_data.setData(b64encode(data))
         return iq
 

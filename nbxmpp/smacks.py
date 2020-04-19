@@ -109,8 +109,9 @@ class Smacks:
 
         self._location = stanza.getAttr('location')
         self.enabled = True
-        self._log.info('Received enabled, location: %s, resume supported: %s, '
-                       'session-id: %s', self._location, resume, self._session_id)
+        self._log.info(
+            'Received enabled, location: %s, resume supported: %s, '
+            'session-id: %s', self._location, resume, self._session_id)
 
     def count_incoming(self, name):
         if not self.enabled:
@@ -248,15 +249,17 @@ class Smacks:
         diff = self._out_h - count_server
         queue_size = len(queue)
         if diff < 0:
-            self._log.error('Mismatch detected, our h: %d, server h: %d, queue: %d',
-                            self._out_h, count_server, queue_size)
+            self._log.error(
+                'Mismatch detected, our h: %d, server h: %d, queue: %d',
+                self._out_h, count_server, queue_size)
             # Don't accumulate all messages in this case
             # (they would otherwise all be resent on the next reconnect)
             queue = []
 
         elif queue_size < diff:
-            self._log.error('Mismatch detected, our h: %d, server h: %d, queue: %d',
-                            self._out_h, count_server, queue_size)
+            self._log.error(
+                'Mismatch detected, our h: %d, server h: %d, queue: %d',
+                self._out_h, count_server, queue_size)
         else:
             self._log.debug('Validate ack, our h: %d, server h: %d, queue: %d',
                             self._out_h, count_server, queue_size)

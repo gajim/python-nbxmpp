@@ -274,8 +274,9 @@ class StanzaDispatcher(Observable):
         if not typ and not ns:
             typ = 'default'
 
-        self._log.debug('Register handler %s for "%s" type->%s ns->%s(%s) priority->%s',
-                        handler, name, typ, ns, xmlns, priority)
+        self._log.debug(
+            'Register handler %s for "%s" type->%s ns->%s(%s) priority->%s',
+            handler, name, typ, ns, xmlns, priority)
 
         if xmlns not in self._handlers:
             self._register_namespace(xmlns)
@@ -315,11 +316,13 @@ class StanzaDispatcher(Observable):
             try:
                 self._handlers[xmlns][name][specific].remove(handler_dict)
             except ValueError:
-                self._log.warning('Unregister failed: %s for "%s" type->%s ns->%s(%s)',
-                                  handler, name, typ, ns, xmlns)
+                self._log.warning(
+                    'Unregister failed: %s for "%s" type->%s ns->%s(%s)',
+                    handler, name, typ, ns, xmlns)
             else:
-                self._log.debug('Unregister handler %s for "%s" type->%s ns->%s(%s)',
-                                handler, name, typ, ns, xmlns)
+                self._log.debug(
+                    'Unregister handler %s for "%s" type->%s ns->%s(%s)',
+                    handler, name, typ, ns, xmlns)
 
     def _default_handler(self, stanza):
         """

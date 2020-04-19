@@ -430,7 +430,8 @@ class Client(Observable):
         else:
             self._set_error(StreamError.CONNECTION_FAILED,
                             'connection-failed',
-                            'Unable to connect to last successful address: %s' % str(self._current_address))
+                            (f'Unable to connect to last '
+                             'successful address: {self._current_address}'))
             self.notify('connection-failed')
 
     def _disconnect_with_error(self, error_domain, error, text=None):
@@ -475,11 +476,13 @@ class Client(Observable):
         return self._dispatcher.get_module(name)
 
     def _on_bad_certificate(self, connection, _signal_name):
-        self._peer_certificate, self._peer_certificate_errors = connection.peer_certificate
+        self._peer_certificate, self._peer_certificate_errors = \
+            connection.peer_certificate
         self._set_error(StreamError.BAD_CERTIFICATE, 'bad certificate')
 
     def _on_certificate_set(self, connection, _signal_name):
-        self._peer_certificate, self._peer_certificate_errors = connection.peer_certificate
+        self._peer_certificate, self._peer_certificate_errors = \
+            connection.peer_certificate
 
     def accept_certificate(self):
         self._log.info('Certificate accepted')

@@ -42,7 +42,8 @@ def _distance_line_from_origin(line):
 
 
 def _length_of_ray_until_intersect(theta, line):
-    return line['intercept'] / (math.sin(theta) - line['slope'] * math.cos(theta))
+    return line['intercept'] / (math.sin(theta) -
+                                line['slope'] * math.cos(theta))
 
 
 def _get_bounds(l):
@@ -64,7 +65,8 @@ def _get_bounds(l):
             t = _g1
             _g1 = _g1 + 1
             top1 = (284517 * m1 - 94839 * m3) * sub2
-            top2 = (838422 * m3 + 769860 * m2 + 731718 * m1) * l * sub2 - (769860 * t) * l
+            top2 = ((838422 * m3 + 769860 * m2 + 731718 * m1) *
+                    l * sub2 - (769860 * t) * l)
             bottom = (632260 * m3 - 126452 * m2) * sub2 + 126452 * t
             result.append({'slope': top1 / bottom, 'intercept': top2 / bottom})
     return result

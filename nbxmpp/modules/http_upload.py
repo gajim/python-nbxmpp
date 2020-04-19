@@ -70,11 +70,13 @@ class HTTPUpload(BaseModule):
         for header in slot.getTag('put').getTags('header'):
             name = header.getAttr('name')
             if name not in ALLOWED_HEADERS:
-                return raise_error(self._log.warning, stanza, 'stanza-malformed',
+                return raise_error(self._log.warning, stanza,
+                                   'stanza-malformed',
                                    'Not allowed header found: %s' % name)
             data = header.getData()
             if '\n' in data:
-                return raise_error(self._log.warning, stanza, 'stanza-malformed',
+                return raise_error(self._log.warning, stanza,
+                                   'stanza-malformed',
                                    'NNewline in header data found')
 
             headers[name] = data
