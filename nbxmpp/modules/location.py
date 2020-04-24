@@ -64,13 +64,11 @@ class Location(BaseModule):
 
     def set_location(self, data):
         item = Node('geoloc', {'xmlns': Namespace.LOCATION})
-        if data is None:
-            return
-
-        data = data._asdict()
-        for tag, value in data:
-            if value is not None:
-                item.addChild(tag, payload=value)
+        if data is not None:
+            data = data._asdict()
+            for tag, value in data:
+                if value is not None:
+                    item.addChild(tag, payload=value)
 
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(

@@ -64,13 +64,11 @@ class Tune(BaseModule):
 
     def set_tune(self, data):
         item = Node('tune', {'xmlns': Namespace.TUNE})
-        if data is None:
-            return
-
-        data = data._asdict()
-        for tag, value in data.items():
-            if value is not None:
-                item.addChild(tag, payload=value)
+        if data is not None:
+            data = data._asdict()
+            for tag, value in data.items():
+                if value is not None:
+                    item.addChild(tag, payload=value)
 
         jid = self._client.get_bound_jid().getBare()
         self._client.get_module('PubSub').publish(
