@@ -66,7 +66,7 @@ class Location(BaseModule):
         item = Node('geoloc', {'xmlns': Namespace.LOCATION})
         if data is not None:
             data = data._asdict()
-            for tag, value in data:
+            for tag, value in data.items():
                 if value is not None:
                     item.addChild(tag, payload=value)
 
