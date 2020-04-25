@@ -52,12 +52,15 @@ class EntityCaps(BaseModule):
         if self._caps is None:
             return
 
-        if self._node is not None:
-            if self._node != stanza.getQuerynode():
+        node = stanza.getQuerynode()
+        if node is not None:
+            if self._node != node:
                 return
 
         iq = stanza.buildReply('result')
-        iq.setQuerynode(self._node)
+        if node is not None:
+            iq.setQuerynode(node)
+
         query = iq.getQuery()
         for identity in self._caps.identities:
             query.addChild(node=identity.get_node())
