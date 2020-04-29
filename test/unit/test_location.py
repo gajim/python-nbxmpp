@@ -87,8 +87,8 @@ class LocationTest(StanzaHandlerTest):
         '''
 
         self.dispatcher.register_handler(
-            *StanzaHandler(name='message',
-                           callback=_on_message,
-                           ns=Namespace.PUBSUB_EVENT))
+            StanzaHandler(name='message',
+                          callback=_on_message,
+                          ns=Namespace.PUBSUB_EVENT))
 
         self.dispatcher.process_data(event)

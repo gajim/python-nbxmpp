@@ -183,7 +183,7 @@ class StanzaDispatcher(Observable):
 
         for instance in self._modules.values():
             for handler in instance.handlers:
-                self.register_handler(*handler)
+                self.register_handler(handler)
 
     def reset_parser(self):
         if self._parser is not None:
@@ -253,75 +253,69 @@ class StanzaDispatcher(Observable):
                         tag_name, xmlns, protocol)
         self._handlers[xmlns][tag_name] = {'type': protocol, 'default': []}
 
-    def register_handler(self, name, handler, typ='', ns='',
-                         xmlns=None, priority=50):
+    def register_handler(self, handler):
         """
         Register handler
-
-        :param name:     name of top level tag, example: iq, message, presence
-        :param handler:  callback
-        :param typ:      value of stanza's "type" attribute.
-                         If not specified any value will match
-        :param ns:       Namespace of child that stanza must contain
-        :param xmlns:    XML namespace, only needed if not jabber:client
-        :param priority: The priority of the handler, higher get called later
         """
 
-        if not xmlns:
-            xmlns = Namespace.CLIENT
+        xmlns = handler.xmlns or Namespace.CLIENT
 
-        if not typ and not ns:
+        typ = handler.typ
+        if not typ and not handler.ns:
             typ = 'default'
 
         self._log.debug(
             'Register handler %s for "%s" type->%s ns->%s(%s) priority->%s',
-            handler, name, typ, ns, xmlns, priority)
+            handler.callback, handler.name, typ, handler.ns,
+            xmlns, handler.priority
+        )
 
         if xmlns not in self._handlers:
             self._register_namespace(xmlns)
-        if name not in self._handlers[xmlns]:
-            self._register_protocol(name, Protocol, xmlns)
+        if handler.name not in self._handlers[xmlns]:
+            self._register_protocol(handler.name, Protocol, xmlns)
 
-        specific = typ + ns
-        if specific not in self._handlers[xmlns][name]:
-            self._handlers[xmlns][name][specific] = []
+        specific = typ + handler.ns
+        if specific not in self._handlers[xmlns][handler.name]:
+            self._handlers[xmlns][handler.name][specific] = []
 
-        self._handlers[xmlns][name][specific].append(
-            {'func': handler,
-             'priority': priority,
+        self._handlers[xmlns][handler.name][specific].append(
+            {'func': handler.callback,
+             'priority': handler.priority,
              'specific': specific})
 
-    def unregister_handler(self, name, handler, typ='', ns='', xmlns=None):
+    def unregister_handler(self, handler):
         """
         Unregister handler
         """
 
-        if not xmlns:
-            xmlns = Namespace.CLIENT
+        xmlns = handler.xmlns or Namespace.CLIENT
 
-        if not typ and not ns:
+        typ = handler.typ
+        if not typ and not handler.ns:
             typ = 'default'
 
-        specific = typ + ns
+        specific = typ + handler.ns
         try:
-            self._handlers[xmlns][name][specific]
+            self._handlers[xmlns][handler.name][specific]
         except KeyError:
             return
 
-        for handler_dict in self._handlers[xmlns][name][specific]:
-            if handler_dict['func'] != handler:
+        for handler_dict in self._handlers[xmlns][handler.name][specific]:
+            if handler_dict['func'] != handler.callback:
                 return
 
             try:
-                self._handlers[xmlns][name][specific].remove(handler_dict)
+                self._handlers[xmlns][handler.name][specific].remove(
+                    handler_dict)
             except ValueError:
                 self._log.warning(
                     'Unregister failed: %s for "%s" type->%s ns->%s(%s)',
-                    handler, name, typ, ns, xmlns)
+                    handler.callback, handler.name, typ, handler.ns, xmlns)
             else:
                 self._log.debug(
                     'Unregister handler %s for "%s" type->%s ns->%s(%s)',
-                    handler, name, typ, ns, xmlns)
+                    handler.callback, handler.name, typ, handler.ns, xmlns)
 
     def _default_handler(self, stanza):
         """

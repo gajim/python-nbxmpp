@@ -30,10 +30,10 @@ class PubsubTest(StanzaHandlerTest):
         '''
 
         self.dispatcher.register_handler(
-            *StanzaHandler(name='message',
-                           callback=_on_message,
-                           ns=Namespace.PUBSUB_EVENT,
-                           priority=16))
+            StanzaHandler(name='message',
+                          callback=_on_message,
+                          ns=Namespace.PUBSUB_EVENT,
+                          priority=16))
 
         self.dispatcher.process_data(event)
 
@@ -60,10 +60,10 @@ class PubsubTest(StanzaHandlerTest):
         '''
 
         self.dispatcher.register_handler(
-            *StanzaHandler(name='message',
-                           callback=_on_message,
-                           ns=Namespace.PUBSUB_EVENT,
-                           priority=16))
+            StanzaHandler(name='message',
+                          callback=_on_message,
+                          ns=Namespace.PUBSUB_EVENT,
+                          priority=16))
 
         self.dispatcher.process_data(event)
 
@@ -91,9 +91,9 @@ class PubsubTest(StanzaHandlerTest):
         '''
 
         self.dispatcher.register_handler(
-            *StanzaHandler(name='message',
-                           callback=_on_message,
-                           ns=Namespace.PUBSUB_EVENT,
-                           priority=16))
+            StanzaHandler(name='message',
+                          callback=_on_message,
+                          ns=Namespace.PUBSUB_EVENT,
+                          priority=16))
 
         self.dispatcher.process_data(event)

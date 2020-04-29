@@ -22,6 +22,7 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.simplexml import Node
 from nbxmpp.const import StreamState
 from nbxmpp.util import LogAdapter
+from nbxmpp.structs import StanzaHandler
 
 
 log = logging.getLogger('nbxmpp.smacks')
@@ -80,14 +81,23 @@ class Smacks:
             self._on_failed(None, stanza, None)
 
     def register_handlers(self):
-        self._client.register_handler(
-            'enabled', self._on_enabled, xmlns=Namespace.STREAM_MGMT)
-        self._client.register_handler(
-            'failed', self._on_failed, xmlns=Namespace.STREAM_MGMT)
-        self._client.register_handler(
-            'r', self._send_ack, xmlns=Namespace.STREAM_MGMT)
-        self._client.register_handler(
-            'a', self._on_ack, xmlns=Namespace.STREAM_MGMT)
+        handlers = [
+            StanzaHandler(name='enabled',
+                          callback=self._on_enabled,
+                          xmlns=Namespace.STREAM_MGMT),
+            StanzaHandler(name='failed',
+                          callback=self._on_failed,
+                          xmlns=Namespace.STREAM_MGMT),
+            StanzaHandler(name='r',
+                          callback=self._send_ack,
+                          xmlns=Namespace.STREAM_MGMT),
+            StanzaHandler(name='a',
+                          callback=self._on_ack,
+                          xmlns=Namespace.STREAM_MGMT)
+        ]
+
+        for handler in handlers:
+            self._client.register_handler(handler)
 
     def send_enable(self):
         if not self.sm_supported:
