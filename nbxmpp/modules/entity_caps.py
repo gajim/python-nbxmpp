@@ -36,6 +36,7 @@ class EntityCaps(BaseModule):
                           priority=15),
             StanzaHandler(name='iq',
                           callback=self._process_disco_info,
+                          typ='get',
                           ns=Namespace.DISCO_INFO,
                           priority=20),
         ]
@@ -68,7 +69,7 @@ class EntityCaps(BaseModule):
         for feature in self._caps.features:
             query.addChild('feature', attrs={'var': feature})
 
-        self._log.info('Respond with entity caps')
+        self._log.info('Respond with disco info')
         client.send_stanza(iq)
         raise NodeProcessed
 

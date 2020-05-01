@@ -47,6 +47,7 @@ class Discovery(BaseModule):
         self.handlers = [
             StanzaHandler(name='iq',
                           callback=self._process_disco_info,
+                          typ='get',
                           ns=Namespace.DISCO_INFO,
                           priority=90),
         ]
