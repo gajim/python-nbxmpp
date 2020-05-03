@@ -303,7 +303,7 @@ class StanzaDispatcher(Observable):
 
         for handler_dict in self._handlers[xmlns][handler.name][specific]:
             if handler_dict['func'] != handler.callback:
-                return
+                continue
 
             try:
                 self._handlers[xmlns][handler.name][specific].remove(
