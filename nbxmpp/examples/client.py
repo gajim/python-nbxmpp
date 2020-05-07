@@ -15,6 +15,7 @@ import nbxmpp
 from nbxmpp.protocol import JID
 from nbxmpp.client import Client
 from nbxmpp.structs import ProxyData
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.addresses import ServerAddress
 from nbxmpp.const import ConnectionType
 from nbxmpp.const import ConnectionProtocol
@@ -108,7 +109,7 @@ class TestClient(Gtk.Window):
         self._client.subscribe('stanza-sent', self._on_stanza_sent)
         self._client.subscribe('stanza-received', self._on_stanza_received)
 
-        self._client.register_handler('message', self._on_message)
+        self._client.register_handler(StanzaHandler('message', self._on_message))
 
     @property
     def password(self):
