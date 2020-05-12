@@ -81,6 +81,7 @@ class _Namespaces:
     IDLE: str = 'urn:xmpp:idle:1'
     JINGLE: str = 'urn:xmpp:jingle:1'
     JINGLE_BYTESTREAM: str = 'urn:xmpp:jingle:transports:s5b:1'
+    JINGLE_DTLS: str = 'urn:xmpp:jingle:apps:dtls:0'
     JINGLE_ERRORS: str = 'urn:xmpp:jingle:errors:1'
     JINGLE_FILE_TRANSFER: str = 'urn:xmpp:jingle:apps:file-transfer:3'
     JINGLE_FILE_TRANSFER_5: str = 'urn:xmpp:jingle:apps:file-transfer:5'
