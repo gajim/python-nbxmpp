@@ -161,6 +161,12 @@ class MUC(BaseModule):
             self._log.warning(stanza)
             raise NodeProcessed
 
+        if (properties.muc_user.role.is_none and
+                not properties.type.is_unavailable):
+            self._log.warning('Malformed Stanza')
+            self._log.warning(stanza)
+            raise NodeProcessed
+
     def _process_groupchat_message(self, _client, stanza, properties):
         properties.from_muc = True
         properties.muc_jid = properties.jid.copy()
