@@ -161,7 +161,8 @@ class MUC(BaseModule):
             self._log.warning(stanza)
             raise NodeProcessed
 
-        if (properties.muc_user.role.is_none and
+        if (properties.muc_user is not None and
+                properties.muc_user.role.is_none and
                 not properties.type.is_unavailable):
             self._log.warning('Malformed Stanza')
             self._log.warning(stanza)
