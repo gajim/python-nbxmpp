@@ -127,6 +127,8 @@ class TCPConnection(Connection):
         self._con.set_graceful_disconnect(True)
         self._con.get_socket().set_keepalive(True)
 
+        self._local_address = self._con.get_local_address()
+
         self.state = TCPState.CONNECTED
 
         use_proxy = self._address.proxy is not None

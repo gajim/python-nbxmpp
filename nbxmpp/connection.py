@@ -53,6 +53,7 @@ class Connection(Observable):
 
         self._client_cert = client_cert
         self._address = address
+        self._local_address = None
         self._state = None
 
         self._state = TCPState.DISCONNECTED
@@ -62,6 +63,10 @@ class Connection(Observable):
         self._accepted_certificates = accepted_certificates
         self._ignore_tls_errors = ignore_tls_errors
         self._ignored_tls_errors = ignored_tls_errors
+
+    @property
+    def local_address(self):
+        return self._local_address
 
     @property
     def peer_certificate(self):

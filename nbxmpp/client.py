@@ -112,6 +112,7 @@ class Client(Observable):
         self._peer_certificate_errors = None
 
         self._con = None
+        self._local_address = None
         self._mode = Mode.CLIENT
 
         self._ping_source_id = None
@@ -236,6 +237,10 @@ class Client(Observable):
     def set_state(self, state):
         self.state = state
         self._xmpp_state_machine()
+
+    @property
+    def local_address(self):
+        return self._local_address
 
     @property
     def connection_types(self):
@@ -411,8 +416,9 @@ class Client(Observable):
         # Alias for backwards compat
         return self.send_stanza(stanza)
 
-    def _on_connected(self, _connection, _signal_name):
+    def _on_connected(self, connection, _signal_name):
         self.set_state(StreamState.CONNECTED)
+        self._local_address = connection.local_address
 
     def _on_disconnected(self, _connection, _signal_name):
         self.state = StreamState.DISCONNECTED
