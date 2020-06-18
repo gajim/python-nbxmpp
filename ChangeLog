@@ -1,3 +1,14 @@
+python-nbxmpp 1.0.0 (18 June 2020)
+
+ * Library rewritten in most parts
+ * Replace BOSH with Websocket
+ * Add new example client
+ * Many other improvements
+ 
+ Known Issues:
+ 
+ * Currently no Client Cert support
+
 python-nbxmpp 0.6.8 (07 October 2018)
 
  * Reset SM counter after receiving <enabled>
