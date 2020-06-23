@@ -26,6 +26,7 @@ from nbxmpp.util import callback
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
 from nbxmpp.util import raise_error
+from nbxmpp.util import from_xs_boolean
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import OMEMOMessage
 from nbxmpp.structs import OMEMOBundle
@@ -111,7 +112,14 @@ class OMEMO(BaseModule):
             if rid is None:
                 raise StanzaMalformed('rid not found')
 
-            prekey = kn.getAttr('prekey') == 'true'
+            prekey = kn.getAttr('prekey')
+            if prekey is None:
+                prekey = False
+            else:
+                try:
+                    prekey = from_xs_boolean(prekey)
+                except ValueError as error:
+                    raise StanzaMalformed(error)
 
             try:
                 keys[int(rid)] = (b64decode(kn.getData(), bytes), prekey)
