@@ -244,6 +244,8 @@ class Client(Observable):
 
     @property
     def connection_types(self):
+        if self._custom_host is not None:
+            return [self._custom_host[2]]
         return list(self._allowed_con_types or [ConnectionType.DIRECT_TLS,
                                                 ConnectionType.START_TLS])
 
@@ -263,6 +265,8 @@ class Client(Observable):
 
     @property
     def protocols(self):
+        if self._custom_host is not None:
+            return [self._custom_host[1]]
         return list(self._allowed_protocols or [ConnectionProtocol.TCP,
                                                 ConnectionProtocol.WEBSOCKET])
 
