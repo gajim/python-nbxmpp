@@ -128,6 +128,7 @@ class _Namespaces:
     RECEIPTS: str = 'urn:xmpp:receipts'
     REGISTER: str = 'jabber:iq:register'
     REGISTER_FEATURE: str = 'http://jabber.org/features/iq-register'
+    REPORTING: str = 'urn:xmpp:reporting:0'
     ROSTER: str = 'jabber:iq:roster'
     ROSTERNOTES: str = 'storage:rosternotes'
     ROSTERX: str = 'http://jabber.org/protocol/rosterx'

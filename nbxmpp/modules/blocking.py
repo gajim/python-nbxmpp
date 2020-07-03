@@ -56,12 +56,16 @@ class Blocking(BaseModule):
         return BlockingListResult(blocking_list=blocked)
 
     @call_on_response('_default_response')
-    def block(self, jids):
+    def block(self, jids, report=None):
         self._log.info('Block: %s', jids)
         iq = Iq('set', Namespace.BLOCKING)
         query = iq.setQuery(name='block')
         for jid in jids:
-            query.addChild(name='item', attrs={'jid': jid})
+            item = query.addChild(name='item', attrs={'jid': jid})
+            if report in ('spam', 'abuse'):
+                action = item.addChild(name='report',
+                                       namespace=Namespace.REPORTING)
+                action.setTag(report)
         return iq
 
     @call_on_response('_default_response')
