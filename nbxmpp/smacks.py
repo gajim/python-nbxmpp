@@ -23,6 +23,7 @@ from nbxmpp.simplexml import Node
 from nbxmpp.const import StreamState
 from nbxmpp.util import LogAdapter
 from nbxmpp.structs import StanzaHandler
+from nbxmpp.protocol import Error
 
 
 log = logging.getLogger('nbxmpp.smacks')
@@ -139,7 +140,9 @@ class Smacks:
 
         # Make a full copy so we dont run into problems when
         # the stanza is modified after sending for some reason
-        stanza = type(stanza)(node=str(stanza))
+        # TODO: Make also copies of Protocol.Error objects
+        if not isinstance(stanza, Error):
+            stanza = type(stanza)(node=str(stanza))
 
         self._add_delay(stanza)
 
