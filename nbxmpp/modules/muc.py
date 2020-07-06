@@ -492,7 +492,7 @@ class MUC(BaseModule):
         else:
             invite = self._build_mediated_invite(
                 room, to, reason, password, continue_)
-        self._client.send_stanza(invite)
+        return self._client.send_stanza(invite)
 
     @staticmethod
     def _build_direct_invite(room, to, reason, password, continue_):
