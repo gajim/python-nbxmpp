@@ -1,6 +1,15 @@
-python-nbxmpp 1.0.1 (TBA)
+python-nbxmpp 1.1.0 (07 July 2020)
+
+ New
+
+ * Add XEP-0377 support
+ * MUC: Return message id when using inivite()
+
+ Bugfixes
 
  * OMEMO: Correctly parse prekey value
+ * Client: Determine protocol and type correctly if a custom host is used
+ * Smacks: Don't fail on saving error replies
 
 python-nbxmpp 1.0.0 (18 June 2020)
 
