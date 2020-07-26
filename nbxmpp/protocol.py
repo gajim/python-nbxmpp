@@ -735,7 +735,7 @@ def validate_domainpart(domainpart):
         domainpart = domainpart[:-1]
 
     try:
-        domainpart = idna.encode(domainpart)
+        domainpart = idna.encode(domainpart, uts46=True)
     except Exception:
         raise DomainpartNotAllowedChar
 
