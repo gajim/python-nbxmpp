@@ -103,6 +103,10 @@ class Smacks:
     def send_enable(self):
         if not self.sm_supported:
             return
+
+        if self._client.sm_disabled:
+            return
+
         enable = Node(Namespace.STREAM_MGMT + ' enable', attrs={'resume': 'true'})
         self._client.send_nonza(enable, now=False)
         self._log.debug('Send enable')

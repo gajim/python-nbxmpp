@@ -95,6 +95,8 @@ class Client(Observable):
         self._allowed_protocols = None
         self._allowed_mechs = None
 
+        self._sm_disabled = False
+
         self._stream_id = None
         self._stream_secure = False
         self._stream_authenticated = False
@@ -272,6 +274,13 @@ class Client(Observable):
 
     def set_protocols(self, protocols):
         self._allowed_protocols = protocols
+
+    def set_sm_disabled(self, value):
+        self._sm_disabled = value
+
+    @property
+    def sm_disabled(self):
+        return self._sm_disabled
 
     @property
     def client_cert(self):
