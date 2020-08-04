@@ -24,6 +24,11 @@ from nbxmpp.modules.base import BaseModule
 
 
 class Tune(BaseModule):
+
+    _depends = {
+        'publish': 'PubSub'
+    }
+
     def __init__(self, client):
         BaseModule.__init__(self, client)
 
@@ -70,6 +75,4 @@ class Tune(BaseModule):
                 if value is not None:
                     item.addChild(tag, payload=value)
 
-        jid = self._client.get_bound_jid().bare
-        self._client.get_module('PubSub').publish(
-            jid, Namespace.TUNE, item, id_='current')
+        self.publish(Namespace.TUNE, item, id_='current')

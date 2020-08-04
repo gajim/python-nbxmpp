@@ -73,10 +73,6 @@ StanzaIDData.__new__.__defaults__ = (None, None)
 PubSubEventData = namedtuple('PubSubEventData', 'node id item data deleted retracted purged')
 PubSubEventData.__new__.__defaults__ = (None, None, None, False, False, False)
 
-PubSubConfigResult = namedtuple('PubSubConfigResult', 'jid node form')
-
-PubSubPublishResult = namedtuple('PubSubPublishResult', 'jid node id')
-
 MoodData = namedtuple('MoodData', 'mood text')
 
 ActivityData = namedtuple('ActivityData', 'activity subactivity text')

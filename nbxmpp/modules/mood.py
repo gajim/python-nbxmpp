@@ -25,6 +25,11 @@ from nbxmpp.modules.base import BaseModule
 
 
 class Mood(BaseModule):
+
+    _depends = {
+        'publish': 'PubSub'
+    }
+
     def __init__(self, client):
         BaseModule.__init__(self, client)
 
@@ -80,6 +85,4 @@ class Mood(BaseModule):
             if data.text:
                 item.addChild('text', payload=data.text)
 
-        jid = self._client.get_bound_jid().bare
-        self._client.get_module('PubSub').publish(
-            jid, Namespace.MOOD, item, id_='current')
+        self.publish(Namespace.MOOD, item, id_='current')

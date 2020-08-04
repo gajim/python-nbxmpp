@@ -23,6 +23,11 @@ from nbxmpp.modules.base import BaseModule
 
 
 class Nickname(BaseModule):
+
+    _depends = {
+        'publish': 'PubSub'
+    }
+
     def __init__(self, client):
         BaseModule.__init__(self, client)
 
@@ -87,6 +92,5 @@ class Nickname(BaseModule):
         item = Node('nick', {'xmlns': Namespace.NICK})
         if nickname is not None:
             item.addData(nickname)
-        jid = self._client.get_bound_jid().bare
-        self._client.get_module('PubSub').publish(
-            jid, Namespace.NICK, item, id_='current')
+
+        self.publish(Namespace.NICK, item, id_='current')

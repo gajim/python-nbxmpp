@@ -30,11 +30,9 @@ from nbxmpp.util import to_xs_boolean
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
-from nbxmpp.util import is_error_result
 from nbxmpp.modules.pubsub import get_pubsub_item
 from nbxmpp.modules.pubsub import get_pubsub_items
 from nbxmpp.modules.pubsub import get_pubsub_request
-from nbxmpp.modules.pubsub import get_publish_options
 from nbxmpp.modules.base import BaseModule
 
 
@@ -47,13 +45,19 @@ BOOKMARK_2_OPTIONS = {
     'pubsub#notify_delete': 'true',
     'pubsub#notify_retract': 'true',
     'pubsub#persist_items': 'true',
-    'pubsub#max_items': '128',
+    'pubsub#max_items': 'max',
     'pubsub#access_model': 'whitelist',
     'pubsub#send_last_published_item': 'never',
 }
 
 
 class Bookmarks(BaseModule):
+
+    _depends = {
+        'retract': 'PubSub',
+        'publish': 'PubSub',
+    }
+
     def __init__(self, client):
         BaseModule.__init__(self, client)
 
@@ -71,8 +75,6 @@ class Bookmarks(BaseModule):
 
         self._bookmark_2_queue = {}
         self._bookmark_1_queue = []
-        self._node_configuration_in_progress = False
-        self._node_configuration_not_possible = False
 
     def _process_pubsub_bookmarks(self, _client, stanza, properties):
         if not properties.is_pubsub_event:
@@ -315,115 +317,44 @@ class Bookmarks(BaseModule):
 
     def retract_bookmark(self, bookmark_jid):
         self._log.info('Retract Bookmark: %s', bookmark_jid)
-        jid = self._client.get_bound_jid().bare
-        self._client.get_module('PubSub').retract(jid,
-                                                  Namespace.BOOKMARKS_2,
-                                                  str(bookmark_jid))
+
+        self.retract(Namespace.BOOKMARKS_2, str(bookmark_jid))
 
     def _store_bookmark_1(self, bookmarks):
         self._log.info('Store Bookmarks 1 (PubSub)')
-        jid = self._client.get_bound_jid().bare
+
         self._bookmark_1_queue = bookmarks
         item = self._build_storage_node(bookmarks)
-        options = get_publish_options(BOOKMARK_1_OPTIONS)
-        self._client.get_module('PubSub').publish(
-            jid,
-            Namespace.BOOKMARKS,
-            item,
-            id_='current',
-            options=options,
-            callback=self._on_store_bookmark_result,
-            user_data=Namespace.BOOKMARKS)
+        self.publish(Namespace.BOOKMARKS,
+                     item,
+                     id_='current',
+                     options=BOOKMARK_1_OPTIONS,
+                     force_node_options=True,
+                     callback=self._on_store_bookmark_result,
+                     user_data=Namespace.BOOKMARKS)
 
     def _store_bookmark_2(self, bookmarks):
-        if self._node_configuration_not_possible:
-            self._log.warning('Node configuration not possible')
-            return
-
         self._log.info('Store Bookmarks 2 (PubSub)')
-        jid = self._client.get_bound_jid().bare
+
         for bookmark in bookmarks:
             self._bookmark_2_queue[bookmark.jid] = bookmark
             item = self._build_conference_node(bookmark)
-            options = get_publish_options(BOOKMARK_2_OPTIONS)
-            self._client.get_module('PubSub').publish(
-                jid,
-                Namespace.BOOKMARKS_2,
-                item,
-                id_=str(bookmark.jid),
-                options=options,
-                callback=self._on_store_bookmark_result,
-                user_data=Namespace.BOOKMARKS_2)
+            self.publish(Namespace.BOOKMARKS_2,
+                         item,
+                         id_=str(bookmark.jid),
+                         options=BOOKMARK_2_OPTIONS,
+                         force_node_options=True,
+                         callback=self._on_store_bookmark_result,
+                         user_data=Namespace.BOOKMARKS_2)
 
-    def _on_store_bookmark_result(self, result, node):
-        if not is_error_result(result):
-            self._bookmark_1_queue = []
-            self._bookmark_2_queue.pop(result.id, None)
-            return
+    def _on_store_bookmark_result(self, task):
+        try:
+            result = task.finish()
+        except Exception as error:
+            self._log.warning(error)
 
-        if (result.condition == 'conflict' and
-                result.app_condition == 'precondition-not-met'):
-            if self._node_configuration_in_progress:
-                return
-
-            self._node_configuration_in_progress = True
-            jid = self._client.get_bound_jid().bare
-            self._client.get_module('PubSub').get_node_configuration(
-                jid,
-                node,
-                callback=self._on_node_configuration_received)
-
-        else:
-            self._bookmark_1_queue = []
-            self._bookmark_2_queue.pop(result.id, None)
-            self._log.warning(result)
-
-    def _on_node_configuration_received(self, result):
-        if is_error_result(result):
-            self._log.warning(result)
-            self._bookmark_1_queue = []
-            self._bookmark_2_queue.clear()
-            return
-
-        if result.node == Namespace.BOOKMARKS:
-            config = BOOKMARK_1_OPTIONS
-        else:
-            config = BOOKMARK_2_OPTIONS
-        self._apply_config(result.form, config)
-        self._client.get_module('PubSub').set_node_configuration(
-            result.jid,
-            result.node,
-            result.form,
-            callback=self._on_node_configuration_finished)
-
-    def _on_node_configuration_finished(self, result):
-        self._node_configuration_in_progress = False
-        if is_error_result(result):
-            self._log.warning(result)
-            self._bookmark_2_queue.clear()
-            self._bookmark_1_queue = []
-            self._node_configuration_not_possible = True
-            return
-
-        self._log.info('Republish bookmarks')
-        if self._bookmark_2_queue:
-            bookmarks = self._bookmark_2_queue.copy()
-            self._bookmark_2_queue.clear()
-            self._store_bookmark_2(bookmarks.values())
-        else:
-            bookmarks = self._bookmark_1_queue.copy()
-            self._bookmark_1_queue.clear()
-            self._store_bookmark_1(bookmarks)
-
-    @staticmethod
-    def _apply_config(form, config):
-        for var, value in config.items():
-            try:
-                field = form[var]
-            except KeyError:
-                pass
-            else:
-                field.value = value
+        self._bookmark_1_queue = []
+        self._bookmark_2_queue.pop(result.id, None)
 
     @call_on_response('_on_private_store_result')
     def _store_with_private(self, bookmarks):

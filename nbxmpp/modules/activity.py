@@ -25,6 +25,11 @@ from nbxmpp.modules.base import BaseModule
 
 
 class Activity(BaseModule):
+
+    _depends = {
+        'publish': 'PubSub'
+    }
+
     def __init__(self, client):
         BaseModule.__init__(self, client)
 
@@ -91,6 +96,4 @@ class Activity(BaseModule):
             if data.text:
                 item.addChild('text', payload=data.text)
 
-        jid = self._client.get_bound_jid().bare
-        self._client.get_module('PubSub').publish(
-            jid, Namespace.ACTIVITY, item, id_='current')
+        self.publish(Namespace.ACTIVITY, item, id_='current')

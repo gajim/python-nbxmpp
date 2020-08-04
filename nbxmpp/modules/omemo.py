@@ -35,6 +35,11 @@ from nbxmpp.modules.base import BaseModule
 
 
 class OMEMO(BaseModule):
+
+    _depends = {
+        'publish': 'PubSub'
+    }
+
     def __init__(self, client):
         BaseModule.__init__(self, client)
 
@@ -192,9 +197,8 @@ class OMEMO(BaseModule):
             item.addChild('device').setAttr('id', device)
 
         self._log.info('Set devicelist: %s', devicelist)
-        jid = self._client.get_bound_jid().bare
-        self._client.get_module('PubSub').publish(
-            jid, Namespace.OMEMO_TEMP_DL, item, id_='current')
+
+        self.publish(Namespace.OMEMO_TEMP_DL, item, id_='current')
 
     @call_on_response('_devicelist_received')
     def request_devicelist(self, jid=None):
@@ -225,9 +229,8 @@ class OMEMO(BaseModule):
         self._log.info('Set bundle')
 
         node = '%s:%s' % (Namespace.OMEMO_TEMP_BUNDLE, device_id)
-        jid = self._client.get_bound_jid().bare
-        self._client.get_module('PubSub').publish(
-            jid, node, item, id_='current')
+
+        self.publish(node, item, id_='current')
 
     @staticmethod
     def _create_bundle(bundle):

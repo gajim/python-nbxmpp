@@ -38,6 +38,11 @@ from nbxmpp.modules.base import BaseModule
 
 
 class OpenPGP(BaseModule):
+
+    _depends = {
+        'publish': 'PubSub'
+    }
+
     def __init__(self, client):
         BaseModule.__init__(self, client)
 
@@ -154,9 +159,8 @@ class OpenPGP(BaseModule):
                 item.addChild('pubkey-metadata', attrs=attrs)
 
         self._log.info('Set keylist: %s', keylist)
-        jid = self._client.get_bound_jid().bare
-        self._client.get_module('PubSub').publish(
-            jid, Namespace.OPENPGP_PK, item, id_='current')
+
+        self.publish(Namespace.OPENPGP_PK, item, id_='current')
 
     def set_public_key(self, key, fingerprint, date):
         date = time.strftime(
@@ -168,9 +172,8 @@ class OpenPGP(BaseModule):
         node = '%s:%s' % (Namespace.OPENPGP_PK, fingerprint)
 
         self._log.info('Set public key')
-        jid = self._client.get_bound_jid().bare
-        self._client.get_module('PubSub').publish(
-            jid, node, item, id_='current')
+
+        self.publish(node, item, id_='current')
 
     @call_on_response('_public_key_received')
     def request_public_key(self, jid, fingerprint):
@@ -274,9 +277,8 @@ class OpenPGP(BaseModule):
             item.setData(b64encode(secret_key))
 
         self._log.info('Set secret key')
-        jid = self._client.get_bound_jid().bare
-        self._client.get_module('PubSub').publish(
-            jid, Namespace.OPENPGP_SK, item, id_='current')
+
+        self.publish(Namespace.OPENPGP_SK, item, id_='current')
 
 
 def parse_signcrypt(stanza):

@@ -1,4 +1,4 @@
-# Copyright (C) 2018 Philipp Hörist <philipp AT hoerist.com>
+# Copyright (C) 2020 Philipp Hörist <philipp AT hoerist.com>
 #
 # This file is part of nbxmpp.
 #
@@ -15,20 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Node
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import isResultNode
+from collections import namedtuple
+
+from nbxmpp.task import iq_request_task
+from nbxmpp.errors import is_error
+from nbxmpp.errors import PubSubStanzaError
+from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import PubSubEventData
-from nbxmpp.structs import CommonResult
-from nbxmpp.structs import PubSubConfigResult
-from nbxmpp.structs import PubSubPublishResult
-from nbxmpp.modules.dataforms import extend_form
-from nbxmpp.util import call_on_response
-from nbxmpp.util import callback
-from nbxmpp.util import raise_error
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import Node
+from nbxmpp.namespaces import Namespace
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import process_response
+from nbxmpp.modules.dataforms import extend_form
 
 
 class PubSub(BaseModule):
@@ -84,107 +84,101 @@ class PubSub(BaseModule):
             id_ = item.getAttr('id')
             properties.pubsub_event = PubSubEventData(node, id_, item)
 
-    @call_on_response('_publish_result_received')
-    def publish(self, jid, node, item, id_=None, options=None):
-        query = Iq('set', to=jid)
-        pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
-        publish = pubsub.addChild('publish', {'node': node})
-        attrs = {}
-        if id_ is not None:
-            attrs = {'id': id_}
-        publish.addChild('item', attrs, [item])
-        if options:
-            publish = pubsub.addChild('publish-options')
-            publish.addChild(node=options)
-        return query
+    @iq_request_task
+    def request_item(self, node, id_, jid=None):
+        task = yield
 
-    @callback
-    def _publish_result_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.warning, stanza)
+        response = yield _make_pubsub_request(node, id_=id_, jid=jid)
 
-        jid = stanza.getFrom()
-        pubsub = stanza.getTag('pubsub', namespace=Namespace.PUBSUB)
-        if pubsub is None:
-            # XEP-0060: IQ payload is not mandatory on result
-            return PubSubPublishResult(jid, None, None)
+        if response.isError():
+            raise PubSubStanzaError(response)
 
-        publish = pubsub.getTag('publish')
-        if publish is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed')
+        item = _get_pubsub_item(response, node, id_)
+        yield task.set_result(item)
 
-        node = publish.getAttr('node')
-        item = publish.getTag('item')
-        if item is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed')
+    @iq_request_task
+    def request_items(self, node, max_items=None, jid=None):
+        _task = yield
 
-        id_ = item.getAttr('id')
-        return PubSubPublishResult(jid, node, id_)
+        response = yield _make_pubsub_request(node,
+                                              max_items=max_items,
+                                              jid=jid)
 
-    @call_on_response('_default_response')
-    def retract(self, jid, node, id_, notify=True):
-        query = Iq('set', to=jid)
-        pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
-        attrs = {'node': node}
-        if notify:
-            attrs['notify'] = 'true'
-        retract = pubsub.addChild('retract', attrs=attrs)
-        retract.addChild('item', {'id': id_})
-        return query
+        if response.isError():
+            raise PubSubStanzaError(response)
 
-    @call_on_response('_default_response')
-    def set_node_configuration(self, jid, node, form):
-        self._log.info('Set configuration for %s %s', node, jid)
-        query = Iq('set', to=jid)
-        pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB_OWNER)
-        configure = pubsub.addChild('configure', {'node': node})
-        form.setAttr('type', 'submit')
-        configure.addChild(node=form)
-        return query
+        yield _get_pubsub_items(response, node)
 
-    @call_on_response('_node_configuration_received')
-    def get_node_configuration(self, jid, node):
-        self._log.info('Request node configuration')
-        query = Iq('get', to=jid)
-        pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB_OWNER)
-        pubsub.addChild('configure', {'node': node})
-        return query
+    @iq_request_task
+    def publish(self,
+                node,
+                item,
+                id_=None,
+                options=None,
+                jid=None,
+                force_node_options=False):
 
-    @callback
-    def _node_configuration_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.warning, stanza)
+        _task = yield
 
-        jid = stanza.getFrom()
-        pubsub = stanza.getTag('pubsub', namespace=Namespace.PUBSUB_OWNER)
-        if pubsub is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed',
-                               'No pubsub node found')
+        request = _make_publish_request(node, item, id_, options, jid)
+        response = yield request
 
-        configure = pubsub.getTag('configure')
-        if configure is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed',
-                               'No configure node found')
+        if response.isError():
+            error = PubSubStanzaError(response)
+            if (not force_node_options or
+                    error.app_condition != 'precondition-not-met'):
+                raise error
 
-        node = configure.getAttr('node')
+            result = yield self.reconfigure_node(node, options, jid)
+            if is_error(result):
+                raise result
 
-        forms = configure.getTags('x', namespace=Namespace.DATA)
-        for form in forms:
-            dataform = extend_form(node=form)
-            form_type = dataform.vars.get('FORM_TYPE')
-            if form_type is None or form_type.value != Namespace.PUBSUB_CONFIG:
-                continue
-            self._log.info('Node configuration received from: %s', jid)
-            return PubSubConfigResult(jid=jid, node=node, form=dataform)
+            response = yield request
+            if response.isError():
+                raise PubSubStanzaError(response)
 
-        return raise_error(self._log.warning, stanza, 'stanza-malformed',
-                           'No valid form type found')
+        jid = response.getFrom()
+        item_id = _get_published_item_id(response, node, id_)
+        yield PubSubPublishResult(jid, node, item_id)
 
-    @callback
-    def _default_response(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
-        return CommonResult(jid=stanza.getFrom())
+    @iq_request_task
+    def retract(self, node, id_, jid=None, notify=True):
+        _task = yield
+
+        response = yield _make_retract_request(node, id_, jid, notify)
+        yield process_response(response)
+
+    @iq_request_task
+    def reconfigure_node(self, node, options, jid=None):
+        _task = yield
+
+        result = yield self.get_node_configuration(node, jid)
+        if is_error(result):
+            raise result
+
+        _apply_options(result.form, options)
+        result = yield self.set_node_configuration(node, result.form, jid)
+        yield result
+
+    @iq_request_task
+    def set_node_configuration(self, node, form, jid=None):
+        _task = yield
+
+        response = yield _make_node_configuration(node, form, jid)
+        yield process_response(response)
+
+    @iq_request_task
+    def get_node_configuration(self, node, jid=None):
+        _task = yield
+
+        response = yield _make_node_configuration_request(node, jid)
+
+        if response.isError():
+            raise PubSubStanzaError(response)
+
+        jid = response.getFrom()
+        form = _get_configure_form(response, node)
+        yield PubSubNodeConfigurationResult(jid=jid, node=node, form=form)
 
 
 def get_pubsub_request(jid, node, id_=None, max_items=None):
@@ -225,3 +219,171 @@ def get_publish_options(config):
         field = options.addChild('field', attrs={'var': var})
         field.setTagData('value', value)
     return options
+
+
+def _get_pubsub_items(response, node):
+    pubsub_node = response.getTag('pubsub', namespace=Namespace.PUBSUB)
+    if pubsub_node is None:
+        raise MalformedStanzaError('pubsub node missing', response)
+
+    items_node = pubsub_node.getTag('items')
+    if items_node is None:
+        raise MalformedStanzaError('items node missing', response)
+
+    if items_node.getAttr('node') != node:
+        raise MalformedStanzaError('invalid node attr', response)
+
+    return items_node.getTags('item')
+
+
+def _get_pubsub_item(response, node, id_):
+    items = _get_pubsub_items(response, node)
+
+    if len(items) > 1:
+        raise MalformedStanzaError('multiple items found', response)
+
+    if not items:
+        return None
+
+    item = items[0]
+    if item.getAttr('id') != id_:
+        raise MalformedStanzaError('invalid item id', response)
+
+    return item
+
+
+def _make_pubsub_request(node, id_=None, max_items=None, jid=None):
+    query = Iq('get', to=jid)
+    pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
+    items = pubsub.addChild('items', {'node': node})
+    if max_items is not None:
+        items.setAttr('max_items', max_items)
+    if id_ is not None:
+        items.addChild('item', {'id': id_})
+    return query
+
+
+def _get_configure_form(response, node):
+    pubsub = response.getTag('pubsub', namespace=Namespace.PUBSUB_OWNER)
+    if pubsub is None:
+        raise MalformedStanzaError('pubsub node missing', response)
+
+    configure = pubsub.getTag('configure')
+    if configure is None:
+        raise MalformedStanzaError('configure node missing', response)
+
+    if node != configure.getAttr('node'):
+        raise MalformedStanzaError('invalid node attribute', response)
+
+    forms = configure.getTags('x', namespace=Namespace.DATA)
+    for form in forms:
+        dataform = extend_form(node=form)
+        form_type = dataform.vars.get('FORM_TYPE')
+        if form_type is None or form_type.value != Namespace.PUBSUB_CONFIG:
+            continue
+
+        return dataform
+
+    raise MalformedStanzaError('no valid form type found', response)
+
+
+def _get_published_item_id(response, node, id_):
+    pubsub = response.getTag('pubsub', namespace=Namespace.PUBSUB)
+    if pubsub is None:
+        # https://xmpp.org/extensions/xep-0060.html#publisher-publish-success
+        # If the publish request did not include an ItemID,
+        # the IQ-result SHOULD include an empty <item/> element
+        # that specifies the ItemID of the published item.
+        #
+        # If the server did not add a payload we assume the item was
+        # published with the id we requested
+        return id_
+
+    publish = pubsub.getTag('publish')
+    if publish is None:
+        raise MalformedStanzaError('publish node missing', response)
+
+    if node != publish.getAttr('node'):
+        raise MalformedStanzaError('invalid node attribute', response)
+
+    item = publish.getTag('item')
+    if item is None:
+        raise MalformedStanzaError('item node missing', response)
+
+    item_id = item.getAttr('id')
+    if id_ is not None and item_id != id_:
+        raise MalformedStanzaError('invalid item id', response)
+
+    return item_id
+
+
+def _make_publish_request(node, item, id_, options, jid):
+    query = Iq('set', to=jid)
+    pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
+    publish = pubsub.addChild('publish', {'node': node})
+    attrs = {}
+    if id_ is not None:
+        attrs = {'id': id_}
+    publish.addChild('item', attrs, [item])
+    if options:
+        publish = pubsub.addChild('publish-options')
+        publish.addChild(node=_make_publish_options(options))
+    return query
+
+
+def _make_publish_options(options):
+    data = Node(Namespace.DATA + ' x', attrs={'type': 'submit'})
+    field = data.addChild('field', attrs={'var': 'FORM_TYPE', 'type': 'hidden'})
+    field.setTagData('value', Namespace.PUBSUB_PUBLISH_OPTIONS)
+
+    for var, value in options.items():
+        field = data.addChild('field', attrs={'var': var})
+        field.setTagData('value', value)
+    return data
+
+
+def _make_retract_request(node, id_, jid, notify):
+    query = Iq('set', to=jid)
+    pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
+    attrs = {'node': node}
+    if notify:
+        attrs['notify'] = 'true'
+    retract = pubsub.addChild('retract', attrs=attrs)
+    retract.addChild('item', {'id': id_})
+    return query
+
+
+def _make_node_configuration(node, form, jid):
+    query = Iq('set', to=jid)
+    pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB_OWNER)
+    configure = pubsub.addChild('configure', {'node': node})
+    form.setAttr('type', 'submit')
+    configure.addChild(node=form)
+    return query
+
+
+def _make_node_configuration_request(node, jid):
+    query = Iq('get', to=jid)
+    pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB_OWNER)
+    pubsub.addChild('configure', {'node': node})
+    return query
+
+
+def _apply_options(form, options):
+    for var, value in options.items():
+        try:
+            field = form[var]
+        except KeyError:
+            pass
+        else:
+            field.value = value
+
+
+PubSubNodeConfigurationResult = namedtuple('PubSubConfigResult',
+                                           'jid node form')
+
+PubSubConfigResult = namedtuple('PubSubConfigResult',
+                                'jid node form')
+
+PubSubPublishResult = namedtuple('PubSubPublishResult',
+                                 'jid node id')
