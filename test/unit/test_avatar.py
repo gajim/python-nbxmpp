@@ -2,27 +2,27 @@ from test.lib.util import StanzaHandlerTest
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import AvatarMetaData
 from nbxmpp.structs import PubSubEventData
-
+from nbxmpp.modules.user_avatar import AvatarMetaData
+from nbxmpp.modules.user_avatar import AvatarInfo
 
 class AvatarTest(StanzaHandlerTest):
 
     def test_avatar_parsing(self):
         def _on_message(_con, _stanza, properties):
+            info = AvatarInfo(bytes='12345',
+                              height='64',
+                              width='64',
+                              id='111f4b3c50d7b0df729d299bc6f8e9ef9066971f',
+                              type='image/png',
+                              url='http://avatars.example.org/happy.gif')
 
-            data = AvatarMetaData(bytes='12345',
-                                  height='64',
-                                  width='64',
-                                  id='111f4b3c50d7b0df729d299bc6f8e9ef9066971f',
-                                  type='image/png',
-                                  url='http://avatars.example.org/happy.gif')
-
+            metadata = AvatarMetaData(infos=[info])
             pubsub_event = PubSubEventData(
                 node='urn:xmpp:avatar:metadata',
                 id='111f4b3c50d7b0df729d299bc6f8e9ef9066971f',
                 item=None,
-                data=data,
+                data=metadata,
                 deleted=False,
                 retracted=False,
                 purged=False)

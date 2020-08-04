@@ -80,12 +80,6 @@ ActivityData = namedtuple('ActivityData', 'activity subactivity text')
 LocationData = namedtuple('LocationData', LOCATION_DATA)
 LocationData.__new__.__defaults__ = (None,) * len(LocationData._fields)
 
-AvatarMetaData = namedtuple('AvatarMetaData', 'bytes height width id type url')
-AvatarMetaData.__new__.__defaults__ = (None,) * len(AvatarMetaData._fields)
-
-AvatarData = namedtuple('AvatarData', 'jid sha data')
-AvatarData.__new__.__defaults__ = (None,) * len(AvatarData._fields)
-
 BookmarkData = namedtuple('BookmarkData', 'jid name nick autojoin password')
 BookmarkData.__new__.__defaults__ = (None, None, None, None)
 

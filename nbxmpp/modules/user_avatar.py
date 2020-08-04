@@ -15,22 +15,37 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import base64
+from typing import List
+from typing import Dict
+
+import hashlib
+from dataclasses import dataclass
+from dataclasses import asdict
+from dataclasses import field
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import isResultNode
+from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import AvatarMetaData
-from nbxmpp.structs import AvatarData
-from nbxmpp.util import call_on_response
-from nbxmpp.util import callback
-from nbxmpp.util import raise_error
-from nbxmpp.modules.pubsub import get_pubsub_request
+from nbxmpp.structs import CommonResult
+from nbxmpp.util import b64encode
+from nbxmpp.util import b64decode
+from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.task import iq_request_task
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import raise_if_error
+from nbxmpp.modules.util import finalize
 
 
 class UserAvatar(BaseModule):
+
+    _depends = {
+        'get_node_configuration': 'PubSub',
+        'set_node_configuration': 'PubSub',
+        'publish': 'PubSub',
+        'request_item': 'PubSub',
+    }
+
     def __init__(self, client):
         BaseModule.__init__(self, client)
 
@@ -65,11 +80,10 @@ class UserAvatar(BaseModule):
                            properties.jid)
             return
 
-        info = metadata.getTags('info', one=True)
         try:
-            data = AvatarMetaData(**info.getAttrs())
-        except Exception:
-            self._log.warning('Malformed user avatar data')
+            data = AvatarMetaData.from_node(metadata)
+        except Exception as error:
+            self._log.warning('Malformed user avatar data: %s', error)
             self._log.warning(stanza)
             raise NodeProcessed
 
@@ -79,42 +93,255 @@ class UserAvatar(BaseModule):
 
         properties.pubsub_event = pubsub_event
 
-    @call_on_response('_avatar_data_received')
-    def request_avatar(self, jid, id_):
-        return get_pubsub_request(jid, Namespace.AVATAR_DATA, id_=id_)
+    @iq_request_task
+    def request_avatar(self, avatar_info, jid=None):
+        task = yield
 
-    @callback
-    def _avatar_data_received(self, stanza):
-        jid = stanza.getFrom()
-        if jid is None:
-            jid = self._client.get_bound_jid().bare
+        item = yield self.request_item(Namespace.AVATAR_DATA,
+                                       id_=avatar_info.id,
+                                       jid=jid)
 
-        if not isResultNode(stanza):
-            return raise_error(self._log.warning, stanza)
+        raise_if_error(item)
 
-        pubsub_node = stanza.getTag('pubsub')
-        items_node = pubsub_node.getTag('items')
-        item = items_node.getTag('item')
         if item is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed',
-                               'No item in node found')
+            yield task.set_result(None)
 
-        sha = item.getAttr('id')
-        data_node = item.getTag('data', namespace=Namespace.AVATAR_DATA)
-        if data_node is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed',
-                               'No data node found')
+        yield _get_avatar_data(item, avatar_info.id)
 
-        data = data_node.getData()
-        if data is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed',
-                               'Data node empty')
+    @iq_request_task
+    def set_avatar(self, avatar, public=False):
+
+        task = yield
+
+        if avatar is None:
+            result = yield self._publish_avatar_metadata(None)
+            yield finalize(task, result)
+
+        access_model = 'open' if public else 'presence'
+
+        result = yield self._publish_avatar(avatar, access_model)
+
+        yield finalize(task, result)
+
+    @iq_request_task
+    def _publish_avatar(self, avatar, access_model):
+        task = yield
+
+        options = {
+            'pubsub#persist_items': 'true',
+            'pubsub#access_model': access_model,
+        }
+
+        for info, data in avatar.pubsub_avatar_info():
+            item = _make_avatar_data_node(data)
+            self._log.info('Publish avatar data: %s, %s', info, access_model)
+
+            result = yield self.publish(Namespace.AVATAR_DATA,
+                                        item,
+                                        id_=info.id,
+                                        options=options,
+                                        force_node_options=True)
+
+            raise_if_error(result)
+
+        result = yield self._publish_avatar_metadata(avatar.metadata)
+
+        yield finalize(task, result)
+
+    @iq_request_task
+    def _publish_avatar_metadata(self, metadata):
+        task = yield
+
+        self._log.info('Publish avatar meta data: %s', metadata)
+
+        result = yield self.publish(Namespace.AVATAR_METADATA,
+                                    metadata.to_node(),
+                                    id_='current')
+
+        yield finalize(task, result)
+
+    @iq_request_task
+    def get_access_model(self):
+        _task = yield
+
+        self._log.info('Request access model')
+
+        result = yield self.get_node_configuration(Namespace.AVATAR_DATA)
+
+        raise_if_error(result)
+
+        yield result.form['pubsub#access_model'].value
+
+    @iq_request_task
+    def set_access_model(self, model):
+        task = yield
+
+        if model not in ('open', 'presence'):
+            raise ValueError('Invalid access model')
+
+        result = yield self.get_node_configuration(Namespace.AVATAR_DATA)
+
+        raise_if_error(result)
 
         try:
-            data = base64.b64decode(data.encode('utf-8'))
-        except Exception as error:
-            return raise_error(self._log.warning, stanza,
-                               'stanza-malformed', str(error))
+            access_model = result.form['pubsub#access_model'].value
+        except Exception:
+            yield task.set_error('warning',
+                                 condition='access-model-not-supported')
 
-        self._log.info('Received avatar data: %s %s', jid, sha)
-        return AvatarData(jid, sha, data)
+        if access_model == model:
+            jid = self._client.get_bound_jid().new_as_bare()
+            yield CommonResult(jid=jid)
+
+        result.form['pubsub#access_model'].value = model
+
+        self._log.info('Set access model %s', model)
+
+        result = yield self.set_node_configuration(Namespace.AVATAR_DATA,
+                                                   result.form)
+
+        yield finalize(task, result)
+
+
+def _get_avatar_data(item, id_):
+    data_node = item.getTag('data', namespace=Namespace.AVATAR_DATA)
+    if data_node is None:
+        raise MalformedStanzaError('data node missing', item)
+
+    data = data_node.getData()
+    if not data:
+        raise MalformedStanzaError('data node empty', item)
+
+    try:
+        avatar = b64decode(data, return_type=bytes)
+    except Exception as error:
+        raise MalformedStanzaError(f'decoding error: {error}', item)
+
+    avatar_sha = hashlib.sha1(avatar).hexdigest()
+    if avatar_sha != id_:
+        raise MalformedStanzaError(f'avatar does not match sha', item)
+
+    return AvatarData(data=avatar, sha=avatar_sha)
+
+
+def _make_metadata_node(infos):
+    item = Node('metadata', attrs={'xmlns': Namespace.AVATAR_METADATA})
+    for info in infos:
+        item.addChild('info', attrs=info.to_dict())
+    return item
+
+
+def _make_avatar_data_node(avatar):
+    item = Node('data', attrs={'xmlns': Namespace.AVATAR_DATA})
+    item.setData(b64encode(avatar.data))
+    return item
+
+
+def _get_info_attrs(avatar, avatar_sha, height, width):
+    info_attrs = {
+        'id': avatar_sha,
+        'bytes': len(avatar),
+        'type': 'image/png',
+    }
+
+    if height is not None:
+        info_attrs['height'] = height
+
+    if width is not None:
+        info_attrs['width'] = width
+
+    return info_attrs
+
+
+@dataclass
+class AvatarInfo:
+    bytes: int
+    id: str
+    type: str
+    url: str = None
+    height: int = None
+    width: int = None
+
+    def __post_init__(self):
+        if self.bytes is None:
+            raise ValueError
+        if self.id is None:
+            raise ValueError
+        if self.type is None:
+            raise ValueError
+
+        self.bytes = int(self.bytes)
+
+        if self.height is not None:
+            self.height = int(self.height)
+        if self.width is not None:
+            self.width = int(self.width)
+
+    def to_dict(self):
+        info_dict = asdict(self)
+        if self.height is None:
+            info_dict.pop('height')
+        if self.width is None:
+            info_dict.pop('width')
+        if self.url is None:
+            info_dict.pop('url')
+        return info_dict
+
+
+@dataclass
+class AvatarData:
+    data: bytes
+    sha: str
+
+
+@dataclass
+class AvatarMetaData:
+    infos: List[AvatarInfo] = field(default_factory=list)
+
+    @classmethod
+    def from_node(cls, node):
+        infos = []
+        info_nodes = node.getTags('info')
+        for info in info_nodes:
+            infos.append(AvatarInfo(
+                bytes=info.getAttr('bytes'),
+                id=info.getAttr('id'),
+                type=info.getAttr('type'),
+                url=info.getAttr('url'),
+                height=info.getAttr('height'),
+                width=info.getAttr('width')
+            ))
+        return cls(infos=infos)
+
+    def add_avatar_info(self, avatar_info):
+        self.infos.append(avatar_info)
+
+    def to_node(self):
+        return _make_metadata_node(self.infos)
+
+    @property
+    def avatar_shas(self):
+        return [info.id for info in self.infos]
+
+
+@dataclass
+class Avatar:
+    metadata: AvatarMetaData = field(default_factory=AvatarMetaData)
+    data: Dict[AvatarInfo, bytes] = field(init=False, default_factory=dict)
+
+    def add_image_source(self, data, type_, height, width, url=None):
+        sha = hashlib.sha1(data).hexdigest()
+        info = AvatarInfo(bytes=len(data),
+                          id=sha,
+                          type=type_,
+                          height=height,
+                          width=width,
+                          url=url)
+        self.metadata.add_avatar_info(info)
+        self.data[info] = AvatarData(data=data, sha=sha)
+
+    def pubsub_avatar_info(self):
+        for info, data in self.data.items():
+            if info.url is not None:
+                continue
+            yield info, data
