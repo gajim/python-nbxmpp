@@ -119,6 +119,7 @@ class Client(Observable):
         self._mode = Mode.CLIENT
 
         self._ping_source_id = None
+        self._tasks = []
 
         self._dispatcher = StanzaDispatcher(self)
         self._dispatcher.subscribe('before-dispatch', self._on_before_dispatch)
@@ -129,6 +130,15 @@ class Client(Observable):
         self._sasl = SASL(self)
 
         self._state = StreamState.DISCONNECTED
+
+    def add_task(self, task):
+        self._tasks.append(task)
+
+    def remove_task(self, task, _context):
+        try:
+            self._tasks.remove(task)
+        except Exception:
+            pass
 
     @property
     def log_context(self):
@@ -447,6 +457,8 @@ class Client(Observable):
 
     def _on_disconnected(self, _connection, _signal_name):
         self.state = StreamState.DISCONNECTED
+        for task in self._tasks:
+            task.cancel()
         self._remove_ping_timer()
         self._dispatcher.remove_ping_callback(self._ping_id)
         self._reset_stream()
@@ -833,6 +845,8 @@ class Client(Observable):
         self._dispatcher.unregister_handler(*args, **kwargs)
 
     def destroy(self):
+        for task in self._tasks:
+            task.cancel()
         self._remove_ping_timer()
         self._smacks = None
         self._sasl = None

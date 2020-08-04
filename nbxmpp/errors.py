@@ -104,3 +104,12 @@ class MalformedStanzaError(BaseError):
         BaseError.__init__(self, is_fatal=is_fatal)
         self.stanza = stanza
         self.text = str(text)
+
+
+class CancelledError(BaseError):
+
+    log_level = 'info'
+
+    def __init__(self):
+        BaseError.__init__(self, is_fatal=True)
+        self.text = 'Task has been cancelled'
