@@ -121,6 +121,7 @@ class _Namespaces:
     PUBKEY_PUBKEY: str = 'urn:xmpp:pubkey:2'
     PUBKEY_REVOKE: str = 'urn:xmpp:revoke:2'
     PUBSUB: str = 'http://jabber.org/protocol/pubsub'
+    PUBSUB_ERROR: str = 'http://jabber.org/protocol/pubsub#errors'
     PUBSUB_CONFIG: str = 'http://jabber.org/protocol/pubsub#node_config'
     PUBSUB_EVENT: str = 'http://jabber.org/protocol/pubsub#event'
     PUBSUB_OWNER: str = 'http://jabber.org/protocol/pubsub#owner'
