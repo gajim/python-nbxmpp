@@ -1072,6 +1072,12 @@ class Protocol(Node):
         if timestamp is not None:
             self.setTimestamp(timestamp)
 
+    def isError(self):
+        return self.getAttr('type') == 'error'
+
+    def isResult(self):
+        return self.getAttr('type') == 'result'
+
     def getTo(self):
         """
         Return value of the 'to' attribute
