@@ -193,8 +193,6 @@ class Client(Observable):
         return self._ignore_tls_errors
 
     def set_ignore_tls_errors(self, ignore):
-        if ignore is None:
-            ignore = []
         self._ignore_tls_errors = ignore
 
     def set_password(self, password):
