@@ -146,6 +146,7 @@ class _Namespaces:
     STREAM: str = 'http://affinix.com/jabber/stream'
     STREAMS: str = 'http://etherx.jabber.org/streams'
     STREAM_MGMT: str = 'urn:xmpp:sm:3'
+    STYLING: str = 'urn:xmpp:styling:0'
     TIME_REVISED: str = 'urn:xmpp:time'
     TLS: str = 'urn:ietf:params:xml:ns:xmpp-tls'
     TUNE: str = 'http://jabber.org/protocol/tune'
