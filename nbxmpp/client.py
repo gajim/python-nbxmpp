@@ -107,7 +107,7 @@ class Client(Observable):
         self._ping_id = None
         self._error = None, None, None
 
-        self._ignored_tls_errors = []
+        self._ignored_tls_errors = set()
         self._ignore_tls_errors = False
         self._accepted_certificates = []
         self._peer_certificate = None
@@ -186,6 +186,8 @@ class Client(Observable):
         return self._ignored_tls_errors
 
     def set_ignored_tls_errors(self, errors):
+        if errors is None:
+            errors = set()
         self._ignored_tls_errors = errors
 
     @property
