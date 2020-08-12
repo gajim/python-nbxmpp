@@ -83,12 +83,12 @@ class TCPConnection(Connection):
 
     def _on_event(self, _socket_client, event, _connectable, connection):
         if event == Gio.SocketClientEvent.CONNECTING:
-            remote_address = connection.get_remote_address()
+            self._remote_address = connection.get_remote_address().to_string()
             use_proxy = self._address.proxy is not None
             target = 'proxy' if use_proxy else self._address.domain
             self._log.info('Connecting to %s (%s)',
                            target,
-                           remote_address.to_string())
+                           self._remote_address)
 
     def _check_certificate(self, _connection, certificate, errors):
         self._peer_certificate = certificate
