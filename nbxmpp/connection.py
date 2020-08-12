@@ -54,6 +54,7 @@ class Connection(Observable):
         self._client_cert = client_cert
         self._address = address
         self._local_address = None
+        self._remote_address = None
         self._state = None
 
         self._state = TCPState.DISCONNECTED
@@ -67,6 +68,10 @@ class Connection(Observable):
     @property
     def local_address(self):
         return self._local_address
+
+    @property
+    def remote_address(self):
+        return self._remote_address
 
     @property
     def peer_certificate(self):

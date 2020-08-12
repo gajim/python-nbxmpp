@@ -115,6 +115,7 @@ class Client(Observable):
 
         self._con = None
         self._local_address = None
+        self._remote_address = None
         self._mode = Mode.CLIENT
 
         self._ping_source_id = None
@@ -209,6 +210,10 @@ class Client(Observable):
         return self._peer_certificate, self._peer_certificate_errors
 
     @property
+    def current_address(self):
+        return self._current_address
+
+    @property
     def current_connection_type(self):
         return self._current_address.type
 
@@ -245,6 +250,10 @@ class Client(Observable):
     @property
     def local_address(self):
         return self._local_address
+
+    @property
+    def remote_address(self):
+        return self._remote_address
 
     @property
     def connection_types(self):
@@ -434,6 +443,7 @@ class Client(Observable):
     def _on_connected(self, connection, _signal_name):
         self.set_state(StreamState.CONNECTED)
         self._local_address = connection.local_address
+        self._remote_address = connection.remote_address
 
     def _on_disconnected(self, _connection, _signal_name):
         self.state = StreamState.DISCONNECTED
