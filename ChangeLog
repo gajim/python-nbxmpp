@@ -1,3 +1,17 @@
+python-nbxmpp 1.0.2 (14 August 2020)
+
+ New
+
+ * Client: Expose more information about the connection
+ * Client: set_ignored_tls_errors() allow to pass None
+ * Add method to disable stream management
+
+ Bugfixes
+
+ * TCP: Set input/output closed on finalize()
+ * TCP: Catch Runtime error
+ * Perform UTS46 mapping on domain names
+
 python-nbxmpp 1.0.1 (07 July 2020)
 
  New
