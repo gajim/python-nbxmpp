@@ -365,6 +365,8 @@ class TCPConnection(Connection):
                 self._con.get_socket().shutdown(True, True)
             except GLib.Error as error:
                 self._log.info(error)
+        self._input_closed = True
+        self._output_closed = True
         self.state = TCPState.DISCONNECTED
         self.notify(signal_name)
         self.destroy()

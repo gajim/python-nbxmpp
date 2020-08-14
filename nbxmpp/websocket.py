@@ -169,6 +169,8 @@ class WebsocketConnection(Connection):
         self._output_closed = True
 
     def _finalize(self, signal_name):
+        self._input_closed = True
+        self._output_closed = True
         self.state = TCPState.DISCONNECTED
         self.notify(signal_name)
         self.destroy()
