@@ -286,6 +286,13 @@ class TCPConnection(Connection):
             self._log.error('Write Error: %s', error)
             return
 
+        except RuntimeError as error:
+            # PyGObject raises a RuntimeError when it failed to for some reason
+            # to convert the GError. Why it failed to convert is printed by
+            # PyGObject
+            self._log.error(error)
+            return
+
         data = data.decode()
         self._log_stanza(data, received=False)
 
