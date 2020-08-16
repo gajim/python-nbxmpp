@@ -717,8 +717,9 @@ def validate_domainpart(domainpart):
     if not domainpart:
         raise DomainpartByteLimit
 
-    if GLib.hostname_is_ip_address(domainpart):
-        return domainpart
+    ip_address = domainpart.strip('[]')
+    if GLib.hostname_is_ip_address(ip_address):
+        return ip_address
 
     if domainpart.endswith('.'):  # RFC7622, 3.2
         domainpart = domainpart[:-1]
