@@ -20,9 +20,10 @@ sub- stanzas) handling routines
 
 import time
 import hashlib
-import socket
 import functools
 from base64 import b64encode
+
+from gi.repository import GLib
 
 import idna
 from precis_i18n import get_profile
@@ -716,20 +717,8 @@ def validate_domainpart(domainpart):
     if not domainpart:
         raise DomainpartByteLimit
 
-    # Check if this is a IPV4 address
-    try:
-        socket.inet_aton(domainpart)
+    if GLib.hostname_is_ip_address(domainpart):
         return domainpart
-    except Exception:
-        pass
-
-    # Check if this is a IPV6 address
-    if domainpart.startswith('[') and domainpart.endswith(']'):
-        try:
-            socket.inet_pton(socket.AF_INET6, domainpart.strip('[]'))
-            return domainpart
-        except Exception:
-            pass
 
     if domainpart.endswith('.'):  # RFC7622, 3.2
         domainpart = domainpart[:-1]
