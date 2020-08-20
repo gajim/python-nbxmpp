@@ -21,6 +21,7 @@ from nbxmpp.protocol import Node
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import validate_resourcepart
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import BookmarkData
 from nbxmpp.const import BookmarkStoreType
@@ -129,61 +130,75 @@ class Bookmarks(BaseModule):
         bookmarks = []
         confs = storage.getTags('conference')
         for conf in confs:
-            autojoin = conf.getAttr('autojoin')
-            if autojoin is None:
-                autojoin = False
-            else:
-                try:
-                    autojoin = from_xs_boolean(autojoin)
-                except ValueError as error:
-                    self._log.warning(error)
-                    self._log.warning(storage)
-                    autojoin = False
-
             try:
                 jid = JID(conf.getAttr('jid'))
             except Exception as error:
-                self._log.warning('Invalid JID: %s, %s',
-                                  conf.getAttr('jid'), error)
+                self._log.warning('Invalid JID: "%s", %s',
+                                  conf.getAttr('jid'),
+                                  error)
                 continue
+
+            autojoin = self._parse_autojoin(conf.getAttr('autojoin'))
+            nick = self._parse_nickname(conf.getTagData('nick'))
+            name = conf.getAttr('name') or None
+            password = conf.getTagData('password') or None
 
             bookmark = BookmarkData(
                 jid=jid,
-                name=conf.getAttr('name'),
+                name=name,
                 autojoin=autojoin,
-                password=conf.getTagData('password'),
-                nick=conf.getTagData('nick'))
+                password=password,
+                nick=nick)
             bookmarks.append(bookmark)
 
         return bookmarks
 
     def _parse_bookmarks2(self, item):
-        jid = item.getAttr('id')
-        if jid is None:
-            self._log.warning('No id attr found')
-            return None
-
-        try:
-            jid = JID(jid)
-        except Exception as error:
-            self._log.warning('Invalid JID: %s', error)
-            self._log.warning(item)
-            return None
-
         conference = item.getTag('conference', namespace=Namespace.BOOKMARKS_2)
         if conference is None:
             self._log.warning('No conference node found')
             self._log.warning(item)
             return None
 
-        autojoin = conference.getAttr('autojoin') in ('True', 'true', '1')
-        name = conference.getAttr('name')
-        nick = conference.getTagData('nick')
+        try:
+            jid = JID(item.getAttr('id'))
+        except Exception as error:
+            self._log.warning('Invalid JID: "%s", %s',
+                              item.getAttr('id'),
+                              error)
+            return None
+
+        autojoin = self._parse_autojoin(conference.getAttr('autojoin'))
+        nick = self._parse_nickname(conference.getTagData('nick'))
+        name = conference.getAttr('name') or None
+        password = conference.getTagData('password') or None
 
         return BookmarkData(jid=jid,
-                            name=name or None,
+                            name=name,
                             autojoin=autojoin,
-                            nick=nick or None)
+                            password=password,
+                            nick=nick)
+
+    def _parse_nickname(self, nick):
+        if nick is None:
+            return None
+
+        try:
+            return validate_resourcepart(nick)
+        except Exception as error:
+            self._log.warning('Invalid nick: %s, %s', nick, error)
+            return None
+
+    def _parse_autojoin(self, autojoin):
+        if autojoin is None:
+            return False
+
+        try:
+            return from_xs_boolean(autojoin)
+        except ValueError as error:
+            self._log.warning('Invalid autojoin attribute: (%s) %s',
+                              autojoin, error)
+            return False
 
     @staticmethod
     def get_private_request():
