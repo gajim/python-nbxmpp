@@ -21,7 +21,9 @@ sub- stanzas) handling routines
 import time
 import hashlib
 import functools
+import warnings
 from base64 import b64encode
+from collections import namedtuple
 
 from gi.repository import GLib
 
@@ -659,33 +661,11 @@ stream_exceptions = {'bad-format': BadFormat,
                      'xml-not-well-formed': XMLNotWellFormed}
 
 
+def deprecation_warning(message):
+    warnings.warn(message, DeprecationWarning)
+
+
 @functools.lru_cache(maxsize=None)
-def parse_jid(jid):
-    # https://tools.ietf.org/html/rfc7622#section-3.2
-
-    # Remove any portion from the first '/' character to the end of the
-    # string (if there is a '/' character present).
-
-    # Remove any portion from the beginning of the string to the first
-    # '@' character (if there is an '@' character present).
-
-    if jid.find('/') != -1:
-        rest, resourcepart = jid.split('/', 1)
-        resourcepart = validate_resourcepart(resourcepart)
-    else:
-        rest, resourcepart = jid, ''
-
-    if rest.find('@') != -1:
-        localpart, domainpart = rest.split('@', 1)
-        localpart = validate_localpart(localpart)
-    else:
-        localpart, domainpart = '', rest
-
-    domainpart = validate_domainpart(domainpart)
-    return localpart, domainpart, resourcepart
-
-
-@functools.lru_cache(maxsize=32768)
 def validate_localpart(localpart):
     if not localpart or len(localpart.encode()) > 1023:
         raise LocalpartByteLimit
@@ -700,7 +680,7 @@ def validate_localpart(localpart):
         raise LocalpartNotAllowedChar
 
 
-@functools.lru_cache(maxsize=32768)
+@functools.lru_cache(maxsize=None)
 def validate_resourcepart(resourcepart):
     if not resourcepart or len(resourcepart.encode()) > 1023:
         raise ResourcepartByteLimit
@@ -712,7 +692,7 @@ def validate_resourcepart(resourcepart):
         raise ResourcepartNotAllowedChar
 
 
-@functools.lru_cache(maxsize=4096)
+@functools.lru_cache(maxsize=None)
 def validate_domainpart(domainpart):
     if not domainpart:
         raise DomainpartByteLimit
@@ -729,167 +709,176 @@ def validate_domainpart(domainpart):
         domainpart = domainpart[:-1]
 
     try:
-        idna.encode(domainpart, uts46=True)
+        idna_encode(domainpart)
     except Exception:
         raise DomainpartNotAllowedChar
 
     return domainpart
 
 
-class JID:
-    """
-    JID can be built from string, modified, compared, serialised into string
-    """
+@functools.lru_cache(maxsize=None)
+def idna_encode(domain):
+    return idna.encode(domain, uts46=True)
 
-    def __init__(self, jid=None, node='', domain='', resource=''):
-        """
-        JID can be specified as string (jid argument) or as separate parts
 
-        Examples:
-        JID('node@domain/resource')
-        JID(node='node',domain='domain.org')
-        """
-        if not jid and not domain:
-            raise ValueError('JID must contain at least domain name')
+class JID(namedtuple('JID',
+                     ['jid', 'localpart', 'domain', 'resource'])):
 
-        if isinstance(jid, JID):
-            self.node, self.domain = jid.node, jid.domain
-            self.resource = jid.resource
-        elif domain:
-            self.node, self.domain, self.resource = node, domain, resource
+    __slots__ = []
+
+    def __new__(cls, jid=None, localpart=None, domain=None, resource=None):
+        if jid is not None:
+            deprecation_warning('JID(jid) is deprecated, use from_string()')
+            return JID.from_string(str(jid))
+
+        if localpart is not None:
+            localpart = validate_localpart(localpart)
+
+        domain = validate_domainpart(domain)
+
+        if resource is not None:
+            resource = validate_resourcepart(resource)
+
+        return super().__new__(cls, None, localpart, domain, resource)
+
+    @classmethod
+    @functools.lru_cache(maxsize=None)
+    def from_string(cls, jid_string):
+        # https://tools.ietf.org/html/rfc7622#section-3.2
+
+        # Remove any portion from the first '/' character to the end of the
+        # string (if there is a '/' character present).
+
+        # Remove any portion from the beginning of the string to the first
+        # '@' character (if there is an '@' character present).
+
+        if jid_string.find('/') != -1:
+            rest, resourcepart = jid_string.split('/', 1)
         else:
-            self.node, self.domain, self.resource = parse_jid(jid)
+            rest, resourcepart = jid_string, None
 
-    def copy(self):
-        return JID(self)
+        if rest.find('@') != -1:
+            localpart, domainpart = rest.split('@', 1)
+        else:
+            localpart, domainpart = None, rest
 
-    def getNode(self):
-        """
-        Return the node part of the JID
-        """
-        return self.node
-
-    def setNode(self, node):
-        """
-        Set the node part of the JID to new value. Specify None to remove
-        the node part
-        """
-        self.node = node.lower()
-
-    def getDomain(self):
-        """
-        Return the domain part of the JID
-        """
-        return self.domain
-
-    def setDomain(self, domain):
-        """
-        Set the domain part of the JID to new value
-        """
-        self.domain = domain.lower()
-
-    def getResource(self):
-        """
-        Return the resource part of the JID
-        """
-        return self.resource
-
-    def setResource(self, resource):
-        """
-        Set the resource part of the JID to new value.
-        Specify None to remove the resource part
-        """
-        self.resource = resource
-
-    def getStripped(self):
-        """
-        Return the bare representation of JID. I.e. string value w/o resource
-        """
-        if not self.node:
-            return self.domain
-        return '%s@%s' % (self.node, self.domain)
-
-    def getBare(self):
-        """
-        Return the bare representation of JID. I.e. string value w/o resource
-        """
-        if not self.node:
-            return self.domain
-        return '%s@%s' % (self.node, self.domain)
-
-    def setBare(self):
-        """
-        Deletes the resource which makes the JID bare
-        """
-        self.resource = ''
-
-    @property
-    def isBare(self):
-        return self.node and self.domain and not self.resource
-
-    @property
-    def isDomain(self):
-        return self.domain and not self.node and not self.resource
-
-    @property
-    def isFull(self):
-        return bool(self.domain and self.node and self.resource)
-
-    def __eq__(self, other):
-        """
-        Compare the JID to another instance or to string for equality
-        """
-        if not isinstance(other, JID):
-            try:
-                other = JID(other)
-            except Exception:
-                return False
-
-        return (self.node == other.node and
-                self.domain == other.domain and
-                self.resource == other.resource)
-
-    def __ne__(self, other):
-        """
-        Compare the JID to another instance or to string for non-equality
-        """
-        return not self.__eq__(other)
-
-    def bareMatch(self, other):
-        """
-        Compare the node and domain parts of the JID's for equality
-        """
-        if not isinstance(other, JID):
-            try:
-                other = JID(other)
-            except Exception:
-                return False
-
-        return (self.node == other.node and
-                self.domain == other.domain)
+        return cls(jid=None,
+                   localpart=localpart,
+                   domain=domainpart,
+                   resource=resourcepart)
 
     def __str__(self):
-        """
-        Serialise JID into string
-        """
-        if self.node:
-            jid = '%s@%s' % (self.node, self.domain)
+        if self.localpart:
+            jid = f'{self.localpart}@{self.domain}'
         else:
             jid = self.domain
 
         if self.resource:
-            return '%s/%s' % (jid, self.resource)
+            return f'{jid}/{self.resource}'
         return jid
 
     def __hash__(self):
-        """
-        Produce hash of the JID, Allows to use JID objects as keys of the
-        dictionary
-        """
         return hash(str(self))
 
-    def __repr__(self):
-        return str(self)
+    def __eq__(self, other):
+        if isinstance(other, str):
+            deprecation_warning('comparing string with JID is deprected')
+            try:
+                return JID.from_string(other) == self
+            except Exception:
+                return False
+        return super().__eq__(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    @property
+    def ace_domain(self):
+        return idna_encode(self.domain)
+
+    @property
+    def bare(self):
+        if self.localpart is not None:
+            return f'{self.localpart}@{self.domain}'
+        return self.domain
+
+    @property
+    def is_bare(self):
+        return self.resource is None
+
+    def new_as_bare(self):
+        if self.resource is None:
+            return self
+        return self._replace(resource=None)
+
+    def bare_match(self, other):
+        if isinstance(other, str):
+            other = JID.from_string(other)
+        return self.bare == other.bare
+
+    @property
+    def is_domain(self):
+        return self.localpart is None and self.resource is None
+
+    @property
+    def is_full(self):
+        return (self.localpart is not None and
+                self.domain is not None and
+                self.resource is not None)
+
+    def new_with(self, **kwargs):
+        return self._replace(**kwargs)
+
+    def bareMatch(self, other):
+        deprecation_warning('bareMatch() is deprected use bare_match()')
+        return self.bare_match(other)
+
+    @property
+    def isBare(self):
+        deprecation_warning('isBare() is deprected use '
+                            'the attribute is_bare')
+        return self.is_bare
+
+    @property
+    def isDomain(self):
+        deprecation_warning('isDomain() is deprected use '
+                            'the attribute is_domain')
+        return self.is_domain
+
+    @property
+    def isFull(self):
+        deprecation_warning('isFull() is deprected use '
+                            'the attribute is_full')
+        return self.is_full
+
+    def copy(self):
+        deprecation_warning('copy() is not needed, JID is immutable')
+        return self
+
+    def getNode(self):
+        deprecation_warning('getNode() is deprected use '
+                            'the attribute localpart')
+        return self.localpart
+
+    def getDomain(self):
+        deprecation_warning('getDomain() is deprected use '
+                            'the attribute domain')
+        return self.domain
+
+    def getResource(self):
+        deprecation_warning('getResource() is deprected use '
+                            'the attribute resource')
+        return self.resource
+
+    def getStripped(self):
+        deprecation_warning('getStripped() is deprected use '
+                            'the attribute bare')
+        return self.bare
+
+    def getBare(self):
+        deprecation_warning('getBare() is deprected use '
+                            'the attribute bare')
+        return self.bare
 
 
 class StreamErrorNode(Node):
