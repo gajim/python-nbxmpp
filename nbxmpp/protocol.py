@@ -721,19 +721,19 @@ def validate_domainpart(domainpart):
     if GLib.hostname_is_ip_address(ip_address):
         return ip_address
 
+    length = len(domainpart.encode())
+    if length == 0 or length > 1023:
+        raise DomainpartByteLimit
+
     if domainpart.endswith('.'):  # RFC7622, 3.2
         domainpart = domainpart[:-1]
 
     try:
-        domainpart = idna.encode(domainpart, uts46=True)
+        idna.encode(domainpart, uts46=True)
     except Exception:
         raise DomainpartNotAllowedChar
 
-    length = len(domainpart)
-    if length == 0 or length > 1023:
-        raise DomainpartByteLimit
-
-    return domainpart.decode()
+    return domainpart
 
 
 class JID:
