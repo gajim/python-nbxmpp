@@ -13,12 +13,12 @@ class BookmarkTest(StanzaHandlerTest):
         def _on_message(_con, _stanza, properties):
 
             data = [
-                BookmarkData(jid=JID('theplay@conference.shakespeare.lit'),
+                BookmarkData(jid=JID.from_string('theplay@conference.shakespeare.lit'),
                              name='The Play\'s the Thing',
                              autojoin=True,
                              password='pass',
                              nick='JC'),
-                BookmarkData(jid=JID('second@conference.shakespeare.lit'),
+                BookmarkData(jid=JID.from_string('second@conference.shakespeare.lit'),
                              name='Second room',
                              autojoin=False,
                              password=None,
@@ -71,7 +71,7 @@ class BookmarkTest(StanzaHandlerTest):
     def test_bookmark_2_parsing(self):
         def _on_message(_con, _stanza, properties):
 
-            data = BookmarkData(jid=JID('theplay@conference.shakespeare.lit'),
+            data = BookmarkData(jid=JID.from_string('theplay@conference.shakespeare.lit'),
                                 name='The Play\'s the Thing',
                                 autojoin=True,
                                 password=None,

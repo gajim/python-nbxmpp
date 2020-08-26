@@ -47,18 +47,18 @@ class Delay(BaseModule):
             # to indicate when the user has set the subject,
             # the 'from' attr on these delays is the MUC server
             # but we treat it as user timestamp
-            jids = [properties.jid.getBare(),
-                    properties.jid.getDomain()]
+            jids = [properties.jid.bare,
+                    properties.jid.domain]
 
             properties.user_timestamp = parse_delay(stanza, from_=jids)
 
         else:
             if properties.from_muc:
                 # Some servers use the MUC JID, others the domain
-                jids = [properties.jid.getBare(),
-                        properties.jid.getDomain()]
+                jids = [properties.jid.bare,
+                        properties.jid.domain]
             else:
-                jids = [self._client.get_bound_jid().getDomain()]
+                jids = [self._client.get_bound_jid().domain]
 
             server_delay = parse_delay(stanza, from_=jids)
             if server_delay is not None:

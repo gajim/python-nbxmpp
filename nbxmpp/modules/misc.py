@@ -38,7 +38,7 @@ def unwrap_carbon(stanza, own_jid):
             return stanza, None
 
     # Carbon must be from our bare jid
-    if not stanza.getFrom() == own_jid.getBare():
+    if stanza.getFrom() != own_jid.new_as_bare():
         raise InvalidFrom('Invalid from: %s' % stanza.getAttr('from'))
 
     forwarded = carbon.getTag('forwarded', namespace=Namespace.FORWARD)
@@ -49,14 +49,14 @@ def unwrap_carbon(stanza, own_jid):
     # Fill missing to/from
     to = message.getTo()
     if to is None:
-        message.setTo(own_jid.getBare())
+        message.setTo(own_jid.bare)
 
     frm = message.getFrom()
     if frm is None:
-        message.setFrom(own_jid.getBare())
+        message.setFrom(own_jid.bare)
 
     if type_ == 'received':
-        if message.getFrom().bareMatch(own_jid):
+        if message.getFrom().bare_match(own_jid):
             # Drop 'received' Carbons from ourself, we already
             # got the message with the 'sent' Carbon or via the
             # message itself
@@ -95,11 +95,11 @@ def unwrap_mam(stanza, own_jid):
     # Fill missing to/from
     to = message.getTo()
     if to is None:
-        message.setTo(own_jid.getBare())
+        message.setTo(own_jid.bare)
 
     frm = message.getFrom()
     if frm is None:
-        message.setFrom(own_jid.getBare())
+        message.setFrom(own_jid.bare)
 
     # Timestamp parsing
     # Most servers dont set the 'from' attr, so we cant check for it

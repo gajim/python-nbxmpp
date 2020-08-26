@@ -1,6 +1,7 @@
 import unittest
 
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
 from nbxmpp.util import error_factory
 
 
@@ -29,4 +30,4 @@ class TestErrorParsing(unittest.TestCase):
         self.assertEqual(error.get_text('de'), 'File zu groß. Erlaubt sind 20000 bytes')
         self.assertEqual(error.type, 'modify')
         self.assertEqual(error.id, 'step_03')
-        self.assertEqual(error.jid, 'upload.montague.tld')
+        self.assertEqual(error.jid, JID.from_string('upload.montague.tld'))

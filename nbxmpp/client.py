@@ -313,7 +313,7 @@ class Client(Observable):
         return self._jid
 
     def _set_bound_jid(self, jid):
-        self._jid = JID(jid)
+        self._jid = JID.from_string(jid)
 
     @property
     def has_error(self):

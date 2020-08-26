@@ -87,6 +87,6 @@ class Nickname(BaseModule):
         item = Node('nick', {'xmlns': Namespace.NICK})
         if nickname is not None:
             item.addData(nickname)
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         self._client.get_module('PubSub').publish(
             jid, Namespace.NICK, item, id_='current')

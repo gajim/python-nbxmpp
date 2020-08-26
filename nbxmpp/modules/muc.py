@@ -92,24 +92,22 @@ class MUC(BaseModule):
         if muc is None:
             return
         properties.from_muc = True
-        properties.muc_jid = properties.jid.copy()
-        properties.muc_jid.setBare()
-        properties.muc_nickname = properties.jid.getResource()
+        properties.muc_jid = properties.jid.new_as_bare()
+        properties.muc_nickname = properties.jid.resource
 
     def _process_muc_user_presence(self, _client, stanza, properties):
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
         properties.from_muc = True
-        properties.muc_jid = properties.jid.copy()
-        properties.muc_jid.setBare()
+        properties.muc_jid = properties.jid.new_as_bare()
 
         destroy = muc_user.getTag('destroy')
         if destroy is not None:
             alternate = destroy.getAttr('jid')
             if alternate is not None:
                 try:
-                    alternate = JID(alternate)
+                    alternate = JID.from_string(alternate)
                 except Exception as error:
                     self._log.warning('Invalid alternate JID provided: %s',
                                       error)
@@ -121,7 +119,7 @@ class MUC(BaseModule):
                 password=muc_user.getTagData('password'))
             return
 
-        properties.muc_nickname = properties.jid.getResource()
+        properties.muc_nickname = properties.jid.resource
 
         # https://xmpp.org/extensions/xep-0045.html#registrar-statuscodes
         message_status_codes = [
@@ -170,9 +168,8 @@ class MUC(BaseModule):
 
     def _process_groupchat_message(self, _client, stanza, properties):
         properties.from_muc = True
-        properties.muc_jid = properties.jid.copy()
-        properties.muc_jid.setBare()
-        properties.muc_nickname = properties.jid.getResource() or None
+        properties.muc_jid = properties.jid.new_as_bare()
+        properties.muc_nickname = properties.jid.resource
 
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is not None:
@@ -188,7 +185,7 @@ class MUC(BaseModule):
         if addresses is not None:
             address = addresses.getTag('address', attrs={'type': 'ofrom'})
             if address is not None:
-                properties.muc_ofrom = JID(address.getAttr('jid'))
+                properties.muc_ofrom = JID.from_string(address.getAttr('jid'))
 
     def _process_message(self, _client, stanza, properties):
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
@@ -206,10 +203,9 @@ class MUC(BaseModule):
             return
 
         properties.from_muc = True
-        properties.muc_jid = properties.jid.copy()
-        properties.muc_jid.setBare()
+        properties.muc_jid = properties.jid.new_as_bare()
 
-        if not properties.jid.isBare:
+        if not properties.jid.is_bare:
             return
 
         # MUC Config change
@@ -253,7 +249,7 @@ class MUC(BaseModule):
             return
 
         data = {}
-        data['muc'] = JID(direct.getAttr('jid'))
+        data['muc'] = JID.from_string(direct.getAttr('jid'))
         data['from_'] = properties.jid
         data['reason'] = direct.getAttr('reason')
         data['password'] = direct.getAttr('password')
@@ -272,15 +268,14 @@ class MUC(BaseModule):
             return
 
         properties.from_muc = True
-        properties.muc_jid = properties.jid.copy()
-        properties.muc_jid.setBare()
+        properties.muc_jid = properties.jid.new_as_bare()
 
         data = {}
 
         invite = muc_user.getTag('invite')
         if invite is not None:
-            data['muc'] = JID(properties.jid.getBare())
-            data['from_'] = JID(invite.getAttr('from'))
+            data['muc'] = properties.jid.new_as_bare()
+            data['from_'] = JID.from_string(invite.getAttr('from'))
             data['reason'] = invite.getTagData('reason')
             data['password'] = muc_user.getTagData('password')
             data['type'] = InviteType.MEDIATED
@@ -296,8 +291,8 @@ class MUC(BaseModule):
 
         decline = muc_user.getTag('decline')
         if decline is not None:
-            data['muc'] = JID(properties.jid.getBare())
-            data['from_'] = JID(decline.getAttr('from'))
+            data['muc'] = properties.jid.new_as_bare()
+            data['from_'] = JID.from_string(decline.getAttr('from'))
             data['reason'] = decline.getTagData('reason')
             properties.muc_decline = DeclineData(**data)
             return
@@ -317,7 +312,7 @@ class MUC(BaseModule):
         nick = data_form['muc#roomnick'].value
 
         try:
-            jid = JID(data_form['muc#jid'].value)
+            jid = JID.from_string(data_form['muc#jid'].value)
         except Exception:
             self._log.warning('Invalid JID on voice request')
             self._log.warning(stanza)
@@ -327,8 +322,7 @@ class MUC(BaseModule):
                                                 nick=nick,
                                                 form=data_form)
         properties.from_muc = True
-        properties.muc_jid = properties.jid.copy()
-        properties.muc_jid.setBare()
+        properties.muc_jid = properties.jid.new_as_bare()
 
     def approve_voice_request(self, muc_jid, voice_request):
         form = voice_request.form
@@ -354,7 +348,7 @@ class MUC(BaseModule):
         users_dict = {}
         for item in items:
             try:
-                jid = JID(item.getAttr('jid'))
+                jid = JID.from_string(item.getAttr('jid'))
             except Exception as error:
                 self._log.warning('Invalid JID: %s, %s',
                                   item.getAttr('jid'), error)
@@ -573,7 +567,7 @@ class MUC(BaseModule):
         jid = item_dict.get('jid')
         if jid is not None:
             try:
-                jid = JID(jid)
+                jid = JID.from_string(jid)
             except InvalidJid as error:
                 raise StanzaMalformed('invalid jid %s, %s' % (jid, error))
 

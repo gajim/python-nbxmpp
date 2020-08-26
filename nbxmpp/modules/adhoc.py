@@ -41,7 +41,7 @@ class AdHoc(BaseModule):
     @call_on_response('_command_list_received')
     def request_command_list(self, jid=None):
         if jid is None:
-            jid = self._client.get_bound_jid().getBare()
+            jid = self._client.get_bound_jid().bare
         return get_disco_request(Namespace.DISCO_ITEMS,
                                  jid,
                                  node=Namespace.COMMANDS)

@@ -91,6 +91,6 @@ class Activity(BaseModule):
             if data.text:
                 item.addChild('text', payload=data.text)
 
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         self._client.get_module('PubSub').publish(
             jid, Namespace.ACTIVITY, item, id_='current')

@@ -250,7 +250,7 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
             return self.muc_identity_name
 
         if self.jid is not None:
-            return self.jid.getNode()
+            return self.jid.localpart
         return None
 
     @property
@@ -931,9 +931,7 @@ class PresenceProperties:
     def new_jid(self):
         if not self.is_nickname_changed:
             raise ValueError('This is not a nickname change')
-        jid = JID(self.jid)
-        jid.setResource(self.muc_user.nick)
-        return jid
+        return self.jid.new_with(resource=self.muc_user.nick)
 
     @property
     def is_kicked(self):

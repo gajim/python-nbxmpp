@@ -424,7 +424,7 @@ class JidSingleField(ListSingleField):
     def is_valid(self):
         if self.value:
             try:
-                JID(self.value)
+                JID.from_string(self.value)
                 return True, ''
             except Exception as error:
                 return False, error
@@ -479,7 +479,7 @@ class JidMultiField(ListMultiField):
         if self.values:
             for value in self.values:
                 try:
-                    JID(value)
+                    JID.from_string(value)
                 except Exception as error:
                     return False, error
             return True, ''

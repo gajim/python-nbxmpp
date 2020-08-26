@@ -168,8 +168,8 @@ class Register(BaseModule):
 
     @call_on_response('_on_password_change')
     def change_password(self, password):
-        domain = self._client.get_bound_jid().getDomain()
-        username = self._client.get_bound_jid().getNode()
+        domain = self._client.get_bound_jid().domain
+        username = self._client.get_bound_jid().localpart
         iq = Iq('set', Namespace.REGISTER, to=domain)
         query = iq.getQuery()
         query.setTagData('username', username)
@@ -192,7 +192,7 @@ class Register(BaseModule):
 
     @call_on_response('_default_response')
     def change_password_with_form(self, form):
-        domain = self._client.get_bound_jid().getDomain()
+        domain = self._client.get_bound_jid().domain
         iq = Iq('set', Namespace.REGISTER, to=domain)
         iq.setQueryPayload(form)
         return iq

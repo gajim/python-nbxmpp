@@ -80,8 +80,8 @@ class TestClient(Gtk.Window):
 
     def _create_client(self):
         self._client = Client(log_context='TEST')
-        self._client.set_domain(self.address.getDomain())
-        self._client.set_username(self.address.getNode())
+        self._client.set_domain(self.address.domain)
+        self._client.set_username(self.address.localpart)
         self._client.set_resource('test')
 
         proxy_ip = self._builder.proxy_ip.get_text()
@@ -117,7 +117,7 @@ class TestClient(Gtk.Window):
 
     @property
     def address(self):
-        return JID(self._builder.address.get_text())
+        return JID.from_string(self._builder.address.get_text())
 
     @property
     def xml_box(self):

@@ -192,14 +192,14 @@ class OMEMO(BaseModule):
             item.addChild('device').setAttr('id', device)
 
         self._log.info('Set devicelist: %s', devicelist)
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         self._client.get_module('PubSub').publish(
             jid, Namespace.OMEMO_TEMP_DL, item, id_='current')
 
     @call_on_response('_devicelist_received')
     def request_devicelist(self, jid=None):
         if jid is None:
-            jid = self._client.get_bound_jid().getBare()
+            jid = self._client.get_bound_jid().bare
         self._log.info('Request devicelist from: %s', jid)
         return get_pubsub_request(jid, Namespace.OMEMO_TEMP_DL, max_items=1)
 
@@ -225,7 +225,7 @@ class OMEMO(BaseModule):
         self._log.info('Set bundle')
 
         node = '%s:%s' % (Namespace.OMEMO_TEMP_BUNDLE, device_id)
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         self._client.get_module('PubSub').publish(
             jid, node, item, id_='current')
 

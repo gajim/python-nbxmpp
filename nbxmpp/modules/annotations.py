@@ -38,7 +38,7 @@ class Annotations(BaseModule):
 
     @property
     def domain(self):
-        return self._client.get_bound_jid().getDomain()
+        return self._client.get_bound_jid().domain
 
     @call_on_response('_annotations_received')
     def request_annotations(self):
@@ -59,7 +59,7 @@ class Annotations(BaseModule):
         notes = []
         for note in storage.getTags('note'):
             try:
-                jid = JID(note.getAttr('jid'))
+                jid = JID.from_string(note.getAttr('jid'))
             except Exception as error:
                 self._log.warning('Invalid JID: %s, %s',
                                   note.getAttr('jid'), error)

@@ -183,7 +183,7 @@ class MAM(BaseModule):
                 continue
 
             try:
-                jid = JID(jid)
+                jid = JID.from_string(jid)
             except Exception:
                 self._log.warning('Invalid jid found in preferences: %s',
                                   jid)

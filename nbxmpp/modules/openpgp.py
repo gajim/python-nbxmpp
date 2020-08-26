@@ -155,7 +155,7 @@ class OpenPGP(BaseModule):
                 item.addChild('pubkey-metadata', attrs=attrs)
 
         self._log.info('Set keylist: %s', keylist)
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         self._client.get_module('PubSub').publish(
             jid, Namespace.OPENPGP_PK, item, id_='current')
 
@@ -169,7 +169,7 @@ class OpenPGP(BaseModule):
         node = '%s:%s' % (Namespace.OPENPGP_PK, fingerprint)
 
         self._log.info('Set public key')
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         self._client.get_module('PubSub').publish(
             jid, node, item, id_='current')
 
@@ -181,7 +181,7 @@ class OpenPGP(BaseModule):
 
     @callback
     def _public_key_received(self, stanza):
-        jid = JID(stanza.getFrom().getBare())
+        jid = stanza.getFrom().bare
 
         if not isResultNode(stanza):
             return raise_error(self._log.info, stanza)
@@ -219,7 +219,7 @@ class OpenPGP(BaseModule):
 
     @callback
     def _keylist_received(self, stanza):
-        jid = JID(stanza.getFrom().getBare())
+        jid = stanza.getFrom().bare
 
         if not isResultNode(stanza):
             return raise_error(self._log.info, stanza)
@@ -239,7 +239,7 @@ class OpenPGP(BaseModule):
     @call_on_response('_secret_key_received')
     def request_secret_key(self):
         self._log.info('Request secret key')
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         return get_pubsub_request(jid, Namespace.OPENPGP_SK, max_items=1)
 
     @callback
@@ -275,7 +275,7 @@ class OpenPGP(BaseModule):
             item.setData(b64encode(secret_key))
 
         self._log.info('Set secret key')
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         self._client.get_module('PubSub').publish(
             jid, Namespace.OPENPGP_SK, item, id_='current')
 
@@ -338,7 +338,7 @@ def create_signcrypt_node(stanza, not_encrypted_nodes):
             stanza.delChild(node)
 
     signcrypt = Node('signcrypt', attrs={'xmlns': Namespace.OPENPGP})
-    signcrypt.addChild('to', attrs={'jid': stanza.getTo().getBare()})
+    signcrypt.addChild('to', attrs={'jid': str(stanza.getTo().bare)})
 
     timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
     signcrypt.addChild('time', attrs={'stamp': timestamp})

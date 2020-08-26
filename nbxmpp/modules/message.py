@@ -48,7 +48,7 @@ class BaseMessage(BaseModule):
 
         elif properties.is_mam_message and not properties.type.is_groupchat:
             own_jid = self._client.get_bound_jid()
-            if own_jid.bareMatch(stanza.getFrom()):
+            if own_jid.bare_match(stanza.getFrom()):
                 properties.jid = stanza.getTo()
             else:
                 properties.jid = stanza.getFrom()
@@ -106,4 +106,4 @@ class BaseMessage(BaseModule):
     def _parse_self_message(stanza, properties):
         if properties.type.is_groupchat:
             return False
-        return stanza.getFrom().bareMatch(stanza.getTo())
+        return stanza.getFrom().bare_match(stanza.getTo())

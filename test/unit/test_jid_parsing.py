@@ -30,7 +30,7 @@ class JIDParsing(unittest.TestCase):
         ]
 
         for jid in tests:
-            JID(jid)
+            JID.from_string(jid)
 
     def test_invalid_jids(self):
         tests = [
@@ -48,7 +48,7 @@ class JIDParsing(unittest.TestCase):
 
         for jid, exception in tests:
             with self.assertRaises(exception):
-                JID(jid)
+                JID.from_string(jid)
 
     def test_ip_literals(self):
         tests = [
@@ -57,7 +57,7 @@ class JIDParsing(unittest.TestCase):
         ]
 
         for jid in tests:
-            JID(jid)
+            JID.from_string(jid)
 
     def test_jid_equality(self):
         tests = [
@@ -67,4 +67,4 @@ class JIDParsing(unittest.TestCase):
         ]
 
         for jid in tests:
-            self.assertTrue(JID(jid) == jid)
+            self.assertTrue(JID.from_string(jid) == JID.from_string(jid))

@@ -49,7 +49,7 @@ class BasePresence(BaseModule):
 
         own_jid = self._client.get_bound_jid()
         properties.self_presence = own_jid == properties.jid
-        properties.self_bare = properties.jid.bareMatch(own_jid)
+        properties.self_bare = properties.jid.bare_match(own_jid)
 
     def _parse_priority(self, stanza):
         priority = stanza.getPriority()

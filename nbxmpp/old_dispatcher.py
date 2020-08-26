@@ -561,7 +561,7 @@ class XMPPDispatcher(PlugIn):
 
         if name == 'iq':
             if stanza.getFrom() is None and own_jid is not None:
-                stanza.setFrom(own_jid.getBare())
+                stanza.setFrom(own_jid.bare)
 
         if name == 'message':
             # https://tools.ietf.org/html/rfc6120#section-8.1.1.1
@@ -572,12 +572,13 @@ class XMPPDispatcher(PlugIn):
             to = stanza.getTo()
             if to is None:
                 stanza.setTo(own_jid)
-            elif not to.bareMatch(own_jid):
+
+            elif not to.bare_match(own_jid):
                 log.warning('Message addressed to someone else: %s', stanza)
                 return
 
             if stanza.getFrom() is None:
-                stanza.setFrom(own_jid.getBare())
+                stanza.setFrom(own_jid.bare)
 
             # Unwrap carbon
             try:

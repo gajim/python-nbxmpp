@@ -131,7 +131,7 @@ class Bookmarks(BaseModule):
         confs = storage.getTags('conference')
         for conf in confs:
             try:
-                jid = JID(conf.getAttr('jid'))
+                jid = JID.from_string(conf.getAttr('jid'))
             except Exception as error:
                 self._log.warning('Invalid JID: "%s", %s',
                                   conf.getAttr('jid'),
@@ -161,7 +161,7 @@ class Bookmarks(BaseModule):
             return None
 
         try:
-            jid = JID(item.getAttr('id'))
+            jid = JID.from_string(item.getAttr('id'))
         except Exception as error:
             self._log.warning('Invalid JID: "%s", %s',
                               item.getAttr('id'),
@@ -209,7 +209,7 @@ class Bookmarks(BaseModule):
 
     @call_on_response('_bookmarks_received')
     def request_bookmarks(self, type_):
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         if type_ == BookmarkStoreType.PUBSUB_BOOKMARK_2:
             self._log.info('Request bookmarks 2 (PubSub)')
             request = get_pubsub_request(jid, Namespace.BOOKMARKS_2)
@@ -272,7 +272,7 @@ class Bookmarks(BaseModule):
 
         from_ = stanza.getFrom()
         if from_ is None:
-            from_ = self._client.get_bound_jid().getBare()
+            from_ = self._client.get_bound_jid().bare
         self._log.info('Received bookmarks from: %s', from_)
         for bookmark in bookmarks:
             self._log.info(bookmark)
@@ -315,14 +315,14 @@ class Bookmarks(BaseModule):
 
     def retract_bookmark(self, bookmark_jid):
         self._log.info('Retract Bookmark: %s', bookmark_jid)
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         self._client.get_module('PubSub').retract(jid,
                                                   Namespace.BOOKMARKS_2,
                                                   str(bookmark_jid))
 
     def _store_bookmark_1(self, bookmarks):
         self._log.info('Store Bookmarks 1 (PubSub)')
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         self._bookmark_1_queue = bookmarks
         item = self._build_storage_node(bookmarks)
         options = get_publish_options(BOOKMARK_1_OPTIONS)
@@ -341,7 +341,7 @@ class Bookmarks(BaseModule):
             return
 
         self._log.info('Store Bookmarks 2 (PubSub)')
-        jid = self._client.get_bound_jid().getBare()
+        jid = self._client.get_bound_jid().bare
         for bookmark in bookmarks:
             self._bookmark_2_queue[bookmark.jid] = bookmark
             item = self._build_conference_node(bookmark)
@@ -367,7 +367,7 @@ class Bookmarks(BaseModule):
                 return
 
             self._node_configuration_in_progress = True
-            jid = self._client.get_bound_jid().getBare()
+            jid = self._client.get_bound_jid().bare
             self._client.get_module('PubSub').get_node_configuration(
                 jid,
                 node,

@@ -88,7 +88,7 @@ class UserAvatar(BaseModule):
     def _avatar_data_received(self, stanza):
         jid = stanza.getFrom()
         if jid is None:
-            jid = JID(self._client.get_bound_jid().getBare())
+            jid = self._client.get_bound_jid().bare
 
         if not isResultNode(stanza):
             return raise_error(self._log.warning, stanza)

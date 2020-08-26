@@ -1024,7 +1024,7 @@ class Protocol(Node):
         """
         attr = self.getAttr('jid')
         if attr:
-            return JID(attr)
+            return JID.from_string(attr)
         return attr
 
     def getID(self):
@@ -1037,7 +1037,9 @@ class Protocol(Node):
         """
         Set the value of the 'to' attribute
         """
-        self.setAttr('to', JID(val))
+        if not isinstance(val, JID):
+            val = JID.from_string(val)
+        self.setAttr('to', val)
 
     def getType(self):
         """
@@ -1049,7 +1051,9 @@ class Protocol(Node):
         """
         Set the value of the 'from' attribute
         """
-        self.setAttr('from', JID(val))
+        if not isinstance(val, JID):
+            val = JID.from_string(val)
+        self.setAttr('from', val)
 
     def setType(self, val):
         """
@@ -1191,7 +1195,8 @@ class Protocol(Node):
         Set the item 'item' to the value 'val'
         """
         if item in ['to', 'from']:
-            val = JID(val)
+            if not isinstance(val, JID):
+                val = JID.from_string(val)
         return self.setAttr(item, val)
 
 
