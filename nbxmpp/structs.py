@@ -22,7 +22,6 @@ from collections import namedtuple
 from gi.repository import Soup
 from gi.repository import Gio
 
-from nbxmpp.protocol import JID
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import Node

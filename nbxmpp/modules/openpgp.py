@@ -23,7 +23,6 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import isResultNode
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback

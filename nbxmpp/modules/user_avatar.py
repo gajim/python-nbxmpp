@@ -20,7 +20,6 @@ import base64
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import isResultNode
-from nbxmpp.protocol import JID
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import AvatarMetaData
 from nbxmpp.structs import AvatarData
