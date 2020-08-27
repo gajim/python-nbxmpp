@@ -441,6 +441,7 @@ _status_conditions = {
 }
 
 _localpart_disallowed_chars = set('"&\'/:<>@')
+_localpart_escape_chars = ' "&\'/:<>@'
 
 
 STREAM_NOT_AUTHORIZED = 'urn:ietf:params:xml:ns:xmpp-streams not-authorized'
@@ -721,6 +722,46 @@ def idna_encode(domain):
     return idna.encode(domain, uts46=True)
 
 
+@functools.lru_cache(maxsize=None)
+def escape_localpart(localpart):
+    # https://xmpp.org/extensions/xep-0106.html#bizrules-algorithm
+    #
+    # If there are any instances of character sequences that correspond
+    # to escapings of the disallowed characters
+    # (e.g., the character sequence "\27") or the escaping character
+    # (i.e., the character sequence "\5c") in the source address,
+    # the leading backslash character MUST be escaped to the character
+    # sequence "\5c"
+
+    for char in '\\' + _localpart_escape_chars:
+        seq = "\\{:02x}".format(ord(char))
+        localpart = localpart.replace(seq, "\\5c{:02x}".format(ord(char)))
+
+    # Escape all other chars
+    for char in _localpart_escape_chars:
+        localpart = localpart.replace(char, "\\{:02x}".format(ord(char)))
+
+    return localpart
+
+
+@functools.lru_cache(maxsize=None)
+def unescape_localpart(localpart):
+    if localpart.startswith('\\20') or localpart.endswith('\\20'):
+        # Escaped JIDs are not allowed to start or end with \20
+        # so this localpart must be already unescaped
+        return localpart
+
+    for char in _localpart_escape_chars:
+        seq = "\\{:02x}".format(ord(char))
+        localpart = localpart.replace(seq, char)
+
+    for char in _localpart_escape_chars + "\\":
+        seq = "\\5c{:02x}".format(ord(char))
+        localpart = localpart.replace(seq, "\\{:02x}".format(ord(char)))
+
+    return localpart
+
+
 class JID(namedtuple('JID',
                      ['jid', 'localpart', 'domain', 'resource'])):
 
@@ -767,13 +808,47 @@ class JID(namedtuple('JID',
                    domain=domainpart,
                    resource=resourcepart)
 
+    @classmethod
+    @functools.lru_cache(maxsize=None)
+    def from_user_input(cls, user_input, escaped=False):
+        # Use this if we want JIDs to be escaped according to XEP-0106
+        # The standard JID parsing cannot be applied because user_input is
+        # not a valid JID.
+
+        # Only user_input which after escaping result in a bare JID can be
+        # successfully parsed.
+
+        # The assumpution is user_input is a bare JID so we start with an
+        # rsplit on @ because we assume there is no resource, so the char @
+        # in the localpart can later be escaped.
+
+        if escaped:
+            # for convenience
+            return cls.from_string(user_input)
+
+        if '@' in user_input:
+            localpart, domainpart = user_input.rsplit('@', 1)
+            if localpart.startswith(' ') or localpart.endswith(' '):
+                raise LocalpartNotAllowedChar
+
+            localpart = escape_localpart(localpart)
+
+        else:
+            localpart = None
+            domainpart = user_input
+
+        return cls(jid=None,
+                   localpart=localpart,
+                   domain=domainpart,
+                   resource=None)
+
     def __str__(self):
         if self.localpart:
             jid = f'{self.localpart}@{self.domain}'
         else:
             jid = self.domain
 
-        if self.resource:
+        if self.resource is not None:
             return f'{jid}/{self.resource}'
         return jid
 
@@ -828,6 +903,17 @@ class JID(namedtuple('JID',
 
     def new_with(self, **kwargs):
         return self._replace(**kwargs)
+
+    def to_user_string(self):
+        if self.localpart is None:
+            return str(self)
+
+        localpart = unescape_localpart(self.localpart)
+        jid = f'{localpart}@{self.domain}'
+
+        if self.resource is not None:
+            return f'{jid}/{self.resource}'
+        return jid
 
     def bareMatch(self, other):
         deprecation_warning('bareMatch() is deprected use bare_match()')
