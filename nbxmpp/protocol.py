@@ -719,7 +719,7 @@ def validate_domainpart(domainpart):
 
 @functools.lru_cache(maxsize=None)
 def idna_encode(domain):
-    return idna.encode(domain, uts46=True)
+    return idna.encode(domain, uts46=True).decode()
 
 
 @functools.lru_cache(maxsize=None)
@@ -867,8 +867,7 @@ class JID(namedtuple('JID',
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    @property
-    def ace_domain(self):
+    def domain_to_ascii(self):
         return idna_encode(self.domain)
 
     @property
@@ -904,16 +903,21 @@ class JID(namedtuple('JID',
     def new_with(self, **kwargs):
         return self._replace(**kwargs)
 
-    def to_user_string(self):
+    def to_user_string(self, show_punycode=True):
+        domain = self.domain_to_ascii()
+        if domain.startswith('xn--') and show_punycode:
+            domain_encoded = f' ({domain})'
+        else:
+            domain_encoded = ''
+
         if self.localpart is None:
-            return str(self)
+            return f'{self}{domain_encoded}'
 
         localpart = unescape_localpart(self.localpart)
-        jid = f'{localpart}@{self.domain}'
 
-        if self.resource is not None:
-            return f'{jid}/{self.resource}'
-        return jid
+        if self.resource is None:
+            return f'{localpart}@{self.domain}{domain_encoded}'
+        return f'{localpart}@{self.domain}/{self.resource}{domain_encoded}'
 
     def bareMatch(self, other):
         deprecation_warning('bareMatch() is deprected use bare_match()')
