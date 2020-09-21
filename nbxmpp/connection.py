@@ -134,6 +134,12 @@ class Connection(Observable):
     def start_tls_negotiation(self):
         raise NotImplementedError
 
+    def shutdown_output(self):
+        raise NotImplementedError
+
+    def shutdown_input(self):
+        raise NotImplementedError
+
     def destroy(self):
         self.remove_subscriptions()
         self._peer_certificate = None
