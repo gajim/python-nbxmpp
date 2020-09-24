@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from dataclasses import dataclass
+
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import ERR_NOT_ACCEPTABLE
 from nbxmpp.protocol import JID
@@ -41,14 +43,24 @@ from nbxmpp.structs import CommonResult
 from nbxmpp.structs import MucConfigResult
 from nbxmpp.structs import MucUserData
 from nbxmpp.structs import MucDestroyed
+from nbxmpp.task import iq_request_task
 from nbxmpp.util import call_on_response
 from nbxmpp.util import callback
 from nbxmpp.util import raise_error
+from nbxmpp.errors import is_error
+from nbxmpp.modules.util import raise_if_error
+from nbxmpp.modules.util import parse_xmpp_uri
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.modules.base import BaseModule
 
 
 class MUC(BaseModule):
+
+    _depends = {
+        'disco_info': 'Discovery',
+        'request_vcard': 'VCardTemp',
+    }
+
     def __init__(self, client):
         BaseModule.__init__(self, client)
 
@@ -380,6 +392,42 @@ class MUC(BaseModule):
                        room_jid, reason, jid)
         return iq
 
+    @iq_request_task
+    def request_info(self, jid, request_vcard=True, allow_redirect=False):
+        _task = yield
+
+        redirected = False
+
+        disco_info = yield self.disco_info(jid)
+        if is_error(disco_info):
+            error_response = disco_info
+
+            if not allow_redirect:
+                raise error_response
+
+            if error_response.condition != 'gone':
+                raise error_response
+
+            try:
+                jid = parse_xmpp_uri(error_response.condition_data)[0]
+            except Exception:
+                raise error_response
+
+            redirected = True
+            disco_info = yield self.disco_info(jid)
+            raise_if_error(disco_info)
+
+        if not request_vcard or not disco_info.supports(Namespace.VCARD):
+            yield MucInfoResult(info=disco_info, redirected=redirected)
+
+        vcard = yield self.request_vcard(jid)
+        if is_error(vcard):
+            yield MucInfoResult(info=disco_info, redirected=redirected)
+
+        yield MucInfoResult(info=disco_info,
+                            vcard=vcard,
+                            redirected=redirected)
+
     @call_on_response('_default_response')
     def set_config(self, room_jid, form):
         iq = Iq(typ='set', to=room_jid, queryNS=Namespace.MUC_OWNER)
@@ -577,3 +625,10 @@ class MUC(BaseModule):
                            role=role,
                            actor=item.getTagAttr('actor', 'nick'),
                            reason=item.getTagData('reason'))
+
+
+@dataclass
+class MucInfoResult:
+    info: object
+    vcard: object = None
+    redirected: bool = False

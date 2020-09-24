@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from urllib.parse import urlparse
+from urllib.parse import unquote
+
 from nbxmpp.structs import CommonResult
 from nbxmpp.errors import StanzaError
 from nbxmpp.errors import is_error
@@ -39,3 +42,22 @@ def finalize(task, result):
     if isinstance(result, Node):
         return task.set_result(result)
     return result
+
+
+def parse_xmpp_uri(uri):
+    url = urlparse(uri)
+    if url.scheme != 'xmpp':
+        raise ValueError('not a xmpp uri')
+
+    if not ';' in url.query:
+        return (url.path, url.query, {})
+
+    action, query = url.query.split(';', 1)
+    key_value_pairs = query.split(';')
+
+    dict_ = {}
+    for key_value in key_value_pairs:
+        key, value = key_value.split('=')
+        dict_[key] = unquote(value)
+
+    return (url.path, action, dict_)
