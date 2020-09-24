@@ -20,7 +20,6 @@ import logging
 
 from nbxmpp.protocol import Iq
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import ErrorNode
 from nbxmpp.protocol import ERR_ITEM_NOT_FOUND
 from nbxmpp.protocol import NodeProcessed
@@ -31,9 +30,9 @@ from nbxmpp.structs import DiscoInfo
 from nbxmpp.structs import DiscoItems
 from nbxmpp.structs import DiscoItem
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.util import call_on_response
-from nbxmpp.util import callback
 from nbxmpp.util import raise_error
+from nbxmpp.task import iq_request_task
+from nbxmpp.errors import StanzaError
 
 
 log = logging.getLogger('nbxmpp.m.discovery')
@@ -59,27 +58,28 @@ class Discovery(BaseModule):
         client.send_stanza(iq)
         raise NodeProcessed
 
-    @call_on_response('_disco_info_received')
+    @iq_request_task
     def disco_info(self, jid, node=None):
+        _task = yield
+
         self._log.info('Disco info: %s, node: %s', jid, node)
-        return get_disco_request(Namespace.DISCO_INFO, jid, node)
 
-    @callback
-    def _disco_info_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
-        return parse_disco_info(stanza)
+        response = yield get_disco_request(Namespace.DISCO_INFO, jid, node)
+        if response.isError():
+            raise StanzaError(response)
+        yield parse_disco_info(response)
 
-    @call_on_response('_disco_items_received')
+    @iq_request_task
     def disco_items(self, jid, node=None):
-        self._log.info('Disco items: %s, node: %s', jid, node)
-        return get_disco_request(Namespace.DISCO_ITEMS, jid, node)
+        _task = yield
 
-    @callback
-    def _disco_items_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
-        return parse_disco_items(stanza)
+        self._log.info('Disco items: %s, node: %s', jid, node)
+
+        response = yield get_disco_request(Namespace.DISCO_ITEMS, jid, node)
+        if response.isError():
+            raise StanzaError(response)
+        yield parse_disco_items(response)
+
 
 
 def parse_disco_info(stanza, timestamp=None):
