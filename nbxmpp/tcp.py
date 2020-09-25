@@ -226,6 +226,12 @@ class TCPConnection(Connection):
                 self._finalize('disconnected')
             return
 
+        except RuntimeError as error:
+            # PyGObject raises a RuntimeError when it fails to convert the
+            # GError. Why it failed is printed by PyGObject
+            self._log.error(error)
+            return
+
         data = data.get_data()
         if not data:
             if self._state == TCPState.DISCONNECTING:
@@ -287,9 +293,8 @@ class TCPConnection(Connection):
             return
 
         except RuntimeError as error:
-            # PyGObject raises a RuntimeError when it failed to for some reason
-            # to convert the GError. Why it failed to convert is printed by
-            # PyGObject
+            # PyGObject raises a RuntimeError when it fails to convert the
+            # GError. Why it failed is printed by PyGObject
             self._log.error(error)
             return
 
