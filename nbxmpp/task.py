@@ -207,7 +207,13 @@ class Task:
                 if callback is None:
                     return
 
-            callback(self)
+            # Be conservative with catching exceptions here
+            # For example unittests raise Assertion errors
+            # which should not be catched here
+            try:
+                callback(self)
+            except CancelledError:
+                pass
 
     def set_result(self, result):
         self._result = result
