@@ -244,7 +244,15 @@ class TCPConnection(Connection):
         self._renew_keepalive_timer()
 
         self._read_buffer += data
-        data, self._read_buffer = utf8_decode(self._read_buffer)
+
+        try:
+            data, self._read_buffer = utf8_decode(self._read_buffer)
+        except UnicodeDecodeError as error:
+            self._log.warning(error)
+            self._log.warning('read buffer: "%s"', self._read_buffer)
+            self._log.warning('data: "%s"', data)
+            self._finalize('disconnected')
+            return
 
         self._log_stanza(data, received=True)
 
