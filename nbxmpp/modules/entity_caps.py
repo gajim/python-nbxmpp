@@ -82,16 +82,19 @@ class EntityCaps(BaseModule):
         if hash_algo != 'sha-1':
             self._log.warning('Unsupported hashing algorithm used: %s',
                               hash_algo)
+            self._log.warning(stanza)
             return
 
         node = caps.getAttr('node')
         if not node:
             self._log.warning('node attribute missing')
+            self._log.warning(stanza)
             return
 
         ver = caps.getAttr('ver')
         if not ver:
             self._log.warning('ver attribute missing')
+            self._log.warning(stanza)
             return
 
         properties.entity_caps = EntityCapsData(
