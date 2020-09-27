@@ -154,6 +154,8 @@ class _Namespaces:
     VCARD: str = 'vcard-temp'
     VCARD_UPDATE: str = 'vcard-temp:x:update'
     VCARD_CONVERSION: str = 'urn:xmpp:pep-vcard-conversion:0'
+    VCARD4: str = 'urn:ietf:params:xml:ns:vcard-4.0'
+    VCARD4_PUBSUB: str = 'urn:xmpp:vcard4'
     VERSION: str = 'jabber:iq:version'
     XHTML_IM: str = 'http://jabber.org/protocol/xhtml-im'
     XHTML: str = 'http://www.w3.org/1999/xhtml'

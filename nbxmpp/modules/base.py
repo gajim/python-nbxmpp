@@ -31,7 +31,7 @@ class BaseModule:
 
     def __getattr__(self, name):
         if name not in self._depends:
-            raise AttributeError
+            raise AttributeError('Unknown method: %s' % name)
 
         module = self._client.get_module(self._depends[name])
         return getattr(module, name)
