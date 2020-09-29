@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 from nbxmpp.namespaces import Namespace
 
 
@@ -29,7 +31,7 @@ class BaseError(Exception):
 
 class StanzaError(BaseError):
 
-    log_level = 'info'
+    log_level = logging.INFO
     app_namespace = None
 
     def __init__(self, stanza):
@@ -98,7 +100,7 @@ class PubSubStanzaError(StanzaError):
 
 class MalformedStanzaError(BaseError):
 
-    log_level = 'warning'
+    log_level = logging.WARNING
 
     def __init__(self, text, stanza, is_fatal=True):
         BaseError.__init__(self, is_fatal=is_fatal)
@@ -108,7 +110,7 @@ class MalformedStanzaError(BaseError):
 
 class CancelledError(BaseError):
 
-    log_level = 'info'
+    log_level = logging.INFO
 
     def __init__(self):
         BaseError.__init__(self, is_fatal=True)
