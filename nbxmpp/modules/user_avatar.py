@@ -27,7 +27,6 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import CommonResult
 from nbxmpp.util import b64encode
 from nbxmpp.util import b64decode
 from nbxmpp.errors import MalformedStanzaError
@@ -40,8 +39,6 @@ from nbxmpp.modules.util import finalize
 class UserAvatar(BaseModule):
 
     _depends = {
-        'get_node_configuration': 'PubSub',
-        'set_node_configuration': 'PubSub',
         'publish': 'PubSub',
         'request_item': 'PubSub',
     }
@@ -157,48 +154,6 @@ class UserAvatar(BaseModule):
         result = yield self.publish(Namespace.AVATAR_METADATA,
                                     metadata.to_node(),
                                     id_='current')
-
-        yield finalize(task, result)
-
-    @iq_request_task
-    def get_access_model(self):
-        _task = yield
-
-        self._log.info('Request access model')
-
-        result = yield self.get_node_configuration(Namespace.AVATAR_DATA)
-
-        raise_if_error(result)
-
-        yield result.form['pubsub#access_model'].value
-
-    @iq_request_task
-    def set_access_model(self, model):
-        task = yield
-
-        if model not in ('open', 'presence'):
-            raise ValueError('Invalid access model')
-
-        result = yield self.get_node_configuration(Namespace.AVATAR_DATA)
-
-        raise_if_error(result)
-
-        try:
-            access_model = result.form['pubsub#access_model'].value
-        except Exception:
-            yield task.set_error('warning',
-                                 condition='access-model-not-supported')
-
-        if access_model == model:
-            jid = self._client.get_bound_jid().new_as_bare()
-            yield CommonResult(jid=jid)
-
-        result.form['pubsub#access_model'].value = model
-
-        self._log.info('Set access model %s', model)
-
-        result = yield self.set_node_configuration(Namespace.AVATAR_DATA,
-                                                   result.form)
 
         yield finalize(task, result)
 

@@ -23,11 +23,14 @@ from nbxmpp.errors import PubSubStanzaError
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import PubSubEventData
+from nbxmpp.structs import CommonResult
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Node
 from nbxmpp.namespaces import Namespace
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import process_response
+from nbxmpp.modules.util import raise_if_error
+from nbxmpp.modules.util import finalize
 from nbxmpp.modules.dataforms import extend_form
 
 
@@ -140,6 +143,47 @@ class PubSub(BaseModule):
         jid = response.getFrom()
         item_id = _get_published_item_id(response, node, id_)
         yield PubSubPublishResult(jid, node, item_id)
+
+    @iq_request_task
+    def get_access_model(self, node):
+        _task = yield
+
+        self._log.info('Request access model')
+
+        result = yield self.get_node_configuration(node)
+
+        raise_if_error(result)
+
+        yield result.form['pubsub#access_model'].value
+
+    @iq_request_task
+    def set_access_model(self, node, model):
+        task = yield
+
+        if model not in ('open', 'presence'):
+            raise ValueError('Invalid access model')
+
+        result = yield self.get_node_configuration(node)
+
+        raise_if_error(result)
+
+        try:
+            access_model = result.form['pubsub#access_model'].value
+        except Exception:
+            yield task.set_error('warning',
+                                 condition='access-model-not-supported')
+
+        if access_model == model:
+            jid = self._client.get_bound_jid().new_as_bare()
+            yield CommonResult(jid=jid)
+
+        result.form['pubsub#access_model'].value = model
+
+        self._log.info('Set access model %s', model)
+
+        result = yield self.set_node_configuration(node, result.form)
+
+        yield finalize(task, result)
 
     @iq_request_task
     def retract(self, node, id_, jid=None, notify=True):
