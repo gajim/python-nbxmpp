@@ -140,6 +140,12 @@ class Bookmarks(BaseModule):
                                   error)
                 continue
 
+            if jid.localpart is None or jid.resource is not None:
+                self._log.warning('Invalid JID: "%s", %s',
+                                  conf.getAttr('jid'),
+                                  error)
+                continue
+
             autojoin = self._parse_autojoin(conf.getAttr('autojoin'))
             nick = self._parse_nickname(conf.getTagData('nick'))
             name = conf.getAttr('name') or None
@@ -165,6 +171,12 @@ class Bookmarks(BaseModule):
         try:
             jid = JID.from_string(item.getAttr('id'))
         except Exception as error:
+            self._log.warning('Invalid JID: "%s", %s',
+                              item.getAttr('id'),
+                              error)
+            return None
+
+        if jid.localpart is None or jid.resource is not None:
             self._log.warning('Invalid JID: "%s", %s',
                               item.getAttr('id'),
                               error)
