@@ -22,6 +22,8 @@ from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ActivityData
 from nbxmpp.const import ACTIVITIES
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import finalize
+from nbxmpp.task import iq_request_task
 
 
 class Activity(BaseModule):
@@ -87,7 +89,10 @@ class Activity(BaseModule):
                 return sub.getName()
         return None
 
+    @iq_request_task
     def set_activity(self, data):
+        task = yield
+
         item = Node('activity', {'xmlns': Namespace.ACTIVITY})
         if data is not None and data.activity:
             activity_node = item.addChild(data.activity)
@@ -96,4 +101,6 @@ class Activity(BaseModule):
             if data.text:
                 item.addChild('text', payload=data.text)
 
-        self.publish(Namespace.ACTIVITY, item, id_='current')
+        result = yield self.publish(Namespace.ACTIVITY, item, id_='current')
+
+        yield finalize(task, result)
