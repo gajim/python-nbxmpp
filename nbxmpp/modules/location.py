@@ -21,6 +21,8 @@ from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import LocationData
 from nbxmpp.const import LOCATION_DATA
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import finalize
+from nbxmpp.task import iq_request_task
 
 
 class Location(BaseModule):
@@ -67,7 +69,10 @@ class Location(BaseModule):
 
         properties.pubsub_event = pubsub_event
 
+    @iq_request_task
     def set_location(self, data):
+        task = yield
+
         item = Node('geoloc', {'xmlns': Namespace.LOCATION})
         if data is not None:
             data = data._asdict()
@@ -75,4 +80,6 @@ class Location(BaseModule):
                 if value is not None:
                     item.addChild(tag, payload=value)
 
-        self.publish(Namespace.LOCATION, item, id_='current')
+        result = yield self.publish(Namespace.LOCATION, item, id_='current')
+
+        yield finalize(task, result)
