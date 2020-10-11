@@ -20,6 +20,8 @@ from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import PresenceType
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import finalize
+from nbxmpp.task import iq_request_task
 
 
 class Nickname(BaseModule):
@@ -88,9 +90,14 @@ class Nickname(BaseModule):
             return None
         return nickname.getData() or None
 
+    @iq_request_task
     def set_nickname(self, nickname):
+        task = yield
+
         item = Node('nick', {'xmlns': Namespace.NICK})
         if nickname is not None:
             item.addData(nickname)
 
-        self.publish(Namespace.NICK, item, id_='current')
+        result = yield self.publish(Namespace.NICK, item, id_='current')
+
+        yield finalize(task, result)
