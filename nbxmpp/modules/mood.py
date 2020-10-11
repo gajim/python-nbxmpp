@@ -22,6 +22,8 @@ from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import MoodData
 from nbxmpp.const import MOODS
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import finalize
+from nbxmpp.task import iq_request_task
 
 
 class Mood(BaseModule):
@@ -77,7 +79,10 @@ class Mood(BaseModule):
 
         properties.pubsub_event = pubsub_event
 
+    @iq_request_task
     def set_mood(self, data):
+        task = yield
+
         item = Node('mood', {'xmlns': Namespace.MOOD})
         if data is not None and data.mood:
             item.addChild(data.mood)
@@ -85,4 +90,6 @@ class Mood(BaseModule):
             if data.text:
                 item.addChild('text', payload=data.text)
 
-        self.publish(Namespace.MOOD, item, id_='current')
+        result = yield self.publish(Namespace.MOOD, item, id_='current')
+
+        yield finalize(task, result)
