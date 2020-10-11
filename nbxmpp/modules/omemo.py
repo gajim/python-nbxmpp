@@ -19,25 +19,24 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import Message
-from nbxmpp.protocol import isResultNode
-from nbxmpp.protocol import StanzaMalformed
-from nbxmpp.util import call_on_response
-from nbxmpp.util import callback
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
-from nbxmpp.util import raise_error
 from nbxmpp.util import from_xs_boolean
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import OMEMOMessage
 from nbxmpp.structs import OMEMOBundle
-from nbxmpp.modules.pubsub import get_pubsub_request
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import finalize
+from nbxmpp.modules.util import raise_if_error
+from nbxmpp.task import iq_request_task
+from nbxmpp.errors import MalformedStanzaError
 
 
 class OMEMO(BaseModule):
 
     _depends = {
-        'publish': 'PubSub'
+        'publish': 'PubSub',
+        'request_items': 'PubSub',
     }
 
     def __init__(self, client):
@@ -57,81 +56,12 @@ class OMEMO(BaseModule):
 
     def _process_omemo_message(self, _client, stanza, properties):
         try:
-            properties.omemo = self._parse_omemo_message(stanza)
+            properties.omemo = _parse_omemo_message(stanza)
             self._log.info('Received message')
-        except StanzaMalformed as error:
+        except MalformedStanzaError as error:
             self._log.warning(error)
             self._log.warning(stanza)
             return
-
-    @staticmethod
-    def _parse_omemo_message(stanza):
-        '''
-        <message>
-          <encrypted xmlns='eu.siacs.conversations.axolotl'>
-            <header sid='27183'>
-              <key rid='31415'>BASE64ENCODED...</key>
-              <key prekey="true" rid='12321'>BASE64ENCODED...</key>
-              <!-- ... -->
-              <iv>BASE64ENCODED...</iv>
-            </header>
-            <payload>BASE64ENCODED</payload>
-          </encrypted>
-          <store xmlns='urn:xmpp:hints'/>
-        </message>
-        '''
-        encrypted = stanza.getTag('encrypted', namespace=Namespace.OMEMO_TEMP)
-        if encrypted is None:
-            raise StanzaMalformed('No encrypted node found')
-
-        header = encrypted.getTag('header')
-        if header is None:
-            raise StanzaMalformed('header node not found')
-
-        try:
-            sid = int(header.getAttr('sid'))
-        except Exception as error:
-            raise StanzaMalformed('sid attr not found')
-
-        iv_node = header.getTag('iv')
-        try:
-            iv = b64decode(iv_node.getData(), bytes)
-        except Exception as error:
-            raise StanzaMalformed('failed to decode iv: %s' % error)
-
-        payload = None
-        payload_node = encrypted.getTag('payload')
-        if payload_node is not None:
-            try:
-                payload = b64decode(payload_node.getData(), bytes)
-            except Exception as error:
-                raise StanzaMalformed('failed to decode payload: %s' % error)
-
-        key_nodes = header.getTags('key')
-        if not key_nodes:
-            raise StanzaMalformed('no keys found')
-
-        keys = {}
-        for kn in key_nodes:
-            rid = kn.getAttr('rid')
-            if rid is None:
-                raise StanzaMalformed('rid not found')
-
-            prekey = kn.getAttr('prekey')
-            if prekey is None:
-                prekey = False
-            else:
-                try:
-                    prekey = from_xs_boolean(prekey)
-                except ValueError as error:
-                    raise StanzaMalformed(error)
-
-            try:
-                keys[int(rid)] = (b64decode(kn.getData(), bytes), prekey)
-            except Exception as error:
-                raise StanzaMalformed('failed to decode key: %s' % error)
-
-        return OMEMOMessage(sid=sid, iv=iv, keys=keys, payload=payload)
 
     def _process_omemo_devicelist(self, _client, stanza, properties):
         if not properties.is_pubsub_event:
@@ -146,8 +76,8 @@ class OMEMO(BaseModule):
             return
 
         try:
-            devices = self._parse_devicelist(item)
-        except StanzaMalformed as error:
+            devices = _parse_devicelist(item)
+        except MalformedStanzaError as error:
             self._log.warning(error)
             self._log.warning(stanza)
             raise NodeProcessed
@@ -163,232 +93,328 @@ class OMEMO(BaseModule):
 
         properties.pubsub_event = pubsub_event
 
-    @staticmethod
-    def _parse_devicelist(item):
-        '''
-        <items node='eu.siacs.conversations.axolotl.devicelist'>
-          <item id='current'>
-            <list xmlns='eu.siacs.conversations.axolotl'>
-              <device id='12345' />
-              <device id='4223' />
-            </list>
-          </item>
-        </items>
-        '''
-        list_node = item.getTag('list', namespace=Namespace.OMEMO_TEMP)
-        if list_node is None:
-            raise StanzaMalformed('No list node found')
-
-        if not list_node.getChildren():
-            return []
-
-        result = []
-        devices_nodes = list_node.getChildren()
-        for dn in devices_nodes:
-            _id = dn.getAttr('id')
-            if _id:
-                result.append(int(_id))
-
-        return result
-
-    def set_devicelist(self, devicelist=None):
-        item = Node('list', attrs={'xmlns': Namespace.OMEMO_TEMP})
-        for device in devicelist:
-            item.addChild('device').setAttr('id', device)
+    @iq_request_task
+    def set_devicelist(self, devicelist=None, public=True):
+        task = yield
 
         self._log.info('Set devicelist: %s', devicelist)
 
-        self.publish(Namespace.OMEMO_TEMP_DL, item, id_='current')
+        access_model = 'open' if public else 'presence'
 
-    @call_on_response('_devicelist_received')
+        options = {
+            'pubsub#persist_items': 'true',
+            'pubsub#access_model': access_model,
+        }
+
+        result = yield self.publish(Namespace.OMEMO_TEMP_DL,
+                                    _make_devicelist(devicelist),
+                                    id_='current',
+                                    options=options,
+                                    force_node_options=True)
+
+        yield finalize(task, result)
+
+    @iq_request_task
     def request_devicelist(self, jid=None):
-        if jid is None:
-            jid = self._client.get_bound_jid().bare
-        self._log.info('Request devicelist from: %s', jid)
-        return get_pubsub_request(jid, Namespace.OMEMO_TEMP_DL, max_items=1)
+        task = yield
 
-    @callback
-    def _devicelist_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
+        items = yield self.request_items(Namespace.OMEMO_TEMP_DL,
+                                         max_items=1,
+                                         jid=jid)
 
-        pubsub_node = stanza.getTag('pubsub')
-        items_node = pubsub_node.getTag('items')
-        item = items_node.getTag('item')
-        if item is None:
-            return []
+        raise_if_error(items)
 
-        try:
-            return self._parse_devicelist(item)
-        except StanzaMalformed as error:
-            return raise_error(self._log.warning, stanza,
-                               'stanza-malformed', str(error))
+        if items is None:
+            yield task.set_result(None)
 
-    def set_bundle(self, bundle, device_id):
-        item = self._create_bundle(bundle)
+        yield _parse_devicelist(items[0])
+
+    @iq_request_task
+    def set_bundle(self, bundle, device_id, public=True):
+        task = yield
+
         self._log.info('Set bundle')
 
-        node = '%s:%s' % (Namespace.OMEMO_TEMP_BUNDLE, device_id)
+        access_model = 'open' if public else 'presence'
 
-        self.publish(node, item, id_='current')
+        options = {
+            'pubsub#persist_items': 'true',
+            'pubsub#access_model': access_model,
+        }
 
-    @staticmethod
-    def _create_bundle(bundle):
-        '''
-        <publish node='eu.siacs.conversations.axolotl.bundles:31415'>
-          <item id='current'>
-            <bundle xmlns='eu.siacs.conversations.axolotl'>
-              <signedPreKeyPublic signedPreKeyId='1'>
-                BASE64ENCODED...
-              </signedPreKeyPublic>
-              <signedPreKeySignature>
-                BASE64ENCODED...
-              </signedPreKeySignature>
-              <identityKey>
-                BASE64ENCODED...
-              </identityKey>
-              <prekeys>
-                <preKeyPublic preKeyId='1'>
-                  BASE64ENCODED...
-                </preKeyPublic>
-                <preKeyPublic preKeyId='2'>
-                  BASE64ENCODED...
-                </preKeyPublic>
-                <preKeyPublic preKeyId='3'>
-                  BASE64ENCODED...
-                </preKeyPublic>
-                <!-- ... -->
-              </prekeys>
-            </bundle>
-          </item>
-        </publish>
-        '''
-        bundle_node = Node('bundle', attrs={'xmlns': Namespace.OMEMO_TEMP})
-        prekey_pub_node = bundle_node.addChild(
-            'signedPreKeyPublic',
-            attrs={'signedPreKeyId': bundle.spk['id']})
-        prekey_pub_node.addData(b64encode(bundle.spk['key']))
+        result = yield self.publish(
+            f'{Namespace.OMEMO_TEMP_BUNDLE}:{device_id}',
+            _make_bundle(bundle),
+            id_='current',
+            options=options,
+            force_node_options=True)
 
-        prekey_sig_node = bundle_node.addChild('signedPreKeySignature')
-        prekey_sig_node.addData(b64encode(bundle.spk_signature))
+        yield finalize(task, result)
 
-        identity_key_node = bundle_node.addChild('identityKey')
-        identity_key_node.addData(b64encode(bundle.ik))
-
-        prekeys = bundle_node.addChild('prekeys')
-        for key in bundle.otpks:
-            pre_key_public = prekeys.addChild('preKeyPublic',
-                                              attrs={'preKeyId': key['id']})
-            pre_key_public.addData(b64encode(key['key']))
-        return bundle_node
-
-    @call_on_response('_bundle_received')
+    @iq_request_task
     def request_bundle(self, jid, device_id):
+        task = yield
+
         self._log.info('Request bundle from: %s %s', jid, device_id)
-        node = '%s:%s' % (Namespace.OMEMO_TEMP_BUNDLE, device_id)
-        return get_pubsub_request(jid, node, max_items=1)
 
-    @callback
-    def _bundle_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
+        items = yield self.request_items(
+            f'{Namespace.OMEMO_TEMP_BUNDLE}:{device_id}',
+            max_items=1,
+            jid=jid)
 
-        pubsub_node = stanza.getTag('pubsub')
-        items_node = pubsub_node.getTag('items')
-        item = items_node.getTag('item')
+        raise_if_error(items)
 
+        if items is None:
+            yield task.set_result(None)
+
+        yield _parse_bundle(items[0])
+
+
+def _parse_omemo_message(stanza):
+    '''
+    <message>
+      <encrypted xmlns='eu.siacs.conversations.axolotl'>
+        <header sid='27183'>
+          <key rid='31415'>BASE64ENCODED...</key>
+          <key prekey="true" rid='12321'>BASE64ENCODED...</key>
+          <!-- ... -->
+          <iv>BASE64ENCODED...</iv>
+        </header>
+        <payload>BASE64ENCODED</payload>
+      </encrypted>
+      <store xmlns='urn:xmpp:hints'/>
+    </message>
+    '''
+    encrypted = stanza.getTag('encrypted', namespace=Namespace.OMEMO_TEMP)
+    if encrypted is None:
+        raise MalformedStanzaError('No encrypted node found', stanza)
+
+    header = encrypted.getTag('header')
+    if header is None:
+        raise MalformedStanzaError('header node not found', stanza)
+
+    try:
+        sid = int(header.getAttr('sid'))
+    except Exception as error:
+        raise MalformedStanzaError('sid attr not found', stanza)
+
+    iv_node = header.getTag('iv')
+    try:
+        iv = b64decode(iv_node.getData(), bytes)
+    except Exception as error:
+        raise MalformedStanzaError('failed to decode iv: %s' % error, stanza)
+
+    payload = None
+    payload_node = encrypted.getTag('payload')
+    if payload_node is not None:
         try:
-            return self._parse_bundle(item)
-        except StanzaMalformed as error:
-            return raise_error(self._log.warning, stanza,
-                               'stanza-malformed', str(error))
-
-    @staticmethod
-    def _parse_bundle(item):
-        '''
-        <item id='current'>
-          <bundle xmlns='eu.siacs.conversations.axolotl'>
-            <signedPreKeyPublic signedPreKeyId='1'>
-              BASE64ENCODED...
-            </signedPreKeyPublic>
-            <signedPreKeySignature>
-              BASE64ENCODED...
-            </signedPreKeySignature>
-            <identityKey>
-              BASE64ENCODED...
-            </identityKey>
-            <prekeys>
-              <preKeyPublic preKeyId='1'>
-                BASE64ENCODED...
-              </preKeyPublic>
-              <preKeyPublic preKeyId='2'>
-               BASE64ENCODED...
-              </preKeyPublic>
-              <preKeyPublic preKeyId='3'>
-                BASE64ENCODED...
-              </preKeyPublic>
-              <!-- ... -->
-            </prekeys>
-          </bundle>
-        </item>
-        '''
-        if item is None:
-            raise StanzaMalformed('No item in node found')
-
-        bundle = item.getTag('bundle', namespace=Namespace.OMEMO_TEMP)
-        if bundle is None:
-            raise StanzaMalformed('No bundle node found')
-
-        result = {}
-        signed_prekey_node = bundle.getTag('signedPreKeyPublic')
-        try:
-            result['spk'] = {'key': b64decode(signed_prekey_node.getData(),
-                                              bytes)}
+            payload = b64decode(payload_node.getData(), bytes)
         except Exception as error:
-            raise StanzaMalformed('Failed to decode '
-                                  'signedPreKeyPublic: %s' % error)
+            raise MalformedStanzaError('failed to decode payload: %s' % error,
+                                       stanza)
 
-        signed_prekey_id = signed_prekey_node.getAttr('signedPreKeyId')
-        try:
-            result['spk']['id'] = int(signed_prekey_id)
-        except Exception as error:
-            raise StanzaMalformed('Invalid signedPreKeyId: %s' % error)
+    key_nodes = header.getTags('key')
+    if not key_nodes:
+        raise MalformedStanzaError('no keys found', stanza)
 
-        signed_signature_node = bundle.getTag('signedPreKeySignature')
-        try:
-            result['spk_signature'] = b64decode(signed_signature_node.getData(),
-                                                bytes)
-        except Exception as error:
-            raise StanzaMalformed('Failed to decode '
-                                  'signedPreKeySignature: %s' % error)
+    keys = {}
+    for kn in key_nodes:
+        rid = kn.getAttr('rid')
+        if rid is None:
+            raise MalformedStanzaError('rid not found', stanza)
 
-        identity_key_node = bundle.getTag('identityKey')
-        try:
-            result['ik'] = b64decode(identity_key_node.getData(), bytes)
-        except Exception as error:
-            raise StanzaMalformed('Failed to decode '
-                                  'signedPreKeySignature: %s' % error)
-
-        prekeys = bundle.getTag('prekeys')
-        if prekeys is None or not prekeys.getChildren():
-            raise StanzaMalformed('No prekeys node found')
-
-        result['otpks'] = []
-        for prekey in prekeys.getChildren():
+        prekey = kn.getAttr('prekey')
+        if prekey is None:
+            prekey = False
+        else:
             try:
-                id_ = int(prekey.getAttr('preKeyId'))
-            except Exception as error:
-                raise StanzaMalformed('Invalid prekey: %s' % error)
+                prekey = from_xs_boolean(prekey)
+            except ValueError as error:
+                raise MalformedStanzaError(error, stanza)
 
-            try:
-                key = b64decode(prekey.getData(), bytes)
-            except Exception as error:
-                raise StanzaMalformed(
-                    'Failed to decode preKeyPublic: %s' % error)
+        try:
+            keys[int(rid)] = (b64decode(kn.getData(), bytes), prekey)
+        except Exception as error:
+            raise MalformedStanzaError('failed to decode key: %s' % error,
+                                       stanza)
 
-            result['otpks'].append({'key': key, 'id': id_})
+    return OMEMOMessage(sid=sid, iv=iv, keys=keys, payload=payload)
 
-        return OMEMOBundle(**result)
+
+def _parse_bundle(item):
+    '''
+    <item id='current'>
+      <bundle xmlns='eu.siacs.conversations.axolotl'>
+        <signedPreKeyPublic signedPreKeyId='1'>
+          BASE64ENCODED...
+        </signedPreKeyPublic>
+        <signedPreKeySignature>
+          BASE64ENCODED...
+        </signedPreKeySignature>
+        <identityKey>
+          BASE64ENCODED...
+        </identityKey>
+        <prekeys>
+          <preKeyPublic preKeyId='1'>
+            BASE64ENCODED...
+          </preKeyPublic>
+          <preKeyPublic preKeyId='2'>
+           BASE64ENCODED...
+          </preKeyPublic>
+          <preKeyPublic preKeyId='3'>
+            BASE64ENCODED...
+          </preKeyPublic>
+          <!-- ... -->
+        </prekeys>
+      </bundle>
+    </item>
+    '''
+    if item is None:
+        raise MalformedStanzaError('No item in node found', item)
+
+    bundle = item.getTag('bundle', namespace=Namespace.OMEMO_TEMP)
+    if bundle is None:
+        raise MalformedStanzaError('No bundle node found', item)
+
+    result = {}
+    signed_prekey_node = bundle.getTag('signedPreKeyPublic')
+    try:
+        result['spk'] = {'key': b64decode(signed_prekey_node.getData(),
+                                          bytes)}
+    except Exception as error:
+        error = 'Failed to decode signedPreKeyPublic: %s' % error
+        raise MalformedStanzaError(error, item)
+
+    signed_prekey_id = signed_prekey_node.getAttr('signedPreKeyId')
+    try:
+        result['spk']['id'] = int(signed_prekey_id)
+    except Exception as error:
+        raise MalformedStanzaError('Invalid signedPreKeyId: %s' % error, item)
+
+    signed_signature_node = bundle.getTag('signedPreKeySignature')
+    try:
+        result['spk_signature'] = b64decode(signed_signature_node.getData(),
+                                            bytes)
+    except Exception as error:
+        error = 'Failed to decode signedPreKeySignature: %s' % error
+        raise MalformedStanzaError(error, item)
+
+    identity_key_node = bundle.getTag('identityKey')
+    try:
+        result['ik'] = b64decode(identity_key_node.getData(), bytes)
+    except Exception as error:
+        error = 'Failed to decode IdentityKey: %s' % error
+        raise MalformedStanzaError(error, item)
+
+    prekeys = bundle.getTag('prekeys')
+    if prekeys is None or not prekeys.getChildren():
+        raise MalformedStanzaError('No prekeys node found', item)
+
+    result['otpks'] = []
+    for prekey in prekeys.getChildren():
+        try:
+            id_ = int(prekey.getAttr('preKeyId'))
+        except Exception as error:
+            raise MalformedStanzaError('Invalid prekey: %s' % error, item)
+
+        try:
+            key = b64decode(prekey.getData(), bytes)
+        except Exception as error:
+            raise MalformedStanzaError(
+                'Failed to decode preKeyPublic: %s' % error, item)
+
+        result['otpks'].append({'key': key, 'id': id_})
+
+    return OMEMOBundle(**result)
+
+
+def _make_bundle(bundle):
+    '''
+    <publish node='eu.siacs.conversations.axolotl.bundles:31415'>
+      <item id='current'>
+        <bundle xmlns='eu.siacs.conversations.axolotl'>
+          <signedPreKeyPublic signedPreKeyId='1'>
+            BASE64ENCODED...
+          </signedPreKeyPublic>
+          <signedPreKeySignature>
+            BASE64ENCODED...
+          </signedPreKeySignature>
+          <identityKey>
+            BASE64ENCODED...
+          </identityKey>
+          <prekeys>
+            <preKeyPublic preKeyId='1'>
+              BASE64ENCODED...
+            </preKeyPublic>
+            <preKeyPublic preKeyId='2'>
+              BASE64ENCODED...
+            </preKeyPublic>
+            <preKeyPublic preKeyId='3'>
+              BASE64ENCODED...
+            </preKeyPublic>
+            <!-- ... -->
+          </prekeys>
+        </bundle>
+      </item>
+    </publish>
+    '''
+    bundle_node = Node('bundle', attrs={'xmlns': Namespace.OMEMO_TEMP})
+    prekey_pub_node = bundle_node.addChild(
+        'signedPreKeyPublic',
+        attrs={'signedPreKeyId': bundle.spk['id']})
+    prekey_pub_node.addData(b64encode(bundle.spk['key']))
+
+    prekey_sig_node = bundle_node.addChild('signedPreKeySignature')
+    prekey_sig_node.addData(b64encode(bundle.spk_signature))
+
+    identity_key_node = bundle_node.addChild('identityKey')
+    identity_key_node.addData(b64encode(bundle.ik))
+
+    prekeys = bundle_node.addChild('prekeys')
+    for key in bundle.otpks:
+        pre_key_public = prekeys.addChild('preKeyPublic',
+                                          attrs={'preKeyId': key['id']})
+        pre_key_public.addData(b64encode(key['key']))
+    return bundle_node
+
+
+def _make_devicelist(devicelist):
+    if devicelist is None:
+        devicelist = []
+
+    devicelist_node = Node('list', attrs={'xmlns': Namespace.OMEMO_TEMP})
+    for device in devicelist:
+        devicelist_node.addChild('device').setAttr('id', device)
+
+    return devicelist_node
+
+
+def _parse_devicelist(item):
+    '''
+    <items node='eu.siacs.conversations.axolotl.devicelist'>
+      <item id='current'>
+        <list xmlns='eu.siacs.conversations.axolotl'>
+          <device id='12345' />
+          <device id='4223' />
+        </list>
+      </item>
+    </items>
+    '''
+    list_node = item.getTag('list', namespace=Namespace.OMEMO_TEMP)
+    if list_node is None:
+        raise MalformedStanzaError('No list node found', item)
+
+    if not list_node.getChildren():
+        return []
+
+    result = []
+    devices_nodes = list_node.getChildren()
+    for dn in devices_nodes:
+        _id = dn.getAttr('id')
+        if _id:
+            result.append(int(_id))
+
+    return result
 
 
 def create_omemo_message(stanza, omemo_message, store_hint=True,
