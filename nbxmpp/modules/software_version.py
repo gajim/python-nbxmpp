@@ -17,16 +17,15 @@
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import ErrorNode
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
 from nbxmpp.structs import SoftwareVersionResult
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.util import call_on_response
-from nbxmpp.util import callback
-from nbxmpp.util import raise_error
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import raise_if_error
+from nbxmpp.task import iq_request_task
+from nbxmpp.errors import MalformedStanzaError
 
 
 class SoftwareVersion(BaseModule):
@@ -50,32 +49,17 @@ class SoftwareVersion(BaseModule):
     def disable(self):
         self._enabled = False
 
-    @call_on_response('_software_version_received')
+    @iq_request_task
     def request_software_version(self, jid):
+        _task = yield
+
         self._log.info('Request software version for %s', jid)
-        return Iq(typ='get', to=jid, queryNS=Namespace.VERSION)
 
-    @callback
-    def _software_version_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
+        result = yield Iq(typ='get', to=jid, queryNS=Namespace.VERSION)
 
-        try:
-            return SoftwareVersionResult(*self._parse_info(stanza))
-        except Exception as error:
-            self._log.warning(error)
-            return raise_error(self._log.warning, stanza, 'stanza-malformed')
+        raise_if_error(result)
 
-    @staticmethod
-    def _parse_info(stanza):
-        name = stanza.getQueryChild('name').getData()
-        version = stanza.getQueryChild('version').getData()
-
-        os_info = stanza.getQueryChild('os')
-        if os_info is not None:
-            os_info = os_info.getData()
-
-        return name, version, os_info
+        yield _parse_info(result)
 
     def set_software_version(self, name, version, os=None):
         self._name, self._version, self._os = name, version, os
@@ -102,3 +86,21 @@ class SoftwareVersion(BaseModule):
 
         self._client.send_stanza(iq)
         raise NodeProcessed
+
+
+def _parse_info(stanza):
+    try:
+        name = stanza.getQueryChild('name').getData()
+    except Exception:
+        raise MalformedStanzaError('name node missing', stanza)
+
+    try:
+        version = stanza.getQueryChild('version').getData()
+    except Exception:
+        raise MalformedStanzaError('version node missing', stanza)
+
+    os_info = stanza.getQueryChild('os')
+    if os_info is not None:
+        os_info = os_info.getData()
+
+    return SoftwareVersionResult(name, version, os_info)
