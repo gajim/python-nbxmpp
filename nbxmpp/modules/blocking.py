@@ -17,13 +17,14 @@
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import isResultNode
-from nbxmpp.structs import BlockingListResult
-from nbxmpp.structs import CommonResult
-from nbxmpp.util import call_on_response
-from nbxmpp.util import callback
-from nbxmpp.util import raise_error
+from nbxmpp.protocol import JID
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import raise_if_error
+from nbxmpp.modules.util import finalize
+from nbxmpp.task import iq_request_task
+from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.structs import BlockingPush
+from nbxmpp.structs import StanzaHandler
 
 
 class Blocking(BaseModule):
@@ -31,54 +32,115 @@ class Blocking(BaseModule):
         BaseModule.__init__(self, client)
 
         self._client = client
-        self.handlers = []
+        self.handlers = [
+            StanzaHandler(name='iq',
+                          priority=15,
+                          callback=self._process_blocking_push,
+                          typ='set',
+                          ns=Namespace.BLOCKING),
+        ]
 
-    @call_on_response('_blocking_list_received')
-    def get_blocking_list(self):
-        iq = Iq('get', Namespace.BLOCKING)
-        iq.setQuery('blocklist')
-        return iq
+    @iq_request_task
+    def request_blocking_list(self):
+        _task = yield
 
-    @callback
-    def _blocking_list_received(self, stanza):
-        blocked = []
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
+        result = yield _make_blocking_list_request()
 
-        blocklist = stanza.getTag('blocklist', namespace=Namespace.BLOCKING)
+        raise_if_error(result)
+
+        blocklist = result.getTag('blocklist', namespace=Namespace.BLOCKING)
         if blocklist is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed')
+            raise MalformedStanzaError('blocklist node missing', result)
 
+        blocked = []
         for item in blocklist.getTags('item'):
             blocked.append(item.getAttr('jid'))
 
         self._log.info('Received blocking list: %s', blocked)
-        return BlockingListResult(blocking_list=blocked)
+        yield blocked
 
-    @call_on_response('_default_response')
+    @iq_request_task
     def block(self, jids, report=None):
+        task = yield
+
         self._log.info('Block: %s', jids)
-        iq = Iq('set', Namespace.BLOCKING)
-        query = iq.setQuery(name='block')
-        for jid in jids:
-            item = query.addChild(name='item', attrs={'jid': jid})
-            if report in ('spam', 'abuse'):
-                action = item.addChild(name='report',
-                                       namespace=Namespace.REPORTING)
-                action.setTag(report)
-        return iq
 
-    @call_on_response('_default_response')
+        result = yield _make_block_request(jids, report)
+        yield finalize(task, result)
+
+    @iq_request_task
     def unblock(self, jids):
-        self._log.info('Unblock: %s', jids)
-        iq = Iq('set', Namespace.BLOCKING)
-        query = iq.setQuery(name='unblock')
-        for jid in jids:
-            query.addChild(name='item', attrs={'jid': jid})
-        return iq
+        task = yield
 
-    @callback
-    def _default_response(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
-        return CommonResult(jid=stanza.getFrom())
+        self._log.info('Unblock: %s', jids)
+
+        result = yield _make_unblock_request(jids)
+        yield finalize(task, result)
+
+    @staticmethod
+    def _process_blocking_push(client, stanza, properties):
+        unblock = stanza.getTag('unblock', namespace=Namespace.BLOCKING)
+        if unblock is not None:
+            properties.blocking = _parse_push(unblock)
+            return
+
+        block = stanza.getTag('block', namespace=Namespace.BLOCKING)
+        if block is not None:
+            properties.blocking = _parse_push(block)
+
+        reply = stanza.buildSimpleReply('result')
+        client.send_stanza(reply)
+
+
+def _make_blocking_list_request():
+    iq = Iq('get', Namespace.BLOCKING)
+    iq.setQuery('blocklist')
+    return iq
+
+
+def _make_block_request(jids, report):
+    iq = Iq('set', Namespace.BLOCKING)
+    query = iq.setQuery(name='block')
+    for jid in jids:
+        item = query.addChild(name='item', attrs={'jid': jid})
+        if report in ('spam', 'abuse'):
+            action = item.addChild(name='report',
+                                   namespace=Namespace.REPORTING)
+            action.setTag(report)
+    return iq
+
+
+def _make_unblock_request(jids):
+    iq = Iq('set', Namespace.BLOCKING)
+    query = iq.setQuery(name='unblock')
+    for jid in jids:
+        query.addChild(name='item', attrs={'jid': jid})
+    return iq
+
+
+def _parse_push(node):
+    items = node.getTags('item')
+    if not items:
+        return BlockingPush(block=[], unblock=[], unblock_all=True)
+
+    jids = []
+    for item in items:
+        jid = item.getAttr('jid')
+        if not jid:
+            continue
+
+        try:
+            jid = JID.from_string(jid)
+        except Exception:
+            continue
+
+        jids.append(jid)
+
+
+    block, unblock = [], []
+    if node.getName() == 'block':
+        block = jids
+    else:
+        unblock = jids
+
+    return BlockingPush(block=block, unblock=unblock, unblock_all=False)

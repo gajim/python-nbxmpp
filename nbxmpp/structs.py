@@ -75,6 +75,8 @@ PubSubEventData.__new__.__defaults__ = (None, None, None, False, False, False)
 
 MoodData = namedtuple('MoodData', 'mood text')
 
+BlockingPush = namedtuple('BlockingPush', 'block unblock unblock_all')
+
 ActivityData = namedtuple('ActivityData', 'activity subactivity text')
 
 LocationData = namedtuple('LocationData', LOCATION_DATA)
@@ -82,8 +84,6 @@ LocationData.__new__.__defaults__ = (None,) * len(LocationData._fields)
 
 BookmarkData = namedtuple('BookmarkData', 'jid name nick autojoin password')
 BookmarkData.__new__.__defaults__ = (None, None, None, None)
-
-BlockingListResult = namedtuple('BlockingListResult', 'blocking_list')
 
 PGPPublicKey = namedtuple('PGPPublicKey', 'jid key date')
 
@@ -844,6 +844,7 @@ class IqProperties:
         self.payload = None
         self.http_auth = None
         self.ibb = None
+        self.blocking = None
 
     @property
     def is_http_auth(self):
@@ -852,6 +853,10 @@ class IqProperties:
     @property
     def is_ibb(self):
         return self.ibb is not None
+
+    @property
+    def is_blocking(self):
+        return self.blocking is not None
 
 
 class PresenceProperties:
