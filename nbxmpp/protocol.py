@@ -1571,6 +1571,12 @@ class Iq(Protocol):
         iq.setQuery(self.getQuery().getName()).setNamespace(self.getQueryNS())
         return iq
 
+    def buildSimpleReply(self, typ):
+        return Iq(typ,
+                  to=self.getFrom(),
+                  attrs={'id': self.getID()})
+
+
 class Hashes(Node):
     """
     Hash elements for various XEPs as defined in XEP-300
