@@ -91,7 +91,7 @@ class NativeBookmarks(BaseModule):
         bookmarks = []
         for item in items:
             try:
-                bookmark_item = self.parse_bookmark(item)
+                bookmark_item = parse_bookmark(item)
             except MalformedStanzaError as error:
                 self._log.warning(error)
                 self._log.warning(error.stanza)
