@@ -19,12 +19,12 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import JID
 from nbxmpp.modules.base import BaseModule
-from nbxmpp.modules.util import raise_if_error
-from nbxmpp.modules.util import finalize
-from nbxmpp.task import iq_request_task
+from nbxmpp.errors import StanzaError
 from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.task import iq_request_task
 from nbxmpp.structs import BlockingPush
 from nbxmpp.structs import StanzaHandler
+from nbxmpp.modules.util import process_response
 
 
 class Blocking(BaseModule):
@@ -45,8 +45,8 @@ class Blocking(BaseModule):
         _task = yield
 
         result = yield _make_blocking_list_request()
-
-        raise_if_error(result)
+        if result.isError():
+            raise StanzaError(result)
 
         blocklist = result.getTag('blocklist', namespace=Namespace.BLOCKING)
         if blocklist is None:
@@ -61,21 +61,21 @@ class Blocking(BaseModule):
 
     @iq_request_task
     def block(self, jids, report=None):
-        task = yield
+        _task = yield
 
         self._log.info('Block: %s', jids)
 
-        result = yield _make_block_request(jids, report)
-        yield finalize(task, result)
+        response = yield _make_block_request(jids, report)
+        yield process_response(response)
 
     @iq_request_task
     def unblock(self, jids):
-        task = yield
+        _task = yield
 
         self._log.info('Unblock: %s', jids)
 
-        result = yield _make_unblock_request(jids)
-        yield finalize(task, result)
+        response = yield _make_unblock_request(jids)
+        yield process_response(response)
 
     @staticmethod
     def _process_blocking_push(client, stanza, properties):
