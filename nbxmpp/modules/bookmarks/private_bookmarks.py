@@ -18,8 +18,8 @@
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.task import iq_request_task
-from nbxmpp.modules.util import raise_if_error
-from nbxmpp.modules.util import finalize
+from nbxmpp.errors import StanzaError
+from nbxmpp.modules.util import process_response
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.bookmarks.util import build_storage_node
 from nbxmpp.modules.bookmarks.util import get_private_request
@@ -39,8 +39,8 @@ class PrivateBookmarks(BaseModule):
         _task = yield
 
         response = yield get_private_request()
-        raise_if_error(response)
-
+        if response.isError():
+            raise StanzaError(response)
 
         bookmarks = parse_private_bookmarks(response, self._log)
         for bookmark in bookmarks:
@@ -50,10 +50,10 @@ class PrivateBookmarks(BaseModule):
 
     @iq_request_task
     def store_bookmarks(self, bookmarks):
-        task = yield
+        _task = yield
 
         self._log.info('Store Bookmarks')
 
         storage_node = build_storage_node(bookmarks)
-        result = yield Iq('set', Namespace.PRIVATE, payload=storage_node)
-        yield finalize(task, result)
+        response = yield Iq('set', Namespace.PRIVATE, payload=storage_node)
+        yield process_response(response)
