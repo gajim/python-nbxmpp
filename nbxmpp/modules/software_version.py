@@ -23,9 +23,9 @@ from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
 from nbxmpp.structs import SoftwareVersionResult
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.modules.base import BaseModule
-from nbxmpp.modules.util import raise_if_error
 from nbxmpp.task import iq_request_task
 from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.errors import StanzaError
 
 
 class SoftwareVersion(BaseModule):
@@ -55,11 +55,11 @@ class SoftwareVersion(BaseModule):
 
         self._log.info('Request software version for %s', jid)
 
-        result = yield Iq(typ='get', to=jid, queryNS=Namespace.VERSION)
+        response = yield Iq(typ='get', to=jid, queryNS=Namespace.VERSION)
+        if response.isError():
+            raise StanzaError(response)
 
-        raise_if_error(result)
-
-        yield _parse_info(result)
+        yield _parse_info(response)
 
     def set_software_version(self, name, version, os=None):
         self._name, self._version, self._os = name, version, os
