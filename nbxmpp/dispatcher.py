@@ -56,7 +56,9 @@ from nbxmpp.modules.tune import Tune
 from nbxmpp.modules.mood import Mood
 from nbxmpp.modules.location import Location
 from nbxmpp.modules.user_avatar import UserAvatar
-from nbxmpp.modules.bookmarks import Bookmarks
+from nbxmpp.modules.bookmarks.private_bookmarks import PrivateBookmarks
+from nbxmpp.modules.bookmarks.pep_bookmarks import PEPBookmarks
+from nbxmpp.modules.bookmarks.native_bookmarks import NativeBookmarks
 from nbxmpp.modules.openpgp import OpenPGP
 from nbxmpp.modules.omemo import OMEMO
 from nbxmpp.modules.annotations import Annotations
@@ -163,7 +165,9 @@ class StanzaDispatcher(Observable):
         self._modules['Tune'] = Tune(self._client)
         self._modules['Location'] = Location(self._client)
         self._modules['UserAvatar'] = UserAvatar(self._client)
-        self._modules['Bookmarks'] = Bookmarks(self._client)
+        self._modules['PrivateBookmarks'] = PrivateBookmarks(self._client)
+        self._modules['PEPBookmarks'] = PEPBookmarks(self._client)
+        self._modules['NativeBookmarks'] = NativeBookmarks(self._client)
         self._modules['OpenPGP'] = OpenPGP(self._client)
         self._modules['OMEMO'] = OMEMO(self._client)
         self._modules['Annotations'] = Annotations(self._client)

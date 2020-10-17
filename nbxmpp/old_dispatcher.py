@@ -60,7 +60,6 @@ from nbxmpp.modules.tune import Tune
 from nbxmpp.modules.mood import Mood
 from nbxmpp.modules.location import Location
 from nbxmpp.modules.user_avatar import UserAvatar
-from nbxmpp.modules.bookmarks import Bookmarks
 from nbxmpp.modules.openpgp import OpenPGP
 from nbxmpp.modules.omemo import OMEMO
 from nbxmpp.modules.annotations import Annotations

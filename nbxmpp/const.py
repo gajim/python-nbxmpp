@@ -287,12 +287,6 @@ Role._WEIGHTS = {
 }
 
 
-class BookmarkStoreType(Enum):
-    PUBSUB_BOOKMARK_2 = 'pubsub bookmark 2'
-    PUBSUB_BOOKMARK_1 = 'pubsub bookmark 1'
-    PRIVATE = 'private'
-
-
 class AnonymityMode(Enum):
     UNKNOWN = None
     SEMI = 'semi'
