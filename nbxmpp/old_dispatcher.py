@@ -208,7 +208,6 @@ class XMPPDispatcher(PlugIn):
         self._modules['Tune'] = Tune(self._owner)
         self._modules['Location'] = Location(self._owner)
         self._modules['UserAvatar'] = UserAvatar(self._owner)
-        self._modules['Bookmarks'] = Bookmarks(self._owner)
         self._modules['OpenPGP'] = OpenPGP(self._owner)
         self._modules['OMEMO'] = OMEMO(self._owner)
         self._modules['Annotations'] = Annotations(self._owner)
