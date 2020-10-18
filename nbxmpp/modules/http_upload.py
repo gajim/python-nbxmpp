@@ -17,11 +17,10 @@
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import isResultNode
 from nbxmpp.structs import HTTPUploadData
-from nbxmpp.util import call_on_response
-from nbxmpp.util import callback
-from nbxmpp.util import raise_error
+from nbxmpp.errors import HTTPUploadStanzaError
+from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.task import iq_request_task
 from nbxmpp.modules.base import BaseModule
 
 
@@ -35,52 +34,51 @@ class HTTPUpload(BaseModule):
         self._client = client
         self.handlers = []
 
-    @call_on_response('_received_slot')
+    @iq_request_task
     def request_slot(self, jid, filename, size, content_type):
-        iq = Iq(typ='get', to=jid)
-        attr = {'filename': filename,
-                'size': size,
-                'content-type': content_type}
-        iq.setTag(name="request",
-                  namespace=Namespace.HTTPUPLOAD_0,
-                  attrs=attr)
-        return iq
+        _task = yield
 
-    @callback
-    def _received_slot(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
+        response = yield _make_request(jid, filename, size, content_type)
+        if response.isError():
+            raise HTTPUploadStanzaError(response)
 
-        slot = stanza.getTag('slot', namespace=Namespace.HTTPUPLOAD_0)
+        slot = response.getTag('slot', namespace=Namespace.HTTPUPLOAD_0)
         if slot is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed',
-                               'No slot node found')
+            raise MalformedStanzaError('slot node missing', response)
 
         put_uri = slot.getTagAttr('put', 'url')
         if put_uri is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed',
-                               'No put uri found')
+            raise MalformedStanzaError('put uri missing', response)
 
         get_uri = slot.getTagAttr('get', 'url')
         if get_uri is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed',
-                               'No get uri found')
+            raise MalformedStanzaError('get uri missing', response)
 
         headers = {}
         for header in slot.getTag('put').getTags('header'):
             name = header.getAttr('name')
             if name not in ALLOWED_HEADERS:
-                return raise_error(self._log.warning, stanza,
-                                   'stanza-malformed',
-                                   'Not allowed header found: %s' % name)
+                raise MalformedStanzaError(
+                    'not allowed header found: %s' % name, response)
+
             data = header.getData()
             if '\n' in data:
-                return raise_error(self._log.warning, stanza,
-                                   'stanza-malformed',
-                                   'NNewline in header data found')
+                raise MalformedStanzaError(
+                    'newline in header data found', response)
 
             headers[name] = data
 
-        return HTTPUploadData(put_uri=put_uri,
-                              get_uri=get_uri,
-                              headers=headers)
+        yield HTTPUploadData(put_uri=put_uri,
+                             get_uri=get_uri,
+                             headers=headers)
+
+
+def _make_request(jid, filename, size, content_type):
+    iq = Iq(typ='get', to=jid)
+    attr = {'filename': filename,
+            'size': size,
+            'content-type': content_type}
+    iq.setTag(name="request",
+              namespace=Namespace.HTTPUPLOAD_0,
+              attrs=attr)
+    return iq

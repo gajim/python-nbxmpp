@@ -98,6 +98,26 @@ class PubSubStanzaError(StanzaError):
     app_namespace = Namespace.PUBSUB_ERROR
 
 
+class HTTPUploadStanzaError(StanzaError):
+
+    app_namespace = Namespace.HTTPUPLOAD_0
+
+    def get_max_file_size(self):
+        if self.app_condition != 'file-too-large':
+            return None
+
+        node = self._error_node.getTag(self.app_condition)
+        try:
+            return float(node.getTagData('max-file-size'))
+        except Exception:
+            return None
+
+    def get_retry_date(self):
+        if self.app_condition != 'retry':
+            return None
+        return self._error_node.getTagAttr('stamp')
+
+
 class MalformedStanzaError(BaseError):
 
     log_level = logging.WARNING
