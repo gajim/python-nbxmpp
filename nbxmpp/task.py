@@ -21,6 +21,8 @@ import logging
 from enum import IntEnum
 from functools import wraps
 
+from gi.repository import Soup
+
 from nbxmpp.errors import is_error
 from nbxmpp.errors import CancelledError
 from nbxmpp.simplexml import Node
@@ -62,20 +64,33 @@ class TaskState(IntEnum):
         return self == TaskState.CANCELLED
 
 
+def _setup_task(task, client, callback, user_data):
+    client.add_task(task)
+    task.set_finalize_func(client.remove_task)
+    task.set_user_data(user_data)
+    if callback is not None:
+        task.add_done_callback(callback)
+    task.start()
+    return task
+
+
 def iq_request_task(func):
     @wraps(func)
-    def func_wrapper(self, *args,
-                     callback=None, user_data=None, **kwargs):
+    def func_wrapper(self, *args, callback=None, user_data=None, **kwargs):
         task = IqRequestTask(func(self, *args, **kwargs),
                              self._log,
                              self._client)
-        self._client.add_task(task)
-        task.set_finalize_func(self._client.remove_task)
-        task.set_user_data(user_data)
-        if callback is not None:
-            task.add_done_callback(callback)
-        task.start()
-        return task
+        return _setup_task(task, self._client, callback, user_data)
+    return func_wrapper
+
+
+def http_request_task(func):
+    @wraps(func)
+    def func_wrapper(self, *args, callback=None, user_data=None, **kwargs):
+        task = HTTPRequestTask(func(self, *args, **kwargs),
+                               self._log,
+                               self._soup_session)
+        return _setup_task(task, self._client, callback, user_data)
     return func_wrapper
 
 
@@ -286,4 +301,29 @@ class IqRequestTask(Task):
 
     def _finalize(self):
         self._client = None
+        super()._finalize()
+
+
+class HTTPRequestTask(Task):
+
+    '''
+    A Task for running HTTP requests
+
+    '''
+
+    _process_types = (Soup.Message,)
+
+    def __init__(self, gen, logger, session):
+        super().__init__(gen, logger)
+        self._session = session
+
+    def _run_async(self, message):
+        self._session.queue_message(message, self._async_finished, None)
+
+    def _async_finished(self, _session, message, _user_data):
+        if self._state != TaskState.CANCELLED:
+            self._next_step(message)
+
+    def _finalize(self):
+        self._session = None
         super()._finalize()
