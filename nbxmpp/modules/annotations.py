@@ -18,15 +18,14 @@
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Node
-from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import JID
 from nbxmpp.structs import AnnotationNote
-from nbxmpp.structs import CommonResult
-from nbxmpp.modules.date_and_time import parse_datetime
-from nbxmpp.util import call_on_response
-from nbxmpp.util import callback
-from nbxmpp.util import raise_error
+from nbxmpp.errors import StanzaError
+from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.task import iq_request_task
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import process_response
+from nbxmpp.modules.date_and_time import parse_datetime
 
 
 class Annotations(BaseModule):
@@ -40,21 +39,18 @@ class Annotations(BaseModule):
     def domain(self):
         return self._client.get_bound_jid().domain
 
-    @call_on_response('_annotations_received')
+    @iq_request_task
     def request_annotations(self):
-        self._log.info('Request annotations for %s', self.domain)
-        payload = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
-        return Iq(typ='get', queryNS=Namespace.PRIVATE, payload=payload)
+        _task = yield
 
-    @callback
-    def _annotations_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
+        response = yield _make_request()
+        if response.isError():
+            raise StanzaError(response)
 
-        storage = stanza.getQueryChild('storage')
+        query = response.getQuery()
+        storage = query.getTag('storage', namespace=Namespace.ROSTERNOTES)
         if storage is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed',
-                               'No annotations found')
+            raise MalformedStanzaError('storage node missing', response)
 
         notes = []
         for note in storage.getTags('note'):
@@ -80,26 +76,33 @@ class Annotations(BaseModule):
         self._log.info('Received annotations from %s:', self.domain)
         for note in notes:
             self._log.info(note)
-        return notes
+        yield notes
 
-    @call_on_response('_default_response')
+    @iq_request_task
     def set_annotations(self, notes):
+        _task = yield
+
         self._log.info('Set annotations for %s:', self.domain)
+
         for note in notes:
             self._log.info(note)
-        storage = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
-        for note in notes:
-            node = Node('note', attrs={'jid': note.jid})
-            node.setData(note.data)
-            if note.cdate is not None:
-                node.setAttr('cdate', note.cdate)
-            if note.mdate is not None:
-                node.setAttr('mdate', note.mdate)
-            storage.addChild(node=node)
-        return Iq(typ='set', queryNS=Namespace.PRIVATE, payload=storage)
 
-    @callback
-    def _default_response(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
-        return CommonResult(jid=stanza.getFrom())
+        response = yield _make_set_request(notes)
+        yield process_response(response)
+
+
+def _make_request():
+    payload = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
+    return Iq(typ='get', queryNS=Namespace.PRIVATE, payload=payload)
+
+def _make_set_request(notes):
+    storage = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
+    for note in notes:
+        node = Node('note', attrs={'jid': note.jid})
+        node.setData(note.data)
+        if note.cdate is not None:
+            node.setAttr('cdate', note.cdate)
+        if note.mdate is not None:
+            node.setAttr('mdate', note.mdate)
+        storage.addChild(node=node)
+    return Iq(typ='set', queryNS=Namespace.PRIVATE, payload=storage)
