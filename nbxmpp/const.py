@@ -21,10 +21,6 @@ from functools import total_ordering
 
 from gi.repository import Gio
 
-class GSSAPIState(IntEnum):
-    STEP = 0
-    WRAP = 1
-
 
 class IqType(Enum):
     GET = 'get'

@@ -29,17 +29,16 @@ from nbxmpp.protocol import SASL_AUTH_MECHS
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
 from nbxmpp.util import LogAdapter
-from nbxmpp.const import GSSAPIState
 from nbxmpp.const import StreamState
 
 
 log = logging.getLogger('nbxmpp.auth')
 
 try:
-    kerberos = __import__('kerberos')
-    KERBEROS_AVAILABLE = True
+    gssapi = __import__('gssapi')
+    GSSAPI_AVAILABLE = True
 except ImportError:
-    KERBEROS_AVAILABLE = False
+    GSSAPI_AVAILABLE = False
 
 
 class SASL:
@@ -91,7 +90,7 @@ class SASL:
         self._enabled_mechs.discard('SCRAM-SHA-256-PLUS')
         # channel_binding_data = None
 
-        if not KERBEROS_AVAILABLE:
+        if not GSSAPI_AVAILABLE:
             self._enabled_mechs.discard('GSSAPI')
 
         available_mechs = features.get_mechs() & self._enabled_mechs
@@ -156,9 +155,16 @@ class SASL:
 
         elif chosen_mechanism == 'GSSAPI':
             self._method = GSSAPI(self._client)
-            self._method.initiate(domain_based_name or
-                                  self._client.domain)
-
+            if domain_based_name:
+                hostname = domain_based_name
+            else:
+                hostname = self._client.domain
+            try:
+                self._method.initiate(hostname)
+            except AuthFail as error:
+                self._log.error(error)
+                self._abort_auth()
+                return
         else:
             self._log.error('Unknown auth mech')
 
@@ -258,39 +264,41 @@ class ANONYMOUS:
 
 class GSSAPI:
 
+    # See https://tools.ietf.org/html/rfc4752#section-3.1
+
     _mechanism = 'GSSAPI'
 
     def __init__(self, client):
         self._client = client
-        self._gss_vc = None
-        self._state = GSSAPIState.STEP
 
     def initiate(self, hostname):
-        self._gss_vc = kerberos.authGSSClientInit('xmpp@%s' % hostname)[1]
-        kerberos.authGSSClientStep(self._gss_vc, '')
-        response = kerberos.authGSSClientResponse(self._gss_vc)
+        service = gssapi.Name(
+            'xmpp@%s' % hostname, name_type=gssapi.NameType.hostbased_service)
+        try:
+            self.ctx = gssapi.SecurityContext(
+                name=service, usage="initiate",
+                flags=gssapi.RequirementFlag.integrity)
+            token = self.ctx.step()
+        except (gssapi.exceptions.GeneralError, gssapi.raw.misc.GSSError) as e:
+            raise AuthFail(e)
         node = Node('auth',
                     attrs={'xmlns': Namespace.SASL, 'mechanism': 'GSSAPI'},
-                    payload=(response or ''))
+                    payload=b64encode(token))
         self._client.send_nonza(node)
 
     def response(self, server_message, *args, **kwargs):
         server_message = b64decode(server_message, bytes)
-        if self._state == GSSAPIState.STEP:
-            rc = kerberos.authGSSClientStep(self._gss_vc, server_message)
-            if rc != kerberos.AUTH_GSS_CONTINUE:
-                self._state = GSSAPIState.WRAP
-        elif self._state == GSSAPIState.WRAP:
-            rc = kerberos.authGSSClientUnwrap(self._gss_vc, server_message)
-            response = kerberos.authGSSClientResponse(self._gss_vc)
-            rc = kerberos.authGSSClientWrap(
-                self._gss_vc,
-                response,
-                kerberos.authGSSClientUserName(self._gss_vc))
-        response = kerberos.authGSSClientResponse(self._gss_vc)
-        if not response:
-            response = ''
-
+        try:
+            if not self.ctx.complete:
+                output_token = self.ctx.step(server_message)
+            else:
+                result = self.ctx.unwrap(server_message)
+                # TODO(jelmer): Log result.message
+                data = b'\x00\x00\x00\x00' + bytes(self.ctx.initiator_name)
+                output_token = self.ctx.wrap(data, False).message
+        except (gssapi.exceptions.GeneralError, gssapi.raw.misc.GSSError) as e:
+            raise AuthFail(e)
+        response = b64encode(output_token)
         node = Node('response',
                     attrs={'xmlns': Namespace.SASL},
                     payload=response)

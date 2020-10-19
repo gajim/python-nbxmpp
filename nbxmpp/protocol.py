@@ -40,8 +40,8 @@ SASL_AUTH_MECHS = [
     'SCRAM-SHA-256',
     'SCRAM-SHA-1-PLUS',
     'SCRAM-SHA-1',
-    'PLAIN',
     'GSSAPI',
+    'PLAIN',
     'EXTERNAL',
     'ANONYMOUS',
 ]

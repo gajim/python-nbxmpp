@@ -11,6 +11,10 @@
 - precis-i18n
 - idna
 
+## Optional Runtime Requirements
+
+- python-gssapi (for GSSAPI authentication)
+
 ## Features
 
 * List of [supported XEPs](https://dev.gajim.org/gajim/python-nbxmpp/-/wikis/Supported-XEPs-in-python-nbxmpp/)
