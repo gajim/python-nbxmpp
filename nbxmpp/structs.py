@@ -120,9 +120,6 @@ SecurityLabel = namedtuple('SecurityLabel', 'displaymarking')
 
 RegisterData = namedtuple('RegisterData', 'instructions form fields_form oob_url bob_data')
 
-ChangePasswordResult = namedtuple('ChangePasswordResult', 'successful form')
-ChangePasswordResult.__new__.__defaults__ = (None,)
-
 HTTPUploadData = namedtuple('HTTPUploadData', 'put_uri get_uri headers')
 HTTPUploadData.__new__.__defaults__ = (None,)
 

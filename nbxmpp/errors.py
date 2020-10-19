@@ -135,3 +135,21 @@ class CancelledError(BaseError):
     def __init__(self):
         BaseError.__init__(self, is_fatal=True)
         self.text = 'Task has been cancelled'
+
+
+class RegisterStanzaError(StanzaError):
+    def __init__(self, stanza, data):
+        StanzaError.__init__(self, stanza)
+        self._data = data
+
+    def get_data(self):
+        return self._data
+
+
+class ChangePasswordStanzaError(StanzaError):
+    def __init__(self, stanza, form):
+        StanzaError.__init__(self, stanza)
+        self._form = form
+
+    def get_form(self):
+        return self._form
