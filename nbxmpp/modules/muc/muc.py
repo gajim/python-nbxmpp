@@ -15,43 +15,45 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from dataclasses import dataclass
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import ERR_NOT_ACCEPTABLE
 from nbxmpp.protocol import JID
-from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import DataForm
 from nbxmpp.protocol import DataField
-from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import StanzaMalformed
-from nbxmpp.protocol import InvalidJid
-from nbxmpp.simplexml import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import InviteType
 from nbxmpp.const import MessageType
 from nbxmpp.const import StatusCode
-from nbxmpp.const import Affiliation
-from nbxmpp.const import Role
 from nbxmpp.structs import DeclineData
 from nbxmpp.structs import InviteData
 from nbxmpp.structs import VoiceRequest
 from nbxmpp.structs import AffiliationResult
-from nbxmpp.structs import CommonResult
 from nbxmpp.structs import MucConfigResult
-from nbxmpp.structs import MucUserData
 from nbxmpp.structs import MucDestroyed
 from nbxmpp.task import iq_request_task
-from nbxmpp.util import call_on_response
-from nbxmpp.util import callback
-from nbxmpp.util import raise_error
 from nbxmpp.errors import is_error
+from nbxmpp.errors import StanzaError
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.modules.util import parse_xmpp_uri
+from nbxmpp.modules.util import process_response
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.muc.util import MucInfoResult
+from nbxmpp.modules.muc.util import make_affiliation_request
+from nbxmpp.modules.muc.util import make_destroy_request
+from nbxmpp.modules.muc.util import make_set_config_request
+from nbxmpp.modules.muc.util import make_config_request
+from nbxmpp.modules.muc.util import make_cancel_config_request
+from nbxmpp.modules.muc.util import make_set_affiliation_request
+from nbxmpp.modules.muc.util import make_set_role_request
+from nbxmpp.modules.muc.util import make_captcha_request
+from nbxmpp.modules.muc.util import build_direct_invite
+from nbxmpp.modules.muc.util import build_mediated_invite
+from nbxmpp.modules.muc.util import parse_muc_user
 
 
 class MUC(BaseModule):
@@ -165,7 +167,7 @@ class MUC(BaseModule):
             properties.muc_status_codes = codes
 
         try:
-            properties.muc_user = self._parse_muc_user(muc_user)
+            properties.muc_user = parse_muc_user(muc_user)
         except StanzaMalformed as error:
             self._log.warning(error)
             self._log.warning(stanza)
@@ -186,8 +188,8 @@ class MUC(BaseModule):
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is not None:
             try:
-                properties.muc_user = self._parse_muc_user(muc_user,
-                                                           is_presence=False)
+                properties.muc_user = parse_muc_user(muc_user,
+                                                     is_presence=False)
             except StanzaMalformed as error:
                 self._log.warning(error)
                 self._log.warning(stanza)
@@ -342,20 +344,16 @@ class MUC(BaseModule):
         form['muc#request_allow'].value = True
         self._client.send_stanza(Message(to=muc_jid, payload=form))
 
-    @call_on_response('_affiliation_received')
+    @iq_request_task
     def get_affiliation(self, jid, affiliation):
-        iq = Iq(typ='get', to=jid, queryNS=Namespace.MUC_ADMIN)
-        item = iq.setQuery().setTag('item')
-        item.setAttr('affiliation', affiliation)
-        return iq
+        _task = yield
 
-    @callback
-    def _affiliation_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
+        response = yield make_affiliation_request(jid, affiliation)
+        if response.isError():
+            raise StanzaError(response)
 
-        room_jid = stanza.getFrom()
-        query = stanza.getTag('query', namespace=Namespace.MUC_ADMIN)
+        room_jid = response.getFrom()
+        query = response.getTag('query', namespace=Namespace.MUC_ADMIN)
         items = query.getTags('item')
         users_dict = {}
         for item in items:
@@ -378,19 +376,14 @@ class MUC(BaseModule):
         self._log.info('Affiliations received from %s: %s',
                        room_jid, users_dict)
 
-        return AffiliationResult(jid=room_jid, users=users_dict)
+        yield AffiliationResult(jid=room_jid, users=users_dict)
 
-    @call_on_response('_default_response')
-    def destroy(self, room_jid, reason='', jid=''):
-        iq = Iq(typ='set', queryNS=Namespace.MUC_OWNER, to=room_jid)
-        destroy = iq.setQuery().setTag('destroy')
-        if reason:
-            destroy.setTagData('reason', reason)
-        if jid:
-            destroy.setAttr('jid', jid)
-        self._log.info('Destroy room: %s, reason: %s, alternate: %s',
-                       room_jid, reason, jid)
-        return iq
+    @iq_request_task
+    def destroy(self, room_jid, reason=None, jid=None):
+        _task = yield
+
+        response = yield make_destroy_request(room_jid, reason, jid)
+        yield process_response(response)
 
     @iq_request_task
     def request_info(self, jid, request_vcard=True, allow_redirect=False):
@@ -428,79 +421,52 @@ class MUC(BaseModule):
                             vcard=vcard,
                             redirected=redirected)
 
-    @call_on_response('_default_response')
+    @iq_request_task
     def set_config(self, room_jid, form):
-        iq = Iq(typ='set', to=room_jid, queryNS=Namespace.MUC_OWNER)
-        query = iq.setQuery()
-        form.setAttr('type', 'submit')
-        query.addChild(node=form)
-        self._log.info('Set config for %s', room_jid)
-        return iq
+        _task = yield
 
-    @call_on_response('_config_received')
+        response = yield make_set_config_request(room_jid, form)
+        yield process_response(response)
+
+    @iq_request_task
     def request_config(self, room_jid):
-        iq = Iq(typ='get',
-                queryNS=Namespace.MUC_OWNER,
-                to=room_jid)
-        self._log.info('Request config for %s', room_jid)
-        return iq
+        task = yield
 
-    @callback
-    def _config_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
+        response = yield make_config_request(room_jid)
+        if response.isError():
+            raise StanzaError(response)
 
-        jid = stanza.getFrom()
-        payload = stanza.getQueryPayload()
+        jid = response.getFrom()
+        payload = response.getQueryPayload()
 
         for form in payload:
             if form.getNamespace() == Namespace.DATA:
                 dataform = extend_form(node=form)
                 self._log.info('Config form received for %s', jid)
-                return MucConfigResult(jid=jid,
-                                       form=dataform)
-        return MucConfigResult(jid=jid)
+                yield MucConfigResult(jid=jid, form=dataform)
 
-    @call_on_response('_default_response')
+        yield MucConfigResult(jid=jid)
+
+    @iq_request_task
     def cancel_config(self, room_jid):
-        cancel = Node(tag='x', attrs={'xmlns': Namespace.DATA,
-                                      'type': 'cancel'})
-        iq = Iq(typ='set',
-                queryNS=Namespace.MUC_OWNER,
-                payload=cancel,
-                to=room_jid)
-        self._log.info('Cancel config for %s', room_jid)
-        return iq
+        _task = yield
 
-    @call_on_response('_default_response')
+        response = yield make_cancel_config_request(room_jid)
+        yield process_response(response)
+
+    @iq_request_task
     def set_affiliation(self, room_jid, users_dict):
-        iq = Iq(typ='set', to=room_jid, queryNS=Namespace.MUC_ADMIN)
-        item = iq.setQuery()
-        for jid in users_dict:
-            affiliation = users_dict[jid].get('affiliation')
-            reason = users_dict[jid].get('reason')
-            nick = users_dict[jid].get('nick')
-            item_tag = item.addChild('item', {'jid': jid,
-                                              'affiliation': affiliation})
-            if reason is not None:
-                item_tag.setTagData('reason', reason)
+        _task = yield
 
-            if nick is not None:
-                item_tag.setAttr('nick', nick)
-        self._log.info('Set affiliation for %s: %s', room_jid, users_dict)
-        return iq
+        response = yield make_set_affiliation_request(room_jid, users_dict)
+        yield process_response(response)
 
-    @call_on_response('_default_response')
-    def set_role(self, room_jid, nick, role, reason=''):
-        iq = Iq(typ='set', to=room_jid, queryNS=Namespace.MUC_ADMIN)
-        item = iq.setQuery().setTag('item')
-        item.setAttr('nick', nick)
-        item.setAttr('role', role)
-        if reason:
-            item.addChild(name='reason', payload=reason)
-        self._log.info('Set role for %s: %s %s %s',
-                       room_jid, nick, role, reason)
-        return iq
+    @iq_request_task
+    def set_role(self, room_jid, nick, role, reason=None):
+        _task = yield
+
+        response = yield make_set_role_request(room_jid, nick, role, reason)
+        yield process_response(response)
 
     def set_subject(self, room_jid, subject):
         message = Message(room_jid, typ='groupchat', subject=subject)
@@ -529,106 +495,22 @@ class MUC(BaseModule):
     def invite(self, room, to, password, reason=None, continue_=False,
                type_=InviteType.MEDIATED):
         if type_ == InviteType.DIRECT:
-            invite = self._build_direct_invite(
+            invite = build_direct_invite(
                 room, to, reason, password, continue_)
         else:
-            invite = self._build_mediated_invite(
+            invite = build_mediated_invite(
                 room, to, reason, password, continue_)
         return self._client.send_stanza(invite)
 
-    @staticmethod
-    def _build_direct_invite(room, to, reason, password, continue_):
-        message = Message(to=to)
-        attrs = {'jid': room}
-        if reason:
-            attrs['reason'] = reason
-        if continue_:
-            attrs['continue'] = 'true'
-        if password:
-            attrs['password'] = password
-        message.addChild(name='x', attrs=attrs,
-                         namespace=Namespace.CONFERENCE)
-        return message
-
-    @staticmethod
-    def _build_mediated_invite(room, to, reason, password, continue_):
-        message = Message(to=room)
-        muc_user = message.addChild('x', namespace=Namespace.MUC_USER)
-        invite = muc_user.addChild('invite', attrs={'to': to})
-        if continue_:
-            invite.addChild(name='continue')
-        if reason:
-            invite.setTagData('reason', reason)
-        if password:
-            muc_user.setTagData('password', password)
-        return message
-
-    @call_on_response('_default_response')
+    @iq_request_task
     def send_captcha(self, room_jid, form_node):
-        iq = Iq(typ='set', to=room_jid)
-        captcha = iq.addChild(name='captcha', namespace=Namespace.CAPTCHA)
-        captcha.addChild(node=form_node)
-        return iq
+        _task = yield
+
+        response = yield make_captcha_request(room_jid, form_node)
+        yield process_response(response)
 
     def cancel_captcha(self, room_jid, message_id):
         message = Message(typ='error', to=room_jid)
         message.setID(message_id)
         message.setError(ERR_NOT_ACCEPTABLE)
         self._client.send_stanza(message)
-
-    @callback
-    def _default_response(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
-        return CommonResult(jid=stanza.getFrom())
-
-    @staticmethod
-    def _parse_muc_user(muc_user, is_presence=True):
-        item = muc_user.getTag('item')
-        if item is None:
-            return None
-
-        item_dict = item.getAttrs()
-
-        role = item_dict.get('role')
-        if role is not None:
-            try:
-                role = Role(role)
-            except ValueError:
-                raise StanzaMalformed('invalid role %s' % role)
-
-        elif is_presence:
-            # role attr MUST be included in all presence broadcasts
-            raise StanzaMalformed('role attr missing')
-
-        affiliation = item_dict.get('affiliation')
-        if affiliation is not None:
-            try:
-                affiliation = Affiliation(affiliation)
-            except ValueError:
-                raise StanzaMalformed('invalid affiliation %s' % affiliation)
-
-        elif is_presence:
-            # affiliation attr MUST be included in all presence broadcasts
-            raise StanzaMalformed('affiliation attr missing')
-
-        jid = item_dict.get('jid')
-        if jid is not None:
-            try:
-                jid = JID.from_string(jid)
-            except InvalidJid as error:
-                raise StanzaMalformed('invalid jid %s, %s' % (jid, error))
-
-        return MucUserData(affiliation=affiliation,
-                           jid=jid,
-                           nick=item.getAttr('nick'),
-                           role=role,
-                           actor=item.getTagAttr('actor', 'nick'),
-                           reason=item.getTagData('reason'))
-
-
-@dataclass
-class MucInfoResult:
-    info: object
-    vcard: object = None
-    redirected: bool = False
