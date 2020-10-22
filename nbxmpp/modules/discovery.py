@@ -30,8 +30,8 @@ from nbxmpp.structs import DiscoInfo
 from nbxmpp.structs import DiscoItems
 from nbxmpp.structs import DiscoItem
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.util import raise_error
 from nbxmpp.task import iq_request_task
+from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 
 
@@ -100,13 +100,13 @@ def parse_disco_info(stanza, timestamp=None):
                               name=attrs.get('name'),
                               lang=attrs.get('xml:lang')))
         except Exception:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            raise MalformedStanzaError('invalid attributes', stanza)
 
     for node in query.getTags('feature'):
         try:
             features.append(node.getAttr('var'))
         except Exception:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            raise MalformedStanzaError('invalid attributes', stanza)
 
     for node in query.getTags('x', namespace=Namespace.DATA):
         dataforms.append(extend_form(node))
@@ -130,7 +130,7 @@ def parse_disco_items(stanza):
                           name=attrs.get('name'),
                           node=attrs.get('node')))
         except Exception:
-            return raise_error(log.warning, stanza, 'stanza-malformed')
+            raise MalformedStanzaError('invalid attributes', stanza)
 
     return DiscoItems(jid=stanza.getFrom(),
                       node=query.getAttr('node'),
