@@ -17,16 +17,15 @@
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import Node
-from nbxmpp.util import call_on_response
-from nbxmpp.util import callback
-from nbxmpp.util import raise_error
 from nbxmpp.structs import AdHocCommand
 from nbxmpp.structs import AdHocCommandNote
 from nbxmpp.const import AdHocStatus
 from nbxmpp.const import AdHocAction
 from nbxmpp.const import AdHocNoteType
+from nbxmpp.errors import StanzaError
+from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.task import iq_request_task
 from nbxmpp.modules.discovery import get_disco_request
 from nbxmpp.modules.base import BaseModule
 
@@ -38,22 +37,21 @@ class AdHoc(BaseModule):
         self._client = client
         self.handlers = []
 
-    @call_on_response('_command_list_received')
+    @iq_request_task
     def request_command_list(self, jid=None):
+        _task = yield
+
         if jid is None:
             jid = self._client.get_bound_jid().bare
-        return get_disco_request(Namespace.DISCO_ITEMS,
-                                 jid,
-                                 node=Namespace.COMMANDS)
+        response = yield get_disco_request(Namespace.DISCO_ITEMS,
+                                           jid,
+                                           node=Namespace.COMMANDS)
+        if response.isError():
+            raise StanzaError(response)
 
-    @callback
-    def _command_list_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
-
-        payload = stanza.getQueryPayload()
+        payload = response.getQueryPayload()
         if payload is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed')
+            raise MalformedStanzaError('query payload missing', response)
 
         command_list = []
         for item in payload:
@@ -62,15 +60,15 @@ class AdHoc(BaseModule):
             try:
                 command_list.append(AdHocCommand(**item.getAttrs()))
             except Exception as error:
-                self._log.warning(error)
-                return raise_error(self._log.warning,
-                                   stanza,
-                                   'stanza-malformed')
+                raise MalformedStanzaError(f'invalid item attributes: {error}',
+                                           response)
 
-        return command_list
+        yield command_list
 
-    @call_on_response('_command_result_received')
+    @iq_request_task
     def execute_command(self, command, action=None, dataform=None):
+        _task = yield
+
         if action is None:
             action = AdHocAction.EXECUTE
         attrs = {'node': command.node,
@@ -79,21 +77,13 @@ class AdHoc(BaseModule):
         if command.sessionid is not None:
             attrs['sessionid'] = command.sessionid
 
-        command_node = Node('command', attrs=attrs)
-        if dataform is not None:
-            command_node.addChild(node=dataform)
-        iq = Iq('set', to=command.jid)
-        iq.addChild(node=command_node)
-        return iq
+        response = yield _make_command(command, attrs, dataform)
+        if response.isError():
+            raise StanzaError(response)
 
-    @callback
-    def _command_result_received(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
-
-        command = stanza.getTag('command', namespace=Namespace.COMMANDS)
+        command = response.getTag('command', namespace=Namespace.COMMANDS)
         if command is None:
-            return raise_error(self._log.warning, stanza, 'stanza-malformed')
+            raise MalformedStanzaError('command node missing', response)
 
         attrs = command.getAttrs()
         notes = []
@@ -111,8 +101,8 @@ class AdHoc(BaseModule):
                 for action in actions_.getChildren():
                     actions.append(AdHocAction(action.getName()))
 
-            return AdHocCommand(
-                jid=str(stanza.getFrom()),
+            yield AdHocCommand(
+                jid=str(response.getFrom()),
                 name=None,
                 node=attrs['node'],
                 sessionid=attrs.get('sessionid'),
@@ -121,5 +111,13 @@ class AdHoc(BaseModule):
                 actions=actions,
                 notes=notes)
         except Exception as error:
-            self._log.warning(error)
-            return raise_error(self._log.warning, stanza, 'stanza-malformed')
+            raise MalformedStanzaError(str(error), response)
+
+
+def _make_command(command, attrs, dataform):
+    command_node = Node('command', attrs=attrs)
+    if dataform is not None:
+        command_node.addChild(node=dataform)
+    iq = Iq('set', to=command.jid)
+    iq.addChild(node=command_node)
+    return iq
