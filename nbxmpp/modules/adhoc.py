@@ -98,8 +98,8 @@ class AdHoc(BaseModule):
 
             actions_ = command.getTag('actions')
             if actions_ is not None:
-                for action in actions_.getChildren():
-                    actions.append(AdHocAction(action.getName()))
+                for action_ in actions_.getChildren():
+                    actions.append(AdHocAction(action_.getName()))
 
             yield AdHocCommand(
                 jid=str(response.getFrom()),
