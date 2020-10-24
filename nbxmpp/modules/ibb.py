@@ -21,16 +21,13 @@ from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import Iq
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import isResultNode
-from nbxmpp.structs import CommonResult
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import IBBData
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
-from nbxmpp.util import call_on_response
-from nbxmpp.util import callback
-from nbxmpp.util import raise_error
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import process_response
+from nbxmpp.task import iq_request_task
 
 
 class IBB(BaseModule):
@@ -132,31 +129,46 @@ class IBB(BaseModule):
             reply = ErrorStanza(stanza, error)
         self._client.send_stanza(reply)
 
-    @call_on_response('_default_response')
+    @iq_request_task
     def send_open(self, jid, sid, block_size):
-        iq = Iq('set', to=jid)
-        iq.addChild('open',
-                    {'block-size': block_size, 'sid': sid, 'stanza': 'iq'},
-                    namespace=Namespace.IBB)
-        return iq
+        _task = yield
 
-    @call_on_response('_default_response')
+        response = yield _make_ibb_open(jid, sid, block_size)
+        yield process_response(response)
+
+    @iq_request_task
     def send_close(self, jid, sid):
-        iq = Iq('set', to=jid)
-        iq.addChild('close', {'sid': sid}, namespace=Namespace.IBB)
-        return iq
+        _task = yield
 
-    @call_on_response('_default_response')
+        response = yield _make_ibb_close(jid, sid)
+        yield process_response(response)
+
+    @iq_request_task
     def send_data(self, jid, sid, seq, data):
-        iq = Iq('set', to=jid)
-        ibb_data = iq.addChild('data',
-                               {'sid': sid, 'seq': seq},
-                               namespace=Namespace.IBB)
-        ibb_data.setData(b64encode(data))
-        return iq
+        _task = yield
 
-    @callback
-    def _default_response(self, stanza):
-        if not isResultNode(stanza):
-            return raise_error(self._log.info, stanza)
-        return CommonResult(jid=stanza.getFrom())
+        response = yield _make_ibb_data(jid, sid, seq, data)
+        yield process_response(response)
+
+
+def _make_ibb_open(jid, sid, block_size):
+    iq = Iq('set', to=jid)
+    iq.addChild('open',
+                {'block-size': block_size, 'sid': sid, 'stanza': 'iq'},
+                namespace=Namespace.IBB)
+    return iq
+
+
+def _make_ibb_close(jid, sid):
+    iq = Iq('set', to=jid)
+    iq.addChild('close', {'sid': sid}, namespace=Namespace.IBB)
+    return iq
+
+
+def _make_ibb_data(jid, sid, seq, data):
+    iq = Iq('set', to=jid)
+    ibb_data = iq.addChild('data',
+                           {'sid': sid, 'seq': seq},
+                           namespace=Namespace.IBB)
+    ibb_data.setData(b64encode(data))
+    return iq
