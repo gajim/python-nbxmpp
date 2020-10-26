@@ -115,9 +115,6 @@ OOBData = namedtuple('OOBData', 'url desc')
 
 CorrectionData = namedtuple('CorrectionData', 'id')
 
-DisplayMarking = namedtuple('DisplayMarking', 'label fgcolor bgcolor')
-SecurityLabel = namedtuple('SecurityLabel', 'displaymarking')
-
 RegisterData = namedtuple('RegisterData', 'instructions form fields_form oob_url bob_data')
 
 HTTPUploadData = namedtuple('HTTPUploadData', 'put_uri get_uri headers')
