@@ -309,7 +309,7 @@ class IqRequestTask(Task):
             return
 
         if result is None:
-            self._error = TimeoutStanzaError(self._iq_id)
+            self._error = TimeoutStanzaError()
             self._set_finished()
             return
 

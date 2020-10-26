@@ -27,6 +27,10 @@ def is_error(error):
 class BaseError(Exception):
     def __init__(self, is_fatal=False):
         self.is_fatal = is_fatal
+        self.text = ''
+
+    def __str__(self):
+        return self.text
 
 
 class StanzaError(BaseError):
@@ -141,9 +145,9 @@ class TimeoutStanzaError(BaseError):
 
     log_level = logging.INFO
 
-    def __init__(self, id_):
-        BaseError.__init__(self, is_fatal=True)
-        self.text = 'IQ with id %s reached timeout' % id_
+    def __init__(self):
+        BaseError.__init__(self)
+        self.text = 'Timeout reached'
 
 
 class RegisterStanzaError(StanzaError):
