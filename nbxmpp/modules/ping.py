@@ -16,7 +16,9 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import NodeProcessed
 from nbxmpp.namespaces import Namespace
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import process_response
@@ -27,7 +29,19 @@ class Ping(BaseModule):
         BaseModule.__init__(self, client)
 
         self._client = client
-        self.handlers = []
+        self.handlers = [
+            StanzaHandler(name='iq',
+                          callback=self._process_ping,
+                          typ='get',
+                          ns=Namespace.PING,
+                          priority=15),
+        ]
+
+    def _process_ping(self, _client, stanza, properties):
+        self._log.info('Send pong to %s', stanza.getFrom())
+        iq = stanza.buildSimpleReply('result')
+        self._client.send_stanza(iq)
+        raise NodeProcessed
 
     @iq_request_task
     def ping(self, jid):
