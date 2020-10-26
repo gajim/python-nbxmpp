@@ -16,7 +16,6 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 import base64
-import weakref
 import hashlib
 import uuid
 import binascii
@@ -26,13 +25,11 @@ import logging
 from logging import LoggerAdapter
 from collections import defaultdict
 
-from functools import wraps
 from functools import lru_cache
 
 from gi.repository import Gio
 
 from nbxmpp.protocol import DiscoInfoMalformed
-from nbxmpp.protocol import isErrorNode
 from nbxmpp.const import GIO_TLS_ERRORS
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import StanzaMalformed
@@ -83,47 +80,6 @@ def get_properties_struct(name):
     return Properties()
 
 
-def call_on_response(cb):
-    def response_decorator(func):
-        @wraps(func)
-        def func_wrapper(self, *args, **kwargs):
-            user_data = kwargs.pop('user_data', None)
-            callback_ = kwargs.pop('callback', None)
-
-            stanza = func(self, *args, **kwargs)
-            if isinstance(stanza, tuple):
-                stanza, attrs = stanza
-            else:
-                attrs = {}
-
-            if user_data is not None:
-                attrs['user_data'] = user_data
-
-            if callback_ is not None:
-                attrs['callback'] = weakref.WeakMethod(callback_)
-
-            self._client.send_stanza(stanza,
-                                     callback=getattr(self, cb),
-                                     user_data=attrs)
-        return func_wrapper
-    return response_decorator
-
-
-def callback(func):
-    @wraps(func)
-    def func_wrapper(self, _con, stanza, **kwargs):
-        cb = kwargs.pop('callback', None)
-        user_data = kwargs.pop('user_data', None)
-
-        result = func(self, stanza, **kwargs)
-        if cb is not None and cb() is not None:
-            if user_data is not None:
-                cb()(result, user_data)
-            else:
-                cb()(result)
-    return func_wrapper
-
-
 def from_xs_boolean(value):
     if value in ('1', 'true', 'True'):
         return True
@@ -159,30 +115,6 @@ def error_factory(stanza, condition=None, text=None):
         return StanzaMalformedError(stanza, text)
     app_namespace = stanza.getAppErrorNamespace()
     return error_classes.get(app_namespace, CommonError)(stanza)
-
-
-def raise_error(log_method, stanza, condition=None, text=None):
-    if not isErrorNode(stanza) and condition != 'stanza-malformed':
-        condition = 'stanza-malformed'
-        if log_method.__name__ not in ('warning', 'error'):
-            log_method = log_method.__self__.warning
-
-    try:
-        error = error_factory(stanza, condition, text)
-    except Exception:
-        log.exception('Malformed error stanza')
-        log.error(stanza)
-        error = StanzaMalformedError(stanza, text)
-        return error
-
-    log_method(error)
-    if log_method.__name__ in ('warning', 'error'):
-        log_method(stanza)
-    return error
-
-
-def is_error_result(result):
-    return isinstance(result, CommonError)
 
 
 def clip_rgb(red, green, blue):
