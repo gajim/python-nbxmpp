@@ -560,7 +560,7 @@ class Client(Observable):
             self._ping_source_id = None
 
         self._log.info('Start ping timer')
-        self._ping_source_id = GLib.timeout_add_seconds(5, self._ping)
+        self._ping_source_id = GLib.timeout_add_seconds(180, self._ping)
 
     def _remove_ping_timer(self):
         if self._ping_source_id is None:
