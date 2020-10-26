@@ -79,6 +79,7 @@ from nbxmpp.modules.http_upload import HTTPUpload
 from nbxmpp.modules.mam import MAM
 from nbxmpp.modules.vcard_temp import VCardTemp
 from nbxmpp.modules.vcard4 import VCard4
+from nbxmpp.modules.ping import Ping
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.structs import StanzaTimeoutError
@@ -188,6 +189,7 @@ class StanzaDispatcher(Observable):
         self._modules['MAM'] = MAM(self._client)
         self._modules['VCardTemp'] = VCardTemp(self._client)
         self._modules['VCard4'] = VCard4(self._client)
+        self._modules['Ping'] = Ping(self._client)
 
         for instance in self._modules.values():
             for handler in instance.handlers:
