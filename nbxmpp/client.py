@@ -27,9 +27,11 @@ from nbxmpp.protocol import BindRequest
 from nbxmpp.protocol import TLSRequest
 from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import JID
-from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import WebsocketCloseHeader
+from nbxmpp.errors import TimeoutStanzaError
+from nbxmpp.errors import StanzaError
+from nbxmpp.errors import CancelledError
 from nbxmpp.addresses import ServerAddresses
 from nbxmpp.addresses import NoMoreAddresses
 from nbxmpp.tcp import TCPConnection
@@ -46,7 +48,6 @@ from nbxmpp.util import get_stream_header
 from nbxmpp.util import get_stanza_id
 from nbxmpp.util import Observable
 from nbxmpp.util import validate_stream_header
-from nbxmpp.util import is_error_result
 from nbxmpp.util import LogAdapter
 
 log = logging.getLogger('nbxmpp.stream')
@@ -104,7 +105,7 @@ class Client(Observable):
         self._session_required = False
         self._connect_successful = False
         self._stream_close_initiated = False
-        self._ping_id = None
+        self._ping_task = None
         self._error = None, None, None
 
         self._ignored_tls_errors = set()
@@ -438,7 +439,8 @@ class Client(Observable):
     def _disconnect(self, immediate=True):
         self.state = StreamState.DISCONNECTING
         self._remove_ping_timer()
-        self._dispatcher.remove_ping_callback(self._ping_id)
+        self._cancel_ping_task()
+
         if not immediate:
             self._stream_close_initiated = True
             self._smacks.close_session()
@@ -461,7 +463,7 @@ class Client(Observable):
         for task in self._tasks:
             task.cancel()
         self._remove_ping_timer()
-        self._dispatcher.remove_ping_callback(self._ping_id)
+        self._cancel_ping_task()
         self._reset_stream()
         self.notify('disconnected')
 
@@ -495,7 +497,7 @@ class Client(Observable):
         if not self._stream_close_initiated:
             self.state = StreamState.DISCONNECTING
             self._remove_ping_timer()
-            self._dispatcher.remove_ping_callback(self._ping_id)
+            self._cancel_ping_task()
             self._smacks.close_session()
             self._end_stream()
             self._con.shutdown_output()
@@ -558,7 +560,7 @@ class Client(Observable):
             self._ping_source_id = None
 
         self._log.info('Start ping timer')
-        self._ping_source_id = GLib.timeout_add_seconds(180, self._ping)
+        self._ping_source_id = GLib.timeout_add_seconds(5, self._ping)
 
     def _remove_ping_timer(self):
         if self._ping_source_id is None:
@@ -824,20 +826,32 @@ class Client(Observable):
 
     def _ping(self):
         self._ping_source_id = None
-        iq = Iq('get', to=self.domain)
-        iq.addChild(name='ping', namespace=Namespace.PING)
-        self._ping_id = self.send_stanza(iq,
-                                         timeout=10,
-                                         callback=self._on_pong)
-        self._log.info('Ping')
+        self._ping_task = self.get_module('Ping').ping(
+            self.domain,
+            timeout=10,
+            callback=self._on_pong)
 
-    def _on_pong(self, _client, result):
-        if is_error_result(result):
-            if result.condition == 'timeout':
-                self._log.info('Ping timeout')
-                self._disconnect(immediate=True)
-                return
+    def _on_pong(self, task):
+        self._ping_task = None
+
+        try:
+            task.finish()
+        except TimeoutStanzaError:
+            self._log.info('Ping timeout')
+            self._disconnect(immediate=True)
+            return
+
+        except CancelledError:
+            return
+
+        except StanzaError:
+            pass
+
         self._log.info('Pong')
+
+    def _cancel_ping_task(self):
+        if self._ping_task is not None:
+            self._ping_task.cancel()
 
     def register_handler(self, *args, **kwargs):
         self._dispatcher.register_handler(*args, **kwargs)
