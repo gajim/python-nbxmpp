@@ -124,7 +124,7 @@ class OMEMO(BaseModule):
 
         raise_if_error(items)
 
-        if items is None:
+        if not items:
             yield task.set_result(None)
 
         yield _parse_devicelist(items[0])
@@ -164,7 +164,7 @@ class OMEMO(BaseModule):
 
         raise_if_error(items)
 
-        if items is None:
+        if not items:
             yield task.set_result(None)
 
         yield _parse_bundle(items[0])
