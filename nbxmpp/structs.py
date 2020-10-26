@@ -559,22 +559,6 @@ class StanzaMalformedError(CommonError):
         raise NotImplementedError
 
 
-class StanzaTimeoutError(CommonError):
-    def __init__(self, id_):
-        self.condition = 'timeout'
-        self.id = id_
-
-    @classmethod
-    def from_string(cls, node_string):
-        raise NotImplementedError
-
-    def __str__(self):
-        return 'IQ with id %s reached timeout' % self.id
-
-    def serialize(self):
-        raise NotImplementedError
-
-
 class StreamError(CommonError):
     def __init__(self, stanza):
         self.condition = stanza.getError()

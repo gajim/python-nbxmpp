@@ -137,6 +137,15 @@ class CancelledError(BaseError):
         self.text = 'Task has been cancelled'
 
 
+class TimeoutStanzaError(BaseError):
+
+    log_level = logging.INFO
+
+    def __init__(self, id_):
+        BaseError.__init__(self, is_fatal=True)
+        self.text = 'IQ with id %s reached timeout' % id_
+
+
 class RegisterStanzaError(StanzaError):
     def __init__(self, stanza, data):
         StanzaError.__init__(self, stanza)

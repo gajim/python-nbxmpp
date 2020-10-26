@@ -82,7 +82,6 @@ from nbxmpp.modules.vcard4 import VCard4
 from nbxmpp.modules.ping import Ping
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
-from nbxmpp.structs import StanzaTimeoutError
 from nbxmpp.util import get_properties_struct
 from nbxmpp.util import get_invalid_xml_regex
 from nbxmpp.util import is_websocket_close
@@ -494,7 +493,7 @@ class StanzaDispatcher(Observable):
 
             if timeout < time.monotonic():
                 self._id_callbacks.pop(id_)
-                func(self._client, StanzaTimeoutError(id_), **user_data)
+                func(self._client, None, **user_data)
         return True
 
     def _remove_timeout_source(self):

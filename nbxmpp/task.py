@@ -25,6 +25,7 @@ from gi.repository import Soup
 
 from nbxmpp.errors import is_error
 from nbxmpp.errors import CancelledError
+from nbxmpp.errors import TimeoutStanzaError
 from nbxmpp.simplexml import Node
 
 
@@ -76,10 +77,11 @@ def _setup_task(task, client, callback, user_data):
 
 def iq_request_task(func):
     @wraps(func)
-    def func_wrapper(self, *args, callback=None, user_data=None, **kwargs):
+    def func_wrapper(self, *args, timeout=None, callback=None, user_data=None, **kwargs):
         task = IqRequestTask(func(self, *args, **kwargs),
                              self._log,
                              self._client)
+        task.set_timeout(timeout)
         return _setup_task(task, self._client, callback, user_data)
     return func_wrapper
 
@@ -125,6 +127,7 @@ class Task:
         self._result = None
         self._error = None
         self._user_data = None
+        self._timeout = None
         self._finalize_func = None
         self._finalize_context = None
         self._state = TaskState.INIT
@@ -146,6 +149,9 @@ class Task:
                 ValueError('Unknown callback object')
 
         self._done_callbacks.append(callback)
+
+    def set_timeout(self, timeout):
+        self._timeout = timeout
 
     def start(self):
         if not self._state.is_init:
@@ -291,15 +297,27 @@ class IqRequestTask(Task):
     def __init__(self, gen, logger, client):
         super().__init__(gen, logger)
         self._client = client
+        self._iq_id = None
 
     def _run_async(self, stanza):
-        self._client.send_stanza(stanza, callback=self._async_finished)
+        self._iq_id = self._client.send_stanza(stanza,
+                                               callback=self._async_finished,
+                                               timeout=self._timeout)
 
     def _async_finished(self, _client, result, *args, **kwargs):
-        if self._state != TaskState.CANCELLED:
-            self._next_step(result)
+        if self._state == TaskState.CANCELLED:
+            return
+
+        if result is None:
+            self._error = TimeoutStanzaError(self._iq_id)
+            self._set_finished()
+            return
+
+        self._next_step(result)
 
     def _finalize(self):
+        if self._iq_id is not None:
+            self._client._dispatcher.remove_iq_callback(self._iq_id)
         self._client = None
         super()._finalize()
 
