@@ -55,6 +55,7 @@ class _Namespaces:
     DATA_VALIDATE: str = 'http://jabber.org/protocol/xdata-validate'
     DELAY: str = 'jabber:x:delay'
     DELAY2: str = 'urn:xmpp:delay'
+    DELIMITER: str = 'roster:delimiter'
     DISCO: str = 'http://jabber.org/protocol/disco'
     DISCO_INFO: str = 'http://jabber.org/protocol/disco#info'
     DISCO_ITEMS: str = 'http://jabber.org/protocol/disco#items'
