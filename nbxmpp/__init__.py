@@ -4,4 +4,4 @@ from .protocol import *
 
 gi.require_version('Soup', '2.4')
 
-__version__ = "1.91.0"
+__version__ = "1.99.0"
