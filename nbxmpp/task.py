@@ -137,7 +137,7 @@ class Task:
         return self._state
 
     def add_done_callback(self, callback, weak=True):
-        if self._state in (TaskState.FINISHED, TaskState.CANCELLED):
+        if self._state.is_finished or self._state.is_cancelled:
             raise RuntimeError('Task is finished')
 
         if weak:
@@ -169,7 +169,7 @@ class Task:
 
     def _sub_task_completed(self, task):
         self._sub_task = None
-        if self._state.is_cancelled:
+        if not self._state.is_running:
             return
 
         result = task.get_result()
@@ -263,7 +263,7 @@ class Task:
         self._finalize_context = context
 
     def cancel(self):
-        if self._state.is_cancelled:
+        if not self._state.is_running:
             return
 
         self._state = TaskState.CANCELLED
