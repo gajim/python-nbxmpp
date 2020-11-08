@@ -41,6 +41,7 @@ class UserAvatar(BaseModule):
     _depends = {
         'publish': 'PubSub',
         'request_item': 'PubSub',
+        'request_items': 'PubSub',
     }
 
     def __init__(self, client):
@@ -91,11 +92,11 @@ class UserAvatar(BaseModule):
         properties.pubsub_event = pubsub_event
 
     @iq_request_task
-    def request_avatar(self, avatar_info, jid=None):
+    def request_avatar_data(self, id_, jid=None):
         task = yield
 
         item = yield self.request_item(Namespace.AVATAR_DATA,
-                                       id_=avatar_info.id,
+                                       id_=id_,
                                        jid=jid)
 
         raise_if_error(item)
@@ -103,7 +104,30 @@ class UserAvatar(BaseModule):
         if item is None:
             yield task.set_result(None)
 
-        yield _get_avatar_data(item, avatar_info.id)
+        yield _get_avatar_data(item, id_)
+
+    @iq_request_task
+    def request_avatar_metadata(self, jid=None):
+        task = yield
+
+        items = yield self.request_items(Namespace.AVATAR_METADATA,
+                                         max_items=1,
+                                         jid=jid)
+
+        raise_if_error(items)
+
+        if not items:
+            yield task.set_result(None)
+
+        item = items[0]
+        metadata = item.getTag('metadata', namespace=Namespace.AVATAR_METADATA)
+        if metadata is None:
+            raise MalformedStanzaError('metadata node missing', item)
+
+        if not metadata.getChildren():
+            yield task.set_result(None)
+
+        yield AvatarMetaData.from_node(metadata)
 
     @iq_request_task
     def set_avatar(self, avatar, public=False):
@@ -241,6 +265,9 @@ class AvatarInfo:
         if self.url is None:
             info_dict.pop('url')
         return info_dict
+
+    def __hash__(self):
+        return hash(self.id)
 
 
 @dataclass
