@@ -1,6 +1,26 @@
+# Copyright (C) 2020 Philipp Hörist <philipp AT hoerist.com>
+#
+# This file is part of nbxmpp.
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 3
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
+from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Set
 
 from dataclasses import dataclass
 from dataclasses import field
@@ -13,6 +33,9 @@ from nbxmpp.task import iq_request_task
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.modules.util import finalize
+
+
+log = logging.getLogger('nbxmpp.m.vcard4')
 
 
 ALLOWED_SEX_VALUES = ['M', 'F', 'O', 'N', 'U']
@@ -84,7 +107,7 @@ def get_data_from_children(node, child_name):
 
 def add_children(node, child_name, values):
     for value in values:
-        node.addchild(child_name, payload=value)
+        node.addChild(child_name, payload=value)
 
 
 def get_multiple_type_value(node, types):
@@ -98,7 +121,7 @@ def get_multiple_type_value(node, types):
 
 def make_parameters(parameters):
     parameters_node = Node('parameters')
-    for parameter in parameters:
+    for parameter in parameters.values():
         parameters_node.addChild(node=parameter.to_node())
     return parameters_node
 
@@ -109,9 +132,9 @@ def get_parameters(node):
     allowed_parameters = definition[0]
     parameters_node = node.getTag('parameters')
     if parameters_node is None:
-        return []
+        return Parameters()
 
-    parameters = []
+    parameters = {}
     for parameter in allowed_parameters:
         parameter_node = parameters_node.getTag(parameter)
         if parameter_node is None:
@@ -122,9 +145,9 @@ def get_parameters(node):
             continue
 
         parameter = parameter_class.from_node(parameter_node)
-        parameters.append(parameter)
+        parameters[parameter.name] = parameter
 
-    return parameters
+    return Parameters(parameters)
 
 
 @dataclass
@@ -157,7 +180,7 @@ class MultiParameter:
 
     name: str
     type: str
-    values: str
+    values: Set[str]
 
     @classmethod
     def from_node(cls, node):
@@ -169,11 +192,11 @@ class MultiParameter:
         if not value_nodes:
             raise ValueError('no parameter value found')
 
-        values = []
+        values = set()
         for value_node in value_nodes:
             value = value_node.getData()
             if value:
-                values.append(value)
+                values.add(value)
 
         if not values:
             raise ValueError('no parameter value found')
@@ -272,6 +295,43 @@ class TzParameter:
         return node
 
 
+class Parameters:
+    def __init__(self, parameters=None):
+        if parameters is None:
+            parameters = {}
+        self._parameters = parameters
+
+    def values(self):
+        return self._parameters.values()
+
+    def get_types(self):
+        parameter = self._parameters.get('type')
+        if parameter is None:
+            return set()
+
+        return parameter.values
+
+    def remove_types(self, types):
+        parameter = self._parameters.get('type')
+        if parameter is None:
+            raise ValueError('no type parameter')
+
+        for type_ in types:
+            parameter.values.discard(type_)
+
+        if not parameter.values:
+            self._parameters.pop('type')
+
+    def add_types(self, types):
+        parameter = self._parameters.get('type')
+        if parameter is None:
+            parameter = TypeParameter(set(types))
+            self._parameters['type'] = parameter
+            return
+
+        parameter.values.update(types)
+
+
 PARAMETER_CLASSES = {
     'language': LanguageParameter,
     'pref': PrefParameter,
@@ -291,7 +351,7 @@ class UriProperty:
 
     name: str
     value: str
-    parameters: List[Parameter] = field(default_factory=list)
+    parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
     def from_node(cls, node):
@@ -320,7 +380,7 @@ class TextProperty:
 
     name: str
     value: str
-    parameters: List[Parameter] = field(default_factory=list)
+    parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
     def from_node(cls, node):
@@ -349,7 +409,7 @@ class TextListProperty:
 
     name: str
     values: List[str]
-    parameters: List[Parameter] = field(default_factory=list)
+    parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
     def from_node(cls, node):
@@ -381,7 +441,7 @@ class MultipleValueProperty:
     name: str
     value_type: str
     value: str
-    parameters: List[Parameter] = field(default_factory=list)
+    parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
     def from_node(cls, node):
@@ -683,7 +743,7 @@ class RelatedProperty(MultipleValueProperty):
 @dataclass
 class CategoriesProperty(TextListProperty):
 
-    name: str = field(default='org', init=False)
+    name: str = field(default='categories', init=False)
 
 
 @dataclass
@@ -844,7 +904,12 @@ def get_property_from_name(name, node):
     property_class = PROPERTY_CLASSES.get(name)
     if property_class is None:
         return None
-    return property_class.from_node(node)
+
+    try:
+        return property_class.from_node(node)
+    except Exception as error:
+        log.warning('invalid vcard property: %s %s', error, node)
+        return None
 
 
 class VCard:
@@ -908,6 +973,20 @@ class VCard:
     def add_property(self, name, *args, **kwargs):
         prop = PROPERTY_CLASSES.get(name)(*args, **kwargs)
         self._properties.append((None, prop))
+        return prop
+
+    def remove_property(self, prop):
+        for _group, props in list(self._properties):
+            if isinstance(props, list):
+                if prop in props:
+                    props.remove(prop)
+                    return
+
+            elif prop is props:
+                self._properties.remove((None, props))
+                return
+
+        raise ValueError('prop not found in vcard')
 
 
 class VCard4(BaseModule):
@@ -965,7 +1044,7 @@ def _get_vcard(item):
 
     try:
         vcard = VCard.from_node(vcard)
-    except Exception:
-        raise MalformedStanzaError('invalid vcard', item)
+    except Exception as error:
+        raise MalformedStanzaError('invalid vcard: %s' % error, item)
 
     return vcard
