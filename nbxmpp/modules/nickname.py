@@ -91,13 +91,24 @@ class Nickname(BaseModule):
         return nickname.getData() or None
 
     @iq_request_task
-    def set_nickname(self, nickname):
+    def set_nickname(self, nickname, public=False):
         task = yield
+
+        access_model = 'open' if public else 'presence'
+
+        options = {
+            'pubsub#persist_items': 'true',
+            'pubsub#access_model': access_model,
+        }
 
         item = Node('nick', {'xmlns': Namespace.NICK})
         if nickname is not None:
             item.addData(nickname)
 
-        result = yield self.publish(Namespace.NICK, item, id_='current')
+        result = yield self.publish(Namespace.NICK,
+                                    item,
+                                    id_='current',
+                                    options=options,
+                                    force_node_options=True)
 
         yield finalize(task, result)
