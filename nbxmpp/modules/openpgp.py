@@ -23,6 +23,7 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import StanzaMalformed
+from nbxmpp.protocol import JID
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
 from nbxmpp.structs import StanzaHandler
@@ -275,9 +276,17 @@ def parse_signcrypt(stanza):
             stanza.getNamespace() != Namespace.OPENPGP):
         raise StanzaMalformed('Invalid signcrypt node')
 
-    to = stanza.getTagAttr('to', 'jid')
-    if to is None:
-        raise StanzaMalformed('Invalid to attr')
+    to_nodes = stanza.getTags('to')
+    if not to_nodes:
+        raise StanzaMalformed('missing to nodes')
+
+    recipients = []
+    for to_node in to_nodes:
+        jid = to_node.getAttr('jid')
+        try:
+            recipients.append(JID.from_string(jid))
+        except Exception as error:
+            raise StanzaMalformed('Invalid jid: %s %s' % (jid, error))
 
     timestamp = stanza.getTagAttr('time', 'stamp')
     if timestamp is None:
@@ -286,10 +295,10 @@ def parse_signcrypt(stanza):
     payload = stanza.getTag('payload')
     if payload is None or payload.getChildren() is None:
         raise StanzaMalformed('Invalid payload node')
-    return payload.getChildren(), to, timestamp
+    return payload.getChildren(), recipients, timestamp
 
 
-def create_signcrypt_node(stanza, not_encrypted_nodes):
+def create_signcrypt_node(stanza, recipients, not_encrypted_nodes):
     '''
     <signcrypt xmlns='urn:xmpp:openpgp:0'>
       <to jid='juliet@example.org'/>
@@ -314,7 +323,8 @@ def create_signcrypt_node(stanza, not_encrypted_nodes):
             stanza.delChild(node)
 
     signcrypt = Node('signcrypt', attrs={'xmlns': Namespace.OPENPGP})
-    signcrypt.addChild('to', attrs={'jid': str(stanza.getTo().bare)})
+    for recipient in recipients:
+        signcrypt.addChild('to', attrs={'jid': str(recipient)})
 
     timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
     signcrypt.addChild('time', attrs={'stamp': timestamp})
