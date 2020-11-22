@@ -396,14 +396,14 @@ class DiscoIdentity(namedtuple('DiscoIdentity', 'category type name lang')):
         return hash(str(self))
 
 
-class AdHocCommand(namedtuple('AdHocCommand', 'jid node name sessionid status data actions notes')):
+class AdHocCommand(namedtuple('AdHocCommand', 'jid node name sessionid status data actions default notes')):
 
     __slots__ = []
 
     def __new__(cls, jid, node, name, sessionid=None, status=None,
-                data=None, actions=None, notes=None):
+                data=None, actions=None, default=None, notes=None):
         return super(AdHocCommand, cls).__new__(cls, jid, node, name, sessionid,
-                                                status, data, actions, notes)
+                                                status, data, actions, default, notes)
 
     @property
     def is_completed(self):

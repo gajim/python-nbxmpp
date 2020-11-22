@@ -96,10 +96,17 @@ class AdHoc(BaseModule):
                 notes.append(AdHocCommandNote(text=note.getData(),
                                               type=type_))
 
+            default = None
             actions_ = command.getTag('actions')
             if actions_ is not None:
                 for action_ in actions_.getChildren():
                     actions.append(AdHocAction(action_.getName()))
+
+                default = actions_.getAttr('execute')
+                if default is not None:
+                    default = AdHocAction(default)
+                    if default not in actions:
+                        default = None
 
             yield AdHocCommand(
                 jid=str(response.getFrom()),
@@ -109,6 +116,7 @@ class AdHoc(BaseModule):
                 status=AdHocStatus(attrs['status']),
                 data=command.getTag('x', namespace=Namespace.DATA),
                 actions=actions,
+                default=default,
                 notes=notes)
         except Exception as error:
             raise MalformedStanzaError(str(error), response)
