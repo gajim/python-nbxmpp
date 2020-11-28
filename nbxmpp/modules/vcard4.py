@@ -373,6 +373,10 @@ class UriProperty:
         node.addChild('uri', payload=self.value)
         return node
 
+    @property
+    def is_empty(self):
+        return not self.value
+
 
 @dataclass
 class TextProperty:
@@ -401,6 +405,10 @@ class TextProperty:
             node.addChild(node=make_parameters(self.parameters))
         node.addChild('text', payload=self.value)
         return node
+
+    @property
+    def is_empty(self):
+        return not self.value
 
 
 @dataclass
@@ -435,6 +443,10 @@ class TextListProperty:
         add_children(node, 'text', self.values)
         return node
 
+    @property
+    def is_empty(self):
+        return not self.values
+
 
 @dataclass
 class MultipleValueProperty:
@@ -463,6 +475,10 @@ class MultipleValueProperty:
             node.addChild(node=make_parameters(self.parameters))
         node.addChild(self.value_type, payload=self.value)
         return node
+
+    @property
+    def is_empty(self):
+        return not self.value
 
 
 @dataclass
@@ -538,6 +554,16 @@ class NProperty:
         add_children(node, 'suffix', self.suffix)
         return node
 
+    @property
+    def is_empty(self):
+        if (self.surname or
+                self.given or
+                self.additional or
+                self.suffix or
+                self.prefix):
+            return False
+        return True
+
 
 @dataclass
 class NicknameProperty(TextListProperty):
@@ -599,6 +625,12 @@ class GenderProperty:
             node.addChild('identity', payload=self.sex)
         return node
 
+    @property
+    def is_empty(self):
+        if self.sex or self.identity:
+            return False
+        return True
+
 
 @dataclass
 class AdrProperty:
@@ -644,6 +676,18 @@ class AdrProperty:
         add_children(node, 'code', self.code)
         add_children(node, 'country', self.country)
         return node
+
+    @property
+    def is_empty(self):
+        if (self.pobox or
+                self.ext or
+                self.street or
+                self.locality or
+                self.region or
+                self.code or
+                self.country):
+            return False
+        return True
 
 
 @dataclass
@@ -691,6 +735,10 @@ class LangProperty:
             node.addChild(node=make_parameters(self.parameters))
         node.addChild('language-tag', payload=self.value)
         return node
+
+    @property
+    def is_empty(self):
+        return not self.value
 
 
 @dataclass
@@ -831,6 +879,10 @@ class ClientpidmapProperty:
         node.addChild('sourceid', payload=self.sourceid)
         node.addChild('uri', payload=self.uri)
         return node
+
+    @property
+    def is_empty(self):
+        return not self.uri
 
 
 @dataclass
