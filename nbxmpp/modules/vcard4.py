@@ -679,6 +679,7 @@ class AdrProperty:
 
     @property
     def is_empty(self):
+        # pylint: disable=too-many-boolean-expressions
         if (self.pobox or
                 self.ext or
                 self.street or
