@@ -421,6 +421,8 @@ class TextListProperty:
             raise ValueError('no value found')
 
         values = get_data_from_children(node, 'text')
+        if not values:
+            raise ValueError('no values found')
 
         parameters = get_parameters(node)
 
