@@ -525,7 +525,7 @@ class NProperty:
     additional: List[str] = field(default_factory=list)
     prefix: List[str] = field(default_factory=list)
     suffix: List[str] = field(default_factory=list)
-    parameters: List[Parameter] = field(default_factory=list)
+    parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
     def from_node(cls, node):
@@ -595,7 +595,7 @@ class GenderProperty:
     name: str = field(default='gender', init=False)
     sex: Optional[str] = None
     identity: Optional[str] = None
-    parameters: List[Parameter] = field(default_factory=list)
+    parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
     def from_node(cls, node):
@@ -622,7 +622,7 @@ class GenderProperty:
         if self.sex:
             node.addChild('sex', payload=self.sex)
         if self.identity:
-            node.addChild('identity', payload=self.sex)
+            node.addChild('identity', payload=self.identity)
         return node
 
     @property
@@ -643,7 +643,7 @@ class AdrProperty:
     region: List[str] = field(default_factory=list)
     code: List[str] = field(default_factory=list)
     country: List[str] = field(default_factory=list)
-    parameters: List[Parameter] = field(default_factory=list)
+    parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
     def from_node(cls, node):
@@ -714,7 +714,7 @@ class LangProperty:
 
     name: str = field(default='lang', init=False)
     value: str
-    parameters: List[Parameter] = field(default_factory=list)
+    parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
     def from_node(cls, node):
@@ -853,7 +853,7 @@ class ClientpidmapProperty:
     name: str = field(default='clientpidmap', init=False)
     sourceid: int
     uri: str
-    parameters: List[Parameter] = field(default_factory=list)
+    parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
     def from_node(cls, node):
