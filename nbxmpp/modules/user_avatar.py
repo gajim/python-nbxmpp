@@ -42,6 +42,7 @@ class UserAvatar(BaseModule):
         'publish': 'PubSub',
         'request_item': 'PubSub',
         'request_items': 'PubSub',
+        'delete': 'PubSub',
     }
 
     def __init__(self, client):
@@ -134,11 +135,14 @@ class UserAvatar(BaseModule):
 
         task = yield
 
-        if avatar is None:
-            result = yield self._publish_avatar_metadata(None)
-            yield finalize(task, result)
-
         access_model = 'open' if public else 'presence'
+
+        if avatar is None:
+            result = yield self._publish_avatar_metadata(None, access_model)
+            raise_if_error(result)
+
+            result = yield self.delete(Namespace.AVATAR_DATA)
+            yield finalize(task, result)
 
         result = yield self._publish_avatar(avatar, access_model)
 
@@ -165,19 +169,46 @@ class UserAvatar(BaseModule):
 
             raise_if_error(result)
 
-        result = yield self._publish_avatar_metadata(avatar.metadata)
+        result = yield self._publish_avatar_metadata(avatar.metadata,
+                                                     access_model)
 
         yield finalize(task, result)
 
     @iq_request_task
-    def _publish_avatar_metadata(self, metadata):
+    def _publish_avatar_metadata(self, metadata, access_model):
         task = yield
 
         self._log.info('Publish avatar meta data: %s', metadata)
 
+        options = {
+            'pubsub#persist_items': 'true',
+            'pubsub#access_model': access_model,
+        }
+
+        if metadata is None:
+            metadata = AvatarMetaData()
+
         result = yield self.publish(Namespace.AVATAR_METADATA,
                                     metadata.to_node(),
-                                    id_='current')
+                                    id_='current',
+                                    options=options,
+                                    force_node_options=True)
+
+        yield finalize(task, result)
+
+    @iq_request_task
+    def set_access_model(self, public):
+        task = yield
+
+        access_model = 'open' if public else 'presence'
+
+        result = yield self._client.get_module('PubSub').set_access_model(
+            Namespace.AVATAR_DATA, access_model)
+
+        raise_if_error(result)
+
+        result = yield self._client.get_module('PubSub').set_access_model(
+            Namespace.AVATAR_METADATA, access_model)
 
         yield finalize(task, result)
 
