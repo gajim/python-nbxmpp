@@ -112,3 +112,14 @@ class Nickname(BaseModule):
                                     force_node_options=True)
 
         yield finalize(task, result)
+
+    @iq_request_task
+    def set_access_model(self, public):
+        task = yield
+
+        access_model = 'open' if public else 'presence'
+
+        result = yield self._client.get_module('PubSub').set_access_model(
+            Namespace.NICK, access_model)
+
+        yield finalize(task, result)
