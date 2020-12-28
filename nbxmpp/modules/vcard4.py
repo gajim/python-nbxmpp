@@ -173,6 +173,9 @@ class Parameter:
         node.addChild(self.type, payload=self.value)
         return node
 
+    def copy(self):
+        return self.__class__(value=self.value)
+
 
 @dataclass
 class MultiParameter:
@@ -207,6 +210,9 @@ class MultiParameter:
         for value in self.values:
             node.addChild(self.type, payload=value)
         return node
+
+    def copy(self):
+        return self.__class__(values=set(self.values))
 
 
 @dataclass
@@ -293,6 +299,10 @@ class TzParameter:
         node.addChild(self.value_type, payload=self.value)
         return node
 
+    def copy(self):
+        return self.__class__(value_type=self.value_type,
+                              value=self.value)
+
 
 class Parameters:
     def __init__(self, parameters=None):
@@ -329,6 +339,12 @@ class Parameters:
             return
 
         parameter.values.update(types)
+
+    def copy(self):
+        parameters = {}
+        for name, parameter in self._parameters.items():
+            parameters[name] = parameter.copy()
+        return self.__class__(parameters=parameters)
 
 
 PARAMETER_CLASSES = {
@@ -377,6 +393,10 @@ class UriProperty:
     def is_empty(self):
         return not self.value
 
+    def copy(self):
+        return self.__class__(value=self.value,
+                              parameters=self.parameters.copy())
+
 
 @dataclass
 class TextProperty:
@@ -409,6 +429,10 @@ class TextProperty:
     @property
     def is_empty(self):
         return not self.value
+
+    def copy(self):
+        return self.__class__(value=self.value,
+                              parameters=self.parameters.copy())
 
 
 @dataclass
@@ -447,6 +471,10 @@ class TextListProperty:
     def is_empty(self):
         return not self.values
 
+    def copy(self):
+        return self.__class__(values=list(self.values),
+                              parameters=self.parameters.copy())
+
 
 @dataclass
 class MultipleValueProperty:
@@ -479,6 +507,11 @@ class MultipleValueProperty:
     @property
     def is_empty(self):
         return not self.value
+
+    def copy(self):
+        return self.__class__(value_type=self.value_type,
+                              value=self.value,
+                              parameters=self.parameters.copy())
 
 
 @dataclass
@@ -564,6 +597,13 @@ class NProperty:
             return False
         return True
 
+    def copy(self):
+        return self.__class__(surname=list(self.surname),
+                              given=list(self.given),
+                              additional=list(self.additional),
+                              prefix=list(self.prefix),
+                              suffix=list(self.suffix),
+                              parameters=self.parameters.copy())
 
 @dataclass
 class NicknameProperty(TextListProperty):
@@ -631,6 +671,11 @@ class GenderProperty:
             return False
         return True
 
+    def copy(self):
+        return self.__class__(sex=self.sex,
+                              identity=self.identity,
+                              parameters=self.parameters.copy())
+
 
 @dataclass
 class AdrProperty:
@@ -690,6 +735,16 @@ class AdrProperty:
             return False
         return True
 
+    def copy(self):
+        return self.__class__(pobox=list(self.pobox),
+                              ext=list(self.ext),
+                              street=list(self.street),
+                              locality=list(self.locality),
+                              region=list(self.region),
+                              code=list(self.code),
+                              country=list(self.country),
+                              parameters=self.parameters.copy())
+
 
 @dataclass
 class TelProperty(MultipleValueProperty):
@@ -740,6 +795,10 @@ class LangProperty:
     @property
     def is_empty(self):
         return not self.value
+
+    def copy(self):
+        return self.__class__(value=self.value,
+                              parameters=self.parameters.copy())
 
 
 @dataclass
@@ -884,6 +943,11 @@ class ClientpidmapProperty:
     @property
     def is_empty(self):
         return not self.uri
+
+    def copy(self):
+        return self.__class__(sourceid=self.sourceid,
+                              uri=self.uri,
+                              parameters=self.parameters.copy())
 
 
 @dataclass
@@ -1041,6 +1105,16 @@ class VCard:
                 return
 
         raise ValueError('prop not found in vcard')
+
+    def copy(self):
+        properties = []
+        for group_name, props in self._properties:
+            if group_name is None:
+                properties.append((None, props.copy()))
+            else:
+                group_properties = [prop.copy() for prop in props]
+                properties.append((group_name, group_properties))
+        return self.__class__(properties=properties)
 
 
 class VCard4(BaseModule):
