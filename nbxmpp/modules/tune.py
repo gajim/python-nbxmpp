@@ -64,6 +64,11 @@ class Tune(BaseModule):
             tune_dict[attr] = tune_node.getTagData(attr)
 
         data = TuneData(**tune_dict)
+        if data.artist is None and data.title is None:
+            self._log.warning('Missing artist or title: %s %s',
+                              data, properties.jid)
+            return
+
         pubsub_event = properties.pubsub_event._replace(data=data)
         self._log.info('Received tune: %s - %s', properties.jid, data)
 
