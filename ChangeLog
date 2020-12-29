@@ -1,3 +1,14 @@
+python-nbxmpp 2.0.0 (29 December 2020)
+
+ New
+
+ * New JID object
+ * Add JID Escaping (XEP-0106) support
+ * Add VCard4 (XEP-0292) support
+ * Make module calls generator based
+ * Add GSSAPI support (XEP-0233)
+ * Simplify and harmonize module API
+
 python-nbxmpp 1.0.2 (14 August 2020)
 
  New
