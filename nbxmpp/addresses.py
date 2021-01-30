@@ -172,6 +172,7 @@ class ServerAddresses(Observable):
             type_ = ConnectionType.PLAIN
         else:
             log.warning('Invalid websocket uri: %s', uri)
+            self._on_request_resolved()
             return
 
         addr = ServerAddress(domain=self._domain,
