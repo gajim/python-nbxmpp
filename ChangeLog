@@ -1,3 +1,13 @@
+python-nbxmpp 2.0.1 (07 February 2021)
+
+ New
+
+ * Properties: is_from_us() Method
+
+ Bugfixes
+
+ * Fix handling invalid websocket uris
+
 python-nbxmpp 2.0.0 (29 December 2020)
 
  New
