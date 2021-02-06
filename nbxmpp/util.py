@@ -70,13 +70,13 @@ def b64encode(data, return_type=str):
     return result.decode()
 
 
-def get_properties_struct(name):
+def get_properties_struct(name, own_jid):
     if name == 'message':
-        return MessageProperties()
+        return MessageProperties(own_jid)
     if name == 'iq':
-        return IqProperties()
+        return IqProperties(own_jid)
     if name == 'presence':
-        return PresenceProperties()
+        return PresenceProperties(own_jid)
     return Properties()
 
 
