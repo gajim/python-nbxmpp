@@ -649,7 +649,8 @@ class Properties:
 
 
 class MessageProperties:
-    def __init__(self):
+    def __init__(self, own_jid):
+        self._own_jid = own_jid
         self.carbon = None
         self.type = MessageType.NORMAL
         self.id = None
@@ -695,6 +696,14 @@ class MessageProperties:
         self.xhtml = None
         self.security_label = None
         self.chatstate = None
+
+    def is_from_us(self, bare_match=True):
+        if self.from_ is None:
+            raise ValueError('from attribute missing')
+
+        if bare_match:
+            return self._own_jid.bare_match(self.from_)
+        return self._own_jid == self.from_
 
     @property
     def has_user_delay(self):
@@ -813,7 +822,8 @@ class MessageProperties:
 
 
 class IqProperties:
-    def __init__(self):
+    def __init__(self, own_jid):
+        self._own_jid = own_jid
         self.type = None
         self.jid = None
         self.id = None
@@ -838,7 +848,8 @@ class IqProperties:
 
 
 class PresenceProperties:
-    def __init__(self):
+    def __init__(self, own_jid):
+        self._own_jid = own_jid
         self.type = None
         self.priority = None
         self.show = None

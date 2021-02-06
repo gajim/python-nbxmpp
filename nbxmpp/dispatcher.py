@@ -369,7 +369,7 @@ class StanzaDispatcher(Observable):
             return
 
         own_jid = self._client.get_bound_jid()
-        properties = get_properties_struct(name)
+        properties = get_properties_struct(name, own_jid)
 
         if name == 'iq':
             if stanza.getFrom() is None and own_jid is not None:
