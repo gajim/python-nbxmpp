@@ -129,6 +129,7 @@ class _Namespaces:
     PUBSUB_EVENT: str = 'http://jabber.org/protocol/pubsub#event'
     PUBSUB_OWNER: str = 'http://jabber.org/protocol/pubsub#owner'
     PUBSUB_PUBLISH_OPTIONS: str = 'http://jabber.org/protocol/pubsub#publish-options'
+    PUBSUB_NODE_MAX: str = 'http://jabber.org/protocol/pubsub#config-node-max'
     RECEIPTS: str = 'urn:xmpp:receipts'
     REGISTER: str = 'jabber:iq:register'
     REGISTER_FEATURE: str = 'http://jabber.org/features/iq-register'
