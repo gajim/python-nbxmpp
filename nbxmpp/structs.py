@@ -126,6 +126,9 @@ MAMQueryData = namedtuple('MAMQueryData', 'jid rsm complete')
 
 MAMPreferencesData = namedtuple('MAMPreferencesData', 'default always never')
 
+RosterData = namedtuple('RosterData', 'items version')
+RosterItem = namedtuple('RosterItem', 'data jid')
+
 
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
 
@@ -833,6 +836,7 @@ class IqProperties:
         self.http_auth = None
         self.ibb = None
         self.blocking = None
+        self.roster = None
 
     @property
     def is_http_auth(self):
@@ -845,6 +849,10 @@ class IqProperties:
     @property
     def is_blocking(self):
         return self.blocking is not None
+
+    @property
+    def is_roster(self):
+        return self.roster is not None
 
 
 class PresenceProperties:
