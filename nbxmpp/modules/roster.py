@@ -23,7 +23,7 @@ from nbxmpp.protocol import JID
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import RosterData
 from nbxmpp.structs import RosterItem
-from nbxmpp.structs import StanzaHandler
+# from nbxmpp.structs import StanzaHandler
 from nbxmpp.errors import StanzaError
 from nbxmpp.task import iq_request_task
 from nbxmpp.modules.base import BaseModule
