@@ -18,6 +18,8 @@
 from nbxmpp.protocol import Error as ErrorStanza
 from nbxmpp.protocol import ERR_BAD_REQUEST
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import Presence
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import error_factory
 from nbxmpp.const import PresenceType
@@ -90,3 +92,62 @@ class BasePresence(BaseModule):
             self._log.warning('Presence with invalid show')
             self._log.warning(stanza)
             return PresenceShow.ONLINE
+
+    def unsubscribe(self, jid):
+        self.send(jid=jid, typ='unsubscribe')
+
+    def unsubscribed(self, jid):
+        self.send(jid=jid, typ='unsubscribed')
+
+    def subscribed(self, jid):
+        self.send(jid=jid, typ='subscribed')
+
+    def subscribe(self, jid, status=None, nick=None):
+        self.send(jid=jid, typ='subscribe', status=status, nick=nick)
+
+    def send(self,
+             jid=None,
+             typ=None,
+             priority=None,
+             show=None,
+             status=None,
+             nick=None,
+             caps=None,
+             idle_time=None,
+             signed=None,
+             muc=False,
+             muc_history=None,
+             muc_password=None,
+             extend=None):
+
+        if show is not None and show not in ('chat', 'away', 'xa', 'dnd'):
+            raise ValueError('Invalid show value: %s' % show)
+
+        presence = Presence(jid, typ, priority, show, status)
+        if nick is not None:
+            nick_tag = presence.setTag('nick', namespace=Namespace.NICK)
+            nick_tag.setData(nick)
+
+        if idle_time is not None:
+            idle_node = presence.setTag('idle', namespace=Namespace.IDLE)
+            idle_node.setAttr('since', idle_time)
+
+        if caps is not None and typ != 'unavailable':
+            presence.setTag('c', namespace=Namespace.CAPS, attrs=caps)
+
+        if signed is not None:
+            presence.setTag(Namespace.SIGNED + ' x').setData(signed)
+
+        if muc or muc_history is not None or muc_password is not None:
+            muc_x = presence.setTag(Namespace.MUC + ' x')
+            if muc_history is not None:
+                muc_x.setTag('history', muc_history)
+
+            if muc_password is not None:
+                muc_x.setTagData('password', muc_password)
+
+        if extend is not None:
+            for node in extend:
+                presence.addChild(node=node)
+
+        self._con.send_stanza(presence)
