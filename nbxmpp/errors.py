@@ -32,6 +32,9 @@ class BaseError(Exception):
     def __str__(self):
         return self.text
 
+    def get_text(self):
+        return self.text
+
 
 class StanzaError(BaseError):
 
