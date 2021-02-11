@@ -1344,7 +1344,7 @@ class Presence(Protocol):
         """
         Return the status string of the message
         """
-        return self.getTagData('status')
+        return self.getTagData('status') or ''
 
     def setPriority(self, val):
         """
