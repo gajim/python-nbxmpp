@@ -280,9 +280,6 @@ class Client(Observable):
     def mechs(self):
         return set(self._allowed_mechs or set(['SCRAM-SHA-256',
                                                'SCRAM-SHA-1',
-                                               'GSSAPI',
-                                               # 'SCRAM-SHA-256-PLUS',
-                                               # 'SCRAM-SHA-1-PLUS',
                                                'PLAIN']))
 
     def set_mechs(self, mechs):
