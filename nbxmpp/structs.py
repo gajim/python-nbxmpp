@@ -129,6 +129,8 @@ MAMPreferencesData = namedtuple('MAMPreferencesData', 'default always never')
 RosterData = namedtuple('RosterData', 'items version')
 RosterItem = namedtuple('RosterItem', 'data jid')
 
+LastActivityData = namedtuple('LastActivityData', 'seconds status')
+
 
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
 

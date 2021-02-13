@@ -82,6 +82,7 @@ from nbxmpp.modules.vcard4 import VCard4
 from nbxmpp.modules.ping import Ping
 from nbxmpp.modules.delimiter import Delimiter
 from nbxmpp.modules.roster import Roster
+from nbxmpp.modules.last_activity import LastActivity
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.util import get_properties_struct
@@ -193,6 +194,7 @@ class StanzaDispatcher(Observable):
         self._modules['Ping'] = Ping(self._client)
         self._modules['Delimiter'] = Delimiter(self._client)
         self._modules['Roster'] = Roster(self._client)
+        self._modules['LastActivity'] = LastActivity(self._client)
 
         for instance in self._modules.values():
             for handler in instance.handlers:
