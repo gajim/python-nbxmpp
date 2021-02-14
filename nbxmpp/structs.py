@@ -906,8 +906,8 @@ class PresenceProperties:
     def is_nickname_changed(self):
         return (self.from_muc and
                 self.muc_status_codes is not None and
-                self.muc_user.nick is not None and
                 StatusCode.NICKNAME_CHANGE in self.muc_status_codes and
+                self.muc_user.nick is not None and
                 self.type == PresenceType.UNAVAILABLE)
 
     @property
