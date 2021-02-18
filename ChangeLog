@@ -1,3 +1,12 @@
+python-nbxmpp 2.0.2 (18 February 2021)
+
+ Bugfixes
+
+ * Add get_text() for Error Base class
+ * Client: Remove GSSAPI from default mechanisms
+ * Presence: Fix is_nickname_changed check
+ * UserAvatar: Add default argument
+
 python-nbxmpp 2.0.1 (07 February 2021)
 
  New
