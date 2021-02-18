@@ -80,7 +80,7 @@ class UserAvatar(BaseModule):
             return
 
         try:
-            data = AvatarMetaData.from_node(metadata)
+            data = AvatarMetaData.from_node(metadata, item.getAttr('id'))
         except Exception as error:
             self._log.warning('Malformed user avatar data: %s', error)
             self._log.warning(stanza)
@@ -128,7 +128,7 @@ class UserAvatar(BaseModule):
         if not metadata.getChildren():
             yield task.set_result(None)
 
-        yield AvatarMetaData.from_node(metadata)
+        yield AvatarMetaData.from_node(metadata, item.getAttr('id'))
 
     @iq_request_task
     def set_avatar(self, avatar, public=False):
@@ -190,7 +190,7 @@ class UserAvatar(BaseModule):
 
         result = yield self.publish(Namespace.AVATAR_METADATA,
                                     metadata.to_node(),
-                                    id_='current',
+                                    id_=metadata.default,
                                     options=options,
                                     force_node_options=True)
 
@@ -310,9 +310,10 @@ class AvatarData:
 @dataclass
 class AvatarMetaData:
     infos: List[AvatarInfo] = field(default_factory=list)
+    default: AvatarInfo = None
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node, default=None):
         infos = []
         info_nodes = node.getTags('info')
         for info in info_nodes:
@@ -324,10 +325,12 @@ class AvatarMetaData:
                 height=info.getAttr('height'),
                 width=info.getAttr('width')
             ))
-        return cls(infos=infos)
+        return cls(infos=infos, default=default)
 
-    def add_avatar_info(self, avatar_info):
+    def add_avatar_info(self, avatar_info, make_default=False):
         self.infos.append(avatar_info)
+        if make_default:
+            self.default = avatar_info.id
 
     def to_node(self):
         return _make_metadata_node(self.infos)
@@ -342,7 +345,14 @@ class Avatar:
     metadata: AvatarMetaData = field(default_factory=AvatarMetaData)
     data: Dict[AvatarInfo, bytes] = field(init=False, default_factory=dict)
 
-    def add_image_source(self, data, type_, height, width, url=None):
+    def add_image_source(self,
+                         data,
+                         type_,
+                         height,
+                         width,
+                         url=None,
+                         make_default=True):
+
         sha = hashlib.sha1(data).hexdigest()
         info = AvatarInfo(bytes=len(data),
                           id=sha,
@@ -350,7 +360,7 @@ class Avatar:
                           height=height,
                           width=width,
                           url=url)
-        self.metadata.add_avatar_info(info)
+        self.metadata.add_avatar_info(info, make_default=make_default)
         self.data[info] = AvatarData(data=data, sha=sha)
 
     def pubsub_avatar_info(self):
