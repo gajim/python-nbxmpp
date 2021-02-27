@@ -162,6 +162,52 @@ PresenceShow._WEIGHTS = {
 }
 
 
+@total_ordering
+class Chatstate(Enum):
+    COMPOSING = 'composing'
+    PAUSED = 'paused'
+    ACTIVE = 'active'
+    INACTIVE = 'inactive'
+    GONE = 'gone'
+
+    @property
+    def is_composing(self):
+        return self == Chatstate.COMPOSING
+
+    @property
+    def is_paused(self):
+        return self == Chatstate.PAUSED
+
+    @property
+    def is_active(self):
+        return self == Chatstate.ACTIVE
+
+    @property
+    def is_inactive(self):
+        return self == Chatstate.INACTIVE
+
+    @property
+    def is_gone(self):
+        return self == Chatstate.GONE
+
+    def __lt__(self, other):
+        try:
+            w1 = self._WEIGHTS[self]
+            w2 = self._WEIGHTS[other]
+        except KeyError:
+            return NotImplemented
+        return w1 < w2
+
+
+Chatstate._WEIGHTS = {
+    Chatstate.COMPOSING: 0,
+    Chatstate.PAUSED: 1,
+    Chatstate.ACTIVE: 2,
+    Chatstate.INACTIVE: 3,
+    Chatstate.GONE: 4,
+}
+
+
 class StatusCode(Enum):
     NON_ANONYMOUS = '100'
     AFFILIATION_CHANGE = '101'
@@ -605,14 +651,6 @@ TUNE_DATA = [
     'track',
     'uri']
 
-
-CHATSTATES = [
-    'active',
-    'inactive',
-    'gone',
-    'composing',
-    'paused'
-]
 
 REGISTER_FIELDS = [
     'username',

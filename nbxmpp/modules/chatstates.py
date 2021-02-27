@@ -17,7 +17,7 @@
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.const import CHATSTATES
+from nbxmpp.const import Chatstate
 from nbxmpp.modules.base import BaseModule
 
 
@@ -34,7 +34,13 @@ class Chatstates(BaseModule):
         ]
 
     def _process_message_chatstate(self, _client, stanza, properties):
-        chatstate = parse_chatstate(stanza)
+        try:
+            chatstate = parse_chatstate(stanza)
+        except ValueError as error:
+            self._log.warning('Invalid chatstate: %s', error)
+            self._log.warning(stanza)
+            return
+
         if chatstate is None:
             return
 
@@ -44,11 +50,6 @@ class Chatstates(BaseModule):
         if stanza.getTag('delay', namespace=Namespace.DELAY2) is not None:
             return
 
-        if chatstate not in CHATSTATES:
-            self._log.warning('Invalid chatstate: %s', chatstate)
-            self._log.warning(stanza)
-            return
-
         properties.chatstate = chatstate
 
 
@@ -56,5 +57,5 @@ def parse_chatstate(stanza):
     children = stanza.getChildren()
     for child in children:
         if child.getNamespace() == Namespace.CHATSTATES:
-            return child.getName()
+            return Chatstate(child.getName())
     return None
