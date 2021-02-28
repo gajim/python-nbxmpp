@@ -23,7 +23,8 @@ import hashlib
 import functools
 import warnings
 from base64 import b64encode
-from collections import namedtuple
+from dataclasses import dataclass
+from dataclasses import asdict
 
 from gi.repository import GLib
 
@@ -584,25 +585,23 @@ def unescape_localpart(localpart):
     return localpart
 
 
-class JID(namedtuple('JID',
-                     ['jid', 'localpart', 'domain', 'resource'])):
+@dataclass(frozen=True)
+class JID:
+    localpart: str = None
+    domain: str = None
+    resource: str = None
 
-    __slots__ = []
-
-    def __new__(cls, jid=None, localpart=None, domain=None, resource=None):
-        if jid is not None:
-            deprecation_warning('JID(jid) is deprecated, use from_string()')
-            return JID.from_string(str(jid))
-
+    def __init__(self, localpart=None, domain=None, resource=None):
         if localpart is not None:
             localpart = validate_localpart(localpart)
+            object.__setattr__(self, "localpart", localpart)
 
         domain = validate_domainpart(domain)
+        object.__setattr__(self, "domain", domain)
 
         if resource is not None:
             resource = validate_resourcepart(resource)
-
-        return super().__new__(cls, None, localpart, domain, resource)
+            object.__setattr__(self, "resource", resource)
 
     @classmethod
     @functools.lru_cache(maxsize=None)
@@ -625,8 +624,7 @@ class JID(namedtuple('JID',
         else:
             localpart, domainpart = None, rest
 
-        return cls(jid=None,
-                   localpart=localpart,
+        return cls(localpart=localpart,
                    domain=domainpart,
                    resource=resourcepart)
 
@@ -659,8 +657,7 @@ class JID(namedtuple('JID',
             localpart = None
             domainpart = user_input
 
-        return cls(jid=None,
-                   localpart=localpart,
+        return cls(localpart=localpart,
                    domain=domainpart,
                    resource=None)
 
@@ -684,7 +681,13 @@ class JID(namedtuple('JID',
                 return JID.from_string(other) == self
             except Exception:
                 return False
-        return super().__eq__(other)
+
+        if not isinstance(other, JID):
+            raise TypeError('eq with type (%s) not supported' % type(other))
+
+        return (self.localpart == other.localpart and
+                self.domain == other.domain and
+                self.resource == other.resource)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -705,7 +708,9 @@ class JID(namedtuple('JID',
     def new_as_bare(self):
         if self.resource is None:
             return self
-        return self._replace(resource=None)
+        new = asdict(self)
+        new.pop('resource')
+        return JID(**new)
 
     def bare_match(self, other):
         if isinstance(other, str):
@@ -723,7 +728,9 @@ class JID(namedtuple('JID',
                 self.resource is not None)
 
     def new_with(self, **kwargs):
-        return self._replace(**kwargs)
+        new = asdict(self)
+        new.update(kwargs)
+        return JID(**new)
 
     def to_user_string(self, show_punycode=True):
         domain = self.domain_to_ascii()
