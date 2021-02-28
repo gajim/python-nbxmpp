@@ -19,7 +19,6 @@
 from nbxmpp.namespaces import Namespace
 from nbxmpp.simplexml import Node
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import RosterData
 from nbxmpp.structs import RosterItem
