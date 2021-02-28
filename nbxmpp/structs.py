@@ -15,9 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from typing import List
+
 import time
 import random
 from collections import namedtuple
+from dataclasses import dataclass
+from dataclasses import field
 
 from gi.repository import Soup
 from gi.repository import Gio
@@ -25,6 +29,7 @@ from gi.repository import Gio
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import Node
+from nbxmpp.protocol import JID
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
 from nbxmpp.const import StatusCode
@@ -126,10 +131,40 @@ MAMQueryData = namedtuple('MAMQueryData', 'jid rsm complete')
 
 MAMPreferencesData = namedtuple('MAMPreferencesData', 'default always never')
 
-RosterData = namedtuple('RosterData', 'items version')
-RosterItem = namedtuple('RosterItem', 'data jid')
-
 LastActivityData = namedtuple('LastActivityData', 'seconds status')
+
+RosterData = namedtuple('RosterData', 'items version')
+
+
+@dataclass
+class RosterItem:
+    jid: JID
+    name: str = None
+    ask: str = None
+    subscription: str = None
+    groups: List[str] = field(default_factory=list)
+
+    @classmethod
+    def from_node(cls, node):
+        attrs = node.getAttrs()
+        jid = attrs.get('jid')
+        if jid is None:
+            raise Exception('jid attribute missing')
+
+        jid = JID.from_string(jid)
+        attrs['jid'] = jid
+
+        groups = {group.getData() for group in node.getTags('group')}
+        attrs['groups'] = list(groups)
+
+        return cls(**attrs)
+
+    def asdict(self):
+        return {'jid': self.jid,
+                'name': self.name,
+                'ask': self.ask,
+                'subscription': self.subscription,
+                'groups': self.groups}
 
 
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
