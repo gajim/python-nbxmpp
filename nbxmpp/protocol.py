@@ -741,56 +741,9 @@ class JID(namedtuple('JID',
             return f'{localpart}@{self.domain}{domain_encoded}'
         return f'{localpart}@{self.domain}/{self.resource}{domain_encoded}'
 
-    def bareMatch(self, other):
-        deprecation_warning('bareMatch() is deprected use bare_match()')
-        return self.bare_match(other)
-
-    @property
-    def isBare(self):
-        deprecation_warning('isBare() is deprected use '
-                            'the attribute is_bare')
-        return self.is_bare
-
-    @property
-    def isDomain(self):
-        deprecation_warning('isDomain() is deprected use '
-                            'the attribute is_domain')
-        return self.is_domain
-
-    @property
-    def isFull(self):
-        deprecation_warning('isFull() is deprected use '
-                            'the attribute is_full')
-        return self.is_full
-
     def copy(self):
         deprecation_warning('copy() is not needed, JID is immutable')
         return self
-
-    def getNode(self):
-        deprecation_warning('getNode() is deprected use '
-                            'the attribute localpart')
-        return self.localpart
-
-    def getDomain(self):
-        deprecation_warning('getDomain() is deprected use '
-                            'the attribute domain')
-        return self.domain
-
-    def getResource(self):
-        deprecation_warning('getResource() is deprected use '
-                            'the attribute resource')
-        return self.resource
-
-    def getStripped(self):
-        deprecation_warning('getStripped() is deprected use '
-                            'the attribute bare')
-        return self.bare
-
-    def getBare(self):
-        deprecation_warning('getBare() is deprected use '
-                            'the attribute bare')
-        return self.bare
 
 
 class StreamErrorNode(Node):
