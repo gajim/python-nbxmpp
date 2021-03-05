@@ -134,6 +134,7 @@ MAMPreferencesData = namedtuple('MAMPreferencesData', 'default always never')
 LastActivityData = namedtuple('LastActivityData', 'seconds status')
 
 RosterData = namedtuple('RosterData', 'items version')
+RosterPush = namedtuple('RosterPush', 'item version')
 
 
 @dataclass

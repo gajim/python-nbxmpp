@@ -22,7 +22,8 @@ from nbxmpp.protocol import Iq
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import RosterData
 from nbxmpp.structs import RosterItem
-# from nbxmpp.structs import StanzaHandler
+from nbxmpp.structs import RosterPush
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.errors import StanzaError
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.task import iq_request_task
@@ -36,11 +37,11 @@ class Roster(BaseModule):
 
         self._client = client
         self.handlers = [
-            # StanzaHandler(name='iq',
-            #               callback=self._process_roster_push,
-            #               typ='set',
-            #               priority=15,
-            #               ns=Namespace.ROSTER),
+            StanzaHandler(name='iq',
+                          callback=self._process_roster_push,
+                          typ='set',
+                          priority=15,
+                          ns=Namespace.ROSTER),
         ]
 
     @iq_request_task
@@ -67,21 +68,28 @@ class Roster(BaseModule):
                 raise MalformedStanzaError('query node missing', response)
             yield RosterData(None, version)
 
-        yield self._parse_push(response, ver_support)
+        pushed_items, version = self._parse_push(response, ver_support)
+        yield RosterData(pushed_items, version)
 
     def _process_roster_push(self, _client, stanza, properties):
         from_ = stanza.getFrom()
         if from_ is not None:
-            if not self._con.get_bound_jid().bare == from_:
+            if not self._client.get_bound_jid().bare == from_:
                 self._log.warning('Malicious Roster Push from %s', from_)
                 raise NodeProcessed
 
         ver_support = self._client.features.has_roster_version()
-        properties.roster = self._parse_push(stanza, ver_support)
+        pushed_items, version = self._parse_push(stanza, ver_support)
+        if len(pushed_items) != 1:
+            self._log.warning('Roster push contains more than one item')
+            self._log.warning(stanza)
+            raise NodeProcessed
+
+        item = pushed_items[0]
+        properties.roster = RosterPush(item, version)
 
         self._log.info('Roster Push, version: %s', properties.roster.version)
-        for item in properties.roster.items:
-            self._log.info(item)
+        self._log.info(item)
 
         self._ack_roster_push(stanza)
 
@@ -90,7 +98,7 @@ class Roster(BaseModule):
                 to=stanza.getFrom(),
                 frm=stanza.getTo(),
                 attrs={'id': stanza.getID()})
-        self._con.send_stanza(iq)
+        self._client.send_stanza(iq)
 
     @iq_request_task
     def delete_item(self, jid):
@@ -126,8 +134,7 @@ class Roster(BaseModule):
 
             pushed_items.append(roster_item)
 
-        return RosterData(pushed_items, version)
-
+        return pushed_items, version
 
 
 def _make_delete(jid):
