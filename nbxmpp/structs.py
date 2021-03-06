@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
+from typing import Set
 
 import time
 import random
@@ -143,7 +143,7 @@ class RosterItem:
     name: str = None
     ask: str = None
     subscription: str = None
-    groups: List[str] = field(default_factory=list)
+    groups: Set[str] = field(default_factory=set)
 
     @classmethod
     def from_node(cls, node):
@@ -156,7 +156,7 @@ class RosterItem:
         attrs['jid'] = jid
 
         groups = {group.getData() for group in node.getTags('group')}
-        attrs['groups'] = list(groups)
+        attrs['groups'] = set(groups)
 
         return cls(**attrs)
 
