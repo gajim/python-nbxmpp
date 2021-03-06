@@ -52,9 +52,15 @@ class Blocking(BaseModule):
         if blocklist is None:
             raise MalformedStanzaError('blocklist node missing', result)
 
-        blocked = []
+        blocked = set()
         for item in blocklist.getTags('item'):
-            blocked.append(item.getAttr('jid'))
+            try:
+                jid = JID.from_string(item.getAttr('jid'))
+            except Exception:
+                self._log.info('Invalid JID: %s', item.getAttr('jid'))
+                continue
+
+            blocked.add(jid)
 
         self._log.info('Received blocking list: %s', blocked)
         yield blocked
@@ -121,9 +127,9 @@ def _make_unblock_request(jids):
 def _parse_push(node):
     items = node.getTags('item')
     if not items:
-        return BlockingPush(block=[], unblock=[], unblock_all=True)
+        return BlockingPush(block=set(), unblock=set(), unblock_all=True)
 
-    jids = []
+    jids = set()
     for item in items:
         jid = item.getAttr('jid')
         if not jid:
@@ -134,10 +140,10 @@ def _parse_push(node):
         except Exception:
             continue
 
-        jids.append(jid)
+        jids.add(jid)
 
 
-    block, unblock = [], []
+    block, unblock = set(), set()
     if node.getName() == 'block':
         block = jids
     else:

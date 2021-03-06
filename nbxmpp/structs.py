@@ -156,7 +156,7 @@ class RosterItem:
         attrs['jid'] = jid
 
         groups = {group.getData() for group in node.getTags('group')}
-        attrs['groups'] = set(groups)
+        attrs['groups'] = groups
 
         return cls(**attrs)
 
