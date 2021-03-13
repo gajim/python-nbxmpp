@@ -147,7 +147,7 @@ class RosterItem:
 
     @classmethod
     def from_node(cls, node):
-        attrs = node.getAttrs()
+        attrs = node.getAttrs(copy=True)
         jid = attrs.get('jid')
         if jid is None:
             raise Exception('jid attribute missing')
