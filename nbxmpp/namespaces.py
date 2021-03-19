@@ -155,6 +155,7 @@ class _Namespaces:
     STREAM_MGMT: str = 'urn:xmpp:sm:3'
     STYLING: str = 'urn:xmpp:styling:0'
     TIME_REVISED: str = 'urn:xmpp:time'
+    TIME: str = 'urn:xmpp:time'
     TLS: str = 'urn:ietf:params:xml:ns:xmpp-tls'
     TUNE: str = 'http://jabber.org/protocol/tune'
     URL_DATA: str = 'http://jabber.org/protocol/url-data'

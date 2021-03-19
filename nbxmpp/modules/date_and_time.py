@@ -195,3 +195,12 @@ def parse_datetime(timestring, check_utc=False,
             # convert=None
             return date_time
     return None
+
+
+def get_local_time():
+    formated_time = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
+    isdst = time.localtime().tm_isdst
+    zone = -(time.timezone, time.altzone)[isdst] / 60.0
+    zone = (zone / 60, abs(zone % 60))
+    tzo = '%+03d:%02d' % zone
+    return formated_time, tzo
