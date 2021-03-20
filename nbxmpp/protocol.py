@@ -1807,24 +1807,18 @@ class Error(Protocol):
         If the 'node' is not the received stanza but locally created ('to' and
         'from' fields needs not swapping) specify the 'reply' argument as false.
         """
+        if node.getType() == 'error':
+            raise ValueError('Can’t create error reply from error')
+
         if reply:
             Protocol.__init__(self,
                               to=node.getFrom(),
-                              frm=node.getTo(),
                               node=node)
+            self.delAttr('from')
         else:
             Protocol.__init__(self, node=node)
         self.setError(error)
-        if node.getType() == 'error':
-            self.__str__ = self.__dupstr__
 
-    def __dupstr__(self, _dup1=None, _dup2=None):
-        """
-        Dummy function used as preventor of creating error node in reply to
-        error node. I.e. you will not be able to serialise "double" error
-        into string.
-        """
-        return ''
 
 class DataField(Node):
     """
