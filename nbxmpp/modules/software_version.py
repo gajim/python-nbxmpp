@@ -17,7 +17,8 @@
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import ErrorNode
+from nbxmpp.protocol import Error
+from nbxmpp.protocol import ERR_FORBIDDEN
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
 from nbxmpp.structs import SoftwareVersionResult
@@ -37,6 +38,7 @@ class SoftwareVersion(BaseModule):
             StanzaHandler(name='iq',
                           callback=self._answer_request,
                           typ='get',
+                          priority=60,
                           ns=Namespace.VERSION),
         ]
 
@@ -45,9 +47,13 @@ class SoftwareVersion(BaseModule):
         self._os = None
 
         self._enabled = False
+        self._allow_reply_func = None
 
     def disable(self):
         self._enabled = False
+
+    def set_allow_reply_func(self, func):
+        self._allow_reply_func = func
 
     @iq_request_task
     def request_software_version(self, jid):
@@ -70,19 +76,22 @@ class SoftwareVersion(BaseModule):
         if (not self._enabled or
                 self._name is None or
                 self._version is None):
-            iq = stanza.buildReply('error')
-            iq.addChild(node=ErrorNode(ERR_SERVICE_UNAVAILABLE))
-            self._log.info('Send service-unavailable')
+            self._client.send_stanza(Error(stanza, ERR_SERVICE_UNAVAILABLE))
+            raise NodeProcessed
 
-        else:
-            iq = stanza.buildReply('result')
-            query = iq.getQuery()
-            query.setTagData('name', self._name)
-            query.setTagData('version', self._version)
-            if self._os is not None:
-                query.setTagData('os', self._os)
-            self._log.info('Send software version: %s %s %s',
-                           self._name, self._version, self._os)
+        if self._allow_reply_func is not None:
+            if not self._allow_reply_func(stanza.getFrom()):
+                self._client.send_stanza(Error(stanza, ERR_FORBIDDEN))
+                raise NodeProcessed
+
+        iq = stanza.buildReply('result')
+        query = iq.getQuery()
+        query.setTagData('name', self._name)
+        query.setTagData('version', self._version)
+        if self._os is not None:
+            query.setTagData('os', self._os)
+        self._log.info('Send software version: %s %s %s',
+                       self._name, self._version, self._os)
 
         self._client.send_stanza(iq)
         raise NodeProcessed

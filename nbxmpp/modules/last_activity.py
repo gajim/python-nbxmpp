@@ -17,6 +17,9 @@
 
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import Error
+from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
+from nbxmpp.protocol import ERR_FORBIDDEN
 from nbxmpp.namespaces import Namespace
 from nbxmpp.task import iq_request_task
 from nbxmpp.structs import LastActivityData
@@ -34,18 +37,22 @@ class LastActivity(BaseModule):
         self.handlers = [
             StanzaHandler(name='iq',
                           callback=self._answer_request,
-                          priority=30,
+                          priority=60,
                           typ='get',
                           ns=Namespace.LAST),
         ]
 
         self._idle_func = None
+        self._allow_reply_func = None
 
     def disable(self):
         self._idle_func = None
 
     def set_idle_func(self, func):
         self._idle_func = func
+
+    def set_allow_reply_func(self, func):
+        self._allow_reply_func = func
 
     @iq_request_task
     def request_last_activity(self, jid):
@@ -60,7 +67,13 @@ class LastActivity(BaseModule):
     def _answer_request(self, _client, stanza, _properties):
         self._log.info('Request received from %s', stanza.getFrom())
         if self._idle_func is None:
-            return
+            self._client.send_stanza(Error(stanza, ERR_SERVICE_UNAVAILABLE))
+            raise NodeProcessed
+
+        if self._allow_reply_func is not None:
+            if not self._allow_reply_func(stanza.getFrom()):
+                self._client.send_stanza(Error(stanza, ERR_FORBIDDEN))
+                raise NodeProcessed
 
         seconds = self._idle_func()
         iq = stanza.buildReply('result')

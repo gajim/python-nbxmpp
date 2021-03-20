@@ -17,6 +17,9 @@
 
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import Error
+from nbxmpp.protocol import ERR_FORBIDDEN
+from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
 from nbxmpp.namespaces import Namespace
 from nbxmpp.task import iq_request_task
 from nbxmpp.structs import StanzaHandler
@@ -37,18 +40,22 @@ class EntityTime(BaseModule):
         self.handlers = [
             StanzaHandler(name='iq',
                           callback=self._answer_request,
-                          priority=30,
+                          priority=60,
                           typ='get',
                           ns=Namespace.TIME),
         ]
 
         self._enabled = False
+        self._allow_reply_func = None
 
     def disable(self):
         self._enabled = False
 
     def enable(self):
         self._enabled = True
+
+    def set_allow_reply_func(self, func):
+        self._allow_reply_func = func
 
     @iq_request_task
     def request_entity_time(self, jid):
@@ -63,7 +70,13 @@ class EntityTime(BaseModule):
     def _answer_request(self, _con, stanza, _properties):
         self._log.info('Request received from %s', stanza.getFrom())
         if not self._enabled:
-            return
+            self._client.send_stanza(Error(stanza, ERR_SERVICE_UNAVAILABLE))
+            raise NodeProcessed
+
+        if self._allow_reply_func is not None:
+            if not self._allow_reply_func(stanza.getFrom()):
+                self._client.send_stanza(Error(stanza, ERR_FORBIDDEN))
+                raise NodeProcessed
 
         time, tzo = get_local_time()
         iq = stanza.buildSimpleReply('result')
