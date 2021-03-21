@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+import inspect
 from urllib.parse import urlparse
 from urllib.parse import unquote
 
@@ -61,3 +62,16 @@ def parse_xmpp_uri(uri):
         dict_[key] = unquote(value)
 
     return (url.path, action, dict_)
+
+
+def make_func_arguments_string(func, self, args, kwargs):
+    signature = inspect.signature(func)
+    bound_arguments = signature.bind(self, *args, **kwargs)
+    bound_arguments.apply_defaults()
+    arg_string = ''
+    for name, arg in bound_arguments.arguments.items():
+        if name == 'self':
+            continue
+        arg_string += f'{name}={arg}, '
+    arg_string = arg_string[:-2]
+    return f'{func.__name__}({arg_string})'

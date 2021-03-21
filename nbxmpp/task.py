@@ -27,6 +27,7 @@ from nbxmpp.errors import is_error
 from nbxmpp.errors import CancelledError
 from nbxmpp.errors import TimeoutStanzaError
 from nbxmpp.simplexml import Node
+from nbxmpp.modules.util import make_func_arguments_string
 
 
 log = logging.getLogger('nbxmpp.task')
@@ -78,6 +79,8 @@ def _setup_task(task, client, callback, user_data):
 def iq_request_task(func):
     @wraps(func)
     def func_wrapper(self, *args, timeout=None, callback=None, user_data=None, **kwargs):
+        if self._log.isEnabledFor(logging.INFO):
+            self._log.info(make_func_arguments_string(func, self, args, kwargs))
         task = IqRequestTask(func(self, *args, **kwargs),
                              self._log,
                              self._client)
