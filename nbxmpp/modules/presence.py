@@ -25,6 +25,7 @@ from nbxmpp.util import error_factory
 from nbxmpp.const import PresenceType
 from nbxmpp.const import PresenceShow
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import log_calls
 
 
 class BasePresence(BaseModule):
@@ -93,15 +94,19 @@ class BasePresence(BaseModule):
             self._log.warning(stanza)
             return PresenceShow.ONLINE
 
+    @log_calls
     def unsubscribe(self, jid):
         self.send(jid=jid, typ='unsubscribe')
 
+    @log_calls
     def unsubscribed(self, jid):
         self.send(jid=jid, typ='unsubscribed')
 
+    @log_calls
     def subscribed(self, jid):
         self.send(jid=jid, typ='subscribed')
 
+    @log_calls
     def subscribe(self, jid, status=None, nick=None):
         self.send(jid=jid, typ='subscribe', status=status, nick=nick)
 
