@@ -159,7 +159,6 @@ class UserAvatar(BaseModule):
 
         for info, data in avatar.pubsub_avatar_info():
             item = _make_avatar_data_node(data)
-            self._log.info('Publish avatar data: %s, %s', info, access_model)
 
             result = yield self.publish(Namespace.AVATAR_DATA,
                                         item,
@@ -177,8 +176,6 @@ class UserAvatar(BaseModule):
     @iq_request_task
     def _publish_avatar_metadata(self, metadata, access_model):
         task = yield
-
-        self._log.info('Publish avatar meta data: %s', metadata)
 
         options = {
             'pubsub#persist_items': 'true',

@@ -47,7 +47,6 @@ class Ping(BaseModule):
     def ping(self, jid):
         _task = yield
 
-        self._log.info('Ping')
         response = yield _make_ping_request(jid)
         yield process_response(response)
 

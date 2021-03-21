@@ -69,16 +69,12 @@ class Blocking(BaseModule):
     def block(self, jids, report=None):
         _task = yield
 
-        self._log.info('Block: %s', jids)
-
         response = yield _make_block_request(jids, report)
         yield process_response(response)
 
     @iq_request_task
     def unblock(self, jids):
         _task = yield
-
-        self._log.info('Unblock: %s', jids)
 
         response = yield _make_unblock_request(jids)
         yield process_response(response)

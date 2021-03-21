@@ -148,8 +148,6 @@ class PubSub(BaseModule):
     def get_access_model(self, node):
         _task = yield
 
-        self._log.info('Request access model')
-
         result = yield self.get_node_configuration(node)
 
         raise_if_error(result)
@@ -178,8 +176,6 @@ class PubSub(BaseModule):
             yield CommonResult(jid=jid)
 
         result.form['pubsub#access_model'].value = model
-
-        self._log.info('Set access model %s', model)
 
         result = yield self.set_node_configuration(node, result.form)
 

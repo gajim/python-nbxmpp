@@ -135,8 +135,6 @@ class OpenPGP(BaseModule):
             'pubsub#access_model': access_model,
         }
 
-        self._log.info('Set keylist: %s', keylist)
-
         result = yield self.publish(Namespace.OPENPGP_PK,
                                     _make_keylist(keylist),
                                     id_='current',
@@ -148,8 +146,6 @@ class OpenPGP(BaseModule):
     @iq_request_task
     def set_public_key(self, key, fingerprint, date, public=True):
         task = yield
-
-        self._log.info('Set public key')
 
         access_model = 'open' if public else 'presence'
 
@@ -169,8 +165,6 @@ class OpenPGP(BaseModule):
     @iq_request_task
     def request_public_key(self, jid, fingerprint):
         task = yield
-
-        self._log.info('Request public key from: %s %s', jid, fingerprint)
 
         items = yield self.request_items(
             f'{Namespace.OPENPGP_PK}:{fingerprint}',
@@ -192,8 +186,6 @@ class OpenPGP(BaseModule):
     @iq_request_task
     def request_keylist(self, jid=None):
         task = yield
-
-        self._log.info('Request keylist from: %s', jid)
 
         items = yield self.request_items(
             Namespace.OPENPGP_PK,
@@ -217,8 +209,6 @@ class OpenPGP(BaseModule):
     def request_secret_key(self):
         task = yield
 
-        self._log.info('Request secret key')
-
         items = yield self.request_items(
             Namespace.OPENPGP_SK,
             max_items=1)
@@ -238,8 +228,6 @@ class OpenPGP(BaseModule):
     @iq_request_task
     def set_secret_key(self, secret_key):
         task = yield
-
-        self._log.info('Set public key')
 
         options = {
             'pubsub#persist_items': 'true',

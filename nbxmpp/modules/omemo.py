@@ -97,8 +97,6 @@ class OMEMO(BaseModule):
     def set_devicelist(self, devicelist=None, public=True):
         task = yield
 
-        self._log.info('Set devicelist: %s', devicelist)
-
         access_model = 'open' if public else 'presence'
 
         options = {
@@ -133,8 +131,6 @@ class OMEMO(BaseModule):
     def set_bundle(self, bundle, device_id, public=True):
         task = yield
 
-        self._log.info('Set bundle')
-
         access_model = 'open' if public else 'presence'
 
         options = {
@@ -154,8 +150,6 @@ class OMEMO(BaseModule):
     @iq_request_task
     def request_bundle(self, jid, device_id):
         task = yield
-
-        self._log.info('Request bundle from: %s %s', jid, device_id)
 
         items = yield self.request_items(
             f'{Namespace.OMEMO_TEMP_BUNDLE}:{device_id}',

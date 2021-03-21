@@ -82,8 +82,6 @@ class Annotations(BaseModule):
     def set_annotations(self, notes):
         _task = yield
 
-        self._log.info('Set annotations for %s:', self.domain)
-
         for note in notes:
             self._log.info(note)
 

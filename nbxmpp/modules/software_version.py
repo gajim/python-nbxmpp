@@ -59,8 +59,6 @@ class SoftwareVersion(BaseModule):
     def request_software_version(self, jid):
         _task = yield
 
-        self._log.info('Request software version for %s', jid)
-
         response = yield Iq(typ='get', to=jid, queryNS=Namespace.VERSION)
         if response.isError():
             raise StanzaError(response)

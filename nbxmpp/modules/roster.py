@@ -55,8 +55,7 @@ class Roster(BaseModule):
         if ver_support and version is None:
             version = ''
 
-        self._log.info('Request Roster, version: %s, ver support: %s',
-                       version, ver_support)
+        self._log.info('Roster versioning supported: %s', ver_support)
 
         response = yield _make_request(version, ver_support)
         if response.isError():

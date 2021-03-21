@@ -62,8 +62,6 @@ class Discovery(BaseModule):
     def disco_info(self, jid, node=None):
         _task = yield
 
-        self._log.info('Disco info: %s, node: %s', jid, node)
-
         response = yield get_disco_request(Namespace.DISCO_INFO, jid, node)
         if response.isError():
             raise StanzaError(response)
@@ -72,8 +70,6 @@ class Discovery(BaseModule):
     @iq_request_task
     def disco_items(self, jid, node=None):
         _task = yield
-
-        self._log.info('Disco items: %s, node: %s', jid, node)
 
         response = yield get_disco_request(Namespace.DISCO_ITEMS, jid, node)
         if response.isError():
