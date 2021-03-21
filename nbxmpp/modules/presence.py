@@ -150,4 +150,4 @@ class BasePresence(BaseModule):
             for node in extend:
                 presence.addChild(node=node)
 
-        self._con.send_stanza(presence)
+        self._client.send_stanza(presence)
