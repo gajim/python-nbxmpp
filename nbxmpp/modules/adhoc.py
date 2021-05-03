@@ -85,41 +85,44 @@ class AdHoc(BaseModule):
         if command is None:
             raise MalformedStanzaError('command node missing', response)
 
-        attrs = command.getAttrs()
-        notes = []
-        actions = []
+        node = command.getAttr('node')
+        if node is None:
+            raise MalformedStanzaError('node attribute missing', response)
+
+        sessionid = command.getAttr('sessionid')
+        if sessionid is None:
+            raise MalformedStanzaError('sessionid attribute missing', response)
+
+        status = command.getAttr('status')
+        if status is None:
+            raise MalformedStanzaError('status attribute missing', response)
+
+        if status not in ('executing', 'completed', 'canceled'):
+            raise MalformedStanzaError('invalid status attribute %s' % status,
+                                       response)
+
+        status = AdHocStatus(status)
+
         try:
-            for note in command.getTags('note'):
-                type_ = note.getAttr('type')
-                if type_ is not None:
-                    type_ = AdHocNoteType(note.getAttr('type'))
-                notes.append(AdHocCommandNote(text=note.getData(),
-                                              type=type_))
+            notes = _parse_notes(command)
+        except ValueError as error:
+            raise MalformedStanzaError(error, response)
 
-            default = None
-            actions_ = command.getTag('actions')
-            if actions_ is not None:
-                for action_ in actions_.getChildren():
-                    actions.append(AdHocAction(action_.getName()))
+        try:
+            actions, default = _parse_actions(command)
+        except ValueError as error:
+            raise MalformedStanzaError(error, response)
 
-                default = actions_.getAttr('execute')
-                if default is not None:
-                    default = AdHocAction(default)
-                    if default not in actions:
-                        default = None
-
-            yield AdHocCommand(
-                jid=str(response.getFrom()),
-                name=None,
-                node=attrs['node'],
-                sessionid=attrs.get('sessionid'),
-                status=AdHocStatus(attrs['status']),
-                data=command.getTag('x', namespace=Namespace.DATA),
-                actions=actions,
-                default=default,
-                notes=notes)
-        except Exception as error:
-            raise MalformedStanzaError(str(error), response)
+        yield AdHocCommand(
+            jid=response.getFrom(),
+            name=None,
+            node=node,
+            sessionid=sessionid,
+            status=status,
+            data=command.getTag('x', namespace=Namespace.DATA),
+            actions=actions,
+            default=default,
+            notes=notes)
 
 
 def _make_command(command, attrs, dataform):
@@ -129,3 +132,57 @@ def _make_command(command, attrs, dataform):
     iq = Iq('set', to=command.jid)
     iq.addChild(node=command_node)
     return iq
+
+
+def _parse_notes(command):
+    notes = []
+    for note in command.getTags('note'):
+        type_ = note.getAttr('type')
+        if type_ is None:
+            type_ = 'info'
+
+        if type_ not in ('info', 'warn', 'error'):
+            raise ValueError('invalid note type %s' % type_)
+
+        notes.append(AdHocCommandNote(text=note.getData(),
+                                      type=AdHocNoteType(type_)))
+    return notes
+
+
+def _parse_actions(command):
+    actions_node = command.getTag('actions')
+    if actions_node is None:
+        # If there is no <actions/> element,
+        # the user-agent can use a single-stage dialog or view.
+        # The action "execute" is equivalent to the action "complete".
+        return [AdHocAction.COMPLETE], AdHocAction.COMPLETE
+
+    actions = []
+    for action in actions_node.getChildren():
+        name = action.getName()
+        if name not in ('prev', 'next', 'complete'):
+            raise ValueError('invalid action name: %s' % name)
+        actions.append(AdHocAction(name))
+
+    if not actions:
+        raise ValueError('actions element without actions')
+
+    default = actions_node.getAttr('execute')
+    if default is None:
+        # If the "execute" attribute is absent, it defaults to "next".
+        default = 'next'
+
+    if default not in ('prev', 'next', 'complete'):
+        raise ValueError('invalid execute attribute %s' % default)
+
+    default = AdHocAction(default)
+
+    # A form which has an <actions/> element and an "execute" attribute
+    # which evaluates (taking the default into account if absent) to an
+    # action which is not allowed is therefore invalid.
+    if default not in actions:
+        # Some implementations don’t respect this rule.
+        # Take the first action so we don’t fail here.
+        default = actions[0]
+
+    return actions, default
