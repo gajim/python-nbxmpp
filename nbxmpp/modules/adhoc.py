@@ -150,12 +150,15 @@ def _parse_notes(command):
 
 
 def _parse_actions(command):
+    if command.getAttr('status') != 'executing':
+        return [], None
+
     actions_node = command.getTag('actions')
     if actions_node is None:
         # If there is no <actions/> element,
         # the user-agent can use a single-stage dialog or view.
         # The action "execute" is equivalent to the action "complete".
-        return [AdHocAction.COMPLETE], AdHocAction.COMPLETE
+        return [AdHocAction.CANCEL, AdHocAction.COMPLETE], AdHocAction.COMPLETE
 
     actions = []
     for action in actions_node.getChildren():
@@ -166,6 +169,9 @@ def _parse_actions(command):
 
     if not actions:
         raise ValueError('actions element without actions')
+
+    # The action "cancel" is always allowed.
+    actions.append(AdHocAction.CANCEL)
 
     default = actions_node.getAttr('execute')
     if default is None:
