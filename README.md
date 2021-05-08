@@ -13,7 +13,7 @@
 
 ## Optional Runtime Requirements
 
-- python-gssapi (for GSSAPI authentication)
+- python-gssapi (for GSSAPI authentication https://pypi.org/project/gssapi/)
 
 ## Features
 
