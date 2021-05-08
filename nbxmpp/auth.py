@@ -37,7 +37,8 @@ log = logging.getLogger('nbxmpp.auth')
 try:
     gssapi = __import__('gssapi')
     GSSAPI_AVAILABLE = True
-except ImportError:
+except (ImportError, OSError) as error:
+    log.warning('GSSAPI not available: %s', error)
     GSSAPI_AVAILABLE = False
 
 
