@@ -66,18 +66,18 @@ class AdHoc(BaseModule):
         yield command_list
 
     @iq_request_task
-    def execute_command(self, command, action=None, dataform=None):
+    def execute_command(self, cmd, action=None, dataform=None):
         _task = yield
 
         if action is None:
             action = AdHocAction.EXECUTE
-        attrs = {'node': command.node,
+        attrs = {'node': cmd.node,
                  'xmlns': Namespace.COMMANDS,
                  'action': action.value}
-        if command.sessionid is not None:
-            attrs['sessionid'] = command.sessionid
+        if cmd.sessionid is not None:
+            attrs['sessionid'] = cmd.sessionid
 
-        response = yield _make_command(command, attrs, dataform)
+        response = yield _make_command(cmd, attrs, dataform)
         if response.isError():
             raise StanzaError(response)
 
@@ -89,10 +89,6 @@ class AdHoc(BaseModule):
         if node is None:
             raise MalformedStanzaError('node attribute missing', response)
 
-        sessionid = command.getAttr('sessionid')
-        if sessionid is None:
-            raise MalformedStanzaError('sessionid attribute missing', response)
-
         status = command.getAttr('status')
         if status is None:
             raise MalformedStanzaError('status attribute missing', response)
@@ -102,6 +98,10 @@ class AdHoc(BaseModule):
                                        response)
 
         status = AdHocStatus(status)
+
+        sessionid = command.getAttr('sessionid')
+        if sessionid is None and _expect_sessionid(status, cmd.sessionid):
+            raise MalformedStanzaError('sessionid attribute missing', response)
 
         try:
             notes = _parse_notes(command)
@@ -192,3 +192,9 @@ def _parse_actions(command):
         default = actions[0]
 
     return actions, default
+
+
+def _expect_sessionid(status, sent_sessionid):
+    # Session id should only be expected for multiple stage commands
+    # or when we initialize the session (set the session attribute)
+    return status != status.COMPLETED or sent_sessionid is not None
