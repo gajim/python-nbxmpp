@@ -66,7 +66,10 @@ class MAM(BaseModule):
             raise MalformedStanzaError('rsm set missing', response)
 
         complete = fin.getAttr('complete') == 'true'
-        if not complete:
+        if max_ != 0 and not complete:
+            # max_ == 0 is a request for count of the items in a result set
+            # in this case first and last will be absent
+            # See: https://xmpp.org/extensions/xep-0059.html#count
             if rsm.first is None or rsm.last is None:
                 raise MalformedStanzaError('first or last element missing',
                                            response)
