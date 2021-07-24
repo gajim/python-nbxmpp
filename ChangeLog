@@ -1,3 +1,11 @@
+python-nbxmpp 2.0.3 (24 July 2021)
+
+ Bugfixes
+
+ * Correctly handle RSM count request
+ * Improve XEP-0050 Compliance
+ * GSSAPI: Catch OSError
+
 python-nbxmpp 2.0.2 (18 February 2021)
 
  Bugfixes
