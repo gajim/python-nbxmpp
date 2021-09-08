@@ -44,4 +44,9 @@ class Correction(BaseModule):
             self._log.warning(stanza)
             return
 
+        if stanza.getID() == id_:
+            self._log.warning('correcton id == message id')
+            self._log.warning(stanza)
+            return
+
         properties.correction = CorrectionData(id_)
