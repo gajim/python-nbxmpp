@@ -151,27 +151,14 @@ def _parse_notes(command):
 
 def _parse_actions(command):
     if command.getAttr('status') != 'executing':
-        return [], None
+        return set(), None
 
     actions_node = command.getTag('actions')
     if actions_node is None:
         # If there is no <actions/> element,
         # the user-agent can use a single-stage dialog or view.
         # The action "execute" is equivalent to the action "complete".
-        return [AdHocAction.CANCEL, AdHocAction.COMPLETE], AdHocAction.COMPLETE
-
-    actions = []
-    for action in actions_node.getChildren():
-        name = action.getName()
-        if name not in ('prev', 'next', 'complete'):
-            raise ValueError('invalid action name: %s' % name)
-        actions.append(AdHocAction(name))
-
-    if not actions:
-        raise ValueError('actions element without actions')
-
-    # The action "cancel" is always allowed.
-    actions.append(AdHocAction.CANCEL)
+        return {AdHocAction.CANCEL, AdHocAction.COMPLETE}, AdHocAction.COMPLETE
 
     default = actions_node.getAttr('execute')
     if default is None:
@@ -183,13 +170,31 @@ def _parse_actions(command):
 
     default = AdHocAction(default)
 
+    # We use a set because it cannot contain duplicates
+    actions = set()
+    for action in actions_node.getChildren():
+        name = action.getName()
+        if name == 'execute':
+            actions.add(default)
+
+        if name in ('prev', 'next', 'complete'):
+            actions.add(AdHocAction(name))
+
+    if not actions:
+        raise ValueError('actions element without actions')
+
+    # The action "cancel" is always allowed.
+    actions.add(AdHocAction.CANCEL)
+
     # A form which has an <actions/> element and an "execute" attribute
     # which evaluates (taking the default into account if absent) to an
     # action which is not allowed is therefore invalid.
     if default not in actions:
         # Some implementations don’t respect this rule.
         # Take the first action so we don’t fail here.
-        default = actions[0]
+        for act in actions:
+            default = act
+            break
 
     return actions, default
 
