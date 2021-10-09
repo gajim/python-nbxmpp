@@ -1,3 +1,10 @@
+python-nbxmpp 2.0.4 (09 October 2021)
+
+ Bugfixes
+
+ * Ignore messages with incorrect id
+ * AdHoc: Make parsing AdHoc commands more compliant
+
 python-nbxmpp 2.0.3 (24 July 2021)
 
  Bugfixes
