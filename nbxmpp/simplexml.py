@@ -351,9 +351,10 @@ class Node:
         Filter all child nodes using specified arguments as filter. Return the
         first found or None if not found
         """
-        tag = self.getTags(name, attrs, namespace, one=True)
-        assert not isinstance(tag, list)
-        return tag
+        tags = self.getTags(name, attrs, namespace)
+        if not tags:
+            return None
+        return tags[0]
 
     def getTagAttr(self,
                    tag: str,
@@ -380,13 +381,12 @@ class Node:
     def getTags(self,
                 name: str,
                 attrs: Optional[Attrs] = None,
-                namespace: Optional[str] = None,
-                one: bool = False) -> Union[List[Node], Node, None]:
+                namespace: Optional[str] = None) -> List[Node]:
         """
         Filter all child nodes using specified arguments as filter. Returns the
         list of nodes found
         """
-        nodes = []
+        nodes: List[Node] = []
         for node in self.kids:
             if namespace and namespace != node.getNamespace():
                 continue
@@ -398,11 +398,7 @@ class Node:
                         break
                 else:
                     nodes.append(node)
-            if one and nodes:
-                return nodes[0]
-        if not one:
-            return nodes
-        return None
+        return nodes
 
     def iterTags(self,
                  name: str,
@@ -479,9 +475,9 @@ class Node:
         Same as getTag but if the node with specified namespace/attributes not
         found, creates such node and returns it
         """
-        node = self.getTags(name, attrs, namespace=namespace, one=True)
-        if node:
-            return node
+        nodes = self.getTags(name, attrs, namespace=namespace)
+        if nodes:
+            return nodes[0]
         return self.addChild(name, attrs, namespace=namespace)
 
     def setTagAttr(self,
