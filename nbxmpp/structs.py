@@ -15,17 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Optional
 from typing import Set
+from typing import NamedTuple
 
 import time
 import random
 from collections import namedtuple
+import dataclasses
 from dataclasses import dataclass
 from dataclasses import field
 
 from gi.repository import Soup
 from gi.repository import Gio
 
+from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import Node
@@ -37,9 +44,15 @@ from nbxmpp.const import PresenceType
 from nbxmpp.const import LOCATION_DATA
 from nbxmpp.const import AdHocStatus
 
-StanzaHandler = namedtuple('StanzaHandler',
-                           'name callback typ ns xmlns priority')
-StanzaHandler.__new__.__defaults__ = ('', '', None, 50)
+
+class StanzaHandler(NamedTuple):
+    name: str
+    callback: Any
+    typ: str = ''
+    ns: str = ''
+    xmlns: Optional[str] = None
+    priority: int = 50
+
 
 CommonResult = namedtuple('CommonResult', 'jid')
 CommonResult.__new__.__defaults__ = (None,)
@@ -140,32 +153,29 @@ RosterPush = namedtuple('RosterPush', 'item version')
 @dataclass
 class RosterItem:
     jid: JID
-    name: str = None
-    ask: str = None
-    subscription: str = None
+    name: Optional[str] = None
+    ask: Optional[str] = None
+    subscription: Optional[str] = None
     groups: Set[str] = field(default_factory=set)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> RosterItem:
         attrs = node.getAttrs(copy=True)
         jid = attrs.get('jid')
         if jid is None:
             raise Exception('jid attribute missing')
 
         jid = JID.from_string(jid)
-        attrs['jid'] = jid
-
         groups = {group.getData() for group in node.getTags('group')}
-        attrs['groups'] = groups
 
-        return cls(**attrs)
+        return cls(jid=jid,
+                   name=attrs.get('name'),
+                   ask=attrs.get('ask'),
+                   subscription=attrs.get('subscription'),
+                   groups=groups)
 
     def asdict(self):
-        return {'jid': self.jid,
-                'name': self.name,
-                'ask': self.ask,
-                'subscription': self.subscription,
-                'groups': self.groups}
+        return dataclasses.asdict(self)
 
 
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
