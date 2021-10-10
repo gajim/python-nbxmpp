@@ -35,7 +35,6 @@ from gi.repository import Gio
 from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Protocol
-from nbxmpp.protocol import Node
 from nbxmpp.protocol import JID
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
