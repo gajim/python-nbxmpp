@@ -317,10 +317,6 @@ def get_stream_header(domain, lang, is_websocket):
     return "<?xml version='1.0'?>%s>" % str(header)[:-3]
 
 
-def get_stanza_id():
-    return str(uuid.uuid4())
-
-
 def utf8_decode(data):
     '''
     Decodes utf8 byte string to unicode string
