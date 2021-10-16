@@ -45,7 +45,7 @@ from nbxmpp.const import ConnectionProtocol
 from nbxmpp.const import Mode
 from nbxmpp.dispatcher import StanzaDispatcher
 from nbxmpp.util import get_stream_header
-from nbxmpp.util import get_stanza_id
+from nbxmpp.util import generate_id
 from nbxmpp.util import Observable
 from nbxmpp.util import validate_stream_header
 from nbxmpp.util import LogAdapter
@@ -576,7 +576,7 @@ class Client(Observable):
 
         id_ = stanza.getID()
         if id_ is None:
-            id_ = get_stanza_id()
+            id_ = generate_id()
             stanza.setID(id_)
 
         if callback is not None:
