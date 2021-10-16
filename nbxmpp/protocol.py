@@ -241,27 +241,6 @@ _errorcodes = {
     'cancel': 'invalid-from'
 }
 
-_status_conditions = {
-    'realjid-public': 100,
-    'affiliation-changed': 101,
-    'unavailable-shown': 102,
-    'unavailable-not-shown': 103,
-    'configuration-changed': 104,
-    'self-presence': 110,
-    'logging-enabled': 170,
-    'logging-disabled': 171,
-    'non-anonymous': 172,
-    'semi-anonymous': 173,
-    'fully-anonymous': 174,
-    'room-created': 201,
-    'nick-assigned': 210,
-    'banned': 301,
-    'new-nick': 303,
-    'kicked': 307,
-    'removed-affiliation': 321,
-    'removed-membership': 322,
-    'removed-shutdown': 332,
-}
 
 _localpart_disallowed_chars = set('"&\'/:<>@')
 _localpart_escape_chars = ' "&\'/:<>@'
