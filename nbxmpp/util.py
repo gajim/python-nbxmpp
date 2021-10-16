@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Literal
+
 import base64
 import hashlib
 import uuid
@@ -80,7 +82,7 @@ def get_properties_struct(name, own_jid):
     return Properties()
 
 
-def from_xs_boolean(value):
+def from_xs_boolean(value: str) -> bool:
     if value in ('1', 'true', 'True'):
         return True
 
@@ -90,7 +92,7 @@ def from_xs_boolean(value):
     raise ValueError('Cant convert %s to python boolean' % value)
 
 
-def to_xs_boolean(value):
+def to_xs_boolean(value: bool) -> Literal['true', 'false']:
     # Convert to xs:boolean ('true', 'false')
     # from a python boolean (True, False) or None
     if value is True:
@@ -266,7 +268,7 @@ def compute_caps_hash(info, compare=True):
     return b64hash
 
 
-def generate_id():
+def generate_id() -> str:
     return str(uuid.uuid4())
 
 
