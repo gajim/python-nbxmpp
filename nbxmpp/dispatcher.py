@@ -241,7 +241,7 @@ class StanzaDispatcher(Observable):
             self._parser.Parse(data)
         except (ExpatError, ValueError) as error:
             self._log.error('XML parsing error: %s', error)
-            self.notify('parsing-error', error)
+            self.notify('parsing-error', str(error))
             return
 
         # end stream:stream tag received
