@@ -276,7 +276,7 @@ class Node:
         """
         if not isinstance(node, Node):
             node = self.getTag(node, attrs)
-        assert isinstance(node, Node)
+
         self.kids.remove(node)
         return node
 

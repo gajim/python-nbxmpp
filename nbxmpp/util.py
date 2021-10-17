@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Any
+from typing import Optional
+from typing import Callable
 from typing import Literal
 from typing import Union
 
@@ -38,6 +41,7 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.protocol import StreamHeader
 from nbxmpp.protocol import WebsocketOpenHeader
+from nbxmpp.simplexml import Node
 from nbxmpp.structs import Properties
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
@@ -112,7 +116,9 @@ error_classes = {
     Namespace.HTTPUPLOAD_0: HTTPUploadError
 }
 
-def error_factory(stanza, condition=None, text=None):
+def error_factory(stanza: Node,
+                  condition: Optional[str] = None,
+                  text: Optional[str] = None) -> Any:
     if condition == 'stanza-malformed':
         return StanzaMalformedError(stanza, text)
     app_namespace = stanza.getAppErrorNamespace()
@@ -272,7 +278,7 @@ def generate_id() -> str:
     return str(uuid.uuid4())
 
 
-def get_form(stanza, form_type):
+def get_form(stanza: Node, form_type: Any) -> Any:
     forms = stanza.getTags('x', namespace=Namespace.DATA)
     if not forms:
         return None
@@ -288,7 +294,7 @@ def get_form(stanza, form_type):
     return None
 
 
-def validate_stream_header(stanza, domain, is_websocket):
+def validate_stream_header(stanza: Node, domain: str, is_websocket: bool) -> str:
     attrs = stanza.getAttrs()
     if attrs.get('from') != domain:
         raise StanzaMalformed('Invalid from attr in stream header')
@@ -310,9 +316,9 @@ def validate_stream_header(stanza, domain, is_websocket):
     return stream_id
 
 
-def get_stream_header(domain, lang, is_websocket):
+def get_stream_header(domain: str, lang: str, is_websocket: bool) -> str:
     if is_websocket:
-        return WebsocketOpenHeader(domain, lang)
+        return str(WebsocketOpenHeader(domain, lang))
     header = StreamHeader(domain, lang)
     return "<?xml version='1.0'?>%s>" % str(header)[:-3]
 
@@ -379,7 +385,7 @@ def convert_tls_error_flags(flags):
     return set(filter(lambda error: error & flags, GIO_TLS_ERRORS.keys()))
 
 
-def get_websocket_close_string(websocket):
+def get_websocket_close_string(websocket: Any) -> str:
     data = websocket.get_close_data()
     code = websocket.get_close_code()
 
@@ -388,29 +394,29 @@ def get_websocket_close_string(websocket):
     return ' Data: %s Code: %s' % (data, code)
 
 
-def is_websocket_close(stanza):
+def is_websocket_close(stanza: Node) -> bool:
     return (stanza.getName() == 'close' and
             stanza.getNamespace() == Namespace.FRAMING)
 
 
-def is_websocket_stream_error(stanza):
+def is_websocket_stream_error(stanza: Node) -> bool:
     return (stanza.getName() == 'error' and
             stanza.getNamespace() == Namespace.STREAMS)
 
 
 class Observable:
-    def __init__(self, log_):
+    def __init__(self, log_: logging.Logger):
         self._log = log_
         self._frozen = False
-        self._callbacks = defaultdict(list)
+        self._callbacks: defaultdict[str, list[Callable[..., Any]]] = defaultdict(list)
 
     def remove_subscriptions(self):
         self._callbacks = defaultdict(list)
 
-    def subscribe(self, signal_name, func):
+    def subscribe(self, signal_name: str, func: Callable[..., Any]):
         self._callbacks[signal_name].append(func)
 
-    def notify(self, signal_name, *args, **kwargs):
+    def notify(self, signal_name: str, *args: Any, **kwargs: dict[str, Any]):
         if self._frozen:
             self._frozen = False
             return
