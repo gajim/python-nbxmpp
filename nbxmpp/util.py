@@ -61,14 +61,14 @@ def b64decode(data: Union[str, bytes]) -> bytes:
     return base64.b64decode(data)
 
 
-def b64encode(data, return_type=str):
+def b64encode(data: Union[str, bytes]) -> str:
     if not data:
         raise ValueError('No data to encode')
+
     if isinstance(data, str):
         data = data.encode()
+
     result = base64.b64encode(data)
-    if return_type == bytes:
-        return result
     return result.decode()
 
 
