@@ -60,7 +60,7 @@ def parse_bob_data(stanza: Node) -> Optional[BobData]:
         return None
 
     try:
-        bob_data = b64decode(bob_data, return_type=bytes)
+        bob_data = b64decode(bob_data)
     except Exception:
         log.warning('Unable to decode data')
         log.exception(stanza)

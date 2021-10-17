@@ -220,7 +220,7 @@ def _get_avatar_data(item, id_):
         raise MalformedStanzaError('data node empty', item)
 
     try:
-        avatar = b64decode(data, return_type=bytes)
+        avatar = b64decode(data)
     except Exception as error:
         raise MalformedStanzaError(f'decoding error: {error}', item)
 

@@ -138,6 +138,6 @@ class VCard:
         if not avatar:
             return None, None
 
-        avatar = b64decode(avatar, return_type=bytes)
+        avatar = b64decode(avatar)
         avatar_sha = hashlib.sha1(avatar).hexdigest()
         return avatar, avatar_sha

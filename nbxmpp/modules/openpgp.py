@@ -74,7 +74,7 @@ class OpenPGP(BaseModule):
 
         self._log.info('Encrypted message received')
         try:
-            properties.openpgp = b64decode(data, return_type=bytes)
+            properties.openpgp = b64decode(data)
         except Exception:
             self._log.warning('b64decode failed')
             self._log.warning(stanza)
@@ -390,7 +390,7 @@ def _parse_public_key(jid, item):
         raise ValueError('data node missing')
 
     try:
-        key = b64decode(data.getData(), return_type=bytes)
+        key = b64decode(data.getData())
     except Exception as error:
         raise ValueError(f'decoding error: {error}')
 
@@ -432,7 +432,7 @@ def _parse_secret_key(item):
         raise ValueError('secretkey data missing')
 
     try:
-        key = b64decode(data, return_type=bytes)
+        key = b64decode(data)
     except Exception as error:
         raise ValueError(f'decoding error: {error}')
 

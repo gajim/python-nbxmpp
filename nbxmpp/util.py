@@ -16,6 +16,7 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Literal
+from typing import Union
 
 import base64
 import hashlib
@@ -50,15 +51,14 @@ from nbxmpp.third_party.hsluv import hsluv_to_rgb
 log = logging.getLogger('nbxmpp.util')
 
 
-def b64decode(data, return_type=str):
+def b64decode(data: Union[str, bytes]) -> bytes:
     if not data:
         raise ValueError('No data to decode')
+
     if isinstance(data, str):
         data = data.encode()
-    result = base64.b64decode(data)
-    if return_type == bytes:
-        return result
-    return result.decode()
+
+    return base64.b64decode(data)
 
 
 def b64encode(data, return_type=str):

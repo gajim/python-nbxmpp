@@ -288,7 +288,7 @@ class GSSAPI:
         self._client.send_nonza(node)
 
     def response(self, server_message, *args, **kwargs):
-        server_message = b64decode(server_message, bytes)
+        server_message = b64decode(server_message)
         try:
             if not self.ctx.complete:
                 output_token = self.ctx.step(server_message)
@@ -350,14 +350,14 @@ class SCRAM:
         self._client.send_nonza(node)
 
     def response(self, server_first_message):
-        server_first_message = b64decode(server_first_message)
+        server_first_message = b64decode(server_first_message).decode()
         challenge = self._scram_parse(server_first_message)
 
         client_nonce = challenge['r'][:self.nonce_length]
         if client_nonce != self._client_nonce:
             raise AuthFail('Invalid client nonce received from server')
 
-        salt = b64decode(challenge['s'], bytes)
+        salt = b64decode(challenge['s'])
         iteration_count = int(challenge['i'])
 
         if iteration_count < 4096:
@@ -397,9 +397,9 @@ class SCRAM:
         self._client.send_nonza(node)
 
     def success(self, server_last_message):
-        server_last_message = b64decode(server_last_message)
+        server_last_message = b64decode(server_last_message).decode()
         success = self._scram_parse(server_last_message)
-        server_signature = b64decode(success['v'], bytes)
+        server_signature = b64decode(success['v'])
         if server_signature != self._server_signature:
             raise AuthFail('Invalid server signature')
 

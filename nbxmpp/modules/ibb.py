@@ -113,7 +113,7 @@ class IBB(BaseModule):
             raise NodeProcessed
 
         try:
-            decoded_data = b64decode(data.getData(), return_type=bytes)
+            decoded_data = b64decode(data.getData())
         except Exception:
             self._log.exception('Failed to decode IBB data')
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
