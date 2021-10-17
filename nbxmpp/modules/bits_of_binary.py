@@ -15,9 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Optional
+
 import logging
 import hashlib
 
+from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import BobData
 from nbxmpp.util import b64decode
@@ -25,7 +28,7 @@ from nbxmpp.util import b64decode
 log = logging.getLogger('nbxmpp.m.bob')
 
 
-def parse_bob_data(stanza):
+def parse_bob_data(stanza: Node) -> Optional[BobData]:
     data_node = stanza.getTag('data', namespace=Namespace.BOB)
     if data_node is None:
         return None

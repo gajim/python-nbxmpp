@@ -317,7 +317,7 @@ def get_stream_header(domain, lang, is_websocket):
     return "<?xml version='1.0'?>%s>" % str(header)[:-3]
 
 
-def utf8_decode(data):
+def utf8_decode(data: bytes) -> tuple[str, bytes]:
     '''
     Decodes utf8 byte string to unicode string
     Does handle invalid utf8 sequences by splitting
@@ -336,7 +336,7 @@ def utf8_decode(data):
         raise
 
 
-def get_rand_number():
+def get_rand_number() -> int:
     return int(binascii.hexlify(os.urandom(6)), 16)
 
 
@@ -360,7 +360,7 @@ def get_invalid_xml_regex():
     return re.compile(r)
 
 
-def get_tls_error_phrase(tls_error):
+def get_tls_error_phrase(tls_error: Gio.TlsCertificateFlags) -> str:
     phrase = GIO_TLS_ERRORS.get(tls_error)
     if phrase is None:
         return GIO_TLS_ERRORS.get(Gio.TlsCertificateFlags.GENERIC_ERROR)

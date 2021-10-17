@@ -42,6 +42,7 @@ from nbxmpp.const import StatusCode
 from nbxmpp.const import PresenceType
 from nbxmpp.const import LOCATION_DATA
 from nbxmpp.const import AdHocStatus
+from nbxmpp.const import InviteType
 
 
 class StanzaHandler(NamedTuple):
@@ -53,17 +54,39 @@ class StanzaHandler(NamedTuple):
     priority: int = 50
 
 
-CommonResult = namedtuple('CommonResult', 'jid')
-CommonResult.__new__.__defaults__ = (None,)
+class CommonResult(NamedTuple):
+    jid: Optional[JID] = None
 
-InviteData = namedtuple('InviteData',
-                        'muc from_ reason password type continued thread')
 
-DeclineData = namedtuple('DeclineData', 'muc from_ reason')
+class InviteData(NamedTuple):
+    muc: JID
+    from_: JID
+    reason: Optional[str]
+    password: Optional[str]
+    type: InviteType
+    continued: bool
+    thread: Optional[str]
 
-CaptchaData = namedtuple('CaptchaData', 'form bob_data')
 
-BobData = namedtuple('BobData', 'algo hash_ max_age data cid type')
+class DeclineData(NamedTuple):
+    muc: JID
+    from_: JID
+    reason: Optional[str]
+
+
+class CaptchaData(NamedTuple):
+    form: Any
+    bob_data: BobData
+
+
+class BobData(NamedTuple):
+    algo: str
+    hash_: str
+    max_age: str
+    data: str
+    cid: str
+    type: str
+
 
 VoiceRequest = namedtuple('VoiceRequest', 'form jid nick')
 
