@@ -35,7 +35,7 @@ class _Namespaces:
     BOB: str = 'urn:xmpp:bob'
     BOOKMARKS: str = 'storage:bookmarks'
     BOOKMARKS_1: str = 'urn:xmpp:bookmarks:1'
-    BOOKMARKS_COMPAT: str = 'urn:xmpp:bookmarks:0#compat'
+    BOOKMARKS_COMPAT: str = 'urn:xmpp:bookmarks:1#compat'
     BOOKMARKS_COMPAT_PEP: str = 'urn:xmpp:bookmarks:1#compat-pep'
     BOOKMARK_CONVERSION: str = 'urn:xmpp:bookmarks-conversion:0'
     BROWSE: str = 'jabber:iq:browse'
