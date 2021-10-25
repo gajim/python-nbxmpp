@@ -197,7 +197,11 @@ class RosterItem:
                    groups=groups)
 
     def asdict(self):
-        return dataclasses.asdict(self)
+        return {'jid': self.jid,
+                'name': self.name,
+                'ask': self.ask,
+                'subscription': self.subscription,
+                'groups': self.groups}
 
 
 class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
