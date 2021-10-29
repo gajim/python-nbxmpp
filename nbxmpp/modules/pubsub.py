@@ -189,6 +189,13 @@ class PubSub(BaseModule):
         yield process_response(response)
 
     @iq_request_task
+    def purge(self, node, jid=None):
+        _task = yield
+
+        response = yield _make_purge_request(node, jid)
+        yield process_response(response)
+
+    @iq_request_task
     def delete(self, node, jid=None):
         _task = yield
 
@@ -397,6 +404,14 @@ def _make_retract_request(node, id_, jid, notify):
         attrs['notify'] = 'true'
     retract = pubsub.addChild('retract', attrs=attrs)
     retract.addChild('item', {'id': id_})
+    return query
+
+
+def _make_purge_request(node, jid):
+    query = Iq('set', to=jid)
+    pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB_OWNER)
+
+    pubsub.addChild('purge', attrs={'node': node})
     return query
 
 
