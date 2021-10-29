@@ -42,7 +42,7 @@ class UserAvatar(BaseModule):
         'publish': 'PubSub',
         'request_item': 'PubSub',
         'request_items': 'PubSub',
-        'delete': 'PubSub',
+        'purge': 'PubSub',
     }
 
     def __init__(self, client):
@@ -141,7 +141,7 @@ class UserAvatar(BaseModule):
             result = yield self._publish_avatar_metadata(None, access_model)
             raise_if_error(result)
 
-            result = yield self.delete(Namespace.AVATAR_DATA)
+            result = yield self.purge(Namespace.AVATAR_DATA)
             yield finalize(task, result)
 
         result = yield self._publish_avatar(avatar, access_model)
