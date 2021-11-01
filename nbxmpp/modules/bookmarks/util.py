@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+from typing import Optional
+
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import validate_resourcepart
 from nbxmpp.protocol import JID
@@ -26,7 +29,7 @@ from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.structs import BookmarkData
 
 
-def parse_nickname(nick):
+def parse_nickname(nick: Optional[str]) -> Optional[str]:
     if nick is None:
         return None
 
@@ -36,7 +39,7 @@ def parse_nickname(nick):
         return None
 
 
-def parse_autojoin(autojoin):
+def parse_autojoin(autojoin: Optional[str]) -> bool:
     if autojoin is None:
         return False
 
@@ -46,7 +49,7 @@ def parse_autojoin(autojoin):
         return False
 
 
-def parse_bookmark(item):
+def parse_bookmark(item: Node) -> BookmarkData:
     conference = item.getTag('conference', namespace=Namespace.BOOKMARKS_1)
     if conference is None:
         raise MalformedStanzaError('conference node missing', item)
@@ -73,7 +76,7 @@ def parse_bookmark(item):
                         extensions=extensions)
 
 
-def parse_bookmarks(item, log):
+def parse_bookmarks(item: Node, log: logging.Logger) -> list[BookmarkData]:
     storage_node = item.getTag('storage', namespace=Namespace.BOOKMARKS)
     if storage_node is None:
         raise MalformedStanzaError('storage node missing', item)
@@ -81,7 +84,8 @@ def parse_bookmarks(item, log):
     return parse_storage_node(storage_node, log)
 
 
-def parse_private_bookmarks(response, log):
+def parse_private_bookmarks(response: Node,
+                            log: logging.Logger) -> list[BookmarkData]:
     query = response.getQuery()
     storage_node = query.getTag('storage', namespace=Namespace.BOOKMARKS)
     if storage_node is None:
@@ -90,8 +94,8 @@ def parse_private_bookmarks(response, log):
     return parse_storage_node(storage_node, log)
 
 
-def parse_storage_node(storage, log):
-    bookmarks = []
+def parse_storage_node(storage: Node, log: logging.Logger) -> list[BookmarkData]:
+    bookmarks: list[BookmarkData] = []
     confs = storage.getTags('conference')
     for conf in confs:
         try:
@@ -120,7 +124,7 @@ def parse_storage_node(storage, log):
     return bookmarks
 
 
-def build_conference_node(bookmark):
+def build_conference_node(bookmark: BookmarkData):
     attrs = {'xmlns': Namespace.BOOKMARKS_1}
     if bookmark.autojoin:
         attrs['autojoin'] = 'true'
@@ -134,7 +138,7 @@ def build_conference_node(bookmark):
     return conference
 
 
-def build_storage_node(bookmarks):
+def build_storage_node(bookmarks: list[BookmarkData]):
     storage_node = Node(tag='storage', attrs={'xmlns': Namespace.BOOKMARKS})
     for bookmark in bookmarks:
         conf_node = storage_node.addChild(name="conference")
