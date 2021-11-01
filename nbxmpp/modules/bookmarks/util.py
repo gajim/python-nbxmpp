@@ -63,12 +63,14 @@ def parse_bookmark(item):
     nick = parse_nickname(conference.getTagData('nick'))
     name = conference.getAttr('name') or None
     password = conference.getTagData('password') or None
+    extensions = conference.getTag('extensions')
 
     return BookmarkData(jid=jid,
                         name=name,
+                        nick=nick,
                         autojoin=autojoin,
                         password=password,
-                        nick=nick)
+                        extensions=extensions)
 
 
 def parse_bookmarks(item, log):
@@ -127,6 +129,8 @@ def build_conference_node(bookmark):
     conference = Node(tag='conference', attrs=attrs)
     if bookmark.nick:
         conference.setTagData('nick', bookmark.nick)
+    if bookmark.extensions is not None:
+        conference.addChild(node=bookmark.extensions)
     return conference
 
 

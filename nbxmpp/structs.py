@@ -88,6 +88,15 @@ class BobData(NamedTuple):
     type: str
 
 
+class BookmarkData(NamedTuple):
+    jid: JID
+    name: Optional[str] = None
+    nick: Optional[str] = None
+    autojoin: bool = False
+    password: Optional[str] = None
+    extensions: Optional[Node] = None
+
+
 VoiceRequest = namedtuple('VoiceRequest', 'form jid nick')
 
 MucUserData = namedtuple('MucUserData', 'affiliation jid nick role actor reason')
@@ -121,9 +130,6 @@ ActivityData = namedtuple('ActivityData', 'activity subactivity text')
 
 LocationData = namedtuple('LocationData', LOCATION_DATA)
 LocationData.__new__.__defaults__ = (None,) * len(LocationData._fields)
-
-BookmarkData = namedtuple('BookmarkData', 'jid name nick autojoin password')
-BookmarkData.__new__.__defaults__ = (None, None, None, None)
 
 PGPPublicKey = namedtuple('PGPPublicKey', 'jid key date')
 
