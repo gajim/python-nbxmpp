@@ -15,8 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Iq
+from nbxmpp.builder import Iq
+from nbxmpp.structs import BookmarkData
 from nbxmpp.task import iq_request_task
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.util import process_response
@@ -24,11 +27,12 @@ from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.bookmarks.util import build_storage_node
 from nbxmpp.modules.bookmarks.util import get_private_request
 from nbxmpp.modules.bookmarks.util import parse_private_bookmarks
+from nbxmpp.client import Client
 
 
 
 class PrivateBookmarks(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -36,10 +40,8 @@ class PrivateBookmarks(BaseModule):
 
     @iq_request_task
     def request_bookmarks(self):
-        _task = yield
-
         response = yield get_private_request()
-        if response.isError():
+        if response.is_error():
             raise StanzaError(response)
 
         bookmarks = parse_private_bookmarks(response, self._log)
@@ -49,9 +51,7 @@ class PrivateBookmarks(BaseModule):
         yield bookmarks
 
     @iq_request_task
-    def store_bookmarks(self, bookmarks):
-        _task = yield
-
+    def store_bookmarks(self, bookmarks: list[BookmarkData]):
         self._log.info('Store Bookmarks')
 
         storage_node = build_storage_node(bookmarks)

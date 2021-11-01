@@ -1,7 +1,7 @@
 import unittest
 
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
+from nbxmpp.builder import Iq
+from nbxmpp.jid import JID
 from nbxmpp.util import error_factory
 
 

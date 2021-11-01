@@ -15,13 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
+from __future__ import annotations
+
 from typing import Optional
 
-from nbxmpp.protocol import Node
-from nbxmpp.protocol import validate_resourcepart
-from nbxmpp.protocol import JID
-from nbxmpp.protocol import Iq
+import logging
+
+from nbxmpp import types
+from nbxmpp.jid import validate_resourcepart
+from nbxmpp.jid import JID
+from nbxmpp.builder import Iq
+from nbxmpp.builder import E
 from nbxmpp.util import from_xs_boolean
 from nbxmpp.util import to_xs_boolean
 from nbxmpp.namespaces import Namespace
@@ -49,24 +53,24 @@ def parse_autojoin(autojoin: Optional[str]) -> bool:
         return False
 
 
-def parse_bookmark(item: Node) -> BookmarkData:
-    conference = item.getTag('conference', namespace=Namespace.BOOKMARKS_1)
+def parse_bookmark(item: types.Base) -> BookmarkData:
+    conference = item.find_tag('conference', namespace=Namespace.BOOKMARKS_1)
     if conference is None:
         raise MalformedStanzaError('conference node missing', item)
 
     try:
-        jid = JID.from_string(item.getAttr('id'))
+        jid = JID.from_string(item.get('id'))
     except Exception as error:
         raise MalformedStanzaError('invalid jid: %s' % error, item)
 
     if jid.localpart is None or jid.resource is not None:
         raise MalformedStanzaError('invalid jid', item)
 
-    autojoin = parse_autojoin(conference.getAttr('autojoin'))
-    nick = parse_nickname(conference.getTagData('nick'))
-    name = conference.getAttr('name') or None
-    password = conference.getTagData('password') or None
-    extensions = conference.getTag('extensions')
+    autojoin = parse_autojoin(conference.get('autojoin'))
+    nick = parse_nickname(conference.find_tag_text('nick'))
+    name = conference.get('name') or None
+    password = conference.find_tag_text('password') or None
+    extensions = conference.find_tag('extensions')
 
     return BookmarkData(jid=jid,
                         name=name,
@@ -76,30 +80,29 @@ def parse_bookmark(item: Node) -> BookmarkData:
                         extensions=extensions)
 
 
-def parse_bookmarks(item: Node, log: logging.Logger) -> list[BookmarkData]:
-    storage_node = item.getTag('storage', namespace=Namespace.BOOKMARKS)
+def parse_bookmarks(item: types.Base, log: logging.Logger) -> list[BookmarkData]:
+    storage_node = item.find_tag('storage', namespace=Namespace.BOOKMARKS)
     if storage_node is None:
         raise MalformedStanzaError('storage node missing', item)
 
     return parse_storage_node(storage_node, log)
 
 
-def parse_private_bookmarks(response: Node,
-                            log: logging.Logger) -> list[BookmarkData]:
-    query = response.getQuery()
-    storage_node = query.getTag('storage', namespace=Namespace.BOOKMARKS)
+def parse_private_bookmarks(response: types.Iq, log: logging.Logger) -> list[BookmarkData]:
+    query = response.get_query()
+    storage_node = query.find_tag('storage', namespace=Namespace.BOOKMARKS)
     if storage_node is None:
         raise MalformedStanzaError('storage node missing', response)
 
     return parse_storage_node(storage_node, log)
 
 
-def parse_storage_node(storage: Node, log: logging.Logger) -> list[BookmarkData]:
+def parse_storage_node(storage: types.Base, log: logging.Logger) -> list[BookmarkData]:
     bookmarks: list[BookmarkData] = []
-    confs = storage.getTags('conference')
+    confs = storage.find_tags('conference')
     for conf in confs:
         try:
-            jid = JID.from_string(conf.getAttr('jid'))
+            jid = JID.from_string(conf.get('jid'))
         except Exception:
             log.warning('invalid jid: %s', conf)
             continue
@@ -108,10 +111,10 @@ def parse_storage_node(storage: Node, log: logging.Logger) -> list[BookmarkData]
             log.warning('invalid jid: %s', conf)
             continue
 
-        autojoin = parse_autojoin(conf.getAttr('autojoin'))
-        nick = parse_nickname(conf.getTagData('nick'))
-        name = conf.getAttr('name') or None
-        password = conf.getTagData('password') or None
+        autojoin = parse_autojoin(conf.get('autojoin'))
+        nick = parse_nickname(conf.find_tag_text('nick'))
+        name = conf.get('name') or None
+        password = conf.find_tag_text('password') or None
 
         bookmark = BookmarkData(
             jid=jid,
@@ -124,37 +127,43 @@ def parse_storage_node(storage: Node, log: logging.Logger) -> list[BookmarkData]
     return bookmarks
 
 
-def build_conference_node(bookmark: BookmarkData):
-    attrs = {'xmlns': Namespace.BOOKMARKS_1}
+def build_conference_node(bookmark: BookmarkData) -> types.Base:
+    conference = E('conference', namespace=Namespace.BOOKMARKS_1)
     if bookmark.autojoin:
-        attrs['autojoin'] = 'true'
+        conference.set('autojoin', 'true')
+
     if bookmark.name:
-        attrs['name'] = bookmark.name
-    conference = Node(tag='conference', attrs=attrs)
+        conference.set('name', bookmark.name)
+
     if bookmark.nick:
-        conference.setTagData('nick', bookmark.nick)
+        conference.add_tag_text('nick', bookmark.nick)
+
     if bookmark.extensions is not None:
-        conference.addChild(node=bookmark.extensions)
+        conference.append(bookmark.extensions)
+
     return conference
 
 
-def build_storage_node(bookmarks: list[BookmarkData]):
-    storage_node = Node(tag='storage', attrs={'xmlns': Namespace.BOOKMARKS})
+def build_storage_node(bookmarks: list[BookmarkData]) -> types.Base:
+    storage_node = E('storage', namespace=Namespace.BOOKMARKS)
     for bookmark in bookmarks:
-        conf_node = storage_node.addChild(name="conference")
-        conf_node.setAttr('jid', bookmark.jid)
-        conf_node.setAttr('autojoin', to_xs_boolean(bookmark.autojoin))
+        conf_node = storage_node.add_tag(
+            'conference',
+             jid=bookmark.jid,
+             autojoin=to_xs_boolean(bookmark.autojoin))
+
         if bookmark.name:
-            conf_node.setAttr('name', bookmark.name)
+            conf_node.set('name', bookmark.name)
         if bookmark.nick:
-            conf_node.setTagData('nick', bookmark.nick)
+            conf_node.add_tag_text('nick', bookmark.nick)
         if bookmark.password:
-            conf_node.setTagData('password', bookmark.password)
+            conf_node.add_tag_text('password', bookmark.password)
+
     return storage_node
 
 
-def get_private_request():
-    iq = Iq(typ='get')
-    query = iq.addChild(name='query', namespace=Namespace.PRIVATE)
-    query.addChild(name='storage', namespace=Namespace.BOOKMARKS)
+def get_private_request() -> types.Iq:
+    iq = Iq()
+    query = iq.add_query(namespace=Namespace.PRIVATE)
+    query.add_tag('storage', namespace=Namespace.BOOKMARKS)
     return iq

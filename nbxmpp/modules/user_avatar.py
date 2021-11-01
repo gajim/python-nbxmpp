@@ -15,17 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from typing import List
+from __future__ import annotations
+
+from typing import Any, List, Optional
 from typing import Dict
 
 import hashlib
 from dataclasses import dataclass
 from dataclasses import asdict
 from dataclasses import field
+from nbxmpp import types
+from nbxmpp.client import Client
 
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import Node
+from nbxmpp.exceptions import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import b64encode
 from nbxmpp.util import b64decode
@@ -45,7 +48,7 @@ class UserAvatar(BaseModule):
         'purge': 'PubSub',
     }
 
-    def __init__(self, client):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -56,7 +59,11 @@ class UserAvatar(BaseModule):
                           priority=16),
         ]
 
-    def _process_pubsub_avatar(self, _client, stanza, properties):
+    def _process_pubsub_avatar(self,
+                               _client: Client,
+                               stanza: types.Message,
+                               properties: Any):
+
         if not properties.is_pubsub_event:
             return
 
@@ -68,19 +75,19 @@ class UserAvatar(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        metadata = item.getTag('metadata', namespace=Namespace.AVATAR_METADATA)
+        metadata = item.find_tag('metadata', namespace=Namespace.AVATAR_METADATA)
         if metadata is None:
             self._log.warning('No metadata node found')
             self._log.warning(stanza)
             raise NodeProcessed
 
-        if not metadata.getChildren():
+        if not metadata.get_children():
             self._log.info('Received avatar metadata: %s - no avatar set',
                            properties.jid)
             return
 
         try:
-            data = AvatarMetaData.from_node(metadata, item.getAttr('id'))
+            data = AvatarMetaData.from_node(metadata, item.get('id'))
         except Exception as error:
             self._log.warning('Malformed user avatar data: %s', error)
             self._log.warning(stanza)
@@ -94,7 +101,6 @@ class UserAvatar(BaseModule):
 
     @iq_request_task
     def request_avatar_data(self, id_, jid=None):
-        task = yield
 
         item = yield self.request_item(Namespace.AVATAR_DATA,
                                        id_=id_,
@@ -103,13 +109,12 @@ class UserAvatar(BaseModule):
         raise_if_error(item)
 
         if item is None:
-            yield task.set_result(None)
+            yield None
 
         yield _get_avatar_data(item, id_)
 
     @iq_request_task
     def request_avatar_metadata(self, jid=None):
-        task = yield
 
         items = yield self.request_items(Namespace.AVATAR_METADATA,
                                          max_items=1,
@@ -118,22 +123,21 @@ class UserAvatar(BaseModule):
         raise_if_error(items)
 
         if not items:
-            yield task.set_result(None)
+            yield None
 
         item = items[0]
-        metadata = item.getTag('metadata', namespace=Namespace.AVATAR_METADATA)
+        metadata = item.find_tag('metadata', namespace=Namespace.AVATAR_METADATA)
         if metadata is None:
             raise MalformedStanzaError('metadata node missing', item)
 
-        if not metadata.getChildren():
-            yield task.set_result(None)
+        if not metadata.get_children():
+            yield None
 
-        yield AvatarMetaData.from_node(metadata, item.getAttr('id'))
+        yield AvatarMetaData.from_node(metadata, item.get('id'))
 
     @iq_request_task
     def set_avatar(self, avatar, public=False):
 
-        task = yield
 
         access_model = 'open' if public else 'presence'
 
@@ -142,15 +146,14 @@ class UserAvatar(BaseModule):
             raise_if_error(result)
 
             result = yield self.purge(Namespace.AVATAR_DATA)
-            yield finalize(task, result)
+            yield finalize(result)
 
         result = yield self._publish_avatar(avatar, access_model)
 
-        yield finalize(task, result)
+        yield finalize(result)
 
     @iq_request_task
     def _publish_avatar(self, avatar, access_model):
-        task = yield
 
         options = {
             'pubsub#persist_items': 'true',
@@ -171,11 +174,10 @@ class UserAvatar(BaseModule):
         result = yield self._publish_avatar_metadata(avatar.metadata,
                                                      access_model)
 
-        yield finalize(task, result)
+        yield finalize(result)
 
     @iq_request_task
     def _publish_avatar_metadata(self, metadata, access_model):
-        task = yield
 
         options = {
             'pubsub#persist_items': 'true',
@@ -191,11 +193,10 @@ class UserAvatar(BaseModule):
                                     options=options,
                                     force_node_options=True)
 
-        yield finalize(task, result)
+        yield finalize(result)
 
     @iq_request_task
     def set_access_model(self, public):
-        task = yield
 
         access_model = 'open' if public else 'presence'
 
@@ -207,15 +208,15 @@ class UserAvatar(BaseModule):
         result = yield self._client.get_module('PubSub').set_access_model(
             Namespace.AVATAR_METADATA, access_model)
 
-        yield finalize(task, result)
+        yield finalize(result)
 
 
 def _get_avatar_data(item, id_):
-    data_node = item.getTag('data', namespace=Namespace.AVATAR_DATA)
+    data_node = item.find_tag('data', namespace=Namespace.AVATAR_DATA)
     if data_node is None:
         raise MalformedStanzaError('data node missing', item)
 
-    data = data_node.getData()
+    data = data_node.text or ''
     if not data:
         raise MalformedStanzaError('data node empty', item)
 
@@ -265,9 +266,9 @@ class AvatarInfo:
     bytes: int
     id: str
     type: str
-    url: str = None
-    height: int = None
-    width: int = None
+    url: Optional[str] = None
+    height: Optional[int] = None
+    width: Optional[int] = None
 
     def __post_init__(self):
         if self.bytes is None:
@@ -307,20 +308,23 @@ class AvatarData:
 @dataclass
 class AvatarMetaData:
     infos: List[AvatarInfo] = field(default_factory=list)
-    default: AvatarInfo = None
+    default: Optional[AvatarInfo] = None
 
     @classmethod
-    def from_node(cls, node, default=None):
-        infos = []
-        info_nodes = node.getTags('info')
+    def from_node(cls,
+                  element: types.Base,
+                  default: Optional[AvatarInfo] = None) -> AvatarMetaData:
+
+        infos: list[AvatarInfo] = []
+        info_nodes = element.find_tags('info')
         for info in info_nodes:
             infos.append(AvatarInfo(
-                bytes=info.getAttr('bytes'),
-                id=info.getAttr('id'),
-                type=info.getAttr('type'),
-                url=info.getAttr('url'),
-                height=info.getAttr('height'),
-                width=info.getAttr('width')
+                bytes=info.get('bytes'),
+                id=info.get('id'),
+                type=info.get('type'),
+                url=info.get('url'),
+                height=info.get('height'),
+                width=info.get('width')
             ))
         return cls(infos=infos, default=default)
 

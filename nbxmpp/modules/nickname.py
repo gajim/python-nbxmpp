@@ -15,13 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Generator
+from typing import Optional
+from typing import Union
+
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Node
+from nbxmpp.builder import E
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import PresenceType
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
 from nbxmpp.task import iq_request_task
+
+
+SetGenerator = Generator[types.Iq, types.Iq, None]
 
 
 class Nickname(BaseModule):
@@ -30,7 +41,7 @@ class Nickname(BaseModule):
         'publish': 'PubSub'
     }
 
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -49,11 +60,15 @@ class Nickname(BaseModule):
                           priority=40),
         ]
 
-    def _process_nickname(self, _client, stanza, properties):
-        if stanza.getName() == 'message':
+    def _process_nickname(self,
+                          _client: types.Client,
+                          stanza: Union[types.Iq, types.Message],
+                          properties: Any):
+
+        if stanza.localname == 'message':
             properties.nickname = self._parse_nickname(stanza)
 
-        elif stanza.getName() == 'presence':
+        elif stanza.localname == 'presence':
             # the nickname MUST NOT be included in presence broadcasts
             # (i.e., <presence/> stanzas with no 'type' attribute or
             # of type "unavailable").
@@ -62,7 +77,11 @@ class Nickname(BaseModule):
                 return
             properties.nickname = self._parse_nickname(stanza)
 
-    def _process_pubsub_nickname(self, _client, _stanza, properties):
+    def _process_pubsub_nickname(self,
+                                 _client: types.Client,
+                                 _stanza: types.Message,
+                                 properties: Any):
+
         if not properties.is_pubsub_event:
             return
 
@@ -84,15 +103,16 @@ class Nickname(BaseModule):
         properties.pubsub_event = properties.pubsub_event._replace(data=nick)
 
     @staticmethod
-    def _parse_nickname(stanza):
-        nickname = stanza.getTag('nick', namespace=Namespace.NICK)
+    def _parse_nickname(stanza: Union[types.Iq, types.Message]) -> Optional[str]:
+        nickname = stanza.find_tag('nick', namespace=Namespace.NICK)
         if nickname is None:
             return None
-        return nickname.getData() or None
+        return nickname.text or ''
 
     @iq_request_task
-    def set_nickname(self, nickname, public=False):
-        task = yield
+    def set_nickname(self,
+                     nickname: Optional[str],
+                     public: bool = False) -> SetGenerator:
 
         access_model = 'open' if public else 'presence'
 
@@ -101,9 +121,9 @@ class Nickname(BaseModule):
             'pubsub#access_model': access_model,
         }
 
-        item = Node('nick', {'xmlns': Namespace.NICK})
+        item = E('nick', namespace=Namespace.NICK)
         if nickname is not None:
-            item.addData(nickname)
+            item.text = nickname
 
         result = yield self.publish(Namespace.NICK,
                                     item,
@@ -111,15 +131,14 @@ class Nickname(BaseModule):
                                     options=options,
                                     force_node_options=True)
 
-        yield finalize(task, result)
+        yield finalize(result)
 
     @iq_request_task
-    def set_access_model(self, public):
-        task = yield
+    def set_access_model(self, public: bool) -> SetGenerator:
 
         access_model = 'open' if public else 'presence'
 
         result = yield self._client.get_module('PubSub').set_access_model(
             Namespace.NICK, access_model)
 
-        yield finalize(task, result)
+        yield finalize(result)

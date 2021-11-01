@@ -6,20 +6,22 @@ import json
 from pathlib import Path
 
 import gi
+
+from nbxmpp.elements import Base
 gi.require_version('Gtk', '3.0')
 gi.require_version('GLib', '2.0')
 from gi.repository import Gtk
 from gi.repository import GLib
+from lxml import etree
 
-import nbxmpp
-from nbxmpp.protocol import JID
+from nbxmpp.jid import JID
 from nbxmpp.client import Client
 from nbxmpp.structs import ProxyData
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.addresses import ServerAddress
 from nbxmpp.const import ConnectionType
 from nbxmpp.const import ConnectionProtocol
 from nbxmpp.const import StreamError
+from nbxmpp.builder import E
 
 consoleloghandler = logging.StreamHandler()
 log = logging.getLogger('nbxmpp')
@@ -50,10 +52,8 @@ class StanzaRow(Gtk.ListBoxRow):
     def __init__(self, stanza, incoming):
         Gtk.ListBoxRow.__init__(self)
         color = 'red' if incoming else 'blue'
-        if isinstance(stanza, bytes):
-            stanza = str(stanza)
-        if not isinstance(stanza, str):
-            stanza = stanza.__str__(fancy=True)
+        if etree.iselement(stanza):
+            stanza = stanza.tostring(pretty_print=True)
         stanza = GLib.markup_escape_text(stanza)
         label = Gtk.Label()
         label.set_markup('<span foreground="%s">%s</span>' % (color, stanza))
@@ -273,7 +273,7 @@ class TestClient(Gtk.Window):
         item.destroy()
 
     def send_presence(self):
-        presence = nbxmpp.Presence()
+        presence = E('presence')
         self._client.send_stanza(presence)
 
 

@@ -15,18 +15,31 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+import typing
+from typing import Any
+
 import time
 import logging
+from copy import deepcopy
 
 from nbxmpp.namespaces import Namespace
-from nbxmpp.simplexml import Node
 from nbxmpp.const import StreamState
 from nbxmpp.util import LogAdapter
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.protocol import Error
+from nbxmpp.builder import E
+
+if typing.TYPE_CHECKING:
+    from nbxmpp import types
+    from nbxmpp.client import Client
 
 
 log = logging.getLogger('nbxmpp.smacks')
+
+
+def make_sm_element(tag: str, **kwargs: Any):
+    return E(tag, namespace=Namespace.STREAM_MGMT, **kwargs)
 
 
 class Smacks:
@@ -38,14 +51,14 @@ class Smacks:
     number of handled stanzas
     """
 
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self._client = client
         self._out_h = 0  # Outgoing stanzas handled
         self._in_h = 0  # Incoming stanzas handled
         self._acked_h = 0  # Last acked stanza
 
-        self._uqueue = []  # Unhandled stanzas queue
-        self._old_uqueue = []  # Unhandled stanzas queue of the last session
+        self._uqueue: list[types.Base] = []  # Unhandled stanzas queue
+        self._old_uqueue: list[types.Base] = []  # Unhandled stanzas queue of the last session
 
         # Max number of stanzas in queue before making a request
         self.max_queue = 0
@@ -65,20 +78,20 @@ class Smacks:
         self.register_handlers()
 
     @property
-    def sm_supported(self):
+    def sm_supported(self) -> bool:
         return self._sm_supported
 
     @sm_supported.setter
-    def sm_supported(self, value):
-        self._log.info('Server supports detected: %s', value)
+    def sm_supported(self, value: bool):
+        self._log.info('Server support detected: %s', value)
         self._sm_supported = value
 
-    def delegate(self, stanza):
-        if stanza.getNamespace() != Namespace.STREAM_MGMT:
+    def delegate(self, stanza: types.Base):
+        if stanza.namespace != Namespace.STREAM_MGMT:
             return
-        if stanza.getName() == 'resumed':
+        if stanza.localname == 'resumed':
             self._on_resumed(stanza)
-        elif stanza.getName() == 'failed':
+        elif stanza.localname == 'failed':
             self._on_failed(None, stanza, None)
 
     def register_handlers(self):
@@ -107,36 +120,43 @@ class Smacks:
         if self._client.sm_disabled:
             return
 
-        enable = Node(Namespace.STREAM_MGMT + ' enable', attrs={'resume': 'true'})
-        self._client.send_nonza(enable, now=False)
+        element = make_sm_element('enable', resume='true')
+        self._client.send_nonza(element, now=False)
         self._log.debug('Send enable')
         self._enable_sent = True
 
-    def _on_enabled(self, _con, stanza, _properties):
+    def _on_enabled(self,
+                    _client: Client,
+                    stanza: types.Base,
+                    _properties: Any):
+
         if self.enabled:
             self._log.error('Received "enabled", but SM is already enabled')
             return
-        resume = stanza.getAttr('resume')
+
+        resume = stanza.get('resume')
         if resume in ('true', 'True', '1'):
             self.resume_supported = True
-            self._session_id = stanza.getAttr('id')
+            self._session_id = stanza.get('id')
 
-        self._location = stanza.getAttr('location')
+        self._location = stanza.get('location')
         self.enabled = True
         self._log.info(
             'Received enabled, location: %s, resume supported: %s, '
             'session-id: %s', self._location, resume, self._session_id)
 
-    def count_incoming(self, name):
+    def count_incoming(self, name: str):
         if not self.enabled:
             # Dont count while we didnt receive 'enabled'
             return
+
         if name in ('a', 'r', 'resumed', 'enabled'):
             return
+
         self._log.debug('IN, %s', name)
         self._in_h += 1
 
-    def save_in_queue(self, stanza):
+    def save_in_queue(self, stanza: types.Base):
         if not self._enable_sent and not self.resumed:
             # We did not yet sent 'enable' so the server
             # will not count our stanzas
@@ -144,14 +164,12 @@ class Smacks:
 
         # Make a full copy so we dont run into problems when
         # the stanza is modified after sending for some reason
-        # TODO: Make also copies of Protocol.Error objects
-        if not isinstance(stanza, Error):
-            stanza = type(stanza)(node=str(stanza))
+        stanza = deepcopy(stanza)
 
         self._add_delay(stanza)
 
         self._uqueue.append(stanza)
-        self._log.debug('OUT, %s', stanza.getName())
+        self._log.debug('OUT, %s', stanza.localname)
         self._out_h += 1
 
         if len(self._uqueue) > self.max_queue:
@@ -160,21 +178,21 @@ class Smacks:
         if (self._in_h - self._acked_h) > 100:
             self._send_ack()
 
-    def _add_delay(self, stanza):
-        if stanza.getName() != 'message':
+    def _add_delay(self, stanza: types.Base):
+        if stanza.localname != 'message':
             return
 
-        if stanza.getType() not in ('chat', 'groupchat'):
+        if stanza.get('type') not in ('chat', 'groupchat'):
             return
 
         timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
         attrs = {'stamp': timestamp}
 
-        if stanza.getType() != 'groupchat':
+        if stanza.get('type') != 'groupchat':
             # Dont leak our JID to Groupchats
             attrs['from'] = str(self._client.get_bound_jid())
 
-        stanza.addChild('delay', namespace=Namespace.DELAY2, attrs=attrs)
+        stanza.add_tag('delay', namespace=Namespace.DELAY2, **attrs)
 
     def _resend_queue(self):
         """
@@ -203,14 +221,15 @@ class Smacks:
         self._old_uqueue += self._uqueue
         self._uqueue = []
 
-        resume = Node(Namespace.STREAM_MGMT + ' resume',
-                      attrs={'h': self._in_h, 'previd': self._session_id})
+        element = make_sm_element('resume',
+                                  h=self._in_h,
+                                  previd=self._session_id)
 
         self._acked_h = self._in_h
         self.resume_in_progress = True
-        self._client.send_nonza(resume, now=False)
+        self._client.send_nonza(element, now=False)
 
-    def _on_resumed(self, stanza):
+    def _on_resumed(self, stanza: types.Base):
         """
         Checks if the number of stanzas sent are the same as the
         number of stanzas received by the server. Resends stanzas not received
@@ -220,18 +239,18 @@ class Smacks:
                        self._session_id)
         self._validate_ack(stanza, self._old_uqueue)
         # Set our out h to the h we received
-        self._out_h = int(stanza.getAttr('h'))
+        self._out_h = int(stanza.get('h'))
         self.enabled = True
         self.resumed = True
         self.resume_in_progress = False
         self._client.set_state(StreamState.RESUME_SUCCESSFUL)
         self._resend_queue()
 
-    def _send_ack(self, *args):
-        ack = Node(Namespace.STREAM_MGMT + ' a', attrs={'h': self._in_h})
+    def _send_ack(self, *args: Any):
+        element = make_sm_element('a', h=self._in_h)
         self._acked_h = self._in_h
         self._log.debug('Send ack, h: %s', self._in_h)
-        self._client.send_nonza(ack, now=False)
+        self._client.send_nonza(element, now=False)
 
     def close_session(self):
         # We end the connection deliberately
@@ -240,23 +259,30 @@ class Smacks:
         self._reset_state()
 
     def _request_ack(self):
-        request = Node(Namespace.STREAM_MGMT + ' r')
+        element = make_sm_element('r')
         self._log.debug('Request ack')
-        self._client.send_nonza(request, now=False)
+        self._client.send_nonza(element, now=False)
 
-    def _on_ack(self, _stream, stanza, _properties):
+    def _on_ack(self,
+                _client: Client,
+                stanza: types.Base,
+                _properties: Any):
+
         if not self.enabled:
             return
-        self._log.debug('Ack received, h: %s', stanza.getAttr('h'))
+
+        self._log.debug('Ack received, h: %s', stanza.get('h'))
         self._validate_ack(stanza, self._uqueue)
 
-    def _validate_ack(self, stanza, queue):
+    def _validate_ack(self,
+                      stanza: types.Base,
+                      queue: list[types.Base]):
         """
         Checks if the number of stanzas sent are the same as the
         number of stanzas received by the server. Pops stanzas that were
         handled by the server from the queue.
         """
-        count_server = stanza.getAttr('h')
+        count_server = stanza.get('h')
         if count_server is None:
             self._log.error('Server did not send h attribute')
             return
@@ -284,24 +310,27 @@ class Smacks:
             while len(queue) > diff:
                 queue.pop(0)
 
-    def _on_failed(self, _stream, stanza, _properties):
+    def _on_failed(self,
+                   _client: Client,
+                   stanza: types.Base,
+                   _properties: Any):
         '''
         This can be called after 'enable' and 'resume'
         '''
 
         self._log.info('Negotiation failed')
-        error_text = stanza.getTagData('text')
+        error_text = stanza.find_tag_text('text')
         if error_text is not None:
             self._log.info(error_text)
 
-        if stanza.getTag('item-not-found') is not None:
+        if stanza.find_tag('item-not-found') is not None:
             self._log.info('Session timed out, last server h: %s',
-                           stanza.getAttr('h'))
+                           stanza.get('h'))
             self._validate_ack(stanza, self._old_uqueue)
         else:
-            for tag in stanza.getChildren():
-                if tag.getName() != 'text':
-                    self._log.info(tag.getName())
+            for tag in stanza.get_children():
+                if tag.localname != 'text':
+                    self._log.info(tag.localname)
 
         if self.resume_in_progress:
             # Reset state before sending Bind, because otherwise stanza

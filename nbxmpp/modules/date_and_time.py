@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Optional
+from typing import Union
+
 import re
 import time
 import logging
@@ -49,11 +54,7 @@ HOUR = timedelta(hours=1)
 SECOND = timedelta(seconds=1)
 
 STDOFFSET = timedelta(seconds=-time.timezone)
-if time.daylight:
-    DSTOFFSET = timedelta(seconds=-time.altzone)
-else:
-    DSTOFFSET = STDOFFSET
-
+DSTOFFSET = timedelta(seconds=-time.altzone) if time.daylight else STDOFFSET
 DSTDIFF = DSTOFFSET - STDOFFSET
 
 
@@ -64,7 +65,7 @@ class LocalTimezone(tzinfo):
     timezones where UTC offset and/or the DST rules had
     changed in the past.
     '''
-    def fromutc(self, dt):
+    def fromutc(self, dt: datetime) -> datetime:
         assert dt.tzinfo is self
         stamp = (dt - datetime(1970, 1, 1, tzinfo=self)) // SECOND
         args = time.localtime(stamp)[:6]
@@ -74,21 +75,27 @@ class LocalTimezone(tzinfo):
         return datetime(*args, microsecond=dt.microsecond,
                         tzinfo=self, fold=fold)
 
-    def utcoffset(self, dt):
+    def utcoffset(self, dt: Optional[datetime]) -> timedelta:
+        if dt is None:
+            return STDOFFSET
+
         if self._isdst(dt):
             return DSTOFFSET
         return STDOFFSET
 
-    def dst(self, dt):
+    def dst(self, dt: Optional[datetime]) -> Optional[timedelta]:
+        if dt is None:
+            return None
+
         if self._isdst(dt):
             return DSTDIFF
         return ZERO
 
-    def tzname(self, dt):
+    def tzname(self, dt: Optional[datetime]) -> str:
         return 'local'
 
     @staticmethod
-    def _isdst(dt):
+    def _isdst(dt: datetime) -> bool:
         tt = (dt.year, dt.month, dt.day,
               dt.hour, dt.minute, dt.second,
               dt.weekday(), 0, 0)
@@ -97,7 +104,10 @@ class LocalTimezone(tzinfo):
         return tt.tm_isdst > 0
 
 
-def create_tzinfo(hours=0, minutes=0, tz_string=None):
+def create_tzinfo(hours: int = 0,
+                  minutes: int = 0,
+                  tz_string: Optional[str] = None) -> Optional[timezone]:
+
     if tz_string is None:
         return timezone(timedelta(hours=hours, minutes=minutes))
 
@@ -124,8 +134,10 @@ def create_tzinfo(hours=0, minutes=0, tz_string=None):
     return timezone(timedelta(hours=hours, minutes=minutes))
 
 
-def parse_datetime(timestring, check_utc=False,
-                   convert='utc', epoch=False):
+def parse_datetime(timestring: Optional[str],
+                   check_utc: bool = False,
+                   convert: Optional[str] = 'utc',
+                   epoch: bool = False) -> Optional[Union[datetime, float]]:
     '''
     Parse a XEP-0082 DateTime Profile String
 
@@ -197,7 +209,7 @@ def parse_datetime(timestring, check_utc=False,
     return None
 
 
-def get_local_time():
+def get_local_time() -> tuple[str, str]:
     formated_time = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
     isdst = time.localtime().tm_isdst
     zone = -(time.timezone, time.altzone)[isdst] / 60.0

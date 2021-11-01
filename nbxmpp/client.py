@@ -15,25 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Optional
+from typing import cast
+
 import logging
 
+from lxml import etree
 from gi.repository import GLib
+from gi.repository import Gio
+from nbxmpp.connection import Connection
 
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Features
-from nbxmpp.protocol import StanzaMalformed
-from nbxmpp.protocol import SessionRequest
-from nbxmpp.protocol import BindRequest
-from nbxmpp.protocol import TLSRequest
-from nbxmpp.protocol import isResultNode
-from nbxmpp.protocol import JID
-from nbxmpp.protocol import Protocol
-from nbxmpp.protocol import WebsocketCloseHeader
+from nbxmpp.exceptions import StanzaMalformed
+from nbxmpp.jid import JID
 from nbxmpp.errors import TimeoutStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.errors import CancelledError
 from nbxmpp.addresses import ServerAddresses
 from nbxmpp.addresses import NoMoreAddresses
+from nbxmpp.structs import ProxyData
 from nbxmpp.tcp import TCPConnection
 from nbxmpp.websocket import WebsocketConnection
 from nbxmpp.smacks import Smacks
@@ -44,11 +47,13 @@ from nbxmpp.const import ConnectionType
 from nbxmpp.const import ConnectionProtocol
 from nbxmpp.const import Mode
 from nbxmpp.dispatcher import StanzaDispatcher
-from nbxmpp.util import get_stream_header
 from nbxmpp.util import generate_id
 from nbxmpp.util import Observable
 from nbxmpp.util import validate_stream_header
 from nbxmpp.util import LogAdapter
+from nbxmpp.modules.stream import Features
+from nbxmpp.modules.stream import make_bind_request
+from nbxmpp import types
 
 log = logging.getLogger('nbxmpp.stream')
 
@@ -101,14 +106,14 @@ class Client(Observable):
         self._stream_id = None
         self._stream_secure = False
         self._stream_authenticated = False
-        self._stream_features = None
+        self._stream_features = cast(Features, None)
         self._session_required = False
         self._connect_successful = False
         self._stream_close_initiated = False
         self._ping_task = None
         self._error = None, None, None
 
-        self._ignored_tls_errors = set()
+        self._ignored_tls_errors: set[Gio.TlsCertificateFlags] = set()
         self._ignore_tls_errors = False
         self._accepted_certificates = []
         self._peer_certificate = None
@@ -142,50 +147,56 @@ class Client(Observable):
             pass
 
     @property
-    def log_context(self):
+    def log_context(self) -> str:
         return self._log_context
 
     @property
-    def features(self):
+    def features(self) -> Features:
         return self._stream_features
 
     @property
-    def sm_supported(self):
+    def sm_supported(self) -> bool:
         return self._smacks.sm_supported
 
     @property
-    def lang(self):
+    def lang(self) -> str:
         return self._lang
 
     @property
-    def username(self):
+    def username(self) -> Optional[str]:
         return self._username
 
     @property
-    def domain(self):
+    def domain(self) -> Optional[str]:
         return self._domain
 
     @property
-    def resource(self):
+    def resource(self) -> Optional[str]:
         return self._resource
 
-    def set_username(self, username):
+    def set_username(self, username: str):
         self._username = username
 
-    def set_domain(self, domain):
+    def set_domain(self, domain: str):
         self._domain = domain
 
-    def set_resource(self, resource):
+    def set_resource(self, resource: str):
         self._resource = resource
 
-    def set_mode(self, mode):
+    def set_mode(self, mode: Mode):
         self._mode = mode
 
     @property
-    def custom_host(self):
+    def custom_host(self) -> Optional[tuple[str,
+                                            ConnectionProtocol,
+                                            ConnectionType]]:
         return self._custom_host
 
-    def set_custom_host(self, host_or_uri, protocol, type_):
+    def set_custom_host(self,
+                        host_or_uri: str,
+                        protocol: ConnectionProtocol,
+                        type_: ConnectionType):
+
         if self._domain is None:
             raise ValueError('Call set_domain() first before set_custom_host()')
         self._custom_host = (host_or_uri, protocol, type_)
@@ -194,26 +205,26 @@ class Client(Observable):
         self._accepted_certificates = certificates
 
     @property
-    def ignored_tls_errors(self):
+    def ignored_tls_errors(self) -> set[Gio.TlsCertificateFlags]:
         return self._ignored_tls_errors
 
-    def set_ignored_tls_errors(self, errors):
+    def set_ignored_tls_errors(self, errors: set[Gio.TlsCertificateFlags]):
         if errors is None:
-            errors = set()
+            errors: set[Gio.TlsCertificateFlags] = set()
         self._ignored_tls_errors = errors
 
     @property
-    def ignore_tls_errors(self):
+    def ignore_tls_errors(self) -> bool:
         return self._ignore_tls_errors
 
-    def set_ignore_tls_errors(self, ignore):
+    def set_ignore_tls_errors(self, ignore: bool):
         self._ignore_tls_errors = ignore
 
-    def set_password(self, password):
+    def set_password(self, password: str):
         self._sasl.set_password(password)
 
     @property
-    def password(self):
+    def password(self) -> Optional[str]:
         return self._sasl.password
 
     @property
@@ -225,15 +236,15 @@ class Client(Observable):
         return self._current_address
 
     @property
-    def current_connection_type(self):
+    def current_connection_type(self) -> ConnectionType:
         return self._current_address.type
 
     @property
-    def is_websocket(self):
+    def is_websocket(self) -> bool:
         return self._current_address.protocol == ConnectionProtocol.WEBSOCKET
 
     @property
-    def stream_id(self):
+    def stream_id(self) -> Optional[str]:
         return self._stream_id
 
     @property
@@ -246,15 +257,15 @@ class Client(Observable):
         return self._stream_authenticated
 
     @property
-    def state(self):
+    def state(self) -> StreamState:
         return self._state
 
     @state.setter
-    def state(self, value):
+    def state(self, value: StreamState):
         self._state = value
         self._log.info('Set state: %s', value)
 
-    def set_state(self, state):
+    def set_state(self, state: StreamState):
         self.state = state
         self._xmpp_state_machine()
 
@@ -267,39 +278,39 @@ class Client(Observable):
         return self._remote_address
 
     @property
-    def connection_types(self):
+    def connection_types(self) -> list[ConnectionType]:
         if self._custom_host is not None:
             return [self._custom_host[2]]
         return list(self._allowed_con_types or [ConnectionType.DIRECT_TLS,
                                                 ConnectionType.START_TLS])
 
-    def set_connection_types(self, con_types):
+    def set_connection_types(self, con_types: list[ConnectionType]):
         self._allowed_con_types = con_types
 
     @property
-    def mechs(self):
+    def mechs(self) -> set[str]:
         return set(self._allowed_mechs or set(['SCRAM-SHA-256',
                                                'SCRAM-SHA-1',
                                                'PLAIN']))
 
-    def set_mechs(self, mechs):
+    def set_mechs(self, mechs: list[str]):
         self._allowed_mechs = mechs
 
     @property
-    def protocols(self):
+    def protocols(self) -> list[ConnectionProtocol]:
         if self._custom_host is not None:
             return [self._custom_host[1]]
         return list(self._allowed_protocols or [ConnectionProtocol.TCP,
                                                 ConnectionProtocol.WEBSOCKET])
 
-    def set_protocols(self, protocols):
+    def set_protocols(self, protocols: list[ConnectionProtocol]):
         self._allowed_protocols = protocols
 
-    def set_sm_disabled(self, value):
+    def set_sm_disabled(self, value: bool):
         self._sm_disabled = value
 
     @property
-    def sm_disabled(self):
+    def sm_disabled(self) -> bool:
         return self._sm_disabled
 
     @property
@@ -310,22 +321,22 @@ class Client(Observable):
         self._client_cert = client_cert
         self._client_cert_pass = client_cert_pass
 
-    def set_proxy(self, proxy):
+    def set_proxy(self, proxy: ProxyData):
         self._proxy = proxy
         self._dispatcher.get_module('Muclumbus').set_proxy(proxy)
 
     @property
-    def proxy(self):
+    def proxy(self) -> Optional[ProxyData]:
         return self._proxy
 
-    def get_bound_jid(self):
+    def get_bound_jid(self) -> Optional[JID]:
         return self._jid
 
-    def _set_bound_jid(self, jid):
+    def _set_bound_jid(self, jid: str):
         self._jid = JID.from_string(jid)
 
     @property
-    def has_error(self):
+    def has_error(self) -> bool:
         return self._error[0] is not None
 
     def get_error(self):
@@ -334,7 +345,11 @@ class Client(Observable):
     def _reset_error(self):
         self._error = None, None, None
 
-    def _set_error(self, domain, error, text=None):
+    def _set_error(self,
+                   domain: StreamError,
+                   error: str,
+                   text: Optional[str] = None):
+
         self._log.info('Set error: %s, %s, %s', domain, error, text)
         self._error = domain, error, text
 
@@ -389,7 +404,7 @@ class Client(Observable):
         self._addresses.subscribe('resolved', self._on_addresses_resolved)
         self._addresses.resolve()
 
-    def _on_addresses_resolved(self, _addresses, _signal_name):
+    def _on_addresses_resolved(self, _addresses, _signal_name: str):
         self._log.info('Domain resolved')
         self._log.info(self._addresses)
         self.state = StreamState.RESOLVED
@@ -399,7 +414,7 @@ class Client(Observable):
 
         self._try_next_ip()
 
-    def _try_next_ip(self, *args):
+    def _try_next_ip(self):
         try:
             self._current_address = next(self._address_generator)
         except NoMoreAddresses:
@@ -415,7 +430,7 @@ class Client(Observable):
         self._log.info('Current address: %s', self._current_address)
         self._connect()
 
-    def disconnect(self, immediate=False):
+    def disconnect(self, immediate: bool = False):
         if self._state == StreamState.RESOLVE:
             self._addresses.cancel_resolve()
             self.state = StreamState.DISCONNECTED
@@ -433,7 +448,7 @@ class Client(Observable):
 
         self._disconnect(immediate=immediate)
 
-    def _disconnect(self, immediate=True):
+    def _disconnect(self, immediate: bool = True):
         self.state = StreamState.DISCONNECTING
         self._remove_ping_timer()
         self._cancel_ping_task()
@@ -446,16 +461,12 @@ class Client(Observable):
         else:
             self._con.disconnect()
 
-    def send(self, stanza, *args, **kwargs):
-        # Alias for backwards compat
-        return self.send_stanza(stanza)
-
-    def _on_connected(self, connection, _signal_name):
+    def _on_connected(self, connection: Connection, _signal_name: str):
         self.set_state(StreamState.CONNECTED)
         self._local_address = connection.local_address
         self._remote_address = connection.remote_address
 
-    def _on_disconnected(self, _connection, _signal_name):
+    def _on_disconnected(self, _connection: Connection, _signal_name: str):
         self.state = StreamState.DISCONNECTED
         for task in self._tasks:
             task.cancel()
@@ -464,7 +475,7 @@ class Client(Observable):
         self._reset_stream()
         self.notify('disconnected')
 
-    def _on_connection_failed(self, _connection, _signal_name):
+    def _on_connection_failed(self, _connection: Connection, _signal_name: str):
         self.state = StreamState.DISCONNECTED
         self._reset_stream()
         if not self._connect_successful:
@@ -476,17 +487,28 @@ class Client(Observable):
                              'successful address: {self._current_address}'))
             self.notify('connection-failed')
 
-    def _disconnect_with_error(self, error_domain, error, text=None):
+    def _disconnect_with_error(self,
+                               error_domain: StreamError,
+                               error: str,
+                               text: Optional[str] = None):
         self._set_error(error_domain, error, text)
         self.disconnect()
 
-    def _on_parsing_error(self, _dispatcher, _signal_name, error):
+    def _on_parsing_error(self,
+                          _dispatcher: StanzaDispatcher,
+                          _signal_name: str,
+                          error: str):
+
         if self._state == StreamState.DISCONNECTING:
             # Don't notify about parsing errors if we already ended the stream
             return
         self._disconnect_with_error(StreamError.PARSING, 'parsing-error', error)
 
-    def _on_stream_end(self, _dispatcher, _signal_name, error):
+    def _on_stream_end(self,
+                       _dispatcher: StanzaDispatcher,
+                       _signal_name: str,
+                       error: str):
+
         if not self.has_error:
             self._set_error(StreamError.STREAM, error or 'stream-end')
 
@@ -503,26 +525,22 @@ class Client(Observable):
         self._stream_id = None
         self._stream_secure = False
         self._stream_authenticated = False
-        self._stream_features = None
+        self._stream_features = cast(Features, None)
         self._session_required = False
         self._con = None
 
     def _end_stream(self):
-        if self.is_websocket:
-            nonza = WebsocketCloseHeader()
-        else:
-            nonza = '</stream:stream>'
-        self.send_nonza(nonza)
+        self._con.end_stream()
 
-    def get_module(self, name):
+    def get_module(self, name: str):
         return self._dispatcher.get_module(name)
 
-    def _on_bad_certificate(self, connection, _signal_name):
+    def _on_bad_certificate(self, connection: Connection, _signal_name: str):
         self._peer_certificate, self._peer_certificate_errors = \
             connection.peer_certificate
         self._set_error(StreamError.BAD_CERTIFICATE, 'bad certificate')
 
-    def _on_certificate_set(self, connection, _signal_name):
+    def _on_certificate_set(self, connection: Connection, _signal_name: str):
         self._peer_certificate, self._peer_certificate_errors = \
             connection.peer_certificate
 
@@ -531,13 +549,25 @@ class Client(Observable):
         self._accepted_certificates.append(self._peer_certificate)
         self._connect()
 
-    def _on_data_sent(self, _connection, _signal_name, data):
+    def _on_data_sent(self,
+                      _connection: Connection,
+                      _signal_name: str,
+                      data: Any):
+
         self.notify('stanza-sent', data)
 
-    def _on_before_dispatch(self, _dispatcher, _signal_name, data):
+    def _on_before_dispatch(self,
+                            _dispatcher: StanzaDispatcher,
+                            _signal_name: str,
+                            data: Any):
+
         self.notify('stanza-received', data)
 
-    def _on_data_received(self, _connection, _signal_name, data):
+    def _on_data_received(self,
+                          _connection: Connection,
+                          _signal_name: str,
+                          data: Any):
+
         self._dispatcher.process_data(data)
         self._reset_ping_timer()
 
@@ -566,18 +596,20 @@ class Client(Observable):
         GLib.source_remove(self._ping_source_id)
         self._ping_source_id = None
 
-    def send_stanza(self, stanza, now=False, callback=None,
-                    timeout=None, user_data=None):
-        if user_data is not None and not isinstance(user_data, dict):
-            raise ValueError('arg user_data must be of dict type')
+    def send_stanza(self,
+                    stanza: types.Stanza,
+                    now: bool = False,
+                    callback: Optional[Any] = None,
+                    timeout: Optional[int] = None,
+                    user_data: Optional[dict[Any, Any]] = None):
 
-        if not isinstance(stanza, Protocol):
+        if etree.QName(stanza.tag).localname not in ['iq', 'message', 'presence']:
             raise ValueError('Nonzas not allowed, use send_nonza()')
 
-        id_ = stanza.getID()
+        id_ = stanza.get('id')
         if id_ is None:
             id_ = generate_id()
-            stanza.setID(id_)
+            stanza.set('id', id_)
 
         if callback is not None:
             self._dispatcher.add_callback_for_id(
@@ -586,16 +618,13 @@ class Client(Observable):
         self._smacks.save_in_queue(stanza)
         return id_
 
-    def SendAndCallForResponse(self, stanza, callback, user_data=None):
-        self.send_stanza(stanza, callback=callback, user_data=user_data)
-
-    def send_nonza(self, nonza, now=False):
+    def send_nonza(self, nonza: types.Base, now: bool = False):
         self._con.send(nonza, now)
 
-    def _xmpp_state_machine(self, stanza=None):
+    def _xmpp_state_machine(self, stanza: Optional[types.Base] = None):
         self._log.info('Execute state machine')
         if stanza is not None:
-            if stanza.getName() == 'error':
+            if stanza.localname == 'error':
                 self._log.info('Stream error')
                 # TODO:
                 # self._disconnect_with_error(StreamError.SASL,
@@ -636,29 +665,29 @@ class Client(Observable):
             self.state = StreamState.WAIT_FOR_FEATURES
 
         elif self.state == StreamState.WAIT_FOR_FEATURES:
-            if stanza.getName() != 'features':
+            if stanza.localname != 'features':
                 self._log.error('Invalid response: %s', stanza)
                 self._disconnect_with_error(
                     StreamError.STREAM,
                     'stanza-malformed',
                     'Invalid response, expected features')
                 return
-            self._on_stream_features(Features(stanza))
+            self._on_stream_features(stanza)
 
         elif self.state == StreamState.WAIT_FOR_TLS_PROCEED:
-            if stanza.getNamespace() != Namespace.TLS:
+            if stanza.namespace != Namespace.TLS:
                 self._disconnect_with_error(
                     StreamError.TLS,
                     'stanza-malformed',
                     'Invalid namespace for TLS response')
                 return
 
-            if stanza.getName() == 'failure':
+            if stanza.localname == 'failure':
                 self._disconnect_with_error(StreamError.TLS,
                                             'negotiation-failed')
                 return
 
-            if stanza.getName() == 'proceed':
+            if stanza.localname == 'proceed':
                 self._con.start_tls_negotiation()
                 self._stream_secure = True
                 self._start_stream()
@@ -714,7 +743,7 @@ class Client(Observable):
             self.state = StreamState.ACTIVE
             self.notify('resume-successful')
 
-    def _on_stream_features(self, features):
+    def _on_stream_features(self, features: Features):
         if self.is_stream_authenticated:
             self._stream_features = features
             self._smacks.sm_supported = features.has_sm()
@@ -768,8 +797,7 @@ class Client(Observable):
         self._log.info('Start stream')
         self._stream_id = None
         self._dispatcher.reset_parser()
-        header = get_stream_header(self._domain, self._lang, self.is_websocket)
-        self.send_nonza(header)
+        self._con.start_stream(self.domain, lang=self._lang)
         self.state = StreamState.WAIT_FOR_STREAM_START
 
     def _start_tls(self):
@@ -787,18 +815,19 @@ class Client(Observable):
 
     def _start_bind(self):
         self._log.info('Send bind')
-        bind_request = BindRequest(self.resource)
+
+        bind_request = make_bind_request(self.resource)
         self.send_stanza(bind_request)
         self.state = StreamState.WAIT_FOR_BIND
 
-    def _on_bind(self, stanza):
-        if not isResultNode(stanza):
+    def _on_bind(self, stanza: types.Iq):
+        if not stanza.is_result():
             self._disconnect_with_error(StreamError.BIND,
                                         stanza.getError(),
                                         stanza.getErrorMsg())
             return
 
-        jid = stanza.getTag('bind').getTagData('jid')
+        jid = stanza.find_tag('bind', namespace=Namespace.BIND).find_tag_text('jid')
         self._log.info('Successfully bound %s', jid)
         self._set_bound_jid(jid)
 
@@ -811,8 +840,8 @@ class Client(Observable):
             self.send_stanza(session_request)
             self.state = StreamState.WAIT_FOR_SESSION
 
-    def _on_session(self, stanza):
-        if isResultNode(stanza):
+    def _on_session(self, stanza: types.Iq):
+        if stanza.is_result():
             self._log.info('Successfully started session')
             self.set_state(StreamState.BIND_SUCCESSFUL)
         else:

@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Optional
+
 import os
 import hmac
 import binascii
@@ -23,13 +27,13 @@ import hashlib
 from hashlib import pbkdf2_hmac
 
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Node
-from nbxmpp.protocol import SASL_ERROR_CONDITIONS
-from nbxmpp.protocol import SASL_AUTH_MECHS
+from nbxmpp.const import SASL_ERROR_CONDITIONS
+from nbxmpp.const import SASL_AUTH_MECHS
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
 from nbxmpp.util import LogAdapter
 from nbxmpp.const import StreamState
+from nbxmpp.builder import E
 
 
 log = logging.getLogger('nbxmpp.auth')
@@ -40,6 +44,19 @@ try:
 except (ImportError, OSError) as error:
     log.warning('GSSAPI not available: %s', error)
     GSSAPI_AVAILABLE = False
+
+
+def make_sasl_element(name: str,
+                      mechanism: Optional[str] = None,
+                      payload: Optional[str] = None):
+
+    if mechanism is None:
+        element = E(name, namespace=Namespace.XMPP_SASL)
+    else:
+        element = E(name, namespace=Namespace.XMPP_SASL, mechanism=mechanism)
+
+    element.text = payload
+    return element
 
 
 class SASL:
@@ -70,13 +87,13 @@ class SASL:
         return self._password
 
     def delegate(self, stanza):
-        if stanza.getNamespace() != Namespace.SASL:
+        if stanza.namespace != Namespace.XMPP_SASL:
             return
-        if stanza.getName() == 'challenge':
+        if stanza.localname == 'challenge':
             self._on_challenge(stanza)
-        elif stanza.getName() == 'failure':
+        elif stanza.localname == 'failure':
             self._on_failure(stanza)
-        elif stanza.getName() == 'success':
+        elif stanza.localname == 'success':
             self._on_success(stanza)
 
     def start_auth(self, features):
@@ -171,7 +188,7 @@ class SASL:
 
     def _on_challenge(self, stanza):
         try:
-            self._method.response(stanza.getData())
+            self._method.response(stanza.text or '')
         except AttributeError:
             self._log.info('Mechanism has no response method')
             self._abort_auth()
@@ -182,7 +199,7 @@ class SASL:
     def _on_success(self, stanza):
         self._log.info('Successfully authenticated with remote server')
         try:
-            self._method.success(stanza.getData())
+            self._method.success(stanza.text or '')
         except AttributeError:
             pass
         except AuthFail as error:
@@ -193,11 +210,11 @@ class SASL:
         self._on_sasl_finished(True, None, None)
 
     def _on_failure(self, stanza):
-        text = stanza.getTagData('text')
+        text = stanza.find_tag_text('text')
         reason = 'not-authorized'
-        childs = stanza.getChildren()
+        childs = stanza.get_children()
         for child in childs:
-            name = child.getName()
+            name = child.localname
             if name == 'text':
                 continue
             if name in SASL_ERROR_CONDITIONS:
@@ -208,8 +225,8 @@ class SASL:
         self._abort_auth(reason, text)
 
     def _abort_auth(self, reason='malformed-request', text=None):
-        node = Node('abort', attrs={'xmlns': Namespace.SASL})
-        self._client.send_nonza(node)
+        element = make_sasl_element('abort')
+        self._client.send_nonza(element)
         self._on_sasl_finished(False, reason, text)
 
     def _on_sasl_finished(self, successful, reason, text=None):
@@ -229,10 +246,8 @@ class PLAIN:
 
     def initiate(self, username, password):
         payload = b64encode('\x00%s\x00%s' % (username, password))
-        node = Node('auth',
-                    attrs={'xmlns': Namespace.SASL, 'mechanism': 'PLAIN'},
-                    payload=[payload])
-        self._client.send_nonza(node)
+        element = make_sasl_element('auth', mechanism='PLAIN', payload=payload)
+        self._client.send_nonza(element)
 
 
 class EXTERNAL:
@@ -244,10 +259,10 @@ class EXTERNAL:
 
     def initiate(self, username, server):
         payload = b64encode('%s@%s' % (username, server))
-        node = Node('auth',
-                    attrs={'xmlns': Namespace.SASL, 'mechanism': 'EXTERNAL'},
-                    payload=[payload])
-        self._client.send_nonza(node)
+        element = make_sasl_element('auth',
+                                    mechanism='EXTERNAL',
+                                    payload=payload)
+        self._client.send_nonza(element)
 
 
 class ANONYMOUS:
@@ -258,9 +273,8 @@ class ANONYMOUS:
         self._client = client
 
     def initiate(self):
-        node = Node('auth', attrs={'xmlns': Namespace.SASL,
-                                   'mechanism': 'ANONYMOUS'})
-        self._client.send_nonza(node)
+        element = make_sasl_element('auth', mechanism='ANONYMOUS')
+        self._client.send_nonza(element)
 
 
 class GSSAPI:
@@ -282,10 +296,11 @@ class GSSAPI:
             token = self.ctx.step()
         except (gssapi.exceptions.GeneralError, gssapi.raw.misc.GSSError) as e:
             raise AuthFail(e)
-        node = Node('auth',
-                    attrs={'xmlns': Namespace.SASL, 'mechanism': 'GSSAPI'},
-                    payload=b64encode(token))
-        self._client.send_nonza(node)
+
+        element = make_sasl_element('auth',
+                                    mechanism='GSSAPI',
+                                    payload=b64encode(token))
+        self._client.send_nonza(element)
 
     def response(self, server_message, *args, **kwargs):
         server_message = b64decode(server_message)
@@ -299,11 +314,10 @@ class GSSAPI:
                 output_token = self.ctx.wrap(data, False).message
         except (gssapi.exceptions.GeneralError, gssapi.raw.misc.GSSError) as e:
             raise AuthFail(e)
-        response = b64encode(output_token)
-        node = Node('response',
-                    attrs={'xmlns': Namespace.SASL},
-                    payload=response)
-        self._client.send_nonza(node)
+        payload = b64encode(output_token)
+
+        element = make_sasl_element('response', payload=payload)
+        self._client.send_nonza(element)
 
 
 class SCRAM:
@@ -342,12 +356,11 @@ class SCRAM:
         client_first_message = '%s%s' % (self._channel_binding,
                                          self._client_first_message_bare)
 
-        payload = b64encode(client_first_message)
-        node = Node('auth',
-                    attrs={'xmlns': Namespace.SASL,
-                           'mechanism': self._mechanism},
-                    payload=[payload])
-        self._client.send_nonza(node)
+        element = make_sasl_element('auth',
+                                    mechanism=self._mechanism,
+                                    payload=b64encode(client_first_message))
+
+        self._client.send_nonza(element)
 
     def response(self, server_first_message):
         server_first_message = b64decode(server_first_message).decode()
@@ -390,11 +403,10 @@ class SCRAM:
         server_key = self._hmac(salted_password, 'Server Key')
         self._server_signature = self._hmac(server_key, auth_message)
 
-        payload = b64encode(client_finale_message)
-        node = Node('response',
-                    attrs={'xmlns': Namespace.SASL},
-                    payload=[payload])
-        self._client.send_nonza(node)
+        element = make_sasl_element('response',
+                                    payload=b64encode(client_finale_message))
+
+        self._client.send_nonza(element)
 
     def success(self, server_last_message):
         server_last_message = b64decode(server_last_message).decode()

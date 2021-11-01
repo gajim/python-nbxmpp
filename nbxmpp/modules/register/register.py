@@ -15,88 +15,95 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Iq
-from nbxmpp.util import get_form
-from nbxmpp.task import iq_request_task
-from nbxmpp.errors import StanzaError
-from nbxmpp.errors import RegisterStanzaError
+from __future__ import annotations
+
+from typing import Optional
+
+from nbxmpp import types
+from nbxmpp.builder import Iq
+from nbxmpp.client import Client
 from nbxmpp.errors import ChangePasswordStanzaError
+from nbxmpp.errors import RegisterStanzaError
+from nbxmpp.errors import StanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.register.util import make_password_change_request
+from nbxmpp.modules.register.util import make_password_change_with_form
+from nbxmpp.modules.register.util import make_register_form
+from nbxmpp.modules.register.util import make_unregister_request
+from nbxmpp.modules.register.util import parse_register_data
 from nbxmpp.modules.util import process_response
-from nbxmpp.modules.register.util import _make_unregister_request
-from nbxmpp.modules.register.util import _make_register_form
-from nbxmpp.modules.register.util import _make_password_change_request
-from nbxmpp.modules.register.util import _make_password_change_with_form
-from nbxmpp.modules.register.util import _parse_register_data
+from nbxmpp.namespaces import Namespace
+from nbxmpp.task import iq_request_task
+from nbxmpp.util import get_dataform
 
 
 class Register(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = []
 
     @iq_request_task
-    def unregister(self, jid=None):
-        _task = yield
+    def unregister(self, jid: Optional[JID] = None):
 
-        response = yield _make_unregister_request(jid)
+        response = yield make_unregister_request(jid)
         yield process_response(response)
 
     @iq_request_task
-    def request_register_form(self, jid=None):
-        _task = yield
+    def request_register_form(self, jid: Optional[JID] = None):
 
         if jid is None:
             jid = self._client.domain
 
-        response = yield Iq('get', Namespace.REGISTER, to=jid)
-        if response.isError():
+        iq = Iq(to=jid)
+        iq.add_query(Namespace.REGISTER)
+
+        response = yield iq
+        if response.is_error():
             raise StanzaError(response)
 
-        yield _parse_register_data(response)
+        yield parse_register_data(response)
 
     @iq_request_task
-    def submit_register_form(self, form, jid=None):
-        _task = yield
+    def submit_register_form(self,
+                             form: types.DataForm,
+                             jid: Optional[JID] = None):
 
         if jid is None:
             jid = self._client.domain
 
-        response = yield _make_register_form(jid, form)
-        if not response.isError():
+        response = yield make_register_form(jid, form)
+        if not response.is_error():
             yield process_response(response)
 
         else:
-            data = _parse_register_data(response)
+            data = parse_register_data(response)
             raise RegisterStanzaError(response, data)
 
     @iq_request_task
-    def change_password(self, password):
-        _task = yield
+    def change_password(self, password: str):
 
-        response = yield _make_password_change_request(
+        response = yield make_password_change_request(
             self._client.domain, self._client.username, password)
-        if not response.isError():
+        if not response.is_error():
             yield process_response(response)
 
         else:
-            query = response.getQuery()
+            query = response.get_query(namespace=Namespace.REGISTER)
             if query is None:
                 raise StanzaError(response)
 
-            form = get_form(query, 'jabber:iq:register:changepassword')
-            if form is None or response.getType() != 'modify':
+            form = get_dataform(query, 'jabber:iq:register:changepassword')
+            if form is None or response.get('type') != 'modify':
                 raise StanzaError(response)
 
             raise ChangePasswordStanzaError(response, form)
 
     @iq_request_task
-    def change_password_with_form(self, form):
-        _task = yield
+    def change_password_with_form(self, form: types.DataForm):
 
-        response = yield _make_password_change_with_form(self._client.domain,
-                                                         form)
+        response = yield make_password_change_with_form(self._client.domain,
+                                                        form)
         yield process_response(response)

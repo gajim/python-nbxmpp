@@ -15,6 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Optional
+from typing import Callable
+from typing import cast
+
 import logging
 
 from gi.repository import Gio
@@ -25,24 +32,28 @@ log = logging.getLogger('nbxmpp.resolver')
 
 
 class DNSResolveRequest:
-    def __init__(self, cache, domain, callback):
+    def __init__(self,
+                 cache: dict[DNSResolveRequest, DNSResolveRequest],
+                 domain: str,
+                 callback: Callable[[str], None]):
+
         self._domain = domain
         self._result = self._lookup_cache(cache)
         self._callback = callback
 
     @property
-    def result(self):
+    def result(self) -> Optional[str]:
         return self._result
 
     @result.setter
-    def result(self, value):
+    def result(self, value: Optional[str]):
         self._result = value
 
     @property
-    def is_cached(self):
+    def is_cached(self) -> bool:
         return self.result is not None
 
-    def _lookup_cache(self, cache):
+    def _lookup_cache(self, cache: dict[DNSResolveRequest, DNSResolveRequest]) -> Optional[str]:
         cached_request = cache.get(self)
         if cached_request is None:
             return None
@@ -50,30 +61,30 @@ class DNSResolveRequest:
 
     def finalize(self):
         GLib.idle_add(self._callback, self.result)
-        self._callback = None
+        self._callback = cast(Callable[[str], None], None)
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         raise NotImplementedError
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return hash(other) == hash(self)
 
 
 class AlternativeMethods(DNSResolveRequest):
-    def __init__(self, *args, **kwargs):
-        DNSResolveRequest.__init__(self, *args, **kwargs)
 
     @property
-    def hostname(self):
+    def hostname(self) -> str:
         return '_xmppconnect.%s' % self._domain
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.hostname)
 
 
 class Singleton(type):
-    _instances = {}
-    def __call__(cls, *args, **kwargs):
+
+    _instances: dict[Any, Any] = {}
+
+    def __call__(cls, *args: Any, **kwargs: Any):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args,
                                                                  **kwargs)
@@ -82,12 +93,15 @@ class Singleton(type):
 
 class GioResolver(metaclass=Singleton):
     def __init__(self):
-        self._cache = {}
+        self._cache: dict[DNSResolveRequest, DNSResolveRequest] = {}
 
-    def _cache_request(self, request):
+    def _cache_request(self, request: DNSResolveRequest):
         self._cache[request] = request
 
-    def resolve_alternatives(self, domain, callback):
+    def resolve_alternatives(self,
+                             domain: str,
+                             callback: Callable[[str], None]):
+
         request = AlternativeMethods(self._cache, domain, callback)
         if request.is_cached:
             request.finalize()
@@ -100,7 +114,10 @@ class GioResolver(metaclass=Singleton):
             self._on_alternatives_result,
             request)
 
-    def _on_alternatives_result(self, resolver, result, request):
+    def _on_alternatives_result(self,
+                                resolver: Gio.Resolver,
+                                result: Gio.AsyncResult,
+                                request: AlternativeMethods):
         try:
             results = resolver.lookup_records_finish(result)
         except GLib.Error as error:
@@ -121,7 +138,7 @@ class GioResolver(metaclass=Singleton):
         request.finalize()
 
     @staticmethod
-    def _parse_alternative_methods(variant_results):
+    def _parse_alternative_methods(variant_results: list[GLib.Variant]) -> Optional[str]:
         result_list = [res[0][0] for res in variant_results]
         for result in result_list:
             if result.startswith('_xmpp-client-websocket'):
@@ -141,7 +158,7 @@ if __name__ == '__main__':
     # Execute:
     # > python3 -m nbxmpp.resolver domain
 
-    def on_result(result):
+    def on_result(result: str):
         print('Result: ', result)
         mainloop.quit()
 

@@ -36,18 +36,20 @@ epsilon = 0.0088564516
 hex_chars = "0123456789abcdef"
 
 
-def _distance_line_from_origin(line):
+HxTupleT = list[float]
+
+
+def _distance_line_from_origin(line: dict[str, float]) -> float:
     v = math.pow(line['slope'], 2) + 1
     return math.fabs(line['intercept']) / math.sqrt(v)
 
 
-def _length_of_ray_until_intersect(theta, line):
-    return line['intercept'] / (math.sin(theta) -
-                                line['slope'] * math.cos(theta))
+def _length_of_ray_until_intersect(theta: float, line: dict[str, float]) -> float:
+    return line['intercept'] / (math.sin(theta) - line['slope'] * math.cos(theta))
 
 
-def _get_bounds(l):
-    result = []
+def _get_bounds(l: float) -> list[dict[str, float]]:
+    result: list[dict[str, float]] = []
     sub1 = math.pow(l + 16, 3) / 1560896
     if sub1 > epsilon:
         sub2 = sub1
@@ -72,7 +74,7 @@ def _get_bounds(l):
     return result
 
 
-def _max_safe_chroma_for_l(l):
+def _max_safe_chroma_for_l(l: float) -> float:
     bounds = _get_bounds(l)
     _hx_min = 1.7976931348623157e+308
     _g = 0
@@ -89,7 +91,7 @@ def _max_safe_chroma_for_l(l):
     return _hx_min
 
 
-def _max_chroma_for_lh(l, h):
+def _max_chroma_for_lh(l: float, h: float) -> float:
     hrad = h / 360 * math.pi * 2
     bounds = _get_bounds(l)
     _hx_min = 1.7976931348623157e+308
@@ -108,7 +110,7 @@ def _max_chroma_for_lh(l, h):
     return _hx_min
 
 
-def _dot_product(a, b):
+def _dot_product(a: list[float], b: HxTupleT) -> float:
     sum = 0
     _g1 = 0
     _g = len(a)
@@ -119,26 +121,26 @@ def _dot_product(a, b):
     return sum
 
 
-def _from_linear(c):
+def _from_linear(c: float) -> float:
     if c <= 0.0031308:
         return 12.92 * c
     return 1.055 * math.pow(c, 0.416666666666666685) - 0.055
 
 
-def _to_linear(c):
+def _to_linear(c: float) -> float:
     if c > 0.04045:
         return math.pow((c + 0.055) / 1.055, 2.4)
     return c / 12.92
 
 
-def xyz_to_rgb(_hx_tuple):
+def xyz_to_rgb(_hx_tuple: HxTupleT) -> list[float]:
     return [
         _from_linear(_dot_product(m[0], _hx_tuple)),
         _from_linear(_dot_product(m[1], _hx_tuple)),
         _from_linear(_dot_product(m[2], _hx_tuple))]
 
 
-def rgb_to_xyz(_hx_tuple):
+def rgb_to_xyz(_hx_tuple: HxTupleT) -> list[float]:
     rgbl = [_to_linear(_hx_tuple[0]),
             _to_linear(_hx_tuple[1]),
             _to_linear(_hx_tuple[2])]
@@ -147,19 +149,19 @@ def rgb_to_xyz(_hx_tuple):
             _dot_product(minv[2], rgbl)]
 
 
-def _y_to_l(y):
+def _y_to_l(y: float) -> float:
     if y <= epsilon:
         return y / refY * kappa
     return 116 * math.pow(y / refY, 0.333333333333333315) - 16
 
 
-def _l_to_y(l):
+def _l_to_y(l: float) -> float:
     if l <= 8:
         return refY * l / kappa
     return refY * math.pow((l + 16) / 116, 3)
 
 
-def xyz_to_luv(_hx_tuple):
+def xyz_to_luv(_hx_tuple: HxTupleT) -> list[float]:
     x = float(_hx_tuple[0])
     y = float(_hx_tuple[1])
     z = float(_hx_tuple[2])
@@ -180,7 +182,7 @@ def xyz_to_luv(_hx_tuple):
     return [l, u, v]
 
 
-def luv_to_xyz(_hx_tuple):
+def luv_to_xyz(_hx_tuple: HxTupleT) -> list[float]:
     l = float(_hx_tuple[0])
     u = float(_hx_tuple[1])
     v = float(_hx_tuple[2])
@@ -194,7 +196,7 @@ def luv_to_xyz(_hx_tuple):
     return [x, y, z]
 
 
-def luv_to_lch(_hx_tuple):
+def luv_to_lch(_hx_tuple: HxTupleT) -> list[float]:
     l = float(_hx_tuple[0])
     u = float(_hx_tuple[1])
     v = float(_hx_tuple[2])
@@ -213,7 +215,7 @@ def luv_to_lch(_hx_tuple):
     return [l, c, h]
 
 
-def lch_to_luv(_hx_tuple):
+def lch_to_luv(_hx_tuple: HxTupleT) -> list[float]:
     l = float(_hx_tuple[0])
     c = float(_hx_tuple[1])
     h = float(_hx_tuple[2])
@@ -223,7 +225,7 @@ def lch_to_luv(_hx_tuple):
     return [l, u, v]
 
 
-def hsluv_to_lch(_hx_tuple):
+def hsluv_to_lch(_hx_tuple: HxTupleT) -> list[float]:
     h = float(_hx_tuple[0])
     s = float(_hx_tuple[1])
     l = float(_hx_tuple[2])
@@ -236,7 +238,7 @@ def hsluv_to_lch(_hx_tuple):
     return [l, c, h]
 
 
-def lch_to_hsluv(_hx_tuple):
+def lch_to_hsluv(_hx_tuple: HxTupleT) -> list[float]:
     l = float(_hx_tuple[0])
     c = float(_hx_tuple[1])
     h = float(_hx_tuple[2])
@@ -249,7 +251,7 @@ def lch_to_hsluv(_hx_tuple):
     return [h, s, l]
 
 
-def hpluv_to_lch(_hx_tuple):
+def hpluv_to_lch(_hx_tuple: HxTupleT) -> list[float]:
     h = float(_hx_tuple[0])
     s = float(_hx_tuple[1])
     l = float(_hx_tuple[2])
@@ -262,7 +264,7 @@ def hpluv_to_lch(_hx_tuple):
     return [l, c, h]
 
 
-def lch_to_hpluv(_hx_tuple):
+def lch_to_hpluv(_hx_tuple: HxTupleT) -> list[float]:
     l = float(_hx_tuple[0])
     c = float(_hx_tuple[1])
     h = float(_hx_tuple[2])
@@ -275,7 +277,7 @@ def lch_to_hpluv(_hx_tuple):
     return [h, s, l]
 
 
-def rgb_to_hex(_hx_tuple):
+def rgb_to_hex(_hx_tuple: HxTupleT) -> str:
     h = "#"
     _g = 0
     while _g < 3:
@@ -290,9 +292,9 @@ def rgb_to_hex(_hx_tuple):
     return h
 
 
-def hex_to_rgb(hex):
+def hex_to_rgb(hex: str) -> list[float]:
     hex = hex.lower()
-    ret = []
+    ret: list[float] = []
     _g = 0
     while _g < 3:
         i = _g
@@ -308,41 +310,41 @@ def hex_to_rgb(hex):
     return ret
 
 
-def lch_to_rgb(_hx_tuple):
+def lch_to_rgb(_hx_tuple: HxTupleT) -> list[float]:
     return xyz_to_rgb(luv_to_xyz(lch_to_luv(_hx_tuple)))
 
 
-def rgb_to_lch(_hx_tuple):
+def rgb_to_lch(_hx_tuple: HxTupleT) -> list[float]:
     return luv_to_lch(xyz_to_luv(rgb_to_xyz(_hx_tuple)))
 
 
-def hsluv_to_rgb(_hx_tuple):
+def hsluv_to_rgb(_hx_tuple: HxTupleT) -> list[float]:
     return lch_to_rgb(hsluv_to_lch(_hx_tuple))
 
 
-def rgb_to_hsluv(_hx_tuple):
+def rgb_to_hsluv(_hx_tuple: HxTupleT) -> list[float]:
     return lch_to_hsluv(rgb_to_lch(_hx_tuple))
 
 
-def hpluv_to_rgb(_hx_tuple):
+def hpluv_to_rgb(_hx_tuple: HxTupleT) -> list[float]:
     return lch_to_rgb(hpluv_to_lch(_hx_tuple))
 
 
-def rgb_to_hpluv(_hx_tuple):
+def rgb_to_hpluv(_hx_tuple: HxTupleT) -> list[float]:
     return lch_to_hpluv(rgb_to_lch(_hx_tuple))
 
 
-def hsluv_to_hex(_hx_tuple):
+def hsluv_to_hex(_hx_tuple: HxTupleT) -> str:
     return rgb_to_hex(hsluv_to_rgb(_hx_tuple))
 
 
-def hpluv_to_hex(_hx_tuple):
+def hpluv_to_hex(_hx_tuple: HxTupleT) -> str:
     return rgb_to_hex(hpluv_to_rgb(_hx_tuple))
 
 
-def hex_to_hsluv(s):
+def hex_to_hsluv(s: str) -> list[float]:
     return rgb_to_hsluv(hex_to_rgb(s))
 
 
-def hex_to_hpluv(s):
+def hex_to_hpluv(s: str) -> list[float]:
     return rgb_to_hpluv(hex_to_rgb(s))

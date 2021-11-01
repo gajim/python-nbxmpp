@@ -1,7 +1,7 @@
 from test.lib.util import StanzaHandlerTest
 
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import JID
+from nbxmpp.jid import JID
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import BookmarkData
 from nbxmpp.structs import PubSubEventData

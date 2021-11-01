@@ -15,13 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.modules.base import BaseModule
 
 
 class Attention(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -32,8 +37,12 @@ class Attention(BaseModule):
                           priority=15),
         ]
 
-    def _process_message_attention(self, _client, stanza, properties):
-        attention = stanza.getTag('attention', namespace=Namespace.ATTENTION)
+    def _process_message_attention(self,
+                                   _client: types.Client,
+                                   stanza: types.Message,
+                                   properties: Any):
+
+        attention = stanza.find_tag('attention', namespace=Namespace.ATTENTION)
         if attention is None:
             return
 
@@ -43,7 +52,7 @@ class Attention(BaseModule):
         if properties.is_carbon_message and properties.carbon.is_sent:
             return
 
-        if stanza.getTag('delay', namespace=Namespace.DELAY2) is not None:
+        if stanza.find_tag('delay', namespace=Namespace.DELAY2) is not None:
             return
 
         properties.attention = True

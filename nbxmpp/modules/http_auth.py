@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Union
+
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import HTTPAuthData
@@ -22,7 +28,7 @@ from nbxmpp.modules.base import BaseModule
 
 
 class HTTPAuth(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
         self._client = client
         self.handlers = [
@@ -37,16 +43,22 @@ class HTTPAuth(BaseModule):
                           priority=40)
         ]
 
-    def _process_http_auth(self, _client, stanza, properties):
-        confirm = stanza.getTag('confirm', namespace=Namespace.HTTP_AUTH)
+    def _process_http_auth(self,
+                           _client: types.Client,
+                           stanza: Union[types.Iq, types.Message],
+                           properties: Any):
+
+        confirm = stanza.find_tag('confirm', namespace=Namespace.HTTP_AUTH)
         if confirm is None:
             return
 
-        attrs = confirm.getAttrs()
-        body = stanza.getTagData('body')
+        attrs = confirm.get_attribs()
+        body = stanza.find_tag_text('body')
         id_ = attrs.get('id')
         method = attrs.get('method')
         url = attrs.get('url')
+
         properties.http_auth = HTTPAuthData(id_, method, url, body)
+
         self._log.info('HTTPAuth received: %s %s %s %s',
                        id_, method, url, body)

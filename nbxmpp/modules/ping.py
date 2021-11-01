@@ -15,17 +15,28 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import NodeProcessed
+from __future__ import annotations
+
+from typing import Any
+from typing import Generator
+from typing import Union
+
+from nbxmpp import types
+from nbxmpp.builder import Iq
+from nbxmpp.jid import JID
+from nbxmpp.exceptions import NodeProcessed
 from nbxmpp.namespaces import Namespace
-from nbxmpp.structs import StanzaHandler
+from nbxmpp.structs import CommonResult, StanzaHandler
 from nbxmpp.task import iq_request_task
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import process_response
 
 
+RequestGenerator = Generator[Union[types.Iq, CommonResult], types.Iq, None]
+
+
 class Ping(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -37,21 +48,24 @@ class Ping(BaseModule):
                           priority=15),
         ]
 
-    def _process_ping(self, _client, stanza, properties):
-        self._log.info('Send pong to %s', stanza.getFrom())
-        iq = stanza.buildSimpleReply('result')
+    def _process_ping(self,
+                      _client: types.Client,
+                      stanza: types.Iq,
+                      properties: Any):
+
+        self._log.info('Send pong to %s', stanza.get_from())
+        iq = stanza.make_result()
         self._client.send_stanza(iq)
         raise NodeProcessed
 
     @iq_request_task
-    def ping(self, jid):
-        _task = yield
+    def ping(self, jid: JID) -> RequestGenerator:
 
         response = yield _make_ping_request(jid)
         yield process_response(response)
 
 
-def _make_ping_request(jid):
-    iq = Iq('get', to=jid)
-    iq.addChild(name='ping', namespace=Namespace.PING)
+def _make_ping_request(jid: JID) -> types.Iq:
+    iq = Iq(to=jid)
+    iq.add_tag('ping', namespace=Namespace.PING)
     return iq

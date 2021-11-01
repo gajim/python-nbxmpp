@@ -15,17 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Optional
+
 import json
 
 from gi.repository import Soup
 
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Node
-from nbxmpp.protocol import Iq
+from nbxmpp.jid import JID
 from nbxmpp.structs import MuclumbusItem
 from nbxmpp.structs import MuclumbusResult
 from nbxmpp.const import AnonymityMode
-from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.builder import Iq
+from nbxmpp.builder import E
 from nbxmpp.errors import StanzaError
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.task import iq_request_task
@@ -38,7 +43,7 @@ from nbxmpp.modules.util import finalize
 # https://search.jabber.network/docs/api
 
 class Muclumbus(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -55,39 +60,37 @@ class Muclumbus(BaseModule):
 
     @iq_request_task
     def request_parameters(self, jid):
-        task = yield
 
         response = yield _make_parameter_request(jid)
-        if response.isError():
+        if response.is_error():
             raise StanzaError(response)
 
-        search = response.getTag('search', namespace=Namespace.MUCLUMBUS)
+        search = response.find_tag('search', namespace=Namespace.MUCLUMBUS)
         if search is None:
             raise MalformedStanzaError('search node missing', response)
 
-        dataform = search.getTag('x', namespace=Namespace.DATA)
+        dataform = search.find_tag('x', namespace=Namespace.DATA)
         if dataform is None:
             raise MalformedStanzaError('dataform node missing', response)
 
         self._log.info('Muclumbus parameters received')
-        yield finalize(task, extend_form(node=dataform))
+        yield finalize(extend_form(node=dataform))
 
     @iq_request_task
     def set_search(self, jid, dataform, items_per_page=50, after=None):
-        _task = yield
 
         response = yield _make_search_query(jid,
                                             dataform,
                                             items_per_page,
                                             after)
-        if response.isError():
+        if response.is_error():
             raise StanzaError(response)
 
-        result = response.getTag('result', namespace=Namespace.MUCLUMBUS)
+        result = response.find_tag('result', namespace=Namespace.MUCLUMBUS)
         if result is None:
             raise MalformedStanzaError('result node missing', response)
 
-        items = result.getTags('item')
+        items = result.find_tags('item')
         if not items:
             yield MuclumbusResult(first=None,
                                   last=None,
@@ -95,29 +98,29 @@ class Muclumbus(BaseModule):
                                   end=True,
                                   items=[])
 
-        set_ = result.getTag('set', namespace=Namespace.RSM)
+        set_ = result.find_tag('set', namespace=Namespace.RSM)
         if set_ is None:
             raise MalformedStanzaError('set node missing', response)
 
-        first = set_.getTagData('first')
-        last = set_.getTagData('last')
+        first = set_.find_tag_text('first')
+        last = set_.find_tag_text('last')
         try:
-            max_ = int(set_.getTagData('max'))
+            max_ = int(set_.find_tag_text('max'))
         except Exception:
             raise MalformedStanzaError('invalid max value', response)
 
         results = []
         for item in items:
-            jid = item.getAttr('address')
-            name = item.getTagData('name')
-            nusers = item.getTagData('nusers')
-            description = item.getTagData('description')
-            language = item.getTagData('language')
-            is_open = item.getTag('is-open') is not None
+            jid = item.get('address')
+            name = item.find_tag_text('name')
+            nusers = item.find_tag_text('nusers')
+            description = item.find_tag_text('description')
+            language = item.find_tag_text('language')
+            is_open = item.find_tag('is-open') is not None
 
             try:
                 anonymity_mode = AnonymityMode(
-                    item.getTagData('anonymity-mode'))
+                    item.find_tag_text('anonymity-mode'))
             except ValueError:
                 anonymity_mode = AnonymityMode.UNKNOWN
             results.append(MuclumbusItem(jid=jid,
@@ -135,7 +138,6 @@ class Muclumbus(BaseModule):
 
     @http_request_task
     def set_http_search(self, uri, keywords, after=None):
-        _task = yield
 
         search = {'keywords': keywords}
         if after is not None:
@@ -192,20 +194,22 @@ class Muclumbus(BaseModule):
                               items=results)
 
 
-def _make_parameter_request(jid):
-    query = Iq(to=jid, typ='get')
-    query.addChild(node=Node('search',
-                             attrs={'xmlns': Namespace.MUCLUMBUS}))
-    return query
+def _make_parameter_request(jid: JID) -> types.Iq:
+    iq = Iq(to=jid)
+    iq.add_tag('search', namespace=Namespace.MUCLUMBUS)
+    return iq
 
 
-def _make_search_query(jid, dataform, items_per_page=50, after=None):
-    search = Node('search', attrs={'xmlns': Namespace.MUCLUMBUS})
-    search.addChild(node=dataform)
-    rsm = search.addChild('set', namespace=Namespace.RSM)
-    rsm.addChild('max').setData(items_per_page)
+def _make_search_query(jid: JID,
+                       dataform: types.DataForm,
+                       items_per_page: int = 50,
+                       after: Optional[str] = None) -> types.Iq:
+    iq = Iq(to=jid)
+    search = iq.add_tag('search', namespace=Namespace.MUCLUMBUS)
+    search.append(dataform)
+    rsm = search.add_tag('set', namespace=Namespace.RSM)
+    rsm.add_tag_text('max', str(items_per_page))
     if after is not None:
-        rsm.addChild('after').setData(after)
-    query = Iq(to=jid, typ='get')
-    query.addChild(node=search)
-    return query
+        rsm.add_tag_text('after', str(after))
+
+    return iq

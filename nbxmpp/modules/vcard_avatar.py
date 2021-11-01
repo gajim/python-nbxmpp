@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+
+from nbxmpp import types
+from nbxmpp.client import Client
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import PresenceType
@@ -23,7 +29,7 @@ from nbxmpp.modules.base import BaseModule
 
 
 class VCardAvatar(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -34,27 +40,31 @@ class VCardAvatar(BaseModule):
                           priority=15)
         ]
 
-    def _process_avatar(self, _client, stanza, properties):
+    def _process_avatar(self,
+                        _client: Client,
+                        stanza: types.Presence,
+                        properties: Any):
+
         if properties.type != PresenceType.AVAILABLE:
             return
 
-        update = stanza.getTag('x', namespace=Namespace.VCARD_UPDATE)
+        update = stanza.find_tag('x', namespace=Namespace.VCARD_UPDATE)
         if update is None:
             return
 
-        avatar_sha = update.getTagData('photo')
+        avatar_sha = update.find_tag_text('photo')
         if avatar_sha is None:
             properties.avatar_state = AvatarState.NOT_READY
             self._log.info('%s is not ready to promote an avatar',
-                           stanza.getFrom())
+                           stanza.get_from())
             # Empty update element, ignore
             return
 
         if avatar_sha == '':
             properties.avatar_state = AvatarState.EMPTY
-            self._log.info('%s empty avatar advertised', stanza.getFrom())
+            self._log.info('%s empty avatar advertised', stanza.get_from())
             return
 
         properties.avatar_sha = avatar_sha
         properties.avatar_state = AvatarState.ADVERTISED
-        self._log.info('%s advertises %s', stanza.getFrom(), avatar_sha)
+        self._log.info('%s advertises %s', stanza.get_from(), avatar_sha)

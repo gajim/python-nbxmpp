@@ -15,21 +15,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import Error as ErrorStanza
-from nbxmpp.protocol import ERR_BAD_REQUEST
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import Presence
-from nbxmpp.namespaces import Namespace
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.util import error_factory
-from nbxmpp.const import PresenceType
+from __future__ import annotations
+
+from typing import Any
+from typing import Optional
+from typing import Union
+
+from nbxmpp import builder
+from nbxmpp import types
+from nbxmpp.const import ErrorCondition
+from nbxmpp.const import ErrorType
 from nbxmpp.const import PresenceShow
+from nbxmpp.const import PresenceType
+from nbxmpp.elements import Stanza
+from nbxmpp.lookups import register_class_lookup
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import log_calls
+from nbxmpp.namespaces import Namespace
+from nbxmpp.jid import JID
+from nbxmpp.exceptions import NodeProcessed
+from nbxmpp.structs import StanzaHandler
+from nbxmpp.util import error_factory
+
 
 
 class BasePresence(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -39,23 +50,27 @@ class BasePresence(BaseModule):
                           priority=10),
         ]
 
-    def _process_presence_base(self, _client, stanza, properties):
-        properties.type = self._parse_type(stanza)
-        properties.priority = self._parse_priority(stanza)
-        properties.show = self._parse_show(stanza)
-        properties.jid = stanza.getFrom()
-        properties.id = stanza.getID()
-        properties.status = stanza.getStatus()
+    def _process_presence_base(self,
+                               _client: types.Client,
+                               presence: types.Presence,
+                               properties: Any):
+
+        properties.type = self._parse_type(presence)
+        properties.priority = self._parse_priority(presence)
+        properties.show = self._parse_show(presence)
+        properties.jid = presence.get_from()
+        properties.id = presence.get('id')
+        properties.status = presence.get_status() or ''
 
         if properties.type.is_error:
-            properties.error = error_factory(stanza)
+            properties.error = error_factory(presence)
 
         own_jid = self._client.get_bound_jid()
         properties.self_presence = own_jid == properties.jid
         properties.self_bare = properties.jid.bare_match(own_jid)
 
-    def _parse_priority(self, stanza):
-        priority = stanza.getPriority()
+    def _parse_priority(self, presence: types.Presence) -> int:
+        priority = presence.get_priority()
         if priority is None:
             return 0
 
@@ -63,96 +78,75 @@ class BasePresence(BaseModule):
             priority = int(priority)
         except Exception:
             self._log.warning('Invalid priority value: %s', priority)
-            self._log.warning(stanza)
+            self._log.warning(presence)
             return 0
 
-        if priority not in range(-129, 128):
+        if priority not in range(-128, 128):
             self._log.warning('Invalid priority value: %s', priority)
-            self._log.warning(stanza)
+            self._log.warning(presence)
             return 0
 
         return priority
 
-    def _parse_type(self, stanza):
-        type_ = stanza.getType()
+    def _parse_type(self, presence: types.Presence) -> PresenceType:
+        type_ = presence.get('type')
         try:
             return PresenceType(type_)
         except ValueError:
             self._log.warning('Presence with invalid type received')
-            self._log.warning(stanza)
-            self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
+            self._log.warning(presence)
+            error = presence.make_error(ErrorType.CANCEL,
+                                        ErrorCondition.BAD_REQUEST,
+                                        Namespace.XMPP_STANZAS)
+            self._client.send_stanza(error)
             raise NodeProcessed
 
-    def _parse_show(self, stanza):
-        show = stanza.getShow()
+    def _parse_show(self, presence: types.Presence) -> PresenceShow:
+        show = presence.get_show()
         if show is None:
             return PresenceShow.ONLINE
         try:
-            return PresenceShow(stanza.getShow())
+            return PresenceShow(show)
         except ValueError:
             self._log.warning('Presence with invalid show')
-            self._log.warning(stanza)
+            self._log.warning(presence)
             return PresenceShow.ONLINE
 
     @log_calls
-    def unsubscribe(self, jid):
-        self.send(jid=jid, typ='unsubscribe')
+    def unsubscribe(self, to: Union[str, JID]):
+        self._client.send_stanza(builder.Presence(to=to, type='unsubscribe'))
 
     @log_calls
-    def unsubscribed(self, jid):
-        self.send(jid=jid, typ='unsubscribed')
+    def unsubscribed(self, to: Union[str, JID]):
+        self._client.send_stanza(builder.Presence(to=to, type='unsubscribed'))
 
     @log_calls
-    def subscribed(self, jid):
-        self.send(jid=jid, typ='subscribed')
+    def subscribed(self, to: Union[str, JID]):
+        self._client.send_stanza(builder.Presence(to=to, type='subscribed'))
 
     @log_calls
-    def subscribe(self, jid, status=None, nick=None):
-        self.send(jid=jid, typ='subscribe', status=status, nick=nick)
+    def subscribe(self,
+                  to: Union[str, JID],
+                  status: Optional[str] = None,
+                  nickname: Optional[str] = None):
 
-    def send(self,
-             jid=None,
-             typ=None,
-             priority=None,
-             show=None,
-             status=None,
-             nick=None,
-             caps=None,
-             idle_time=None,
-             signed=None,
-             muc=False,
-             muc_history=None,
-             muc_password=None,
-             extend=None):
+        self._client.send_stanza(builder.Presence(to=to,
+                                                  type='subscribe',
+                                                  status=status,
+                                                  nickname=nickname))
 
-        if show is not None and show not in ('chat', 'away', 'xa', 'dnd'):
-            raise ValueError('Invalid show value: %s' % show)
 
-        presence = Presence(jid, typ, priority, show, status)
-        if nick is not None:
-            nick_tag = presence.setTag('nick', namespace=Namespace.NICK)
-            nick_tag.setData(nick)
+class Presence(Stanza):
+    
+    def get_priority(self) -> Optional[str]:
+        return self.find_tag_text('priority')
 
-        if idle_time is not None:
-            idle_node = presence.setTag('idle', namespace=Namespace.IDLE)
-            idle_node.setAttr('since', idle_time)
+    def get_show(self) -> Optional[str]:
+        return self.find_tag_text('show')
+    
+    def get_status(self) -> Optional[str]:
+        return self.find_tag_text('status')
+    
 
-        if caps is not None and typ != 'unavailable':
-            presence.setTag('c', namespace=Namespace.CAPS, attrs=caps)
 
-        if signed is not None:
-            presence.setTag(Namespace.SIGNED + ' x').setData(signed)
-
-        if muc or muc_history is not None or muc_password is not None:
-            muc_x = presence.setTag(Namespace.MUC + ' x')
-            if muc_history is not None:
-                muc_x.setTag('history', muc_history)
-
-            if muc_password is not None:
-                muc_x.setTagData('password', muc_password)
-
-        if extend is not None:
-            for node in extend:
-                presence.addChild(node=node)
-
-        self._client.send_stanza(presence)
+register_class_lookup('presence', Namespace.CLIENT, Presence)

@@ -15,14 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+
+from nbxmpp import types
+from nbxmpp.client import Client
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import TuneData
 from nbxmpp.const import TUNE_DATA
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
 from nbxmpp.task import iq_request_task
+from nbxmpp.builder import E
 
 
 class Tune(BaseModule):
@@ -31,7 +37,7 @@ class Tune(BaseModule):
         'publish': 'PubSub'
     }
 
-    def __init__(self, client):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -42,7 +48,11 @@ class Tune(BaseModule):
                           priority=16),
         ]
 
-    def _process_pubsub_tune(self, _client, _stanza, properties):
+    def _process_pubsub_tune(self,
+                             _client: Client,
+                             _stanza: types.Message,
+                             properties: Any):
+
         if not properties.is_pubsub_event:
             return
 
@@ -54,14 +64,14 @@ class Tune(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        tune_node = item.getTag('tune', namespace=Namespace.TUNE)
-        if not tune_node.getChildren():
+        tune_node = item.find_tag('tune', namespace=Namespace.TUNE)
+        if not tune_node.get_children():
             self._log.info('Received tune: %s - no tune set', properties.jid)
             return
 
         tune_dict = {}
         for attr in TUNE_DATA:
-            tune_dict[attr] = tune_node.getTagData(attr)
+            tune_dict[attr] = tune_node.find_tag_text(attr)
 
         data = TuneData(**tune_dict)
         if data.artist is None and data.title is None:
@@ -75,16 +85,15 @@ class Tune(BaseModule):
         properties.pubsub_event = pubsub_event
 
     @iq_request_task
-    def set_tune(self, data):
-        task = yield
+    def set_tune(self, data: Any):
 
-        item = Node('tune', {'xmlns': Namespace.TUNE})
+        item = E('tune', namespace=Namespace.TUNE)
         if data is not None:
             data = data._asdict()
             for tag, value in data.items():
                 if value is not None:
-                    item.addChild(tag, payload=value)
+                    item.add_tag_text(tag, value)
 
         result = yield self.publish(Namespace.TUNE, item, id_='current')
 
-        yield finalize(task, result)
+        yield finalize(result)

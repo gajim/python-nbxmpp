@@ -1,12 +1,12 @@
 import unittest
 
-from nbxmpp.protocol import LocalpartByteLimit
-from nbxmpp.protocol import LocalpartNotAllowedChar
-from nbxmpp.protocol import ResourcepartByteLimit
-from nbxmpp.protocol import ResourcepartNotAllowedChar
-from nbxmpp.protocol import DomainpartByteLimit
-from nbxmpp.protocol import DomainpartNotAllowedChar
-from nbxmpp.protocol import JID
+from nbxmpp.exceptions import LocalpartByteLimit
+from nbxmpp.exceptions import LocalpartNotAllowedChar
+from nbxmpp.exceptions import ResourcepartByteLimit
+from nbxmpp.exceptions import ResourcepartNotAllowedChar
+from nbxmpp.exceptions import DomainpartByteLimit
+from nbxmpp.exceptions import DomainpartNotAllowedChar
+from nbxmpp.jid import JID
 
 class JIDParsing(unittest.TestCase):
 

@@ -15,17 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import NodeProcessed
+from nbxmpp.exceptions import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import EntityCapsData
-from nbxmpp.structs import DiscoInfo
 from nbxmpp.util import compute_caps_hash
 from nbxmpp.modules.base import BaseModule
 
 
 class EntityCaps(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -41,60 +45,56 @@ class EntityCaps(BaseModule):
                           priority=20),
         ]
 
-        self._identities = []
-        self._features = []
-
         self._uri = None
-        self._node = None
-        self._caps = None
+        self._disco_info = None
         self._caps_hash = None
 
-    def _process_disco_info(self, client, stanza, _properties):
-        if self._caps is None:
+    def _process_disco_info(self,
+                            client: types.Client,
+                            iq: types.Iq,
+                            _properties: Any):
+
+        if self._disco_info is None:
             return
 
-        node = stanza.getQuerynode()
+        node = iq.find_tag_attr('query', 'node', Namespace.DISCO_INFO) 
         if node is not None:
-            if self._node != node:
+            if self._disco_info.get('node') != node:
                 return
 
-        iq = stanza.buildReply('result')
-        if node is not None:
-            iq.setQuerynode(node)
-
-        query = iq.getQuery()
-        for identity in self._caps.identities:
-            query.addChild(node=identity.get_node())
-
-        for feature in self._caps.features:
-            query.addChild('feature', attrs={'var': feature})
+        result = iq.make_result()
+        result.append(self._disco_info)
 
         self._log.info('Respond with disco info')
-        client.send_stanza(iq)
+        client.send_stanza(result)
         raise NodeProcessed
 
-    def _process_entity_caps(self, _client, stanza, properties):
-        caps = stanza.getTag('c', namespace=Namespace.CAPS)
+    def _process_entity_caps(self,
+                             _client: types.Client,
+                             presence: types.Presence,
+                             properties: Any):
+
+        caps = presence.find_tag('c', namespace=Namespace.CAPS)
         if caps is None:
             return
 
-        hash_algo = caps.getAttr('hash')
+        hash_algo = caps.get('hash')
         if hash_algo != 'sha-1':
             self._log.warning('Unsupported hashing algorithm used: %s',
                               hash_algo)
-            self._log.warning(stanza)
+            self._log.warning(presence)
             return
 
-        node = caps.getAttr('node')
+        node = caps.get('node')
         if not node:
             self._log.warning('node attribute missing')
-            self._log.warning(stanza)
+            self._log.warning(presence)
             return
 
-        ver = caps.getAttr('ver')
+        ver = caps.get('ver')
         if not ver:
             self._log.warning('ver attribute missing')
-            self._log.warning(stanza)
+            self._log.warning(presence)
             return
 
         properties.entity_caps = EntityCapsData(
@@ -110,8 +110,9 @@ class EntityCaps(BaseModule):
                               node=self._uri,
                               ver=self._caps_hash)
 
-    def set_caps(self, identities, features, uri):
+    def set_caps(self, disco_info: types.DiscoInfo, uri: str):
+
         self._uri = uri
-        self._caps = DiscoInfo(None, identities, features, [])
-        self._caps_hash = compute_caps_hash(self._caps, compare=False)
+        self._disco_info: types.DiscoInfo = disco_info
+        self._caps_hash = compute_caps_hash(self._disco_info, compare=False)
         self._node = '%s#%s' % (uri, self._caps_hash)

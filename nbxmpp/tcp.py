@@ -15,27 +15,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Optional
+from typing import cast
+
 import logging
-from collections import deque
 
 from gi.repository import GLib
 from gi.repository import Gio
 from gi.repository import GObject
+from nbxmpp import types
 
 from nbxmpp.const import TCPState
 from nbxmpp.const import ConnectionType
 from nbxmpp.util import utf8_decode
 from nbxmpp.util import convert_tls_error_flags
 from nbxmpp.connection import Connection
+from nbxmpp.queue import TCPElementQueue
 
 log = logging.getLogger('nbxmpp.tcp')
 
 READ_BUFFER_SIZE = 8192
 
 
-class TCPConnection(Connection):
+class TCPConnection(Connection, TCPElementQueue):
     def __init__(self, *args, **kwargs):
         Connection.__init__(self, *args, **kwargs)
+        TCPElementQueue.__init__(self)
 
         self._client = Gio.SocketClient.new()
         self._client.set_timeout(7)
@@ -46,12 +54,9 @@ class TCPConnection(Connection):
 
         GObject.Object.connect(self._client, 'event', self._on_event)
 
-        self._con = None
+        self._con = cast(Gio.TcpConnection, None)
 
         self._read_buffer = b''
-
-        self._write_queue = deque([])
-        self._write_stanza_buffer = None
 
         self._connect_cancellable = Gio.Cancellable()
         self._read_cancellable = Gio.Cancellable()
@@ -67,12 +72,12 @@ class TCPConnection(Connection):
 
         if self._address.is_service:
             self._client.connect_to_service_async(self._address.domain,
-                                                  self._address.service,
+                                                  cast(str, self._address.service),
                                                   self._connect_cancellable,
                                                   self._on_connect_finished,
                                                   None)
         elif self._address.is_host:
-            self._client.connect_to_host_async(self._address.host,
+            self._client.connect_to_host_async(cast(str, self._address.host),
                                                0,
                                                self._connect_cancellable,
                                                self._on_connect_finished,
@@ -81,16 +86,26 @@ class TCPConnection(Connection):
         else:
             raise ValueError('Invalid Address')
 
-    def _on_event(self, _socket_client, event, _connectable, connection):
+    def _on_event(self,
+                  _socket_client: Gio.SocketClient,
+                  event: Gio.SocketClientEvent,
+                  _connectable: Gio.SocketConnectable,
+                  connection: Gio.TcpConnection):
+
         if event == Gio.SocketClientEvent.CONNECTING:
             self._remote_address = connection.get_remote_address().to_string()
+
             use_proxy = self._address.proxy is not None
             target = 'proxy' if use_proxy else self._address.domain
             self._log.info('Connecting to %s (%s)',
                            target,
                            self._remote_address)
 
-    def _check_certificate(self, _connection, certificate, errors):
+    def _check_certificate(self,
+                           _connection: Gio.TlsClientConnection,
+                           certificate: Gio.TlsCertificate,
+                           errors: Gio.TlsCertificateFlags):
+
         self._peer_certificate = certificate
         self._peer_certificate_errors = convert_tls_error_flags(errors)
 
@@ -100,21 +115,27 @@ class TCPConnection(Connection):
         self.notify('bad-certificate')
         return False
 
-    def _on_certificate_set(self, connection, _param):
-        self._peer_certificate = connection.props.peer_certificate
+    def _on_certificate_set(self,
+                            connection: Gio.TlsClientConnection,
+                            _param: GObject.ParamSpec):
+
+        self._peer_certificate = connection.get_peer_certificate()
         self._peer_certificate_errors = convert_tls_error_flags(
-            connection.props.peer_certificate_errors)
+            connection.get_peer_certificate_errors())
         self._tls_handshake_in_progress = False
         self.notify('certificate-set')
 
-    def _on_connect_finished(self, client, result, _user_data):
+    def _on_connect_finished(self,
+                             client: Gio.SocketClient,
+                             result: Gio.AsyncResult,
+                             _user_data: Any):
         try:
             if self._address.proxy is not None:
-                self._con = client.connect_to_host_finish(result)
+                connection = client.connect_to_host_finish(result)
             elif self._address.is_service:
-                self._con = client.connect_to_service_finish(result)
+                connection = client.connect_to_service_finish(result)
             elif self._address.is_host:
-                self._con = client.connect_to_host_finish(result)
+                connection = client.connect_to_host_finish(result)
             else:
                 raise ValueError('Address must be a service or host')
         except GLib.Error as error:
@@ -123,11 +144,11 @@ class TCPConnection(Connection):
             return
 
         # We use the timeout only for connecting
-        self._con.get_socket().set_timeout(0)
-        self._con.set_graceful_disconnect(True)
-        self._con.get_socket().set_keepalive(True)
+        connection.get_socket().set_timeout(0)
+        connection.set_graceful_disconnect(True)
+        connection.get_socket().set_keepalive(True)
 
-        self._local_address = self._con.get_local_address()
+        self._local_address = connection.get_local_address()
 
         self.state = TCPState.CONNECTED
 
@@ -135,8 +156,9 @@ class TCPConnection(Connection):
         target = 'proxy' if use_proxy else self._address.domain
         self._log.info('Connected to %s (%s)',
                        target,
-                       self._con.get_remote_address().to_string())
+                       connection.get_remote_address().to_string())
 
+        self._con = connection
         self._on_connected()
 
     def _on_connected(self):
@@ -156,7 +178,7 @@ class TCPConnection(Connection):
         self._log.info('Add keepalive timer')
         self._keepalive_id = GLib.timeout_add_seconds(5, self._send_keepalive)
 
-    def _send_keepalive(self):
+    def _send_keepalive(self) -> None:
         self._log.info('Send keepalive')
         self._keepalive_id = None
         if not self._con.get_output_stream().has_pending():
@@ -167,7 +189,7 @@ class TCPConnection(Connection):
         self._tls_handshake_in_progress = True
         remote_address = self._con.get_remote_address()
         identity = Gio.NetworkAddress.new(self._address.domain,
-                                          remote_address.props.port)
+                                          remote_address.get_port())
 
         tls_client = Gio.TlsClientConnection.new(self._con, identity)
 
@@ -193,7 +215,10 @@ class TCPConnection(Connection):
             self._on_read_async_finish,
             None)
 
-    def _on_read_async_finish(self, stream, result, _user_data):
+    def _on_read_async_finish(self,
+                              stream: Gio.InputStream,
+                              result: Gio.AsyncResult,
+                              _user_data: Any):
         try:
             data = stream.read_bytes_finish(result)
         except GLib.Error as error:
@@ -265,15 +290,11 @@ class TCPConnection(Connection):
         # otherwise this can lead to problems if we call
         # start_tls_negotiation() while we have a pending read which is
         # the case for START TLS because its triggered by <proceed>
-        self._read_async()
+        self._read_async()    
 
-    def _write_stanzas(self):
-        self._write_stanza_buffer = self._write_queue
-        self._write_queue = deque([])
-        data = ''.join(map(str, self._write_stanza_buffer)).encode()
-        self._write_all_async(data)
-
-    def _write_all_async(self, data):
+    def _write_all_async(self,
+                         data: bytes,
+                         elements: Optional[list[Any]] = None):
         # We have to pass data to the callback, because GLib takes no
         # reference on the passed data and python would gc collect it
         # bevor GLib has a chance to write it to the stream
@@ -282,15 +303,21 @@ class TCPConnection(Connection):
             GLib.PRIORITY_DEFAULT,
             None,
             self._on_write_all_async_finished,
-            data)
+            (data, elements or []))
 
-    def _on_write_all_async_finished(self, stream, result, data):
+    def _on_write_all_async_finished(self,
+                                     stream: Gio.OutputStream,
+                                     result: Gio.AsyncResult,
+                                     user_data: tuple[bytes, list[types.Base]]):
+
+        data, elements = user_data
+
         try:
             stream.write_all_finish(result)
         except GLib.Error as error:
             quark = GLib.quark_try_string('g-tls-error-quark')
             if error.matches(quark, Gio.TlsError.BAD_CERTIFICATE):
-                self._write_stanza_buffer = None
+                self.clear_queue()
                 return
 
             if self._output_closed:
@@ -306,39 +333,46 @@ class TCPConnection(Connection):
             self._log.error(error)
             return
 
-        data = data.decode()
         self._log_stanza(data, received=False)
 
-        if data == ' ':
+        if data == b' ':
             # keepalive whitespace
             self._renew_keepalive_timer()
 
+        elif not elements:
+            self.notify('data-sent', data.decode())
+
         else:
-            for stanza in self._write_stanza_buffer:
+            for element in elements:
                 try:
-                    self.notify('data-sent', stanza)
+                    self.notify('data-sent', element)
                 except Exception:
                     self._log.exception('Error while executing data-sent:')
 
-        if self._output_closed and not self._write_queue:
+        if self._output_closed and not self.has_pending():
             self._check_for_shutdown()
             return
 
-        if self._write_queue:
-            self._write_stanzas()
+        if self.has_pending():
+            self._write_all_async(*self.pop())
 
-    def send(self, stanza, now=False):
+    def send(self, stanza, now: bool = False):
         if self._state in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
             self._log.warning('send() not possible in state: %s', self._state)
             return
 
-        if now:
-            self._write_queue.appendleft(stanza)
-        else:
-            self._write_queue.append(stanza)
+        self.append(stanza, first=now)
 
         if not self._con.get_output_stream().has_pending():
-            self._write_stanzas()
+            self._write_all_async(*self.pop())
+
+    def _start_stream(self, data: bytes):
+        if not self._con.get_output_stream().has_pending():
+            self._write_all_async(data)
+
+    def _end_stream(self, data: bytes):
+        if not self._con.get_output_stream().has_pending():
+            self._write_all_async(data)
 
     def disconnect(self):
         self._remove_keepalive_timer()
@@ -371,7 +405,7 @@ class TCPConnection(Connection):
         self._log.info('Shutdown output')
         self._output_closed = True
 
-    def _finalize(self, signal_name):
+    def _finalize(self, signal_name: str):
         self._remove_keepalive_timer()
         if self._con is not None:
             try:
@@ -386,6 +420,6 @@ class TCPConnection(Connection):
 
     def destroy(self):
         super().destroy()
-        self._con = None
-        self._client = None
-        self._write_queue = None
+        self._con = cast(Gio.TcpConnection, None)
+        self._client = cast(Gio.SocketClient, None)
+        self.clear_queue()

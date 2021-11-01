@@ -15,12 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Optional
+
+from nbxmpp import types
+from nbxmpp.client import Client
+from nbxmpp.const import ErrorCondition
+from nbxmpp.const import ErrorType
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import Error
-from nbxmpp.protocol import ERR_FORBIDDEN
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
+from nbxmpp.builder import Iq
+from nbxmpp.jid import JID
+from nbxmpp.exceptions import NodeProcessed
 from nbxmpp.structs import SoftwareVersionResult
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.modules.base import BaseModule
@@ -30,7 +37,7 @@ from nbxmpp.errors import StanzaError
 
 
 class SoftwareVersion(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -52,62 +59,86 @@ class SoftwareVersion(BaseModule):
     def disable(self):
         self._enabled = False
 
-    def set_allow_reply_func(self, func):
+    def set_allow_reply_func(self, func: Any):
         self._allow_reply_func = func
 
     @iq_request_task
-    def request_software_version(self, jid):
-        _task = yield
+    def request_software_version(self, jid: JID):
 
-        response = yield Iq(typ='get', to=jid, queryNS=Namespace.VERSION)
-        if response.isError():
+        response = yield _make_query(jid)
+        if response.is_error():
             raise StanzaError(response)
 
         yield _parse_info(response)
 
-    def set_software_version(self, name, version, os=None):
+    def set_software_version(self,
+                             name: str,
+                             version: str,
+                             os: Optional[str] = None):
+
         self._name, self._version, self._os = name, version, os
         self._enabled = True
 
-    def _answer_request(self, _con, stanza, _properties):
-        self._log.info('Request received from %s', stanza.getFrom())
+    def _answer_request(self,
+                        _client: Client,
+                        stanza: types.Iq,
+                        _properties: Any):
+
+        self._log.info('Request received from %s', stanza.get_from())
         if (not self._enabled or
                 self._name is None or
                 self._version is None):
-            self._client.send_stanza(Error(stanza, ERR_SERVICE_UNAVAILABLE))
+
+            iq = stanza.make_error(ErrorType.CANCEL,
+                                   ErrorCondition.SERVICE_UNAVAILABLE,
+                                   Namespace.XMPP_STANZAS)
+
+            self._client.send_stanza(iq)
             raise NodeProcessed
 
         if self._allow_reply_func is not None:
-            if not self._allow_reply_func(stanza.getFrom()):
-                self._client.send_stanza(Error(stanza, ERR_FORBIDDEN))
+            if not self._allow_reply_func(stanza.get_from()):
+
+                iq = stanza.make_error(ErrorType.CANCEL,
+                                       ErrorCondition.FORBIDDEN,
+                                       Namespace.XMPP_STANZAS)
+
+                self._client.send_stanza(iq)
                 raise NodeProcessed
 
-        iq = stanza.buildReply('result')
-        query = iq.getQuery()
-        query.setTagData('name', self._name)
-        query.setTagData('version', self._version)
+        result = stanza.make_result()
+        query = result.add_query(namespace=Namespace.VERSION)
+        query.add_tag_text('name', self._name)
+        query.add_tag_text('version', self._version)
         if self._os is not None:
-            query.setTagData('os', self._os)
+            query.add_tag_text('os', self._os)
+
         self._log.info('Send software version: %s %s %s',
                        self._name, self._version, self._os)
 
-        self._client.send_stanza(iq)
+        self._client.send_stanza(result)
         raise NodeProcessed
 
 
-def _parse_info(stanza):
-    try:
-        name = stanza.getQueryChild('name').getData()
-    except Exception:
-        raise MalformedStanzaError('name node missing', stanza)
+def _make_query(jid: JID) -> types.Iq:
+    iq = Iq(to=jid)
+    iq.add_query(namespace=Namespace.VERSION)
+    return iq
 
-    try:
-        version = stanza.getQueryChild('version').getData()
-    except Exception:
-        raise MalformedStanzaError('version node missing', stanza)
 
-    os_info = stanza.getQueryChild('os')
-    if os_info is not None:
-        os_info = os_info.getData()
+def _parse_info(stanza: types.Iq) -> SoftwareVersionResult:
+    query = stanza.get_query(namespace=Namespace.VERSION)
+    if query is None:
+        raise MalformedStanzaError('query node missing', stanza)
 
-    return SoftwareVersionResult(name, version, os_info)
+    name = query.find_tag_text('name')
+    if name is None:
+        raise MalformedStanzaError('name missing', stanza)
+
+    version = query.find_tag_text('version')
+    if version is None:
+        raise MalformedStanzaError('version missing', stanza)
+
+    os = query.find_tag_text('os') or ''
+
+    return SoftwareVersionResult(name, version, os)

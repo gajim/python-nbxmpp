@@ -15,13 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+
+from nbxmpp import types
+from nbxmpp.client import Client
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import NodeProcessed
+from nbxmpp.exceptions import NodeProcessed
+from nbxmpp.structs import BookmarkData
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.modules.base import BaseModule
-from nbxmpp.modules.util import raise_if_error
+from nbxmpp.modules.util import finalize, raise_if_error
 from nbxmpp.modules.bookmarks.util import parse_bookmarks
 from nbxmpp.modules.bookmarks.util import build_storage_node
 
@@ -39,7 +46,7 @@ class PEPBookmarks(BaseModule):
         'request_items': 'PubSub',
     }
 
-    def __init__(self, client):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -50,7 +57,11 @@ class PEPBookmarks(BaseModule):
                           priority=16),
         ]
 
-    def _process_pubsub_bookmarks(self, _client, stanza, properties):
+    def _process_pubsub_bookmarks(self,
+                                  _client: Client,
+                                  stanza: types.Message,
+                                  properties: Any):
+
         if not properties.is_pubsub_event:
             return
 
@@ -82,8 +93,6 @@ class PEPBookmarks(BaseModule):
 
     @iq_request_task
     def request_bookmarks(self):
-        _task = yield
-
         items = yield self.request_items(Namespace.BOOKMARKS, max_items=1)
         raise_if_error(items)
 
@@ -97,13 +106,12 @@ class PEPBookmarks(BaseModule):
         yield bookmarks
 
     @iq_request_task
-    def store_bookmarks(self, bookmarks):
-        _task = yield
-
+    def store_bookmarks(self, bookmarks: list[BookmarkData]):
         self._log.info('Store Bookmarks')
 
-        self.publish(Namespace.BOOKMARKS,
-                     build_storage_node(bookmarks),
-                     id_='current',
-                     options=BOOKMARK_OPTIONS,
-                     force_node_options=True)
+        result = yield self.publish(Namespace.BOOKMARKS,
+                                    build_storage_node(bookmarks),
+                                    id_='current',
+                                    options=BOOKMARK_OPTIONS,
+                                    force_node_options=True)
+        yield finalize(result)

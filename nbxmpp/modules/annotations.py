@@ -15,11 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Union
+from typing import Generator
+
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import Node
-from nbxmpp.protocol import JID
-from nbxmpp.structs import AnnotationNote
+from nbxmpp.builder import Iq
+from nbxmpp.jid import JID
+from nbxmpp.structs import AnnotationNote, CommonResult
 from nbxmpp.errors import StanzaError
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.task import iq_request_task
@@ -28,8 +33,18 @@ from nbxmpp.modules.util import process_response
 from nbxmpp.modules.date_and_time import parse_datetime
 
 
+RequestGenerator = Generator[Union[types.Iq, list[AnnotationNote]],
+                             types.Iq,
+                             None]
+
+
+SetGenerator = Generator[Union[types.Iq, CommonResult],
+                         types.Iq,
+                         None]
+
+
 class Annotations(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -40,36 +55,35 @@ class Annotations(BaseModule):
         return self._client.get_bound_jid().domain
 
     @iq_request_task
-    def request_annotations(self):
-        _task = yield
+    def request_annotations(self) -> RequestGenerator:
 
         response = yield _make_request()
-        if response.isError():
+        if response.is_error():
             raise StanzaError(response)
 
-        query = response.getQuery()
-        storage = query.getTag('storage', namespace=Namespace.ROSTERNOTES)
+        query = response.get_query(namespace=Namespace.PRIVATE)
+        storage = query.find_tag('storage', namespace=Namespace.ROSTERNOTES)
         if storage is None:
             raise MalformedStanzaError('storage node missing', response)
 
-        notes = []
-        for note in storage.getTags('note'):
+        notes: list[AnnotationNote] = []
+        for note in storage.find_tags('note'):
             try:
-                jid = JID.from_string(note.getAttr('jid'))
+                jid = JID.from_string(note.get('jid'))
             except Exception as error:
                 self._log.warning('Invalid JID: %s, %s',
-                                  note.getAttr('jid'), error)
+                                  note.get('jid'), error)
                 continue
 
-            cdate = note.getAttr('cdate')
+            cdate = note.get('cdate')
             if cdate is not None:
                 cdate = parse_datetime(cdate, epoch=True)
 
-            mdate = note.getAttr('mdate')
+            mdate = note.get('mdate')
             if mdate is not None:
                 mdate = parse_datetime(mdate, epoch=True)
 
-            data = note.getData()
+            data = note.text or ''
             notes.append(AnnotationNote(jid=jid, cdate=cdate,
                                         mdate=mdate, data=data))
 
@@ -79,8 +93,7 @@ class Annotations(BaseModule):
         yield notes
 
     @iq_request_task
-    def set_annotations(self, notes):
-        _task = yield
+    def set_annotations(self, notes: list[AnnotationNote]) -> SetGenerator:
 
         for note in notes:
             self._log.info(note)
@@ -89,18 +102,24 @@ class Annotations(BaseModule):
         yield process_response(response)
 
 
-def _make_request():
-    payload = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
-    return Iq(typ='get', queryNS=Namespace.PRIVATE, payload=payload)
+def _make_request() -> types.Iq:
+    iq = Iq()
+    query = iq.add_tag('query', namespace=Namespace.PRIVATE)
+    query.add_tag('storage', namespace=Namespace.ROSTERNOTES)
+    return iq
 
-def _make_set_request(notes):
-    storage = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
+
+def _make_set_request(notes: list[AnnotationNote]) -> types.Iq:
+    iq = Iq(type='set')
+    query = iq.add_query(namespace=Namespace.PRIVATE)
+    storage = query.add_tag('storage', namespace=Namespace.ROSTERNOTES)
+
     for note in notes:
-        node = Node('note', attrs={'jid': note.jid})
-        node.setData(note.data)
+        note_tag = storage.add_tag('note', jid=str(note.jid))
+        note_tag.text = note.data
         if note.cdate is not None:
-            node.setAttr('cdate', note.cdate)
+            note_tag.set('cdate', note.cdate)
         if note.mdate is not None:
-            node.setAttr('mdate', note.mdate)
-        storage.addChild(node=node)
-    return Iq(typ='set', queryNS=Namespace.PRIVATE, payload=storage)
+            note_tag.set('mdate', note.mdate)
+
+    return iq

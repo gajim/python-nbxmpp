@@ -15,25 +15,36 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import Error
-from nbxmpp.protocol import ERR_FORBIDDEN
-from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
+from __future__ import annotations
+
+from typing import Any
+from typing import Generator
+from typing import Optional
+from typing import Union
+
+from nbxmpp import types
+from nbxmpp.builder import Iq
+from nbxmpp.exceptions import NodeProcessed
+from nbxmpp.jid import JID
 from nbxmpp.namespaces import Namespace
 from nbxmpp.task import iq_request_task
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.const import ErrorCondition
+from nbxmpp.const import ErrorType
 
 from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.modules.date_and_time import create_tzinfo
 from nbxmpp.modules.date_and_time import get_local_time
 
 
+RequestGenerator = Generator[Union[types.Iq, str], types.Iq, None]
+
+
 class EntityTime(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -46,7 +57,7 @@ class EntityTime(BaseModule):
         ]
 
         self._enabled = False
-        self._allow_reply_func = None
+        self._allow_reply_func: Optional[Any] = None
 
     def disable(self):
         self._enabled = False
@@ -54,52 +65,61 @@ class EntityTime(BaseModule):
     def enable(self):
         self._enabled = True
 
-    def set_allow_reply_func(self, func):
+    def set_allow_reply_func(self, func: Any):
         self._allow_reply_func = func
 
     @iq_request_task
-    def request_entity_time(self, jid):
-        _task = yield
+    def request_entity_time(self, jid: JID) -> RequestGenerator:
 
         response = yield _make_request(jid)
-        if response.isError():
+        if response.is_error():
             raise StanzaError(response)
 
         yield _parse_response(response)
 
-    def _answer_request(self, _con, stanza, _properties):
-        self._log.info('Request received from %s', stanza.getFrom())
+    def _answer_request(self,
+                        _client: types.Client,
+                        iq: types.Iq,
+                        _properties: Any):
+
+        self._log.info('Request received from %s', iq.get_from())
         if not self._enabled:
-            self._client.send_stanza(Error(stanza, ERR_SERVICE_UNAVAILABLE))
+            error = iq.make_error(ErrorType.CANCEL,
+                                  ErrorCondition.SERVICE_UNAVAILABLE,
+                                  Namespace.XMPP_STANZAS)
+            self._client.send_stanza(error)
             raise NodeProcessed
 
         if self._allow_reply_func is not None:
-            if not self._allow_reply_func(stanza.getFrom()):
-                self._client.send_stanza(Error(stanza, ERR_FORBIDDEN))
+            if not self._allow_reply_func(iq.get_from()):
+                error = iq.make_error(ErrorType.CANCEL,
+                                      ErrorCondition.FORBIDDEN,
+                                      Namespace.XMPP_STANZAS)
+                self._client.send_stanza(error)
                 raise NodeProcessed
 
         time, tzo = get_local_time()
-        iq = stanza.buildSimpleReply('result')
-        time_node = iq.addChild('time', namespace=Namespace.TIME)
-        time_node.setTagData('utc', time)
-        time_node.setTagData('tzo', tzo)
+        result = iq.make_result()
+        time_node = result.add_tag('time', namespace=Namespace.TIME)
+        time_node.add_tag_text('utc', time)
+        time_node.add_tag_text('tzo', tzo)
         self._log.info('Send time: %s %s', time, tzo)
-        self._client.send_stanza(iq)
+        self._client.send_stanza(result)
         raise NodeProcessed
 
 
-def _make_request(jid):
-    iq = Iq('get', to=jid)
-    iq.addChild('time', namespace=Namespace.TIME)
+def _make_request(jid: JID):
+    iq = Iq(to=jid)
+    iq.add_tag('time', namespace=Namespace.TIME)
     return iq
 
 
-def _parse_response(response):
-    time_ = response.getTag('time')
+def _parse_response(response: types.Iq) -> str:
+    time_ = response.find_tag('time')
     if not time_:
         raise MalformedStanzaError('time node missing', response)
 
-    tzo = time_.getTagData('tzo')
+    tzo = time_.find_tag_text('tzo')
     if not tzo:
         raise MalformedStanzaError('tzo node or data missing', response)
 
@@ -107,7 +127,7 @@ def _parse_response(response):
     if remote_tz is None:
         raise MalformedStanzaError('invalid tzo data', response)
 
-    utc_time = time_.getTagData('utc')
+    utc_time = time_.find_tag_text('utc')
     if not utc_time:
         raise MalformedStanzaError('utc node or data missing', response)
 

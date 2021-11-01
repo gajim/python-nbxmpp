@@ -1,4 +1,4 @@
 {
-    "ignore": ["**/test", "setup.py"],
+    "ignore": ["test", "setup.py"],
     "typeCheckingMode": "strict",
 }

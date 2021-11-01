@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ChatMarker
@@ -22,7 +27,7 @@ from nbxmpp.modules.base import BaseModule
 
 
 class ChatMarkers(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -33,18 +38,23 @@ class ChatMarkers(BaseModule):
                           priority=15),
         ]
 
-    def _process_message_marker(self, _client, stanza, properties):
-        type_ = stanza.getTag('received', namespace=Namespace.CHATMARKERS)
+    def _process_message_marker(self,
+                                _client: types.Client,
+                                stanza: types.Message,
+                                properties: Any):
+
+        type_ = stanza.find_tag('received', namespace=Namespace.CHATMARKERS)
         if type_ is None:
-            type_ = stanza.getTag('displayed', namespace=Namespace.CHATMARKERS)
+            type_ = stanza.find_tag('displayed',
+                                    namespace=Namespace.CHATMARKERS)
             if type_ is None:
-                type_ = stanza.getTag('acknowledged',
-                                      namespace=Namespace.CHATMARKERS)
+                type_ = stanza.find_tag('acknowledged',
+                                        namespace=Namespace.CHATMARKERS)
                 if type_ is None:
                     return
 
-        name = type_.getName()
-        id_ = type_.getAttr('id')
+        name = type_.localname
+        id_ = type_.get('id')
         if id_ is None:
             self._log.warning('Chatmarker without id')
             self._log.warning(stanza)

@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import OOBData
@@ -22,7 +27,7 @@ from nbxmpp.modules.base import BaseModule
 
 
 class OOB(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -33,16 +38,20 @@ class OOB(BaseModule):
                           priority=15),
         ]
 
-    def _process_message_oob(self, _client, stanza, properties):
-        oob = stanza.getTag('x', namespace=Namespace.X_OOB)
+    def _process_message_oob(self,
+                             _client: types.Client,
+                             stanza: types.Message,
+                             properties: Any):
+
+        oob = stanza.find_tag('x', namespace=Namespace.X_OOB)
         if oob is None:
             return
 
-        url = oob.getTagData('url')
+        url = oob.find_tag_text('url')
         if url is None:
             self._log.warning('OOB data without url')
             self._log.warning(stanza)
             return
 
-        desc = oob.getTagData('desc')
+        desc = oob.find_tag_text('desc')
         properties.oob = OOBData(url, desc)

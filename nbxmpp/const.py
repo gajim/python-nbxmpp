@@ -15,12 +15,41 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from enum import Enum
 from enum import IntEnum
 from functools import total_ordering
+from dataclasses import dataclass
 
 from gi.repository import Gio
 
+
+SASL_AUTH_MECHS = [
+    'SCRAM-SHA-256-PLUS',
+    'SCRAM-SHA-256',
+    'SCRAM-SHA-1-PLUS',
+    'SCRAM-SHA-1',
+    'GSSAPI',
+    'PLAIN',
+    'EXTERNAL',
+    'ANONYMOUS',
+]
+
+
+SASL_ERROR_CONDITIONS = [
+    'aborted',
+    'account-disabled',
+    'credentials-expired',
+    'encryption-required',
+    'incorrect-encoding',
+    'invalid-authzid',
+    'invalid-mechanism',
+    'mechanism-too-weak',
+    'malformed-request',
+    'not-authorized',
+    'temporary-auth-failure',
+]
 
 class IqType(Enum):
     GET = 'get'
@@ -428,6 +457,7 @@ class Mode(IntEnum):
     REGISTER = 1
     LOGIN_TEST = 2
     ANONYMOUS_TEST = 3
+    UNITTEST = 4
 
     @property
     def is_client(self):
@@ -444,6 +474,74 @@ class Mode(IntEnum):
     @property
     def is_anonymous_test(self):
         return self == Mode.ANONYMOUS_TEST
+
+    @property
+    def is_unittest(self):
+        return self == Mode.UNITTEST
+
+
+@dataclass(frozen=True)
+class _ErrorType:
+    AUTH: str = 'auth'
+    CANCEL: str = 'cancel'
+    CONTINUE: str = 'continue'
+    MODIFY: str = 'modify'
+    WAIT: str = 'wait'
+
+ErrorType = _ErrorType()
+
+
+@dataclass(frozen=True)
+class _ErrorCondition:
+    ABORTED: str = 'aborted'
+    BAD_FORMAT: str = 'bad-format'
+    BAD_NAMESPACE_PREFIX: str = 'bad-namespace-prefix'
+    BAD_REQUEST: str = 'bad-request'
+    CONFLICT: str = 'conflict'
+    CONNECTION_TIMEOUT: str = 'connection-timeout'
+    FEATURE_NOT_IMPLEMENTED: str = 'feature-not-implemented'
+    FORBIDDEN: str = 'forbidden'
+    GONE: str = 'gone'
+    HOST_GONE: str = 'host-gone'
+    HOST_UNKNOWN: str = 'host-unknown'
+    IMPROPER_ADDRESSING: str = 'improper-addressing'
+    INCORRECT_ENCODING: str = 'incorrect-encoding'
+    INTERNAL_SERVER_ERROR: str = 'internal-server-error'
+    INVALID_AUTHZID: str = 'invalid-authzid'
+    INVALID_FROM: str = 'invalid-from'
+    INVALID_ID: str = 'invalid-id'
+    INVALID_MECHANISM: str = 'invalid-mechanism'
+    INVALID_NAMESPACE: str = 'invalid-namespace'
+    INVALID_XML: str = 'invalid-xml'
+    ITEM_NOT_FOUND: str = 'item-not-found'
+    JID_MALFORMED: str = 'jid-malformed'
+    MECHANISM_TOO_WEAK: str = 'mechanism-too-weak'
+    NOT_ACCEPTABLE: str = 'not-acceptable'
+    NOT_ALLOWED: str = 'not-allowed'
+    NOT_AUTHORIZED: str = 'not-authorized'
+    PAYMENT_REQUIRED: str = 'payment-required'
+    POLICY_VIOLATION: str = 'policy-violation'
+    RECIPIENT_UNAVAILABLE: str = 'recipient-unavailable'
+    REDIRECT: str = 'redirect'
+    REGISTRATION_REQUIRED: str = 'registration-required'
+    REMOTE_CONNECTION_FAILED: str = 'remote-connection-failed'
+    REMOTE_SERVER_NOT_FOUND: str = 'remote-server-not-found'
+    REMOTE_SERVER_TIMEOUT: str = 'remote-server-timeout'
+    RESOURCE_CONSTRAINT: str = 'resource-constraint'
+    RESTRICTED_XML: str = 'restricted-xml'
+    SEE_OTHER_HOST: str = 'see-other-host'
+    SERVICE_UNAVAILABLE: str = 'service-unavailable'
+    SUBSCRIPTION_REQUIRED: str = 'subscription-required'
+    SYSTEM_SHUTDOWN: str = 'system-shutdown'
+    TEMPORARY_AUTH_FAILURE: str = 'temporary-auth-failure'
+    UNDEFINED_CONDITION: str = 'undefined-condition'
+    UNEXPECTED_REQUEST: str = 'unexpected-request'
+    UNSUPPORTED_ENCODING: str = 'unsupported-encoding'
+    UNSUPPORTED_STANZA_TYPE: str = 'unsupported-stanza-type'
+    UNSUPPORTED_VERSION: str = 'unsupported-version'
+    XML_NOT_WELL_FORMED: str = 'xml-not-well-formed'
+
+ErrorCondition = _ErrorCondition()
 
 
 MOODS = [

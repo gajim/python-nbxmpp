@@ -15,13 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.modules.base import BaseModule
 
 
 class PGPLegacy(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -37,21 +42,28 @@ class PGPLegacy(BaseModule):
         ]
 
     @staticmethod
-    def _process_signed(_client, stanza, properties):
-        signed = stanza.getTag('x', namespace=Namespace.SIGNED)
+    def _process_signed(_client: types.Client,
+                        stanza: types.Presence,
+                        properties: Any):
+
+        signed = stanza.find_tag('x', namespace=Namespace.SIGNED)
         if signed is None:
             return
 
-        properties.signed = signed.getData()
+        properties.signed = signed.text or ''
 
-    def _process_pgplegacy_message(self, _client, stanza, properties):
-        pgplegacy = stanza.getTag('x', namespace=Namespace.ENCRYPTED)
+    def _process_pgplegacy_message(self,
+                                   _client: types.Client,
+                                   stanza: types.Message,
+                                   properties: Any):
+
+        pgplegacy = stanza.find_tag('x', namespace=Namespace.ENCRYPTED)
         if pgplegacy is None:
             self._log.warning('No x node found')
             self._log.warning(stanza)
             return
 
-        data = pgplegacy.getData()
+        data = pgplegacy.text or ''
         if not data:
             self._log.warning('No data in x node found')
             self._log.warning(stanza)

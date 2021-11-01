@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
 
 from gi.repository import Soup
@@ -26,13 +28,15 @@ from nbxmpp.const import ConnectionType
 from nbxmpp.util import get_websocket_close_string
 from nbxmpp.util import convert_tls_error_flags
 from nbxmpp.connection import Connection
+from nbxmpp.queue import WebsocketElementQueue
 
 log = logging.getLogger('nbxmpp.websocket')
 
 
-class WebsocketConnection(Connection):
+class WebsocketConnection(Connection, WebsocketElementQueue):
     def __init__(self, *args, **kwargs):
         Connection.__init__(self, *args, **kwargs)
+        WebsocketElementQueue.__init__(self)
 
         self._session = Soup.Session()
         self._session.props.ssl_strict = False
@@ -62,7 +66,10 @@ class WebsocketConnection(Connection):
                                               self._on_connect,
                                               None)
 
-    def _on_connect(self, session, result, _user_data):
+    def _on_connect(self,
+                    session: Soup.Session,
+                    result,
+                    _user_data):
         # TODO: check if protocol 'xmpp' is set
         try:
             self._websocket = session.websocket_connect_finish(result)
@@ -136,10 +143,19 @@ class WebsocketConnection(Connection):
             self._log.warning('send() not possible in state: %s', self._state)
             return
 
-        data = str(stanza)
-        self._websocket.send_text(data)
+        data = self.serialise(stanza)
+        self._send(data)
+
+    def _send(self, data: bytes):
+        self._websocket.send_binary(data)
         self._log_stanza(data, received=False)
         self.notify('data-sent', stanza)
+
+    def _start_stream(self, data: bytes):
+        self._send(data)
+
+    def _end_stream(self, data: bytes):
+        self._send(data)
 
     def disconnect(self):
         if self._state == TCPState.CONNECTING:

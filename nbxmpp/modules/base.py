@@ -17,25 +17,22 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from typing import Any
 
 import logging
 
+from nbxmpp import types
 from nbxmpp.util import LogAdapter
-
-if TYPE_CHECKING:
-    from nbxmpp.client import Client
 
 
 class BaseModule:
 
     _depends: dict[str, str] = {}
 
-    def __init__(self, client: Client):
+    def __init__(self, client: types.Client):
         logger_name = 'nbxmpp.m.%s' % self.__class__.__name__.lower()
-        self._log = LogAdapter(logging.getLogger(logger_name),
-                               {'context': client.log_context})
+        self._log: logging.Logger = LogAdapter(
+            logging.getLogger(logger_name), {'context': client.log_context})
 
     def __getattr__(self, name: str) -> Any:
         if name not in self._depends:

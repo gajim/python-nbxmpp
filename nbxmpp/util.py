@@ -15,11 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+import typing
 from typing import Any
 from typing import Optional
 from typing import Callable
 from typing import Literal
 from typing import Union
+from typing import cast
 
 import base64
 import hashlib
@@ -35,13 +39,11 @@ from functools import lru_cache
 
 from gi.repository import Gio
 
-from nbxmpp.protocol import DiscoInfoMalformed
+from nbxmpp.elements import Base
+from nbxmpp.exceptions import DiscoInfoMalformed
 from nbxmpp.const import GIO_TLS_ERRORS
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import StanzaMalformed
-from nbxmpp.protocol import StreamHeader
-from nbxmpp.protocol import WebsocketOpenHeader
-from nbxmpp.simplexml import Node
+from nbxmpp.exceptions import StanzaMalformed
 from nbxmpp.structs import Properties
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
@@ -49,8 +51,11 @@ from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import CommonError
 from nbxmpp.structs import HTTPUploadError
 from nbxmpp.structs import StanzaMalformedError
-from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.elements import Base
 from nbxmpp.third_party.hsluv import hsluv_to_rgb
+
+if typing.TYPE_CHECKING:
+    from nbxmpp import types
 
 log = logging.getLogger('nbxmpp.util')
 
@@ -220,11 +225,11 @@ def compute_caps_hash(info, compare=True):
             # Ignore dataform because of wrong type
             continue
 
-        values = form_type.getTags('value')
+        values = form_type.find_tags('value')
         if len(values) != 1:
             raise DiscoInfoMalformed('Form should have exactly '
                                      'one FORM_TYPE value')
-        value = values[0].getData()
+        value = values[0].text or ''
 
         dataforms.append(dataform)
         form_type_values.append(value)
@@ -248,18 +253,18 @@ def compute_caps_hash(info, compare=True):
     #         followed by the '<' character.
 
     def sort_dataforms_key(dataform):
-        return dataform['FORM_TYPE'].getTagData('value')
+        return dataform['FORM_TYPE'].find_tag_text('value')
 
     dataforms = sorted(dataforms, key=sort_dataforms_key)
     for dataform in dataforms:
-        string_ += '%s<' % dataform['FORM_TYPE'].getTagData('value')
+        string_ += '%s<' % dataform['FORM_TYPE'].find_tag_text('value')
 
         fields = {}
         for field in dataform.iter_fields():
             if field.var == 'FORM_TYPE':
                 continue
-            values = field.getTags('value')
-            fields[field.var] = sorted([value.getData() for value in values])
+            values = field.find_tags('value')
+            fields[field.var] = sorted([value.text or '' for value in values])
 
         for var in sorted(fields.keys()):
             string_ += '%s<' % var
@@ -278,39 +283,33 @@ def generate_id() -> str:
     return str(uuid.uuid4())
 
 
-def get_form(stanza: Node, form_type: Any) -> Any:
-    forms = stanza.getTags('x', namespace=Namespace.DATA)
+def get_dataform(element: types.Base, type_: str) -> Optional[types.DataForm]:
+    forms = element.find_tags('x', namespace=Namespace.DATA)
     if not forms:
         return None
 
     for form in forms:
-        form = extend_form(node=form)
-        field = form.vars.get('FORM_TYPE')
-        if field is None:
-            continue
-
-        if field.value == form_type:
+        if form.type_is(type_):
             return form
     return None
 
 
-def validate_stream_header(stanza: Node, domain: str, is_websocket: bool) -> str:
-    attrs = stanza.getAttrs()
-    if attrs.get('from') != domain:
+def validate_stream_header(stanza: Base, domain: str, is_websocket: bool) -> str:
+    if stanza.get('from') != domain:
         raise StanzaMalformed('Invalid from attr in stream header')
 
     if is_websocket:
-        if attrs.get('xmlns') != Namespace.FRAMING:
+        if stanza.default_namespace != Namespace.FRAMING:
             raise StanzaMalformed('Invalid namespace in stream header')
     else:
-        if attrs.get('xmlns:stream') != Namespace.STREAMS:
+        if stanza.namespace != Namespace.STREAMS:
             raise StanzaMalformed('Invalid stream namespace in stream header')
-        if attrs.get('xmlns') != Namespace.CLIENT:
+        if stanza.default_namespace != Namespace.CLIENT:
             raise StanzaMalformed('Invalid namespace in stream header')
 
-    if attrs.get('version') != '1.0':
+    if stanza.get('version') != '1.0':
         raise StanzaMalformed('Invalid stream version in stream header')
-    stream_id = attrs.get('id')
+    stream_id = stanza.get('id')
     if stream_id is None:
         raise StanzaMalformed('No stream id found in stream header')
     return stream_id
@@ -369,11 +368,11 @@ def get_invalid_xml_regex():
 def get_tls_error_phrase(tls_error: Gio.TlsCertificateFlags) -> str:
     phrase = GIO_TLS_ERRORS.get(tls_error)
     if phrase is None:
-        return GIO_TLS_ERRORS.get(Gio.TlsCertificateFlags.GENERIC_ERROR)
+        return cast(str, GIO_TLS_ERRORS.get(Gio.TlsCertificateFlags.GENERIC_ERROR))
     return phrase
 
 
-def convert_tls_error_flags(flags):
+def convert_tls_error_flags(flags: Gio.TlsCertificateFlags) -> set[Gio.TlsCertificateFlags]:
     if not flags:
         return set()
 
@@ -395,13 +394,13 @@ def get_websocket_close_string(websocket: Any) -> str:
 
 
 def is_websocket_close(stanza: Node) -> bool:
-    return (stanza.getName() == 'close' and
-            stanza.getNamespace() == Namespace.FRAMING)
+    return (stanza.localname == 'close' and
+            stanza.namespace == Namespace.FRAMING)
 
 
 def is_websocket_stream_error(stanza: Node) -> bool:
-    return (stanza.getName() == 'error' and
-            stanza.getNamespace() == Namespace.STREAMS)
+    return (stanza.localname == 'error' and
+            stanza.namespace == Namespace.STREAMS)
 
 
 class Observable:
@@ -434,3 +433,7 @@ class LogAdapter(LoggerAdapter):
 
     def process(self, msg, kwargs):
         return '(%s) %s' % (self.extra['context'], msg), kwargs
+
+
+def get_child_namespaces(element: Base) -> set[Base]:
+    return {ele.namespace for ele in element.iterchildren()}

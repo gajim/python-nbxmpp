@@ -15,8 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
+from __future__ import annotations
 
+from typing import Any
+from typing import Optional
+from typing import Union
+
+import logging
+from datetime import datetime
+
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.modules.date_and_time import parse_datetime
@@ -26,7 +34,7 @@ log = logging.getLogger('nbxmpp.m.delay')
 
 
 class Delay(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -41,7 +49,11 @@ class Delay(BaseModule):
                           priority=15)
         ]
 
-    def _process_message_delay(self, _client, stanza, properties):
+    def _process_message_delay(self,
+                               _client: types.Client,
+                               message: types.Message,
+                               properties: Any):
+
         if properties.is_muc_subject:
             # MUC Subjects can have a delay timestamp
             # to indicate when the user has set the subject,
@@ -50,7 +62,7 @@ class Delay(BaseModule):
             jids = [properties.jid.bare,
                     properties.jid.domain]
 
-            properties.user_timestamp = parse_delay(stanza, from_=jids)
+            properties.user_timestamp = parse_delay(message, from_=jids)
 
         else:
             if properties.from_muc:
@@ -60,19 +72,26 @@ class Delay(BaseModule):
             else:
                 jids = [self._client.get_bound_jid().domain]
 
-            server_delay = parse_delay(stanza, from_=jids)
+            server_delay = parse_delay(message, from_=jids)
             if server_delay is not None:
                 properties.has_server_delay = True
                 properties.timestamp = server_delay
 
-            properties.user_timestamp = parse_delay(stanza, not_from=jids)
+            properties.user_timestamp = parse_delay(message, not_from=jids)
 
     @staticmethod
-    def _process_presence_delay(_client, stanza, properties):
-        properties.user_timestamp = parse_delay(stanza)
+    def _process_presence_delay(_client: types.Client,
+                                presence: types.Presence,
+                                properties: Any):
+        properties.user_timestamp = parse_delay(presence)
 
 
-def parse_delay(stanza, epoch=True, convert='utc', from_=None, not_from=None):
+def parse_delay(stanza: types.Stanza,
+                epoch: bool = True,
+                convert: Optional[str] = 'utc',
+                from_: Optional[list[str]] = None,
+                not_from: Optional[list[str]] = None) -> Optional[Union[datetime, float]]:
+
     '''
     Returns the first valid delay timestamp that matches
 
@@ -86,16 +105,16 @@ def parse_delay(stanza, epoch=True, convert='utc', from_=None, not_from=None):
     :param not_from:   Matches only delays that have the according
                        from attr not set
     '''
-    delays = stanza.getTags('delay', namespace=Namespace.DELAY2)
+    delays = stanza.find_tags('delay', namespace=Namespace.DELAY2)
 
     for delay in delays:
-        stamp = delay.getAttr('stamp')
+        stamp = delay.get('stamp')
         if stamp is None:
             log.warning('Invalid timestamp received: %s', stamp)
             log.warning(stanza)
             continue
 
-        delay_from = delay.getAttr('from')
+        delay_from = delay.get('from')
         if from_ is not None:
             if delay_from not in from_:
                 continue

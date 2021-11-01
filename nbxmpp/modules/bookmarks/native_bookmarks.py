@@ -15,9 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+
+from nbxmpp import types
+from nbxmpp.client import Client
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import JID
+from nbxmpp.exceptions import NodeProcessed
+from nbxmpp.jid import JID
 from nbxmpp.structs import BookmarkData, StanzaHandler
 from nbxmpp.task import iq_request_task
 from nbxmpp.errors import MalformedStanzaError
@@ -46,7 +52,7 @@ class NativeBookmarks(BaseModule):
         'request_items': 'PubSub',
     }
 
-    def __init__(self, client):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -57,7 +63,11 @@ class NativeBookmarks(BaseModule):
                           priority=16),
         ]
 
-    def _process_pubsub_bookmarks(self, _client, _stanza, properties):
+    def _process_pubsub_bookmarks(self,
+                                  _client: Client,
+                                  _stanza: types.Message,
+                                  properties: Any):
+
         if not properties.is_pubsub_event:
             return
 
@@ -84,8 +94,6 @@ class NativeBookmarks(BaseModule):
 
     @iq_request_task
     def request_bookmarks(self):
-        _task = yield
-
         items = yield self.request_items(Namespace.BOOKMARKS_1)
         raise_if_error(items)
 
@@ -107,17 +115,13 @@ class NativeBookmarks(BaseModule):
 
     @iq_request_task
     def retract_bookmark(self, bookmark_jid: JID):
-        task = yield
-
         self._log.info('Retract Bookmark: %s', bookmark_jid)
 
         result = yield self.retract(Namespace.BOOKMARKS_1, str(bookmark_jid))
-        yield finalize(task, result)
+        yield finalize(result)
 
     @iq_request_task
     def store_bookmarks(self, bookmarks: list[BookmarkData]):
-        _task = yield
-
         self._log.info('Store Bookmarks')
 
         for bookmark in bookmarks:

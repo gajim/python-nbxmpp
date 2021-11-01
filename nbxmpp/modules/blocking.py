@@ -17,33 +17,34 @@
 
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Any
+from typing import Generator
+from typing import Optional
 from typing import Union
 from typing import Set
-from typing import TYPE_CHECKING
+
+from nbxmpp import types
+from nbxmpp.elements import Base
 
 from nbxmpp.namespaces import Namespace
-from nbxmpp.simplexml import Node
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
+from nbxmpp.jid import JID
 from nbxmpp.errors import StanzaError
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.task import iq_request_task
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import BlockingProperties
+from nbxmpp.structs import CommonResult, StanzaHandler
 from nbxmpp.structs import BlockingPush
 from nbxmpp.types import BlockingReportValues
+from nbxmpp.builder import Iq
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import process_response
 
 
-if TYPE_CHECKING:
-    from nbxmpp.client import Client
-
+RequestGenerator = Generator[Union[types.Iq, set[JID]], types.Iq, None]
+BlockGenerator = Generator[Union[types.Iq, CommonResult], types.Iq, None]
 
 
 class Blocking(BaseModule):
-    def __init__(self, client: Client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -56,23 +57,22 @@ class Blocking(BaseModule):
         ]
 
     @iq_request_task
-    def request_blocking_list(self):
-        _task = yield
+    def request_blocking_list(self) -> RequestGenerator:
 
         result = yield _make_blocking_list_request()
-        if result.isError():
+        if result.is_error():
             raise StanzaError(result)
 
-        blocklist = result.getTag('blocklist', namespace=Namespace.BLOCKING)
+        blocklist = result.find_tag('blocklist', namespace=Namespace.BLOCKING)
         if blocklist is None:
             raise MalformedStanzaError('blocklist node missing', result)
 
-        blocked = set()
-        for item in blocklist.getTags('item'):
+        blocked: set[JID] = set()
+        for item in blocklist.find_tags('item'):
             try:
-                jid = JID.from_string(item.getAttr('jid'))
+                jid = JID.from_string(item.get('jid'))
             except Exception:
-                self._log.info('Invalid JID: %s', item.getAttr('jid'))
+                self._log.info('Invalid JID: %s', item.get('jid'))
                 continue
 
             blocked.add(jid)
@@ -83,73 +83,67 @@ class Blocking(BaseModule):
     @iq_request_task
     def block(self,
               jids: list[JID],
-              report: Optional[BlockingReportValues] = None):
-
-        _task = yield
+              report: Optional[BlockingReportValues] = None) -> BlockGenerator:
 
         response = yield _make_block_request(jids, report)
         yield process_response(response)
 
     @iq_request_task
-    def unblock(self, jids: list[JID]):
-        _task = yield
+    def unblock(self, jids: list[JID]) -> BlockGenerator:
 
         response = yield _make_unblock_request(jids)
         yield process_response(response)
 
     @staticmethod
-    def _process_blocking_push(client: Client,
-                               stanza: Iq,
-                               properties: BlockingProperties):
-
-        unblock = stanza.getTag('unblock', namespace=Namespace.BLOCKING)
+    def _process_blocking_push(client: types.Client,
+                               iq: types.Iq,
+                               properties: Any):
+        unblock = iq.find_tag('unblock', namespace=Namespace.BLOCKING)
         if unblock is not None:
             properties.blocking = _parse_push(unblock)
 
-        block = stanza.getTag('block', namespace=Namespace.BLOCKING)
+        block = iq.find_tag('block', namespace=Namespace.BLOCKING)
         if block is not None:
             properties.blocking = _parse_push(block)
 
-        reply = stanza.buildSimpleReply('result')
-        client.send_stanza(reply)
+        client.send_stanza(iq.make_result())
 
 
-def _make_blocking_list_request() -> Iq:
-    iq = Iq('get', Namespace.BLOCKING)
-    iq.setQuery('blocklist')
+def _make_blocking_list_request() -> types.Iq:
+    iq = Iq()
+    iq.add_tag('blocklist', namespace=Namespace.BLOCKING)
     return iq
 
 
 def _make_block_request(jids: list[JID],
-                        report: Optional[BlockingReportValues]) -> Iq:
+                        report: Optional[BlockingReportValues]) -> types.Iq:
 
-    iq = Iq('set', Namespace.BLOCKING)
-    query = iq.setQuery(name='block')
+    iq = Iq(type='set')
+    block = iq.add_tag('block', namespace=Namespace.BLOCKING)
     for jid in jids:
-        item = query.addChild(name='item', attrs={'jid': str(jid)})
-        if report in ('spam', 'abuse'):
-            action = item.addChild(name='report',
-                                   namespace=Namespace.REPORTING)
-            action.setTag(report)
+        item = block.add_tag('item', jid=str(jid))
+        if report is not None:
+            action = item.add_tag('report', namespace=Namespace.REPORTING)
+            action.add_tag(report)
     return iq
 
 
-def _make_unblock_request(jids: list[JID]) -> Iq:
-    iq = Iq('set', Namespace.BLOCKING)
-    query = iq.setQuery(name='unblock')
+def _make_unblock_request(jids: list[JID]) -> types.Iq:
+    iq = Iq(type='set')
+    unblock = iq.add_tag('unblock', namespace=Namespace.BLOCKING)
     for jid in jids:
-        query.addChild(name='item', attrs={'jid': str(jid)})
+        unblock.add_tag('item', jid=str(jid))
     return iq
 
 
-def _parse_push(node: Node) -> BlockingPush:
-    items = node.getTags('item')
+def _parse_push(element: Base) -> BlockingPush:
+    items = element.find_tags('item')
     if not items:
         return BlockingPush(block=set(), unblock=set(), unblock_all=True)
 
     jids: Set[JID] = set()
     for item in items:
-        jid = item.getAttr('jid')
+        jid = item.get('jid')
         if not jid:
             continue
 
@@ -160,9 +154,10 @@ def _parse_push(node: Node) -> BlockingPush:
 
         jids.add(jid)
 
-    block: Set[JID] = set()
-    unblock: Set[JID] = set()
-    if node.getName() == 'block':
+    block: set[JID] = set()
+    unblock: set[JID] = set()
+
+    if element.localname == 'block':
         block = jids
     else:
         unblock = jids

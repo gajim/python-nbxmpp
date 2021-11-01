@@ -106,7 +106,7 @@ python-nbxmpp 0.6.0 (25 September 2017)
 
  * Add new getOriginID/SetOriginID method for Messages
  * Add new getJid() method for Protocol
- * getTagAttr() accepts now a namespace argument
+ * find_tag_attr() accepts now a namespace argument
  * Add new `protocol` argument for getTag()
  * Add new XEP Namespaces
 

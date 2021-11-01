@@ -15,39 +15,43 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Union
+
 import logging
 import functools
 import inspect
 from urllib.parse import urlparse
 from urllib.parse import unquote
 
+from nbxmpp import types
 from nbxmpp.structs import CommonResult
-from nbxmpp.errors import StanzaError
+from nbxmpp.errors import BaseError, StanzaError
 from nbxmpp.errors import is_error
-from nbxmpp.simplexml import Node
 
 
-def process_response(response):
-    if response.isError():
+def process_response(response: types.Iq) -> CommonResult:
+    if response.is_error():
         raise StanzaError(response)
 
-    return CommonResult(jid=response.getFrom())
+    return CommonResult(jid=response.get_from())
 
 
-def raise_if_error(result):
+def raise_if_error(result: Union[BaseError, types.Iq]) -> None:
     if is_error(result):
         raise result
 
 
-def finalize(task, result):
+def finalize(result: Any) -> Any:
     if is_error(result):
         raise result
-    if isinstance(result, Node):
-        return task.set_result(result)
+
     return result
 
 
-def parse_xmpp_uri(uri):
+def parse_xmpp_uri(uri: str) -> tuple[str, str, dict[str, str]]:
     url = urlparse(uri)
     if url.scheme != 'xmpp':
         raise ValueError('not a xmpp uri')
@@ -58,7 +62,7 @@ def parse_xmpp_uri(uri):
     action, query = url.query.split(';', 1)
     key_value_pairs = query.split(';')
 
-    dict_ = {}
+    dict_: dict[str, str] = {}
     for key_value in key_value_pairs:
         key, value = key_value.split('=')
         dict_[key] = unquote(value)

@@ -15,15 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Optional
+
 import time
 import random
 import string
 
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import Node
-from nbxmpp.protocol import StanzaMalformed
-from nbxmpp.protocol import JID
+from nbxmpp.exceptions import NodeProcessed
+from nbxmpp.builder import E
+from nbxmpp.exceptions import StanzaMalformed
+from nbxmpp.jid import JID
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
 from nbxmpp.structs import StanzaHandler
@@ -44,7 +50,7 @@ class OpenPGP(BaseModule):
         'request_items': 'PubSub',
     }
 
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -59,14 +65,18 @@ class OpenPGP(BaseModule):
                           priority=7),
         ]
 
-    def _process_openpgp_message(self, _client, stanza, properties):
-        openpgp = stanza.getTag('openpgp', namespace=Namespace.OPENPGP)
+    def _process_openpgp_message(self,
+                                 _client: types.Client,
+                                 stanza: types.Message,
+                                 properties: Any):
+
+        openpgp = stanza.find_tag('openpgp', namespace=Namespace.OPENPGP)
         if openpgp is None:
             self._log.warning('No openpgp node found')
             self._log.warning(stanza)
             return
 
-        data = openpgp.getData()
+        data = openpgp.text or ''
         if not data:
             self._log.warning('No data in openpgp node found')
             self._log.warning(stanza)
@@ -80,7 +90,10 @@ class OpenPGP(BaseModule):
             self._log.warning(stanza)
             return
 
-    def _process_pubsub_openpgp(self, _client, stanza, properties):
+    def _process_pubsub_openpgp(self,
+                                _client: types.Client,
+                                stanza: types.Message,
+                                properties: Any):
         """
         <item>
             <public-keys-list xmlns='urn:xmpp:openpgp:0'>
@@ -125,8 +138,7 @@ class OpenPGP(BaseModule):
         properties.pubsub_event = pubsub_event
 
     @iq_request_task
-    def set_keylist(self, keylist, public=True):
-        task = yield
+    def set_keylist(self, keylist, public: bool = True):
 
         access_model = 'open' if public else 'presence'
 
@@ -141,11 +153,14 @@ class OpenPGP(BaseModule):
                                     options=options,
                                     force_node_options=True)
 
-        yield finalize(task, result)
+        yield finalize(result)
 
     @iq_request_task
-    def set_public_key(self, key, fingerprint, date, public=True):
-        task = yield
+    def set_public_key(self,
+                       key,
+                       fingerprint: str,
+                       date,
+                       public: bool = True):
 
         access_model = 'open' if public else 'presence'
 
@@ -160,11 +175,12 @@ class OpenPGP(BaseModule):
                                     options=options,
                                     force_node_options=True)
 
-        yield finalize(task, result)
+        yield finalize(result)
 
     @iq_request_task
-    def request_public_key(self, jid, fingerprint):
-        task = yield
+    def request_public_key(self,
+                           jid: JID,
+                           fingerprint: str):
 
         items = yield self.request_items(
             f'{Namespace.OPENPGP_PK}:{fingerprint}',
@@ -174,7 +190,7 @@ class OpenPGP(BaseModule):
         raise_if_error(items)
 
         if not items:
-            yield task.set_result(None)
+            yield None
 
         try:
             key = _parse_public_key(jid, items[0])
@@ -184,8 +200,7 @@ class OpenPGP(BaseModule):
         yield key
 
     @iq_request_task
-    def request_keylist(self, jid=None):
-        task = yield
+    def request_keylist(self, jid: Optional[JID] = None):
 
         items = yield self.request_items(
             Namespace.OPENPGP_PK,
@@ -195,7 +210,7 @@ class OpenPGP(BaseModule):
         raise_if_error(items)
 
         if not items:
-            yield task.set_result(None)
+            yield None
 
         try:
             keylist = _parse_keylist(jid, items[0])
@@ -207,7 +222,6 @@ class OpenPGP(BaseModule):
 
     @iq_request_task
     def request_secret_key(self):
-        task = yield
 
         items = yield self.request_items(
             Namespace.OPENPGP_SK,
@@ -216,7 +230,7 @@ class OpenPGP(BaseModule):
         raise_if_error(items)
 
         if not items:
-            yield task.set_result(None)
+            yield None
 
         try:
             secret_key = _parse_secret_key(items[0])
@@ -227,7 +241,6 @@ class OpenPGP(BaseModule):
 
     @iq_request_task
     def set_secret_key(self, secret_key):
-        task = yield
 
         options = {
             'pubsub#persist_items': 'true',
@@ -242,10 +255,10 @@ class OpenPGP(BaseModule):
                                     options=options,
                                     force_node_options=True)
 
-        yield finalize(task, result)
+        yield finalize(result)
 
 
-def parse_signcrypt(stanza):
+def parse_signcrypt(stanza: types.Base):
     '''
     <signcrypt xmlns='urn:xmpp:openpgp:0'>
       <to jid='juliet@example.org'/>
@@ -260,33 +273,35 @@ def parse_signcrypt(stanza):
       </payload>
     </signcrypt>
     '''
-    if (stanza.getName() != 'signcrypt' or
-            stanza.getNamespace() != Namespace.OPENPGP):
+    if (stanza.localname != 'signcrypt' or
+            stanza.namespace != Namespace.OPENPGP):
         raise StanzaMalformed('Invalid signcrypt node')
 
-    to_nodes = stanza.getTags('to')
+    to_nodes = stanza.find_tags('to')
     if not to_nodes:
         raise StanzaMalformed('missing to nodes')
 
     recipients = []
     for to_node in to_nodes:
-        jid = to_node.getAttr('jid')
+        jid = to_node.get('jid')
         try:
             recipients.append(JID.from_string(jid))
         except Exception as error:
             raise StanzaMalformed('Invalid jid: %s %s' % (jid, error))
 
-    timestamp = stanza.getTagAttr('time', 'stamp')
+    timestamp = stanza.find_tag_attr('time', 'stamp')
     if timestamp is None:
         raise StanzaMalformed('Invalid timestamp')
 
-    payload = stanza.getTag('payload')
-    if payload is None or payload.getChildren() is None:
+    payload = stanza.find_tag('payload')
+    if payload is None or payload.get_children() is None:
         raise StanzaMalformed('Invalid payload node')
-    return payload.getChildren(), recipients, timestamp
+    return payload.get_children(), recipients, timestamp
 
 
-def create_signcrypt_node(stanza, recipients, not_encrypted_nodes):
+def create_signcrypt_node(stanza: types.Message,
+                          recipients: list[JID],
+                          not_encrypted_nodes: list[tuple[str, str]]):
     '''
     <signcrypt xmlns='urn:xmpp:openpgp:0'>
       <to jid='juliet@example.org'/>
@@ -301,33 +316,31 @@ def create_signcrypt_node(stanza, recipients, not_encrypted_nodes):
       </payload>
     </signcrypt>
     '''
-    encrypted_nodes = []
-    child_nodes = list(stanza.getChildren())
+    encrypted_nodes: list[types.Base] = []
+    child_nodes = list(stanza.get_children())
     for node in child_nodes:
-        if (node.getName(), node.getNamespace()) not in not_encrypted_nodes:
-            if not node.getNamespace():
-                node.setNamespace(Namespace.CLIENT)
+        if (node.localname, node.namespace) not in not_encrypted_nodes:
             encrypted_nodes.append(node)
-            stanza.delChild(node)
+            stanza.remove(node)
 
-    signcrypt = Node('signcrypt', attrs={'xmlns': Namespace.OPENPGP})
+    signcrypt = E('signcrypt', namespace=Namespace.OPENPGP)
     for recipient in recipients:
-        signcrypt.addChild('to', attrs={'jid': str(recipient)})
+        signcrypt.add_tag('to', jid=str(recipient))
 
     timestamp = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
-    signcrypt.addChild('time', attrs={'stamp': timestamp})
+    signcrypt.add_tag('time', stamp=timestamp)
 
-    signcrypt.addChild('rpad').addData(get_rpad())
+    signcrypt.add_tag_text('rpad', get_rpad())
 
-    payload = signcrypt.addChild('payload')
+    payload = signcrypt.add_tag('payload')
 
     for node in encrypted_nodes:
-        payload.addChild(node=node)
+        payload.append(node)
 
     return signcrypt
 
 
-def get_rpad():
+def get_rpad() -> str:
     rpad_range = random.randint(30, 50)
     return ''.join(
         random.choice(string.ascii_letters) for _ in range(rpad_range))
@@ -349,68 +362,67 @@ def create_message_stanza(stanza, encrypted_payload, with_fallback_text):
             '[This message is *encrypted* with OpenPGP (See :XEP:`0373`]')
 
 
-def _make_keylist(keylist):
-    item = Node('public-keys-list', {'xmlns': Namespace.OPENPGP})
+def _make_keylist(keylist: list[Any]) -> types.Base:
+    item = E('public-keys-list', namespace=Namespace.OPENPGP)
     if keylist is not None:
         for key in keylist:
             date = time.strftime('%Y-%m-%dT%H:%M:%SZ',
                                  time.gmtime(key.date))
             attrs = {'v4-fingerprint': key.fingerprint,
                      'date': date}
-            item.addChild('pubkey-metadata', attrs=attrs)
+            item.add_tag('pubkey-metadata', **attrs)
     return item
 
 
-def _make_public_key(key, date):
+def _make_public_key(key, date) -> types.Base:
     date = time.strftime(
         '%Y-%m-%dT%H:%M:%SZ', time.gmtime(date))
-    item = Node('pubkey', attrs={'xmlns': Namespace.OPENPGP,
-                                 'date': date})
-    data = item.addChild('data')
-    data.addData(b64encode(key))
+    item = E('pubkey', namespace=Namespace.OPENPGP, date=date)
+    item.add_tag_text('data', b64encode(key))
     return item
 
 
-def _make_secret_key(secret_key):
-    item = Node('secretkey', {'xmlns': Namespace.OPENPGP})
+def _make_secret_key(secret_key) -> types.Base:
+    item = E('secretkey', namespace=Namespace.OPENPGP)
     if secret_key is not None:
-        item.setData(b64encode(secret_key))
+        item.text = b64encode(secret_key)
     return item
 
 
-def _parse_public_key(jid, item):
-    pub_key = item.getTag('pubkey', namespace=Namespace.OPENPGP)
+def _parse_public_key(jid: JID, item: types.Base) -> PGPPublicKey:
+    pub_key = item.find_tag('pubkey', namespace=Namespace.OPENPGP)
     if pub_key is None:
         raise ValueError('pubkey node missing')
 
-    date = parse_datetime(pub_key.getAttr('date'), epoch=True)
+    date = parse_datetime(pub_key.get('date'), epoch=True)
 
-    data = pub_key.getTag('data')
+    data = pub_key.find_tag('data')
     if data is None:
         raise ValueError('data node missing')
 
     try:
-        key = b64decode(data.getData())
+        key = b64decode(data.text or '')
     except Exception as error:
         raise ValueError(f'decoding error: {error}')
 
     return PGPPublicKey(jid, key, date)
 
 
-def _parse_keylist(jid, item):
-    keylist_node = item.getTag('public-keys-list',
+def _parse_keylist(jid: JID,
+                   item: types.Base) -> Optional[list[PGPKeyMetadata]]:
+    keylist_node = item.find_tag('public-keys-list',
                                namespace=Namespace.OPENPGP)
     if keylist_node is None:
         raise ValueError('public-keys-list node missing')
 
-    metadata = keylist_node.getTags('pubkey-metadata')
+    metadata = keylist_node.find_tags('pubkey-metadata')
     if not metadata:
         return None
 
-    data = []
+    data: list[PGPKeyMetadata] = []
     for key in metadata:
-        fingerprint = key.getAttr('v4-fingerprint')
-        date = key.getAttr('date')
+        fingerprint = key.get('v4-fingerprint')
+        date = key.get('date')
         if fingerprint is None or date is None:
             raise ValueError('Invalid metadata node')
 
@@ -422,12 +434,12 @@ def _parse_keylist(jid, item):
     return data
 
 
-def _parse_secret_key(item):
-    sec_key = item.getTag('secretkey', namespace=Namespace.OPENPGP)
+def _parse_secret_key(item: types.Base) -> bytes:
+    sec_key = item.find_tag('secretkey', namespace=Namespace.OPENPGP)
     if sec_key is None:
         raise ValueError('secretkey node missing')
 
-    data = sec_key.getData()
+    data = sec_key.text or ''
     if not data:
         raise ValueError('secretkey data missing')
 

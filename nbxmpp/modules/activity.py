@@ -15,24 +15,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Node
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import ActivityData
-from nbxmpp.const import ACTIVITIES
+from __future__ import annotations
+
+from typing import Any
+from typing import Optional
+from typing import cast
+
+from nbxmpp import types
+from nbxmpp.builder import E
+from nbxmpp.elements import Base
+from nbxmpp.lookups import register_class_lookup
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
+from nbxmpp.namespaces import Namespace
+from nbxmpp.exceptions import NodeProcessed
+from nbxmpp.structs import ActivityData
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
 
-class Activity(BaseModule):
+class UserActivity(BaseModule):
 
     _depends = {
         'publish': 'PubSub'
     }
 
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -43,7 +51,11 @@ class Activity(BaseModule):
                           priority=16),
         ]
 
-    def _process_pubsub_activity(self, _client, stanza, properties):
+    def _process_pubsub_activity(self,
+                                 _client: types.Client,
+                                 stanza: types.Message,
+                                 properties: Any):
+
         if not properties.is_pubsub_event:
             return
 
@@ -55,52 +67,59 @@ class Activity(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        activity_node = item.getTag('activity', namespace=Namespace.ACTIVITY)
-        if not activity_node.getChildren():
+        activity = cast(Optional[Activity],
+                        item.find_tag('activity', namespace=Namespace.ACTIVITY))
+        if activity is None:
             self._log.info('Received activity: %s - no activity set',
                            properties.jid)
             return
 
-        activity, subactivity, text = None, None, None
-        for child in activity_node.getChildren():
-            name = child.getName()
-            if name == 'text':
-                text = child.getData()
-            elif name in ACTIVITIES:
-                activity = name
-                subactivity = self._parse_sub_activity(child)
-
-        if activity is None and activity_node.getChildren():
-            self._log.warning('No valid activity value found')
+        general, specific = activity.get_activity()
+        if general is None:
+            self._log.warning('No activity value found')
             self._log.warning(stanza)
             raise NodeProcessed
 
-        data = ActivityData(activity, subactivity, text)
+        text = activity.get_text()
+
+        data = ActivityData(general, specific, text)
         pubsub_event = properties.pubsub_event._replace(data=data)
         self._log.info('Received activity: %s - %s', properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 
-    @staticmethod
-    def _parse_sub_activity(activity):
-        sub_activities = ACTIVITIES[activity.getName()]
-        for sub in activity.getChildren():
-            if sub.getName() in sub_activities:
-                return sub.getName()
-        return None
-
     @iq_request_task
-    def set_activity(self, data):
-        task = yield
+    def set_activity(self, data: ActivityData):
 
-        item = Node('activity', {'xmlns': Namespace.ACTIVITY})
-        if data is not None and data.activity:
-            activity_node = item.addChild(data.activity)
-            if data.subactivity:
-                activity_node.addChild(data.subactivity)
+        item = E('activity', namespace=Namespace.ACTIVITY)
+        if data is not None:
+            general = item.add_tag(data.general)
+            if data.specific is not None:
+                general.add_tag(data.specific)
             if data.text:
-                item.addChild('text', payload=data.text)
+                general.add_tag_text('text', data.text)
 
         result = yield self.publish(Namespace.ACTIVITY, item, id_='current')
 
-        yield finalize(task, result)
+        yield finalize(result)
+
+
+class Activity(Base):
+
+    def get_activity(self) -> tuple[Optional[str], Optional[str]]:
+        elements = self.findall('{%s}*' % Namespace.ACTIVITY)
+        for element in elements:
+            if element.localname == 'text':
+                continue
+
+            specific = element.find('{%s}*' % Namespace.ACTIVITY)
+            if specific is None:
+                return element.localname, None
+            return element.localname, specific.localname
+        return None, None
+
+    def get_text(self) -> Optional[str]:
+        return self.find_tag_text('text')
+
+
+register_class_lookup('activity', Namespace.ACTIVITY, Activity)

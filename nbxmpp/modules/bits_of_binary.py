@@ -15,12 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from typing import Optional
 
 import logging
 import hashlib
 
-from nbxmpp.simplexml import Node
+from nbxmpp.elements import Base
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import BobData
 from nbxmpp.util import b64decode
@@ -28,14 +30,14 @@ from nbxmpp.util import b64decode
 log = logging.getLogger('nbxmpp.m.bob')
 
 
-def parse_bob_data(stanza: Node) -> Optional[BobData]:
-    data_node = stanza.getTag('data', namespace=Namespace.BOB)
+def parse_bob_data(stanza: Base) -> Optional[BobData]:
+    data_node = stanza.find_tag('data', namespace=Namespace.BOB)
     if data_node is None:
         return None
 
-    cid = data_node.getAttr('cid')
-    type_ = data_node.getAttr('type')
-    max_age = data_node.getAttr('max-age')
+    cid = data_node.get('cid')
+    type_ = data_node.get('type')
+    max_age = data_node.get('max-age')
     if max_age is not None:
         try:
             max_age = int(max_age)
@@ -54,7 +56,7 @@ def parse_bob_data(stanza: Node) -> Optional[BobData]:
         log.exception('Invalid cid: %s', stanza)
         return None
 
-    bob_data = data_node.getData()
+    bob_data = data_node.text or ''
     if not bob_data:
         log.warning('No bob data found: %s', stanza)
         return None

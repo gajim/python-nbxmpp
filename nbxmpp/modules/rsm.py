@@ -15,39 +15,47 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Optional
+
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import RSMData
 
 
-def parse_rsm(stanza):
-    stanza = stanza.getTag('set', namespace=Namespace.RSM)
-    if stanza is None:
+def parse_rsm(element: types.Base) -> Optional[RSMData]:
+    set_element = element.find_tag('set', namespace=Namespace.RSM)
+    if set_element is None:
         return None
 
-    after = stanza.getTagData('after') or None
-    before = stanza.getTagData('before') or None
-    last = stanza.getTagData('last') or None
+    after = set_element.find_tag_text('after') or None
+    before = set_element.find_tag_text('before') or None
+    last = set_element.find_tag_text('last') or None
 
+    first = None
     first_index = None
-    first = stanza.getTagData('first') or None
-    if first is not None:
+
+    first_element = set_element.find_tag('first')
+    if first_element is not None:
+        first = first.text
         try:
-            first_index = int(first.getAttr('index'))
+            first_index = int(first_element.get('index'))
         except Exception:
             pass
 
     try:
-        count = int(stanza.getTagData('count'))
+        count = int(set_element.find_tag_text('count'))
     except Exception:
         count = None
 
     try:
-        max_ = int(stanza.getTagData('max'))
+        max_ = int(set_element.find_tag_text('max'))
     except Exception:
         max_ = None
 
     try:
-        index = int(stanza.getTagData('index'))
+        index = int(set_element.find_tag_text('index'))
     except Exception:
         index = None
 

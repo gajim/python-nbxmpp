@@ -33,10 +33,8 @@ from datetime import datetime
 from gi.repository import Soup
 from gi.repository import Gio
 
-from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Protocol
-from nbxmpp.protocol import JID
+from nbxmpp.jid import JID
 from nbxmpp.const import AdHocAction
 from nbxmpp.const import IqType
 from nbxmpp.const import AdHocNoteType
@@ -50,6 +48,9 @@ from nbxmpp.const import Role
 from nbxmpp.const import Affiliation
 from nbxmpp.const import AnonymityMode
 from nbxmpp.const import PresenceShow
+
+if typing.TYPE_CHECKING:
+    from nbxmpp import types
 
 
 class StanzaHandler(NamedTuple):
@@ -83,14 +84,14 @@ class DeclineData(NamedTuple):
 
 class CaptchaData(NamedTuple):
     form: Any
-    bob_data: BobData
+    bob_data: Optional[BobData]
 
 
 class BobData(NamedTuple):
     algo: str
     hash_: str
-    max_age: str
-    data: str
+    max_age: Optional[int]
+    data: bytes
     cid: str
     type: str
 
@@ -165,7 +166,7 @@ class PubSubEventData(NamedTuple):
 
 class MoodData(NamedTuple):
     mood: str
-    test: str
+    text: str
 
 
 class BlockingPush(NamedTuple):
@@ -175,9 +176,9 @@ class BlockingPush(NamedTuple):
 
 
 class ActivityData(NamedTuple):
-    activity: str
-    subactivity: str
-    text: str
+    general: str
+    specific: Optional[str]
+    text: Optional[str]
 
 
 class LocationData(NamedTuple):
@@ -234,7 +235,7 @@ class AnnotationNote(NamedTuple):
 
 
 class EMEData(NamedTuple):
-    name: str
+    name: Optional[str]
     namespace: str
 
 
@@ -259,7 +260,7 @@ class MuclumbusItem(NamedTuple):
 class SoftwareVersionResult(NamedTuple):
     name: str
     version: str
-    os: Optional[str]
+    os: str
 
 
 class AdHocCommandNote(NamedTuple):
@@ -269,21 +270,22 @@ class AdHocCommandNote(NamedTuple):
 
 class IBBData(NamedTuple):
     type: str
-    sid: str
-    block_size: Optional[int]
-    seq: Optional[int]
-    data: Optional[str]
+    sid: Optional[str]
+    block_size: Optional[int] = None
+    seq: Optional[int] = None
+    data: Optional[bytes] = None
 
 
 class OOBData(NamedTuple):
     url: str
-    desc: str
+    desc: Optional[str]
 
 
 class CorrectionData(NamedTuple):
     id: str
 
 
+<<<<<<< HEAD
 class ModerationData(NamedTuple):
     stanza_id: str
     moderator_jid: str
@@ -292,17 +294,19 @@ class ModerationData(NamedTuple):
 
 
 class DiscoItems(NamedTuple):
-    jid: JID
+    jid: str
     node: str
     items: list[DiscoItem]
 
 
 class DiscoItem(NamedTuple):
-    jid: JID
+    jid: str
     name: Optional[str]
     node: Optional[str]
 
 
+=======
+>>>>>>> 69f4594 (type)
 class RegisterData(NamedTuple):
     instructions: Optional[str]
     form: Optional[Any]
@@ -347,12 +351,12 @@ class LastActivityData(NamedTuple):
 
 class RosterData(NamedTuple):
     items: Optional[list[RosterItem]]
-    version: str
+    version: Optional[str]
 
 
 class RosterPush(NamedTuple):
     item: RosterItem
-    version: str
+    version: Optional[str]
 
 
 @dataclass
@@ -364,14 +368,14 @@ class RosterItem:
     groups: Set[str] = field(default_factory=set)
 
     @classmethod
-    def from_node(cls, node: Node) -> RosterItem:
-        attrs = node.getAttrs(copy=True)
+    def from_node(cls, element: types.Base) -> RosterItem:
+        attrs = element.get_attribs()
         jid = attrs.get('jid')
         if jid is None:
             raise Exception('jid attribute missing')
 
         jid = JID.from_string(jid)
-        groups = {group.getData() for group in node.getTags('group')}
+        groups = {group.text or '' for group in element.find_tags('group')}
 
         return cls(jid=jid,
                    name=attrs.get('name'),
@@ -387,288 +391,9 @@ class RosterItem:
                 'groups': self.groups}
 
 
-class DiscoInfo(NamedTuple):
-    stanza: Optional[Node]
-    identities: list[DiscoIdentity]
-    features: list[str]
-    dataforms: list[Any]
-    timestamp: Optional[float] = None
-
-    def get_caps_hash(self) -> Optional[str]:
-        try:
-            return self.node.split('#')[1]
-        except Exception:
-            return None
-
-    def has_field(self, form_type: str, var: str) -> bool:
-        for dataform in self.dataforms:
-            try:
-                if dataform['FORM_TYPE'].value != form_type:
-                    continue
-                if var in dataform.vars:
-                    return True
-
-            except Exception:
-                continue
-        return False
-
-    def get_field_value(self, form_type: str, var: str) -> Optional[Any]:
-        for dataform in self.dataforms:
-            try:
-                if dataform['FORM_TYPE'].value != form_type:
-                    continue
-
-                if dataform[var].type_ == 'jid-multi':
-                    return dataform[var].values or None
-                return dataform[var].value or None
-
-            except Exception:
-                continue
-
-    def supports(self, feature: str) -> bool:
-        return feature in self.features
-
-    def serialize(self) -> str:
-        if self.stanza is None:
-            raise ValueError('Unable to serialize DiscoInfo, no stanza found')
-        return str(self.stanza)
-
-    @property
-    def node(self) -> Optional[str]:
-        try:
-            query = self.stanza.getQuery()
-        except Exception:
-            return None
-
-        if query is not None:
-            return query.getAttr('node')
-        return None
-
-    @property
-    def jid(self) -> Optional[JID]:
-        try:
-            return self.stanza.getFrom()
-        except Exception:
-            return None
-
-    @property
-    def mam_namespace(self) -> Optional[str]:
-        if Namespace.MAM_2 in self.features:
-            return Namespace.MAM_2
-        if Namespace.MAM_1 in self.features:
-            return Namespace.MAM_1
-        return None
-
-    @property
-    def has_mam_2(self) -> bool:
-        return Namespace.MAM_2 in self.features
-
-    @property
-    def has_mam_1(self) -> bool:
-        return Namespace.MAM_1 in self.features
-
-    @property
-    def has_mam(self) -> bool:
-        return self.has_mam_1 or self.has_mam_2
-
-    @property
-    def has_httpupload(self) -> bool:
-        return Namespace.HTTPUPLOAD_0 in self.features
-
-    @property
-    def has_message_moderation(self) -> bool:
-        return Namespace.MESSAGE_MODERATE in self.features
-
-    @property
-    def is_muc(self) -> bool:
-        for identity in self.identities:
-            if identity.category == 'conference':
-                if Namespace.MUC in self.features:
-                    return True
-        return False
-
-    @property
-    def is_irc(self) -> bool:
-        for identity in self.identities:
-            if identity.category == 'conference' and identity.type == 'irc':
-                return True
-        return False
-
-    @property
-    def muc_name(self) -> Optional[str]:
-        if self.muc_room_name:
-            return self.muc_room_name
-
-        if self.muc_identity_name:
-            return self.muc_identity_name
-
-        if self.jid is not None:
-            return self.jid.localpart
-        return None
-
-    @property
-    def muc_identity_name(self) -> Optional[str]:
-        for identity in self.identities:
-            if identity.category == 'conference':
-                return identity.name
-        return None
-
-    @property
-    def muc_room_name(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roomconfig_roomname')
-
-    @property
-    def muc_description(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_description')
-
-    @property
-    def muc_log_uri(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_logs')
-
-    @property
-    def muc_users(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_occupants')
-
-    @property
-    def muc_contacts(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_contactjid')
-
-    @property
-    def muc_subject(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_subject')
-
-    @property
-    def muc_subjectmod(self) -> Optional[Any]:
-        # muc#roominfo_changesubject stems from a wrong example in the MUC XEP
-        # Ejabberd and Prosody use this value
-        return (self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_subjectmod') or
-                self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_changesubject'))
-
-    @property
-    def muc_lang(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_lang')
-
-    @property
-    def muc_is_persistent(self) -> bool:
-        return 'muc_persistent' in self.features
-
-    @property
-    def muc_is_moderated(self) -> bool:
-        return 'muc_moderated' in self.features
-
-    @property
-    def muc_is_open(self) -> bool:
-        return 'muc_open' in self.features
-
-    @property
-    def muc_is_members_only(self) -> bool:
-        return 'muc_membersonly' in self.features
-
-    @property
-    def muc_is_hidden(self) -> bool:
-        return 'muc_hidden' in self.features
-
-    @property
-    def muc_is_nonanonymous(self) -> bool:
-        return 'muc_nonanonymous' in self.features
-
-    @property
-    def muc_is_passwordprotected(self) -> bool:
-        return 'muc_passwordprotected' in self.features
-
-    @property
-    def muc_is_public(self) -> bool:
-        return 'muc_public' in self.features
-
-    @property
-    def muc_is_semianonymous(self) -> bool:
-        return 'muc_semianonymous' in self.features
-
-    @property
-    def muc_is_temporary(self) -> bool:
-        return 'muc_temporary' in self.features
-
-    @property
-    def muc_is_unmoderated(self) -> bool:
-        return 'muc_unmoderated' in self.features
-
-    @property
-    def muc_is_unsecured(self) -> bool:
-        return 'muc_unsecured' in self.features
-
-    @property
-    def is_gateway(self) -> bool:
-        for identity in self.identities:
-            if identity.category == 'gateway':
-                return True
-        return False
-
-    @property
-    def gateway_name(self) -> Optional[str]:
-        for identity in self.identities:
-            if identity.category == 'gateway':
-                return identity.name
-        return None
-
-    @property
-    def gateway_type(self) -> Optional[str]:
-        for identity in self.identities:
-            if identity.category == 'gateway':
-                return identity.type
-        return None
-
-    def has_category(self, category: str) -> bool:
-        for identity in self.identities:
-            if identity.category == category:
-                return True
-        return False
-
-    @property
-    def httpupload_max_file_size(self) -> Optional[float]:
-        size = self.get_field_value(Namespace.HTTPUPLOAD_0, 'max-file-size')
-        try:
-            return float(size)
-        except Exception:
-            return None
-
-
-class DiscoIdentity(NamedTuple):
-
-    category: str
-    type: str
-    name: Optional[str] = None
-    lang: Optional[str] = None
-
-    def get_node(self) -> Node:
-        identity = Node('identity',
-                        attrs={'category': self.category,
-                               'type': self.type})
-        if self.name is not None:
-            identity.setAttr('name', self.name)
-
-        if self.lang is not None:
-            identity.setAttr('xml:lang', self.lang)
-        return identity
-
-    def __eq__(self, other: DiscoIdentity):
-        return str(self) == str(other)
-
-    def __ne__(self, other: DiscoIdentity):
-        return not self.__eq__(other)
-
-    def __str__(self) -> str:
-        return '%s/%s/%s/%s' % (self.category,
-                                self.type,
-                                self.lang or '',
-                                self.name or '')
-
-    def __hash__(self) -> int:
-        return hash(str(self))
-
-
 class AdHocCommand(NamedTuple):
-    jid: JID
-    node: Node
+    jid: Union[str, JID]
+    node: str
     name: Optional[str]
     sessionid: Optional[str] = None
     status: Optional[AdHocStatus] = None
@@ -732,22 +457,34 @@ class ChatMarker(NamedTuple):
         return self.type == 'acknowledged'
 
 
+class PubSubNodeConfigurationResult(NamedTuple):
+    jid: JID
+    node: str
+    form: Any
+
+
+class PubSubPublishResult(NamedTuple):
+    jid: JID
+    node: str
+    id: str
+
+
 class CommonError:
     def __init__(self, stanza):
-        self._stanza_name = stanza.getName()
-        self._error_node = stanza.getTag('error')
+        self._stanza_name = stanza.name
+        self._error_node = stanza.find_tag('error')
         self.condition = stanza.getError()
-        self.condition_data = self._error_node.getTagData(self.condition)
+        self.condition_data = self._error_node.find_tag_text(self.condition)
         self.app_condition = stanza.getAppError()
         self.type = stanza.getErrorType()
-        self.jid = stanza.getFrom()
-        self.id = stanza.getID()
+        self.jid = stanza.get_from()
+        self.id = stanza.get('id')
         self._text = {}
 
-        text_elements = self._error_node.getTags('text', namespace=Namespace.STANZAS)
+        text_elements = self._error_node.find_tags('text', namespace=Namespace.STANZAS)
         for element in text_elements:
             lang = element.getXmlLang()
-            text = element.getData()
+            text = element.text or ''
             self._text[lang] = text
 
     @classmethod
@@ -798,16 +535,16 @@ class HTTPUploadError(CommonError):
     def get_max_file_size(self):
         if not self.app_condition == 'file-too-large':
             return None
-        node = self._error_node.getTag(self.app_condition)
+        node = self._error_node.find_tag(self.app_condition)
         try:
-            return float(node.getTagData('max-file-size'))
+            return float(node.find_tag_text('max-file-size'))
         except Exception:
             return None
 
     def get_retry_date(self):
         if not self.app_condition == 'retry':
             return None
-        return self._error_node.getTagAttr('stamp')
+        return self._error_node.find_tag_attr('stamp')
 
 
 class StanzaMalformedError(CommonError):
@@ -817,8 +554,8 @@ class StanzaMalformedError(CommonError):
         self.condition_data = None
         self.app_condition = None
         self.type = None
-        self.jid = stanza.getFrom()
-        self.id = stanza.getID()
+        self.jid = stanza.get_from()
+        self.id = stanza.get('id')
         self._text = {}
         if text:
             self._text['en'] = text
@@ -840,17 +577,17 @@ class StanzaMalformedError(CommonError):
 class StreamError(CommonError):
     def __init__(self, stanza):
         self.condition = stanza.getError()
-        self.condition_data = self._error_node.getTagData(self.condition)
+        self.condition_data = self._error_node.find_tag_text(self.condition)
         self.app_condition = stanza.getAppError()
         self.type = stanza.getErrorType()
-        self.jid = stanza.getFrom()
-        self.id = stanza.getID()
+        self.jid = stanza.get_from()
+        self.id = stanza.get('id')
         self._text = {}
 
-        text_elements = self._error_node.getTags('text', namespace=Namespace.STREAMS)
+        text_elements = self._error_node.find_tags('text', namespace=Namespace.STREAMS)
         for element in text_elements:
             lang = element.getXmlLang()
-            text = element.getData()
+            text = element.text or ''
             self._text[lang] = text
 
     @classmethod
@@ -1266,26 +1003,3 @@ class PresenceProperties:
             return self.muc_user.role
         except Exception:
             return None
-
-
-class XHTMLData:
-    def __init__(self, xhtml: Node):
-        self._bodys: dict[Optional[str], Node] = {}
-        for body in xhtml.getTags('body', namespace=Namespace.XHTML):
-            lang = body.getXmlLang()
-            self._bodys[lang] = body
-
-    def get_body(self, pref_lang: Optional[str] = None) -> str:
-        if pref_lang is not None:
-            body = self._bodys.get(pref_lang)
-            if body is not None:
-                return str(body)
-
-        body = self._bodys.get('en')
-        if body is not None:
-            return str(body)
-
-        body = self._bodys.get(None)
-        if body is not None:
-            return str(body)
-        return str(self._bodys.popitem()[1])

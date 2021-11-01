@@ -30,10 +30,11 @@ from functools import wraps
 from gi.repository import Soup
 from nbxmpp.modules.base import BaseModule
 
-from nbxmpp.simplexml import Node
 from nbxmpp.errors import is_error
 from nbxmpp.errors import CancelledError
 from nbxmpp.errors import TimeoutStanzaError
+
+from nbxmpp.elements import Base
 from nbxmpp.modules.util import make_func_arguments_string
 
 
@@ -178,8 +179,7 @@ class Task:
             raise RuntimeError('Task already started')
 
         self._state = TaskState.RUNNING
-        next(self._gen)
-        self._next_step(self)
+        self._next_step(None)
 
     def _run_async(self, data):
         raise NotImplementedError
@@ -220,6 +220,13 @@ class Task:
                 RuntimeError('Only one sub task can be active')
 
             self._sub_task = res
+
+            if self._sub_task.state.is_finished:
+                # This can happen if we never reach the first yield in the 
+                # SubTask because of an exception
+                self._sub_task_completed(res)
+                return
+
             self._sub_task.add_done_callback(self._sub_task_completed,
                                              weak=False)
 
@@ -299,9 +306,6 @@ class Task:
     def _finalize(self):
         self._done_callbacks.clear()
         self._sub_task = None
-        self._error = None
-        self._result = None
-        self._user_data = None
         self._gen.close()
         if self._finalize_func is not None:
             self._finalize_func(self, self._finalize_context)
@@ -314,7 +318,7 @@ class IqRequestTask(Task):
 
     '''
 
-    _process_types = (Node,)
+    _process_types = (Base,)
 
     def __init__(self, gen, logger, client):
         super().__init__(gen, logger)

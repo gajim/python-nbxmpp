@@ -15,11 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import Error
-from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
-from nbxmpp.protocol import ERR_FORBIDDEN
+from __future__ import annotations
+
+from typing import Any
+from typing import Generator
+from typing import Union
+
+from nbxmpp import types
+from nbxmpp.builder import Iq
+from nbxmpp.jid import JID
+from nbxmpp.exceptions import NodeProcessed
 from nbxmpp.namespaces import Namespace
 from nbxmpp.task import iq_request_task
 from nbxmpp.structs import LastActivityData
@@ -27,10 +32,15 @@ from nbxmpp.structs import StanzaHandler
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.const import ErrorType
+from nbxmpp.const import ErrorCondition
+
+
+RequestGenerator = Generator[Union[types.Iq, LastActivityData], types.Iq, None]
 
 
 class LastActivity(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -48,53 +58,65 @@ class LastActivity(BaseModule):
     def disable(self):
         self._idle_func = None
 
-    def set_idle_func(self, func):
+    def set_idle_func(self, func: Any):
         self._idle_func = func
 
-    def set_allow_reply_func(self, func):
+    def set_allow_reply_func(self, func: Any):
         self._allow_reply_func = func
 
     @iq_request_task
-    def request_last_activity(self, jid):
-        _task = yield
+    def request_last_activity(self, jid: JID) -> RequestGenerator:
 
         response = yield _make_request(jid)
-        if response.isError():
+        if response.is_error():
             raise StanzaError(response)
 
         yield _parse_response(response)
 
-    def _answer_request(self, _client, stanza, _properties):
-        self._log.info('Request received from %s', stanza.getFrom())
+    def _answer_request(self,
+                        _client: types.Client,
+                        iq: types.Iq,
+                        _properties: Any):
+
+        self._log.info('Request received from %s', iq.get_from())
         if self._idle_func is None:
-            self._client.send_stanza(Error(stanza, ERR_SERVICE_UNAVAILABLE))
+            self._client.send_stanza(
+                iq.make_error(ErrorType.CANCEL,
+                              ErrorCondition.SERVICE_UNAVAILABLE,
+                              Namespace.XMPP_STANZAS))
             raise NodeProcessed
 
         if self._allow_reply_func is not None:
-            if not self._allow_reply_func(stanza.getFrom()):
-                self._client.send_stanza(Error(stanza, ERR_FORBIDDEN))
+            if not self._allow_reply_func(iq.get_from()):
+                self._client.send_stanza(iq.make_error(ErrorType.CANCEL,
+                                                       ErrorCondition.FORBIDDEN,
+                                                       Namespace.XMPP_STANZAS))
                 raise NodeProcessed
 
         seconds = self._idle_func()
-        iq = stanza.buildReply('result')
-        query = iq.getQuery()
-        query.setAttr('seconds', seconds)
+        result = iq.make_result()
+        query = result.add_query(namespace=Namespace.LAST)
+        query.set('seconds', seconds)
+
         self._log.info('Send last activity: %s', seconds)
-        self._client.send_stanza(iq)
+        self._client.send_stanza(result)
         raise NodeProcessed
 
 
-def _make_request(jid):
-    return Iq('get', queryNS=Namespace.LAST, to=jid)
+def _make_request(jid: JID) -> types.Iq:
+    iq = Iq(to=jid)
+    iq.add_query(namespace=Namespace.LAST)
+    return iq
 
 
-def _parse_response(response):
-    query = response.getQuery()
-    seconds = query.getAttr('seconds')
+def _parse_response(response: types.Iq) -> LastActivityData:
+    query = response.get_query(namespace=Namespace.LAST)
+    if query is None:
+        raise MalformedStanzaError('query element missing', response)
 
     try:
-        seconds = int(seconds)
+        seconds = int(query.get('seconds'))
     except Exception:
         raise MalformedStanzaError('seconds attribute invalid', response)
 
-    return LastActivityData(seconds=seconds, status=query.getData())
+    return LastActivityData(seconds=seconds, status=query.text or '')

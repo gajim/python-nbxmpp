@@ -15,11 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
 
+from typing import Any
+from typing import Optional
+
+from nbxmpp import types
+from nbxmpp.client import Client
 from nbxmpp.namespaces import Namespace
-from nbxmpp.simplexml import Node
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import NodeProcessed
+from nbxmpp.builder import Iq
+from nbxmpp.jid import JID
+from nbxmpp.exceptions import NodeProcessed
 from nbxmpp.structs import RosterData
 from nbxmpp.structs import RosterItem
 from nbxmpp.structs import RosterPush
@@ -32,7 +38,7 @@ from nbxmpp.modules.util import process_response
 
 
 class Roster(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -45,8 +51,7 @@ class Roster(BaseModule):
         ]
 
     @iq_request_task
-    def request_roster(self, version=None):
-        _task = yield
+    def request_roster(self, version: Optional[str] = None):
 
         ver_support = self._client.features.has_roster_version()
         if not ver_support:
@@ -58,10 +63,10 @@ class Roster(BaseModule):
         self._log.info('Roster versioning supported: %s', ver_support)
 
         response = yield _make_request(version, ver_support)
-        if response.isError():
+        if response.is_error():
             raise StanzaError(response)
 
-        query = response.getTag('query', namespace=Namespace.ROSTER)
+        query = response.find_tag('query', namespace=Namespace.ROSTER)
         if query is None:
             if not ver_support:
                 raise MalformedStanzaError('query node missing', response)
@@ -70,8 +75,12 @@ class Roster(BaseModule):
         pushed_items, version = self._parse_push(response, ver_support)
         yield RosterData(pushed_items, version)
 
-    def _process_roster_push(self, _client, stanza, properties):
-        from_ = stanza.getFrom()
+    def _process_roster_push(self,
+                             _client: Client,
+                             stanza: types.Iq,
+                             properties: Any):
+
+        from_ = stanza.get_from()
         if from_ is not None:
             if not self._client.get_bound_jid().bare == from_:
                 self._log.warning('Malicious Roster Push from %s', from_)
@@ -90,40 +99,37 @@ class Roster(BaseModule):
         self._log.info('Roster Push, version: %s', properties.roster.version)
         self._log.info(item)
 
-        self._ack_roster_push(stanza)
-
-    def _ack_roster_push(self, stanza):
-        iq = Iq('result',
-                to=stanza.getFrom(),
-                frm=stanza.getTo(),
-                attrs={'id': stanza.getID()})
-        self._client.send_stanza(iq)
+        self._client.send_stanza(stanza.make_result())
 
     @iq_request_task
-    def delete_item(self, jid):
-        _task = yield
+    def delete_item(self, jid: JID):
 
         response = yield _make_delete(jid)
         yield process_response(response)
 
     @iq_request_task
-    def set_item(self, jid, name, groups=None):
-        _task = yield
+    def set_item(self, jid: JID, name: str, groups: Optional[list[str]] = None):
 
         response = yield _make_set(jid, name, groups)
         yield process_response(response)
 
-    def _parse_push(self, stanza, ver_support):
-        query = stanza.getTag('query', namespace=Namespace.ROSTER)
+    def _parse_push(self,
+                    stanza: types.Iq,
+                    ver_support: bool) -> tuple[list[RosterItem],
+                                                Optional[str]]:
+
+        query = stanza.find_tag('query', namespace=Namespace.ROSTER)
+        if query is None:
+            raise MalformedStanzaError('query tag missing', stanza)
 
         version = None
         if ver_support:
-            version = query.getAttr('ver')
+            version = query.get('ver')
             if version is None:
                 raise MalformedStanzaError('ver attribute missing', stanza)
 
-        pushed_items = []
-        for item in query.getTags('item'):
+        pushed_items: list[RosterItem] = []
+        for item in query.find_tags('item'):
             try:
                 roster_item = RosterItem.from_node(item)
             except Exception:
@@ -136,32 +142,37 @@ class Roster(BaseModule):
         return pushed_items, version
 
 
-def _make_delete(jid):
-    return Iq('set',
-              Namespace.ROSTER,
-              payload=[Node('item', {'jid': jid, 'subscription': 'remove'})])
-
-
-def _make_set(jid, name, groups=None):
-    if groups is None:
-        groups = []
-
-    infos = {'jid': jid}
-    if name:
-        infos['name'] = name
-    iq = Iq('set', Namespace.ROSTER)
-    query = iq.setQuery()
-    item = query.addChild('item', attrs=infos)
-    for group in groups:
-        item.addChild('group').setData(group)
+def _make_delete(jid: JID) -> types.Iq:
+    iq = Iq(type='set')
+    query = iq.add_query(namespace=Namespace.ROSTER)
+    query.add_tag('item', jid=str(jid), subscription='remove')
     return iq
 
 
-def _make_request(version, roster_ver_support):
-    iq = Iq('get', Namespace.ROSTER)
+def _make_set(jid: JID, name: str, groups: Optional[list[str]] = None):
+    iq = Iq(type='set')
+    query = iq.add_query(namespace=Namespace.ROSTER)
+    item = query.add_tag('item', jid=str(jid))
+    if name:
+        item.set('name', name)
+
+    if groups is not None:
+        for group in groups:
+            item.add_tag_text('group', group)
+
+    return iq
+
+
+def _make_request(version: Optional[str],
+                  roster_ver_support: bool) -> types.Iq:
+    iq = Iq()
+    query = iq.add_query(namespace=Namespace.ROSTER)
+
+    if not roster_ver_support:
+        return iq
+
     if version is None:
         version = ''
 
-    if roster_ver_support:
-        iq.setTagAttr('query', 'ver', version)
+    query.set('ver', version)
     return iq

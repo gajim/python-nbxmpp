@@ -15,9 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Optional
+
+from nbxmpp import types
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Node
-from nbxmpp.protocol import NodeProcessed
+from nbxmpp.builder import E
+from nbxmpp.exceptions import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import MoodData
 from nbxmpp.const import MOODS
@@ -32,7 +38,7 @@ class Mood(BaseModule):
         'publish': 'PubSub'
     }
 
-    def __init__(self, client):
+    def __init__(self, client: types.Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -43,7 +49,11 @@ class Mood(BaseModule):
                           priority=16),
         ]
 
-    def _process_pubsub_mood(self, _client, stanza, properties):
+    def _process_pubsub_mood(self,
+                             _client: types.Client,
+                             stanza: types.Message,
+                             properties: Any):
+
         if not properties.is_pubsub_event:
             return
 
@@ -55,20 +65,20 @@ class Mood(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        mood_node = item.getTag('mood', namespace=Namespace.MOOD)
-        if not mood_node.getChildren():
+        mood_node = item.find_tag('mood', namespace=Namespace.MOOD)
+        if not mood_node.get_children():
             self._log.info('Received mood: %s - removed mood', properties.jid)
             return
 
         mood, text = None, None
-        for child in mood_node.getChildren():
-            name = child.getName().strip()
+        for child in mood_node.get_children():
+            name = child.localname.strip()
             if name == 'text':
-                text = child.getData()
+                text = child.text or ''
             elif name in MOODS:
                 mood = name
 
-        if mood is None and mood_node.getChildren():
+        if mood is None and mood_node.get_children():
             self._log.warning('No valid mood value found')
             self._log.warning(stanza)
             raise NodeProcessed
@@ -80,16 +90,15 @@ class Mood(BaseModule):
         properties.pubsub_event = pubsub_event
 
     @iq_request_task
-    def set_mood(self, data):
-        task = yield
+    def set_mood(self, data: Optional[MoodData]):
 
-        item = Node('mood', {'xmlns': Namespace.MOOD})
+        item = E('mood', namespace=Namespace.MOOD)
         if data is not None and data.mood:
-            item.addChild(data.mood)
+            item.add_tag(data.mood)
 
             if data.text:
-                item.addChild('text', payload=data.text)
+                item.add_tag_text('text', data.text)
 
         result = yield self.publish(Namespace.MOOD, item, id_='current')
 
-        yield finalize(task, result)
+        yield finalize(result)
