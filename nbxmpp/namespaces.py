@@ -171,4 +171,4 @@ class _Namespaces:
     X_OOB: str = 'jabber:x:oob'
 
 
-Namespace = _Namespaces()
+Namespace: _Namespaces = _Namespaces()
