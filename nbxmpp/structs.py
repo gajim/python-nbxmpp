@@ -475,6 +475,13 @@ class DiscoInfo(NamedTuple):
         return False
 
     @property
+    def is_irc(self) -> bool:
+        for identity in self.identities:
+            if identity.category == 'conference' and identity.type == 'irc':
+                return True
+        return False
+
+    @property
     def muc_name(self) -> Optional[str]:
         if self.muc_room_name:
             return self.muc_room_name
