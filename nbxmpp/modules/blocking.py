@@ -15,20 +15,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Literal, Optional
+from typing import Union
+from typing import Set
+from typing import TYPE_CHECKING
+
 from nbxmpp.namespaces import Namespace
+from nbxmpp.simplexml import Node
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import JID
-from nbxmpp.modules.base import BaseModule
 from nbxmpp.errors import StanzaError
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.task import iq_request_task
-from nbxmpp.structs import BlockingPush
 from nbxmpp.structs import StanzaHandler
+from nbxmpp.structs import BlockingProperties
+from nbxmpp.structs import BlockingPush
+from nbxmpp.types import BlockingReportValues
+from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import process_response
 
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
+
+
 class Blocking(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -66,21 +81,27 @@ class Blocking(BaseModule):
         yield blocked
 
     @iq_request_task
-    def block(self, jids, report=None):
+    def block(self,
+              jids: list[JID],
+              report: Optional[BlockingReportValues] = None):
+
         _task = yield
 
         response = yield _make_block_request(jids, report)
         yield process_response(response)
 
     @iq_request_task
-    def unblock(self, jids):
+    def unblock(self, jids: list[JID]):
         _task = yield
 
         response = yield _make_unblock_request(jids)
         yield process_response(response)
 
     @staticmethod
-    def _process_blocking_push(client, stanza, properties):
+    def _process_blocking_push(client: Client,
+                               stanza: Iq,
+                               properties: BlockingProperties):
+
         unblock = stanza.getTag('unblock', namespace=Namespace.BLOCKING)
         if unblock is not None:
             properties.blocking = _parse_push(unblock)
@@ -93,17 +114,19 @@ class Blocking(BaseModule):
         client.send_stanza(reply)
 
 
-def _make_blocking_list_request():
+def _make_blocking_list_request() -> Iq:
     iq = Iq('get', Namespace.BLOCKING)
     iq.setQuery('blocklist')
     return iq
 
 
-def _make_block_request(jids, report):
+def _make_block_request(jids: list[JID],
+                        report: Optional[BlockingReportValues]) -> Iq:
+
     iq = Iq('set', Namespace.BLOCKING)
     query = iq.setQuery(name='block')
     for jid in jids:
-        item = query.addChild(name='item', attrs={'jid': jid})
+        item = query.addChild(name='item', attrs={'jid': str(jid)})
         if report in ('spam', 'abuse'):
             action = item.addChild(name='report',
                                    namespace=Namespace.REPORTING)
@@ -111,20 +134,20 @@ def _make_block_request(jids, report):
     return iq
 
 
-def _make_unblock_request(jids):
+def _make_unblock_request(jids: list[JID]) -> Iq:
     iq = Iq('set', Namespace.BLOCKING)
     query = iq.setQuery(name='unblock')
     for jid in jids:
-        query.addChild(name='item', attrs={'jid': jid})
+        query.addChild(name='item', attrs={'jid': str(jid)})
     return iq
 
 
-def _parse_push(node):
+def _parse_push(node: Node) -> BlockingPush:
     items = node.getTags('item')
     if not items:
         return BlockingPush(block=set(), unblock=set(), unblock_all=True)
 
-    jids = set()
+    jids: Set[JID] = set()
     for item in items:
         jid = item.getAttr('jid')
         if not jid:
@@ -137,8 +160,8 @@ def _parse_push(node):
 
         jids.add(jid)
 
-
-    block, unblock = set(), set()
+    block: Set[JID] = set()
+    unblock: Set[JID] = set()
     if node.getName() == 'block':
         block = jids
     else:

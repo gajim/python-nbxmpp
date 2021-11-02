@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+import typing
 from typing import Any
 from typing import Optional
 from typing import Set
@@ -36,7 +37,8 @@ from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import JID
-from nbxmpp.const import AdHocAction, IqType
+from nbxmpp.const import AdHocAction
+from nbxmpp.const import IqType
 from nbxmpp.const import AdHocNoteType
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
@@ -1117,6 +1119,24 @@ class IqProperties:
     @property
     def is_roster(self) -> bool:
         return self.roster is not None
+
+
+class IqPropertiesBase(typing.Protocol):
+    own_jid: JID
+    type: IqType
+    jid: JID
+    id: str
+    error: Optional[Any]
+    query: Optional[Node]
+    payload: Optional[Node]
+
+
+class BlockingProperties(IqPropertiesBase):
+
+    blocking: BlockingPush
+
+    @property
+    def is_blocking(self) -> bool: ...
 
 
 @dataclass
