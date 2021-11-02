@@ -84,7 +84,6 @@ class Blocking(BaseModule):
         unblock = stanza.getTag('unblock', namespace=Namespace.BLOCKING)
         if unblock is not None:
             properties.blocking = _parse_push(unblock)
-            return
 
         block = stanza.getTag('block', namespace=Namespace.BLOCKING)
         if block is not None:
