@@ -1,5 +1,4 @@
 {
     "ignore": ["**/test", "setup.py"],
-    "useLibraryCodeForTypes": true,
     "typeCheckingMode": "strict",
 }
