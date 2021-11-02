@@ -146,7 +146,7 @@ class HTTPAuthData(NamedTuple):
     body: Optional[str]
 
 
-class StanzaIDData:
+class StanzaIDData(NamedTuple):
     id: str
     by: str
 
