@@ -1387,14 +1387,14 @@ class Iq(Protocol):
     """
 
     def __init__(self,
-                 typ=None,
-                 queryNS=None,
-                 attrs=None,
-                 to=None,
-                 frm=None,
-                 payload=None,
-                 xmlns=Namespace.CLIENT,
-                 node=None):
+                 typ: Optional[str] = None,
+                 queryNS: Optional[str] = None,
+                 attrs: Optional[dict[str, str]] = None,
+                 to: Optional[Union[JID, str]] = None,
+                 frm: Optional[Union[JID, str]] = None,
+                 payload: Optional[list[Union[Node, str]]] = None,
+                 xmlns: str = Namespace.CLIENT,
+                 node: Optional[Node] = None):
         """
         You can specify type, query namespace any additional attributes,
         recipient of the iq, sender of the iq, any additional payload (f.e.
@@ -1416,7 +1416,7 @@ class Iq(Protocol):
         if queryNS:
             self.setQueryNS(queryNS)
 
-    def getQuery(self):
+    def getQuery(self) -> Optional[Node]:
         """
         Return the IQ's child element if it exists, None otherwise.
         """
@@ -1426,7 +1426,7 @@ class Iq(Protocol):
             return children[0]
         return None
 
-    def getQueryNS(self):
+    def getQueryNS(self) -> Optional[str]:
         """
         Return the namespace of the 'query' child element
         """
@@ -1435,7 +1435,7 @@ class Iq(Protocol):
             return tag.getNamespace()
         return None
 
-    def getQuerynode(self):
+    def getQuerynode(self) -> Optional[str]:
         """
         Return the 'node' attribute value of the 'query' child element
         """
@@ -1444,7 +1444,7 @@ class Iq(Protocol):
             return tag.getAttr('node')
         return None
 
-    def getQueryPayload(self):
+    def getQueryPayload(self) -> Optional[list[Union[Node, str]]]:
         """
         Return the 'query' child element payload
         """
@@ -1453,7 +1453,7 @@ class Iq(Protocol):
             return tag.getPayload()
         return None
 
-    def getQueryChildren(self):
+    def getQueryChildren(self) -> Optional[list[Node]]:
         """
         Return the 'query' child element child nodes
         """
@@ -1462,7 +1462,7 @@ class Iq(Protocol):
             return tag.getChildren()
         return None
 
-    def getQueryChild(self, name=None):
+    def getQueryChild(self, name: Optional[str] = None) -> Optional[Node]:
         """
         Return the 'query' child element with name, or the first element
         which is not an error element
@@ -1479,7 +1479,7 @@ class Iq(Protocol):
                     return node
         return None
 
-    def setQuery(self, name=None):
+    def setQuery(self, name: Optional[str] = None) -> Node:
         """
         Change the name of the query node, creating it if needed. Keep the
         existing name if none is given (use 'query' if it's a creation).
@@ -1492,25 +1492,25 @@ class Iq(Protocol):
             query.setName(name)
         return query
 
-    def setQueryNS(self, namespace):
+    def setQueryNS(self, namespace: str) -> None:
         """
         Set the namespace of the 'query' child element
         """
         self.setQuery().setNamespace(namespace)
 
-    def setQueryPayload(self, payload):
+    def setQueryPayload(self, payload: list[Union[Node, str]]):
         """
         Set the 'query' child element payload
         """
         self.setQuery().setPayload(payload)
 
-    def setQuerynode(self, node):
+    def setQuerynode(self, node: str) -> None:
         """
         Set the 'node' attribute value of the 'query' child element
         """
         self.setQuery().setAttr('node', node)
 
-    def buildReply(self, typ):
+    def buildReply(self, typ: str) -> Iq:
         """
         Build and return another Iq object of specified type. The to, from and
         query child node of new Iq are pre-set as reply to this Iq.
@@ -1522,7 +1522,7 @@ class Iq(Protocol):
         iq.setQuery(self.getQuery().getName()).setNamespace(self.getQueryNS())
         return iq
 
-    def buildSimpleReply(self, typ):
+    def buildSimpleReply(self, typ: str) -> Iq:
         return Iq(typ,
                   to=self.getFrom(),
                   attrs={'id': self.getID()})
