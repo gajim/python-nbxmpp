@@ -659,12 +659,12 @@ class AdHocCommand(NamedTuple):
     jid: JID
     node: Node
     name: Optional[str]
-    sessionid: Optional[str]
-    status: AdHocStatus
-    data: Node
-    actions: Set[AdHocAction]
-    default: Optional[AdHocAction]
-    notes: list[AdHocCommandNote]
+    sessionid: Optional[str] = None
+    status: Optional[AdHocStatus] = None
+    data: Optional[Node] = None
+    actions: Optional[Set[AdHocAction]] = None
+    default: Optional[AdHocAction] = None
+    notes: Optional[list[AdHocCommandNote]] = None
 
     @property
     def is_completed(self) -> bool:
