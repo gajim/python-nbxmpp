@@ -16,11 +16,14 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import annotations
+from ctypes import string_at
+from datetime import datetime
 
 from typing import Any
 from typing import Optional
 from typing import Set
 from typing import NamedTuple
+from typing import Union
 
 import time
 import random
@@ -35,13 +38,18 @@ from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import JID
+from nbxmpp.const import AdHocAction, IqType
+from nbxmpp.const import AdHocNoteType
 from nbxmpp.const import MessageType
 from nbxmpp.const import AvatarState
 from nbxmpp.const import StatusCode
 from nbxmpp.const import PresenceType
-from nbxmpp.const import LOCATION_DATA
 from nbxmpp.const import AdHocStatus
 from nbxmpp.const import InviteType
+from nbxmpp.const import Role
+from nbxmpp.const import Affiliation
+from nbxmpp.const import AnonymityMode
+from nbxmpp.const import PresenceShow
 
 
 class StanzaHandler(NamedTuple):
@@ -96,85 +104,248 @@ class BookmarkData(NamedTuple):
     extensions: Optional[Node] = None
 
 
-VoiceRequest = namedtuple('VoiceRequest', 'form jid nick')
+class VoiceRequest(NamedTuple):
+    jid:JID
+    nick: str
+    form: Any
 
-MucUserData = namedtuple('MucUserData', 'affiliation jid nick role actor reason')
-MucUserData.__new__.__defaults__ = (None, None, None, None, None)
 
-MucDestroyed = namedtuple('MucDestroyed', 'alternate reason password')
-MucDestroyed.__new__.__defaults__ = (None, None, None)
+class MucUserData(NamedTuple):
+    jid: Optional[JID]
+    affiliation: Optional[Affiliation]
+    nick: Optional[str]
+    role: Optional[Role]
+    actor: Optional[str]
+    reason: Optional[str]
 
-MucConfigResult = namedtuple('MucConfigResult', 'jid form')
-MucConfigResult.__new__.__defaults__ = (None,)
 
-AffiliationResult = namedtuple('AffiliationResult', 'jid users')
+class MucDestroyed(NamedTuple):
+    alternate: Optional[JID]
+    reason: Optional[str]
+    password: Optional[str]
 
-EntityCapsData = namedtuple('EntityCapsData', 'hash node ver')
-EntityCapsData.__new__.__defaults__ = (None, None, None)
 
-HTTPAuthData = namedtuple('HTTPAuthData', 'id method url body')
-HTTPAuthData.__new__.__defaults__ = (None, None, None, None)
+class MucConfigResult(NamedTuple):
+    jid: JID
+    form: Optional[Any] = None
 
-StanzaIDData = namedtuple('StanzaIDData', 'id by')
-StanzaIDData.__new__.__defaults__ = (None, None)
 
-PubSubEventData = namedtuple('PubSubEventData', 'node id item data deleted retracted purged')
-PubSubEventData.__new__.__defaults__ = (None, None, None, False, False, False)
+class AffiliationResult(NamedTuple):
+    jid: JID
+    users: dict[JID, dict[str, str]]
 
-MoodData = namedtuple('MoodData', 'mood text')
 
-BlockingPush = namedtuple('BlockingPush', 'block unblock unblock_all')
+class EntityCapsData(NamedTuple):
+    hash: str
+    node: str
+    ver: str
 
-ActivityData = namedtuple('ActivityData', 'activity subactivity text')
 
-LocationData = namedtuple('LocationData', LOCATION_DATA)
-LocationData.__new__.__defaults__ = (None,) * len(LocationData._fields)
+class HTTPAuthData(NamedTuple):
+    id: Optional[str]
+    method: Optional[str]
+    url: Optional[str]
+    body: Optional[str]
 
-PGPPublicKey = namedtuple('PGPPublicKey', 'jid key date')
 
-PGPKeyMetadata = namedtuple('PGPKeyMetadata', 'jid fingerprint date')
+class StanzaIDData:
+    id: str
+    by: str
 
-OMEMOMessage = namedtuple('OMEMOMessage', 'sid iv keys payload')
 
-AnnotationNote = namedtuple('AnnotationNote', 'jid data cdate mdate')
-AnnotationNote.__new__.__defaults__ = (None, None)
+class PubSubEventData(NamedTuple):
+    node: Node
+    id: Optional[str] = None
+    item: Optional[Node] = None
+    data: Optional[Any] = None
+    deleted: bool = False
+    retracted: bool = False
+    purged: bool = False
 
-EMEData = namedtuple('EMEData', 'name namespace')
 
-MuclumbusResult = namedtuple('MuclumbusResult', 'first last max end items')
+class MoodData(NamedTuple):
+    mood: str
+    test: str
 
-MuclumbusItem = namedtuple('MuclumbusItem', 'jid name nusers description language is_open anonymity_mode')
 
-SoftwareVersionResult = namedtuple('SoftwareVersionResult', 'name version os')
+class BlockingPush(NamedTuple):
+    block: Set[JID]
+    unblock: Set[JID]
+    unblock_all: bool
 
-AdHocCommandNote = namedtuple('AdHocCommandNote', 'text type')
 
-IBBData = namedtuple('IBBData', 'block_size sid seq type data')
-IBBData.__new__.__defaults__ = (None, None, None, None, None)
+class ActivityData(NamedTuple):
+    activity: str
+    subactivity: str
+    text: str
 
-DiscoItems = namedtuple('DiscoItems', 'jid node items')
-DiscoItem = namedtuple('DiscoItem', 'jid name node')
-DiscoItem.__new__.__defaults__ = (None, None)
 
-OOBData = namedtuple('OOBData', 'url desc')
+class LocationData(NamedTuple):
+    accuracy: Optional[str] = None
+    alt: Optional[str] = None
+    altaccuracy: Optional[str] = None
+    area: Optional[str] = None
+    bearing: Optional[str] = None
+    building: Optional[str] = None
+    country: Optional[str] = None
+    countrycode: Optional[str] = None
+    datum: Optional[str] = None
+    description: Optional[str] = None
+    error: Optional[str] = None
+    floor: Optional[str] = None
+    lat: Optional[str] = None
+    locality: Optional[str] = None
+    lon: Optional[str] = None
+    postalcode: Optional[str] = None
+    region: Optional[str] = None
+    room: Optional[str] = None
+    speed: Optional[str] = None
+    street: Optional[str] = None
+    text: Optional[str] = None
+    timestamp: Optional[str] = None
+    tzo: Optional[str] = None
+    uri: Optional[str] = None
 
-CorrectionData = namedtuple('CorrectionData', 'id')
 
-RegisterData = namedtuple('RegisterData', 'instructions form fields_form oob_url bob_data')
+class PGPPublicKey(NamedTuple):
+    jid: JID
+    key: str
+    date: datetime
 
-HTTPUploadData = namedtuple('HTTPUploadData', 'put_uri get_uri headers')
-HTTPUploadData.__new__.__defaults__ = (None,)
 
-RSMData = namedtuple('RSMData', 'after before last first first_index count max index')
+class PGPKeyMetadata(NamedTuple):
+    jid: JID
+    fingerprint: str
+    date: datetime
 
-MAMQueryData = namedtuple('MAMQueryData', 'jid rsm complete')
 
-MAMPreferencesData = namedtuple('MAMPreferencesData', 'default always never')
+class OMEMOMessage(NamedTuple):
+    sid: str
+    iv: bytes
+    keys: dict[int, tuple[bytes, bool]]
+    payload: bytes
 
-LastActivityData = namedtuple('LastActivityData', 'seconds status')
 
-RosterData = namedtuple('RosterData', 'items version')
-RosterPush = namedtuple('RosterPush', 'item version')
+class AnnotationNote(NamedTuple):
+    jid: JID
+    data: str
+    cdate: Optional[datetime] = None
+    mdate: Optional[datetime] = None
+
+
+class EMEData(NamedTuple):
+    name: str
+    namespace: str
+
+
+class MuclumbusResult(NamedTuple):
+    first: Optional[str]
+    last: Optional[str]
+    max: Optional[int]
+    end: bool
+    items: list[MuclumbusItem]
+
+
+class MuclumbusItem(NamedTuple):
+    jid: str
+    name: str
+    nusers: str
+    description: str
+    language: str
+    is_open: bool
+    anonymity_mode: AnonymityMode
+
+
+class SoftwareVersionResult(NamedTuple):
+    name: str
+    version: str
+    os: Optional[str]
+
+
+class AdHocCommandNote(NamedTuple):
+    text: str
+    type: AdHocNoteType
+
+
+class IBBData(NamedTuple):
+    type: str
+    sid: str
+    block_size: Optional[int]
+    seq: Optional[int]
+    data: Optional[str]
+
+
+class OOBData(NamedTuple):
+    url: str
+    desc: str
+
+
+class CorrectionData(NamedTuple):
+    id: str
+
+
+class DiscoItems(NamedTuple):
+    jid: JID
+    node: str
+    items: list[DiscoItem]
+
+
+class DiscoItem(NamedTuple):
+    jid: JID
+    name: Optional[str]
+    node: Optional[str]
+
+
+class RegisterData(NamedTuple):
+    instructions: Optional[str]
+    form: Optional[Any]
+    fields_form: Optional[Any]
+    oob_url: Optional[str]
+    bob_data: Optional[BobData]
+
+
+class HTTPUploadData(NamedTuple):
+    put_uri: str
+    get_uri: str
+    headers: dict[str, str]
+
+
+class RSMData(NamedTuple):
+    after: Optional[str]
+    before: Optional[str]
+    last: Optional[str]
+    first: Optional[str]
+    first_index: Optional[int]
+    count: Optional[int]
+    max: Optional[int]
+    index: Optional[int]
+
+
+class MAMQueryData(NamedTuple):
+    jid: JID
+    rsm: RSMData
+    complete: bool
+
+
+class MAMPreferencesData(NamedTuple):
+    default: str
+    always: list[JID]
+    never: list[JID]
+
+
+class LastActivityData(NamedTuple):
+    seconds: int
+    status: str
+
+
+class RosterData(NamedTuple):
+    items: Optional[list[RosterItem]]
+    version: str
+
+
+class RosterPush(NamedTuple):
+    item: RosterItem
+    version: str
 
 
 @dataclass
@@ -209,21 +380,20 @@ class RosterItem:
                 'groups': self.groups}
 
 
-class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms timestamp')):
+class DiscoInfo(NamedTuple):
+    stanza: Optional[Node]
+    identities: list[DiscoIdentity]
+    features: list[str]
+    dataforms: list[Any]
+    timestamp: Optional[float] = None
 
-    __slots__ = []
-
-    def __new__(cls, stanza, identities, features, dataforms, timestamp=None):
-        return super(DiscoInfo, cls).__new__(cls, stanza, identities,
-                                             features, dataforms, timestamp)
-
-    def get_caps_hash(self):
+    def get_caps_hash(self) -> Optional[str]:
         try:
             return self.node.split('#')[1]
         except Exception:
             return None
 
-    def has_field(self, form_type, var):
+    def has_field(self, form_type: str, var: str) -> bool:
         for dataform in self.dataforms:
             try:
                 if dataform['FORM_TYPE'].value != form_type:
@@ -235,7 +405,7 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
                 continue
         return False
 
-    def get_field_value(self, form_type, var):
+    def get_field_value(self, form_type: str, var: str) -> Optional[Any]:
         for dataform in self.dataforms:
             try:
                 if dataform['FORM_TYPE'].value != form_type:
@@ -248,16 +418,16 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
             except Exception:
                 continue
 
-    def supports(self, feature):
+    def supports(self, feature: str) -> bool:
         return feature in self.features
 
-    def serialize(self):
+    def serialize(self) -> str:
         if self.stanza is None:
             raise ValueError('Unable to serialize DiscoInfo, no stanza found')
         return str(self.stanza)
 
     @property
-    def node(self):
+    def node(self) -> Optional[str]:
         try:
             query = self.stanza.getQuery()
         except Exception:
@@ -268,14 +438,14 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
         return None
 
     @property
-    def jid(self):
+    def jid(self) -> Optional[JID]:
         try:
             return self.stanza.getFrom()
         except Exception:
             return None
 
     @property
-    def mam_namespace(self):
+    def mam_namespace(self) -> Optional[str]:
         if Namespace.MAM_2 in self.features:
             return Namespace.MAM_2
         if Namespace.MAM_1 in self.features:
@@ -283,23 +453,23 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
         return None
 
     @property
-    def has_mam_2(self):
+    def has_mam_2(self) -> bool:
         return Namespace.MAM_2 in self.features
 
     @property
-    def has_mam_1(self):
+    def has_mam_1(self) -> bool:
         return Namespace.MAM_1 in self.features
 
     @property
-    def has_mam(self):
+    def has_mam(self) -> bool:
         return self.has_mam_1 or self.has_mam_2
 
     @property
-    def has_httpupload(self):
+    def has_httpupload(self) -> bool:
         return Namespace.HTTPUPLOAD_0 in self.features
 
     @property
-    def is_muc(self):
+    def is_muc(self) -> bool:
         for identity in self.identities:
             if identity.category == 'conference':
                 if Namespace.MUC in self.features:
@@ -307,7 +477,7 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
         return False
 
     @property
-    def muc_name(self):
+    def muc_name(self) -> Optional[str]:
         if self.muc_room_name:
             return self.muc_room_name
 
@@ -319,124 +489,124 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
         return None
 
     @property
-    def muc_identity_name(self):
+    def muc_identity_name(self) -> Optional[str]:
         for identity in self.identities:
             if identity.category == 'conference':
                 return identity.name
         return None
 
     @property
-    def muc_room_name(self):
+    def muc_room_name(self) -> Optional[Any]:
         return self.get_field_value(Namespace.MUC_INFO, 'muc#roomconfig_roomname')
 
     @property
-    def muc_description(self):
+    def muc_description(self) -> Optional[Any]:
         return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_description')
 
     @property
-    def muc_log_uri(self):
+    def muc_log_uri(self) -> Optional[Any]:
         return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_logs')
 
     @property
-    def muc_users(self):
+    def muc_users(self) -> Optional[Any]:
         return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_occupants')
 
     @property
-    def muc_contacts(self):
+    def muc_contacts(self) -> Optional[Any]:
         return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_contactjid')
 
     @property
-    def muc_subject(self):
+    def muc_subject(self) -> Optional[Any]:
         return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_subject')
 
     @property
-    def muc_subjectmod(self):
+    def muc_subjectmod(self) -> Optional[Any]:
         # muc#roominfo_changesubject stems from a wrong example in the MUC XEP
         # Ejabberd and Prosody use this value
         return (self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_subjectmod') or
                 self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_changesubject'))
 
     @property
-    def muc_lang(self):
+    def muc_lang(self) -> Optional[Any]:
         return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_lang')
 
     @property
-    def muc_is_persistent(self):
+    def muc_is_persistent(self) -> bool:
         return 'muc_persistent' in self.features
 
     @property
-    def muc_is_moderated(self):
+    def muc_is_moderated(self) -> bool:
         return 'muc_moderated' in self.features
 
     @property
-    def muc_is_open(self):
+    def muc_is_open(self) -> bool:
         return 'muc_open' in self.features
 
     @property
-    def muc_is_members_only(self):
+    def muc_is_members_only(self) -> bool:
         return 'muc_membersonly' in self.features
 
     @property
-    def muc_is_hidden(self):
+    def muc_is_hidden(self) -> bool:
         return 'muc_hidden' in self.features
 
     @property
-    def muc_is_nonanonymous(self):
+    def muc_is_nonanonymous(self) -> bool:
         return 'muc_nonanonymous' in self.features
 
     @property
-    def muc_is_passwordprotected(self):
+    def muc_is_passwordprotected(self) -> bool:
         return 'muc_passwordprotected' in self.features
 
     @property
-    def muc_is_public(self):
+    def muc_is_public(self) -> bool:
         return 'muc_public' in self.features
 
     @property
-    def muc_is_semianonymous(self):
+    def muc_is_semianonymous(self) -> bool:
         return 'muc_semianonymous' in self.features
 
     @property
-    def muc_is_temporary(self):
+    def muc_is_temporary(self) -> bool:
         return 'muc_temporary' in self.features
 
     @property
-    def muc_is_unmoderated(self):
+    def muc_is_unmoderated(self) -> bool:
         return 'muc_unmoderated' in self.features
 
     @property
-    def muc_is_unsecured(self):
+    def muc_is_unsecured(self) -> bool:
         return 'muc_unsecured' in self.features
 
     @property
-    def is_gateway(self):
+    def is_gateway(self) -> bool:
         for identity in self.identities:
             if identity.category == 'gateway':
                 return True
         return False
 
     @property
-    def gateway_name(self):
+    def gateway_name(self) -> Optional[str]:
         for identity in self.identities:
             if identity.category == 'gateway':
                 return identity.name
         return None
 
     @property
-    def gateway_type(self):
+    def gateway_type(self) -> Optional[str]:
         for identity in self.identities:
             if identity.category == 'gateway':
                 return identity.type
         return None
 
-    def has_category(self, category):
+    def has_category(self, category: str) -> bool:
         for identity in self.identities:
             if identity.category == category:
                 return True
         return False
 
     @property
-    def httpupload_max_file_size(self):
+    def httpupload_max_file_size(self) -> Optional[float]:
         size = self.get_field_value(Namespace.HTTPUPLOAD_0, 'max-file-size')
         try:
             return float(size)
@@ -444,14 +614,14 @@ class DiscoInfo(namedtuple('DiscoInfo', 'stanza identities features dataforms ti
             return None
 
 
-class DiscoIdentity(namedtuple('DiscoIdentity', 'category type name lang')):
+class DiscoIdentity(NamedTuple):
 
-    __slots__ = []
+    category: str
+    type: str
+    name: Optional[str] = None
+    lang: Optional[str] = None
 
-    def __new__(cls, category, type, name=None, lang=None):
-        return super(DiscoIdentity, cls).__new__(cls, category, type, name, lang)
-
-    def get_node(self):
+    def get_node(self) -> Node:
         identity = Node('identity',
                         attrs={'category': self.category,
                                'type': self.type})
@@ -462,45 +632,49 @@ class DiscoIdentity(namedtuple('DiscoIdentity', 'category type name lang')):
             identity.setAttr('xml:lang', self.lang)
         return identity
 
-    def __eq__(self, other):
+    def __eq__(self, other: DiscoIdentity):
         return str(self) == str(other)
 
-    def __ne__(self, other):
+    def __ne__(self, other: DiscoIdentity):
         return not self.__eq__(other)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return '%s/%s/%s/%s' % (self.category,
                                 self.type,
                                 self.lang or '',
                                 self.name or '')
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(str(self))
 
 
-class AdHocCommand(namedtuple('AdHocCommand', 'jid node name sessionid status data actions default notes')):
-
-    __slots__ = []
-
-    def __new__(cls, jid, node, name, sessionid=None, status=None,
-                data=None, actions=None, default=None, notes=None):
-        return super(AdHocCommand, cls).__new__(cls, jid, node, name, sessionid,
-                                                status, data, actions, default, notes)
+class AdHocCommand(NamedTuple):
+    jid: JID
+    node: Node
+    name: Optional[str]
+    sessionid: Optional[str]
+    status: AdHocStatus
+    data: Node
+    actions: Set[AdHocAction]
+    default: Optional[AdHocAction]
+    notes: list[AdHocCommandNote]
 
     @property
-    def is_completed(self):
+    def is_completed(self) -> bool:
         return self.status == AdHocStatus.COMPLETED
 
     @property
-    def is_canceled(self):
+    def is_canceled(self) -> bool:
         return self.status == AdHocStatus.CANCELED
 
 
-class ProxyData(namedtuple('ProxyData', 'type host username password')):
+class ProxyData(NamedTuple):
+    type: str
+    host: str
+    username: Optional[str]
+    password: Optional[str]
 
-    __slots__ = []
-
-    def get_uri(self):
+    def get_uri(self) -> str:
         if self.username is not None:
             user_pass = Soup.uri_encode('%s:%s' % (self.username,
                                                    self.password))
@@ -509,27 +683,34 @@ class ProxyData(namedtuple('ProxyData', 'type host username password')):
                                    self.host)
         return '%s://%s' % (self.type, self.host)
 
-    def get_resolver(self):
+    def get_resolver(self) -> Gio.SimpleProxyResolver:
         return Gio.SimpleProxyResolver.new(self.get_uri(), None)
 
 
-class OMEMOBundle(namedtuple('OMEMOBundle', 'spk spk_signature ik otpks')):
-    def pick_prekey(self):
+class OMEMOBundle(NamedTuple):
+    spk: dict[str, Union[int, bytes]]
+    spk_signature: bytes
+    ik: bytes
+    otpks: list[dict[str, str]]
+
+    def pick_prekey(self) -> dict[str, str]:
         return random.SystemRandom().choice(self.otpks)
 
 
-class ChatMarker(namedtuple('ChatMarker', 'type id')):
+class ChatMarker(NamedTuple):
+    type: str
+    id: str
 
     @property
-    def is_received(self):
+    def is_received(self) -> bool:
         return self.type == 'received'
 
     @property
-    def is_displayed(self):
+    def is_displayed(self) -> bool:
         return self.type == 'displayed'
 
     @property
-    def is_acknowledged(self):
+    def is_acknowledged(self) -> bool:
         return self.type == 'acknowledged'
 
 
@@ -668,61 +849,60 @@ class StreamError(CommonError):
         raise NotImplementedError
 
 
-class TuneData(namedtuple('TuneData', 'artist length rating source title track uri')):
-
-    __slots__ = []
-
-    def __new__(cls, artist=None, length=None, rating=None, source=None,
-                title=None, track=None, uri=None):
-        return super(TuneData, cls).__new__(cls, artist, length, rating,
-                                            source, title, track, uri)
+class TuneData(NamedTuple):
+    artist: Optional[str] = None
+    length: Optional[str] = None
+    rating: Optional[str] = None
+    source: Optional[str] = None
+    title: Optional[str] = None
+    track: Optional[str] = None
+    uri: Optional[str] = None
 
     @property
-    def was_removed(self):
+    def was_removed(self) -> bool:
         return (self.artist is None and
                 self.title is None and
                 self.track is None)
 
 
-class MAMData(namedtuple('MAMData', 'id query_id archive namespace timestamp')):
-
-    __slots__ = []
+class MAMData(NamedTuple):
+    id: str
+    query_id: str
+    archive: JID
+    namespace: str
+    timestamp: datetime
 
     @property
-    def is_ver_1(self):
+    def is_ver_1(self) -> bool:
         return self.namespace == Namespace.MAM_1
 
     @property
-    def is_ver_2(self):
+    def is_ver_2(self) -> bool:
         return self.namespace == Namespace.MAM_2
 
 
-class CarbonData(namedtuple('MAMData', 'type')):
-
-    __slots__ = []
+class CarbonData(NamedTuple):
+    type: str
 
     @property
-    def is_sent(self):
+    def is_sent(self) -> bool:
         return self.type == 'sent'
 
     @property
-    def is_received(self):
+    def is_received(self) -> bool:
         return self.type == 'received'
 
 
-class ReceiptData(namedtuple('ReceiptData', 'type id')):
-
-    __slots__ = []
-
-    def __new__(cls, type, id=None):
-        return super(ReceiptData, cls).__new__(cls, type, id)
+class ReceiptData(NamedTuple):
+    type: str
+    id: Optional[str] = None
 
     @property
-    def is_request(self):
+    def is_request(self) -> bool:
         return self.type == 'request'
 
     @property
-    def is_received(self):
+    def is_received(self) -> bool:
         return self.type == 'received'
 
 
@@ -730,267 +910,265 @@ class Properties:
     pass
 
 
+@dataclass
 class MessageProperties:
-    def __init__(self, own_jid):
-        self._own_jid = own_jid
-        self.carbon = None
-        self.type = MessageType.NORMAL
-        self.id = None
-        self.stanza_id = None
-        self.from_ = None
-        self.to = None
-        self.jid = None
-        self.subject = None
-        self.body = None
-        self.thread = None
-        self.user_timestamp = None
-        self.timestamp = time.time()
-        self.has_server_delay = False
-        self.error = None
-        self.eme = None
-        self.http_auth = None
-        self.nickname = None
-        self.from_muc = False
-        self.muc_jid = None
-        self.muc_nickname = None
-        self.muc_status_codes = None
-        self.muc_private_message = False
-        self.muc_invite = None
-        self.muc_decline = None
-        self.muc_user = None
-        self.muc_ofrom = None
-        self.captcha = None
-        self.voice_request = None
-        self.self_message = False
-        self.mam = None
-        self.pubsub = False
-        self.pubsub_event = None
-        self.openpgp = None
-        self.omemo = None
-        self.encrypted = None
-        self.pgp_legacy = None
-        self.marker = None
-        self.receipt = None
-        self.oob = None
-        self.correction = None
-        self.attention = False
-        self.forms = None
-        self.xhtml = None
-        self.security_label = None
-        self.chatstate = None
+    own_jid: JID
+    carbon: Optional[CarbonData] = None
+    type: MessageType = MessageType.NORMAL
+    id: Optional[str] = None
+    stanza_id: Optional[str] = None
+    from_: Optional[JID] = None
+    to: Optional[JID] = None
+    jid: Optional[JID] = None
+    subject = None
+    body: Optional[str] = None
+    thread: Optional[str] = None
+    user_timestamp = None
+    timestamp: float = time.time()
+    has_server_delay: bool = False
+    error = None
+    eme: Optional[EMEData] = None
+    http_auth: Optional[HTTPAuthData] = None
+    nickname: Optional[str] = None
+    from_muc: bool = False
+    muc_jid: Optional[JID] = None
+    muc_nickname: Optional[str] = None
+    muc_status_codes: Optional[Set[StatusCode]] = None
+    muc_private_message: bool = False
+    muc_invite = None
+    muc_decline = None
+    muc_user = None
+    muc_ofrom = None
+    captcha: Optional[CaptchaData] = None
+    voice_request: Optional[VoiceRequest] = None
+    self_message: bool = False
+    mam: Optional[MAMData] = None
+    pubsub: bool = False
+    pubsub_event: Optional[PubSubEventData] = None
+    openpgp = None
+    omemo = None
+    encrypted = None
+    pgp_legacy = None
+    marker: Optional[ChatMarker] = None
+    receipt: Optional[ReceiptData] = None
+    oob: Optional[OOBData] = None
+    correction: Optional[CorrectionData] = None
+    attention: bool = False
+    forms = None
+    xhtml: Optional[str] = None
+    security_label = None
+    chatstate = None
 
-    def is_from_us(self, bare_match=True):
+    def is_from_us(self, bare_match: bool = True):
         if self.from_ is None:
             raise ValueError('from attribute missing')
 
         if bare_match:
-            return self._own_jid.bare_match(self.from_)
-        return self._own_jid == self.from_
+            return self.own_jid.bare_match(self.from_)
+        return self.own_jid == self.from_
 
     @property
-    def has_user_delay(self):
+    def has_user_delay(self) -> bool:
         return self.user_timestamp is not None
 
     @property
-    def is_encrypted(self):
+    def is_encrypted(self) -> bool:
         return self.encrypted is not None
 
     @property
-    def is_omemo(self):
+    def is_omemo(self) -> bool:
         return self.omemo is not None
 
     @property
-    def is_openpgp(self):
+    def is_openpgp(self) -> bool:
         return self.openpgp is not None
 
     @property
-    def is_pgp_legacy(self):
+    def is_pgp_legacy(self) -> bool:
         return self.pgp_legacy is not None
 
     @property
-    def is_pubsub(self):
+    def is_pubsub(self) -> bool:
         return self.pubsub
 
     @property
-    def is_pubsub_event(self):
+    def is_pubsub_event(self) -> bool:
         return self.pubsub_event is not None
 
     @property
-    def is_carbon_message(self):
+    def is_carbon_message(self) -> bool:
         return self.carbon is not None
 
     @property
-    def is_sent_carbon(self):
+    def is_sent_carbon(self) -> bool:
         return self.carbon is not None and self.carbon.is_sent
 
     @property
-    def is_received_carbon(self):
+    def is_received_carbon(self) -> bool:
         return self.carbon is not None and self.carbon.is_received
 
     @property
-    def is_mam_message(self):
+    def is_mam_message(self) -> bool:
         return self.mam is not None
 
     @property
-    def is_http_auth(self):
+    def is_http_auth(self) -> bool:
         return self.http_auth is not None
 
     @property
-    def is_muc_subject(self):
+    def is_muc_subject(self) -> bool:
         return (self.type == MessageType.GROUPCHAT and
                 self.body is None and
                 self.subject is not None)
 
     @property
-    def is_muc_config_change(self):
-        return self.body is None and self.muc_status_codes
+    def is_muc_config_change(self) -> bool:
+        return self.body is None and bool(self.muc_status_codes)
 
     @property
-    def is_muc_pm(self):
+    def is_muc_pm(self) -> bool:
         return self.muc_private_message
 
     @property
-    def is_muc_invite_or_decline(self):
+    def is_muc_invite_or_decline(self) -> bool:
         return (self.muc_invite is not None or
                 self.muc_decline is not None)
 
     @property
-    def is_captcha_challenge(self):
+    def is_captcha_challenge(self) -> bool:
         return self.captcha is not None
 
     @property
-    def is_voice_request(self):
+    def is_voice_request(self) -> bool:
         return self.voice_request is not None
 
     @property
-    def is_self_message(self):
+    def is_self_message(self) -> bool:
         return self.self_message
 
     @property
-    def is_marker(self):
+    def is_marker(self) -> bool:
         return self.marker is not None
 
     @property
-    def is_receipt(self):
+    def is_receipt(self) -> bool:
         return self.receipt is not None
 
     @property
-    def is_oob(self):
+    def is_oob(self) -> bool:
         return self.oob is not None
 
     @property
-    def is_correction(self):
+    def is_correction(self) -> bool:
         return self.correction is not None
 
     @property
-    def has_attention(self):
+    def has_attention(self) -> bool:
         return self.attention
 
     @property
-    def has_forms(self):
+    def has_forms(self) -> bool:
         return self.forms is not None
 
     @property
-    def has_xhtml(self):
+    def has_xhtml(self) -> bool:
         return self.xhtml is not None
 
     @property
-    def has_security_label(self):
+    def has_security_label(self) -> bool:
         return self.security_label is not None
 
     @property
-    def has_chatstate(self):
+    def has_chatstate(self) -> bool:
         return self.chatstate is not None
 
 
+@dataclass
 class IqProperties:
-    def __init__(self, own_jid):
-        self._own_jid = own_jid
-        self.type = None
-        self.jid = None
-        self.id = None
-        self.error = None
-        self.query = None
-        self.payload = None
-        self.http_auth = None
-        self.ibb = None
-        self.blocking = None
-        self.roster = None
+    own_jid: JID
+    type: Optional[IqType] = None
+    jid: Optional[JID] = None
+    id: Optional[str] = None
+    error: Optional[Any] = None
+    query: Optional[Node] = None
+    payload: Optional[Node] = None
+    http_auth: Optional[HTTPAuthData] = None
+    ibb: Optional[IBBData] = None
+    blocking: Optional[BlockingPush] = None
+    roster: Optional[RosterPush] = None
 
     @property
-    def is_http_auth(self):
+    def is_http_auth(self) -> bool:
         return self.http_auth is not None
 
     @property
-    def is_ibb(self):
+    def is_ibb(self) -> bool:
         return self.ibb is not None
 
     @property
-    def is_blocking(self):
+    def is_blocking(self) -> bool:
         return self.blocking is not None
 
     @property
-    def is_roster(self):
+    def is_roster(self) -> bool:
         return self.roster is not None
 
 
+@dataclass
 class PresenceProperties:
-    def __init__(self, own_jid):
-        self._own_jid = own_jid
-        self.type = None
-        self.priority = None
-        self.show = None
-        self.jid = None
-        self.resource = None
-        self.id = None
-        self.payload = None
-        self.query = None
-        self.nickname = None
-        self.self_presence = False
-        self.self_bare = False
-        self.from_muc = False
-        self.status = ''
-        self.timestamp = time.time()
-        self.user_timestamp = None
-        self.idle_timestamp = None
-        self.signed = None
-        self.error = None
-        self.avatar_sha = None
-        self.avatar_state = AvatarState.IGNORE
-        self.muc_jid = None
-        self.muc_status_codes = None
-        self.muc_user = None
-        self.muc_nickname = None
-        self.muc_destroyed = None
-        self.entity_caps = None
+    own_jid: JID
+    type: Optional[PresenceType] = None
+    priority: Optional[int] = None
+    show: Optional[PresenceShow] = None
+    jid: Optional[JID] = None
+    resource: Optional[str] = None
+    id: Optional[str] = None
+    nickname: Optional[str] = None
+    self_presence: bool = False
+    self_bare: bool = False
+    from_muc: bool = False
+    status: str = ''
+    timestamp: float = time.time()
+    user_timestamp: Optional[float] = None
+    idle_timestamp: Optional[float] = None
+    signed: Optional[Any] = None
+    error: Optional[Any] = None
+    avatar_sha: Optional[str] = None
+    avatar_state: AvatarState = AvatarState.IGNORE
+    muc_jid: Optional[JID] = None
+    muc_status_codes: Optional[Set[StatusCode]] = None
+    muc_user: Optional[MucUserData] = None
+    muc_nickname: Optional[str] = None
+    muc_destroyed: Optional[MucDestroyed] = None
+    entity_caps: Optional[EntityCapsData] = None
 
     @property
-    def is_self_presence(self):
+    def is_self_presence(self) -> bool:
         return self.self_presence
 
     @property
-    def is_self_bare(self):
+    def is_self_bare(self) -> bool:
         return self.self_bare
 
     @property
-    def is_muc_destroyed(self):
+    def is_muc_destroyed(self) -> bool:
         return self.muc_destroyed is not None
 
     @property
-    def is_muc_self_presence(self):
+    def is_muc_self_presence(self) -> bool:
         return (self.from_muc and
                 self.muc_status_codes is not None and
                 StatusCode.SELF in self.muc_status_codes)
 
     @property
-    def is_nickname_modified(self):
+    def is_nickname_modified(self) -> bool:
         return (self.from_muc and
                 self.muc_status_codes is not None and
                 StatusCode.NICKNAME_MODIFIED in self.muc_status_codes and
                 self.type == PresenceType.AVAILABLE)
 
     @property
-    def is_nickname_changed(self):
+    def is_nickname_changed(self) -> bool:
         return (self.from_muc and
                 self.muc_status_codes is not None and
                 StatusCode.NICKNAME_CHANGE in self.muc_status_codes and
@@ -998,13 +1176,13 @@ class PresenceProperties:
                 self.type == PresenceType.UNAVAILABLE)
 
     @property
-    def new_jid(self):
+    def new_jid(self) -> JID:
         if not self.is_nickname_changed:
             raise ValueError('This is not a nickname change')
         return self.jid.new_with(resource=self.muc_user.nick)
 
     @property
-    def is_kicked(self):
+    def is_kicked(self) -> bool:
         status_codes = {
             StatusCode.REMOVED_BANNED,
             StatusCode.REMOVED_KICKED,
@@ -1015,17 +1193,17 @@ class PresenceProperties:
         }
         return (self.from_muc and
                 self.muc_status_codes is not None and
-                status_codes.intersection(self.muc_status_codes) and
+                bool(status_codes.intersection(self.muc_status_codes)) and
                 self.type == PresenceType.UNAVAILABLE)
 
     @property
-    def is_muc_shutdown(self):
+    def is_muc_shutdown(self) -> bool:
         return (self.from_muc and
                 self.muc_status_codes is not None and
                 StatusCode.REMOVED_SERVICE_SHUTDOWN in self.muc_status_codes)
 
     @property
-    def is_new_room(self):
+    def is_new_room(self) -> bool:
         status_codes = {
             StatusCode.CREATED,
             StatusCode.SELF
@@ -1035,14 +1213,14 @@ class PresenceProperties:
                 status_codes.issubset(self.muc_status_codes))
 
     @property
-    def affiliation(self):
+    def affiliation(self) -> Optional[Affiliation]:
         try:
             return self.muc_user.affiliation
         except Exception:
             return None
 
     @property
-    def role(self):
+    def role(self) -> Optional[Role]:
         try:
             return self.muc_user.role
         except Exception:
@@ -1050,13 +1228,13 @@ class PresenceProperties:
 
 
 class XHTMLData:
-    def __init__(self, xhtml):
-        self._bodys = {}
+    def __init__(self, xhtml: Node):
+        self._bodys: dict[Optional[str], Node] = {}
         for body in xhtml.getTags('body', namespace=Namespace.XHTML):
             lang = body.getXmlLang()
             self._bodys[lang] = body
 
-    def get_body(self, pref_lang=None):
+    def get_body(self, pref_lang: Optional[str] = None) -> str:
         if pref_lang is not None:
             body = self._bodys.get(pref_lang)
             if body is not None:
