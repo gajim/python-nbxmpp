@@ -16,8 +16,6 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-from ctypes import string_at
-from datetime import datetime
 
 from typing import Any
 from typing import Optional
@@ -27,9 +25,9 @@ from typing import Union
 
 import time
 import random
-from collections import namedtuple
 from dataclasses import dataclass
 from dataclasses import field
+from datetime import datetime
 
 from gi.repository import Soup
 from gi.repository import Gio
