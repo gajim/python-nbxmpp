@@ -49,12 +49,12 @@ class AdHoc(BaseModule):
         if response.isError():
             raise StanzaError(response)
 
-        payload = response.getQueryPayload()
-        if payload is None:
-            raise MalformedStanzaError('query payload missing', response)
+        children = response.getQueryChildren()
+        if not children:
+            raise MalformedStanzaError('query children missing', response)
 
         command_list = []
-        for item in payload:
+        for item in children:
             if item.getName() != 'item':
                 continue
             try:

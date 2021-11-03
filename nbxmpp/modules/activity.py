@@ -70,7 +70,7 @@ class Activity(BaseModule):
                 activity = name
                 subactivity = self._parse_sub_activity(child)
 
-        if activity is None and activity_node.getPayload():
+        if activity is None and activity_node.getChildren():
             self._log.warning('No valid activity value found')
             self._log.warning(stanza)
             raise NodeProcessed

@@ -437,9 +437,9 @@ class MUC(BaseModule):
             raise StanzaError(response)
 
         jid = response.getFrom()
-        payload = response.getQueryPayload()
+        children = response.getQueryChildren()
 
-        for form in payload:
+        for form in children:
             if form.getNamespace() == Namespace.DATA:
                 dataform = extend_form(node=form)
                 self._log.info('Config form received for %s', jid)

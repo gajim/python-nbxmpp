@@ -68,7 +68,7 @@ class Mood(BaseModule):
             elif name in MOODS:
                 mood = name
 
-        if mood is None and mood_node.getPayload():
+        if mood is None and mood_node.getChildren():
             self._log.warning('No valid mood value found')
             self._log.warning(stanza)
             raise NodeProcessed
