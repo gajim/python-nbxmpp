@@ -1444,15 +1444,6 @@ class Iq(Protocol):
             return tag.getAttr('node')
         return None
 
-    def getQueryPayload(self) -> Optional[list[Union[Node, str]]]:
-        """
-        Return the 'query' child element payload
-        """
-        tag = self.getQuery()
-        if tag:
-            return tag.getPayload()
-        return None
-
     def getQueryChildren(self) -> Optional[list[Node]]:
         """
         Return the 'query' child element child nodes

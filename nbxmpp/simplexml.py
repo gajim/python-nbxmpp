@@ -324,25 +324,6 @@ class Node:
         """
         return self.parent
 
-    def getPayload(self) -> List[Union[Node, str]]:
-        """
-        Return the payload of node i.e. list of child nodes and CDATA entries.
-        F.e. for "<node>text1<nodea/><nodeb/> text2</node>" will be returned
-        list: ['text1', <nodea instance>, <nodeb instance>, ' text2']
-        """
-        ret: List[Union[Node, str]] = []
-        for i in range(len(self.kids)+len(self.data)+1):
-            try:
-                if self.data[i]:
-                    ret.append(self.data[i])
-            except IndexError:
-                pass
-            try:
-                ret.append(self.kids[i])
-            except IndexError:
-                pass
-        return ret
-
     def getTag(self,
                name: str,
                attrs: Optional[Attrs] = None,
