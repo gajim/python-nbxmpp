@@ -931,7 +931,7 @@ class MessageProperties:
     body: Optional[str] = None
     thread: Optional[str] = None
     user_timestamp = None
-    timestamp: float = time.time()
+    timestamp: float = field(default_factory=time.time)
     has_server_delay: bool = False
     error = None
     eme: Optional[EMEData] = None
@@ -1153,7 +1153,7 @@ class PresenceProperties:
     self_bare: bool = False
     from_muc: bool = False
     status: str = ''
-    timestamp: float = time.time()
+    timestamp: float = field(default_factory=time.time)
     user_timestamp: Optional[float] = None
     idle_timestamp: Optional[float] = None
     signed: Optional[Any] = None
