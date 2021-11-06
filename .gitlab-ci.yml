@@ -11,7 +11,7 @@ run-test:
     - rm -rf civenv-nbxmpp
     - virtualenv -p python3 --system-site-packages civenv-nbxmpp
     - . ./civenv-nbxmpp/bin/activate
-    - pip3 install -I pylint==2.4.4
+    - pip3 install -I pylint
     - pip3 install -I coverage
     - pip3 install -I idna
     - pip3 install -I precis-i18n
