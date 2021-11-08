@@ -44,6 +44,7 @@ from nbxmpp.modules.iq import BaseIq
 from nbxmpp.modules.nickname import Nickname
 from nbxmpp.modules.delay import Delay
 from nbxmpp.modules.muc import MUC
+from nbxmpp.modules.muc.moderation import Moderation
 from nbxmpp.modules.idle import Idle
 from nbxmpp.modules.pgplegacy import PGPLegacy
 from nbxmpp.modules.vcard_avatar import VCardAvatar
@@ -156,6 +157,7 @@ class StanzaDispatcher(Observable):
         self._modules['HTTPAuth'] = HTTPAuth(self._client)
         self._modules['Nickname'] = Nickname(self._client)
         self._modules['MUC'] = MUC(self._client)
+        self._modules['Moderation'] = Moderation(self._client)
         self._modules['Delay'] = Delay(self._client)
         self._modules['Captcha'] = Captcha(self._client)
         self._modules['Idle'] = Idle(self._client)

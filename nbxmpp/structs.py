@@ -284,6 +284,13 @@ class CorrectionData(NamedTuple):
     id: str
 
 
+class ModerationData(NamedTuple):
+    stanza_id: str
+    moderator_jid: str
+    reason: Optional[str] = None
+    timestamp: Optional[str] = None
+
+
 class DiscoItems(NamedTuple):
     jid: JID
     node: str
@@ -467,6 +474,10 @@ class DiscoInfo(NamedTuple):
     @property
     def has_httpupload(self) -> bool:
         return Namespace.HTTPUPLOAD_0 in self.features
+
+    @property
+    def has_message_moderation(self) -> bool:
+        return Namespace.MESSAGE_MODERATE in self.features
 
     @property
     def is_muc(self) -> bool:
@@ -960,6 +971,7 @@ class MessageProperties:
     receipt: Optional[ReceiptData] = None
     oob: Optional[OOBData] = None
     correction: Optional[CorrectionData] = None
+    moderation: Optional[ModerationData] = None
     attention: bool = False
     forms = None
     xhtml: Optional[str] = None
@@ -1068,6 +1080,10 @@ class MessageProperties:
     @property
     def is_correction(self) -> bool:
         return self.correction is not None
+
+    @property
+    def is_moderation(self) -> bool:
+        return self.moderation is not None
 
     @property
     def has_attention(self) -> bool:
