@@ -329,26 +329,6 @@ def get_rand_number() -> int:
     return int(binascii.hexlify(os.urandom(6)), 16)
 
 
-def get_invalid_xml_regex():
-    # \ufddo -> \ufdef range
-    c = '\ufdd0'
-    r = c
-    while c < '\ufdef':
-        c = chr(ord(c) + 1)
-        r += '|' + c
-
-    # \ufffe-\uffff, \u1fffe-\u1ffff, ..., \u10fffe-\u10ffff
-    c = '\ufffe'
-    r += '|' + c
-    r += '|' + chr(ord(c) + 1)
-    while c < '\U0010fffe':
-        c = chr(ord(c) + 0x10000)
-        r += '|' + c
-        r += '|' + chr(ord(c) + 1)
-
-    return re.compile(r)
-
-
 def get_tls_error_phrase(tls_error: Gio.TlsCertificateFlags) -> str:
     phrase = GIO_TLS_ERRORS.get(tls_error)
     if phrase is None:

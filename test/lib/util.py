@@ -5,7 +5,7 @@ from gi.repository import GLib
 
 from test.lib.const import STREAM_START
 
-from nbxmpp.dispatcher import StanzaDispatcher
+from nbxmpp.dispatcher import Dispatcher
 from nbxmpp.jid import JID
 
 
@@ -14,7 +14,7 @@ class StanzaHandlerTest(unittest.TestCase):
         # Setup mock client
         self.client = Mock()
         self.client.is_websocket = False
-        self.dispatcher = StanzaDispatcher(self.client)
+        self.dispatcher = Dispatcher(self.client)
 
         self.client.get_bound_jid.return_value = JID.from_string('test@test.test')
 

@@ -157,24 +157,15 @@ class WebsocketConnection(Connection, WebsocketElementQueue):
         if self._state not in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
             self._finalize('disconnected')
 
-    def send(self, stanza: types.Base, now: bool = False):
+    def send(self, element: types.Base, now: bool = False):
         if self._state in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
             self._log.warning('send() not possible in state: %s', self._state)
             return
 
-        data = self.serialise(stanza)
-        self._send(data)
-
-    def _send(self, data: bytes):
-        self._websocket.send_binary(data)
+        data = element.tostring()
+        self._websocket.send_text(data)
         self._log_stanza(data, received=False)
-        self.notify('data-sent', stanza)
-
-    def _start_stream(self, data: bytes):
-        self._send(data)
-
-    def _end_stream(self, data: bytes):
-        self._send(data)
+        self.notify('data-sent', element)
 
     def disconnect(self):
         if self._state == TCPState.CONNECTING:

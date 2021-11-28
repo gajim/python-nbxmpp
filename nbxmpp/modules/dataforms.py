@@ -26,14 +26,12 @@ import copy
 from nbxmpp.elements import Base
 from nbxmpp.lookups import register_attribute_lookup
 from nbxmpp.lookups import register_class_lookup
-from nbxmpp.lookups import register_sub_element_lookup
 from nbxmpp.namespaces import Namespace
 from nbxmpp.exceptions import WrongFieldValue
 from nbxmpp.jid import JID
 
 
 FIELD_TAG = '{%s}field' % Namespace.DATA
-DATAFORM_TAG = '{%s}x' % Namespace.DATA
 
 
 class DataField(Base):
@@ -323,50 +321,6 @@ class TextMultiField(DataField):
         return True, ''
 
 
-class DataFormBase(Base):
-
-    TAG = 'item'
-    NAMESPACE = Namespace.DATA
-
-    @property
-    def type(self) -> Optional[str]:
-        return self.get('type')
-
-    def set_type(self, type_: str):
-        if type_ not in ('form', 'submit', 'cancel', 'result'):
-            raise WrongFieldValue
-        self.set('type', type_)
-
-    @property
-    def title(self) -> Optional[str]:
-        return self.find_tag_text('title')
-
-    def set_title(self, title: str):
-        self.add_tag_text('title', title)
-
-    def remove_title(self):
-        self.remove_tag('title')
-
-    @property
-    def instructions(self):
-        elements = [element.text or '' for
-                    element in self.find_tags('instructions')]
-        return '\n'.join(elements)
-
-    def set_instructions(self, instructions: str):
-        self.remove_instructions()
-        for line in instructions.split('\n'):
-            self.add_tag_text('instruction', line)
-
-    def remove_instructions(self):
-        for instruction in self.find_tags('instructions'):
-            self.remove(instruction)
-
-    @property
-    def is_reported(self):
-        return self.has_tag('reported')
-
-
 class DataRecord(Base):
 
     @property
@@ -432,15 +386,65 @@ class DataRecord(Base):
 
 
 class Item(DataRecord):
-
-    TAG = 'item'
-    NAMESPACE = Namespace.DATA
+    pass
 
 
-def cleanup_field(field: DataField):
-    field.remove_label()
-    field.remove_description()
-    field.remove_media()
+class DataFormBase(Base):
+
+    @property
+    def type(self) -> Optional[str]:
+        return self.get('type')
+
+    def set_type(self, type_: str):
+        if type_ not in ('form', 'submit', 'cancel', 'result'):
+            raise WrongFieldValue
+        self.set('type', type_)
+
+    @property
+    def title(self) -> Optional[str]:
+        return self.find_tag_text('title')
+
+    def set_title(self, title: str):
+        self.add_tag_text('title', title)
+
+    def remove_title(self):
+        self.remove_tag('title')
+
+    @property
+    def instructions(self):
+        elements = [element.text or '' for
+                    element in self.find_tags('instructions')]
+        return '\n'.join(elements)
+
+    def set_instructions(self, instructions: str):
+        self.remove_instructions()
+        for line in instructions.split('\n'):
+            self.add_tag_text('instruction', line)
+
+    def remove_instructions(self):
+        for instruction in self.find_tags('instructions'):
+            self.remove(instruction)
+
+    @property
+    def is_reported(self):
+        return self.has_tag('reported')
+
+    @property
+    def records(self) -> list[Item]:
+        return list(self.iter_records())
+
+    def add_record(self) -> Item:
+        return self.add_tag('item')
+
+    def remove_record(self, record: Item):
+        self.remove(record)
+
+    def remove_records(self):
+        self.remove_tags('item')
+
+    def iter_records(self) -> Item:
+        for record in self.find_tags('item'):
+            yield record
 
 
 class DataForm(DataFormBase, DataRecord):
@@ -469,25 +473,10 @@ class DataForm(DataFormBase, DataRecord):
         return dataform
 
 
-class ReportedDataForm(DataFormBase):
-
-    @property
-    def records(self) -> list[Item]:
-        return list(self.iter_records())
-
-    def add_record(self) -> Item:
-        return self.add_tag('item')
-
-    def remove_record(self, record: Item):
-        self.remove(record)
-
-    def remove_records(self):
-        self.remove_tags('item')
-
-    def iter_records(self) -> Item:
-        for record in self.find_tags('item'):
-            yield record
-
+def cleanup_field(field: DataField):
+    field.remove_label()
+    field.remove_description()
+    field.remove_media()
 
 
 register_attribute_lookup(FIELD_TAG, 'type', 'boolean', BooleanField)
@@ -502,6 +491,5 @@ register_attribute_lookup(FIELD_TAG, 'type', 'list-single', ListSingleField)
 register_attribute_lookup(FIELD_TAG, 'type', 'list-multi', ListMultiField)
 register_attribute_lookup(FIELD_TAG, 'type', 'text-multi', TextMultiField)
 
-register_sub_element_lookup(DATAFORM_TAG, 'reported', ReportedDataForm)
-
 register_class_lookup('x', Namespace.DATA, DataForm)
+register_class_lookup('item', Namespace.DATA, Item)

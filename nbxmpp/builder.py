@@ -24,6 +24,10 @@ from nbxmpp.const import IqType, MessageType, PresenceType
 
 from nbxmpp.lookups import ElementLookup
 from nbxmpp.elements import Base
+from nbxmpp.elements import StreamStart as _StreamStart
+from nbxmpp.elements import StreamEnd as StreamEnd
+from nbxmpp.elements import Open as _Open
+from nbxmpp.elements import Close as _Close
 from nbxmpp.elements import create_nsmap_and_tag
 from nbxmpp.jid import JID
 from nbxmpp.namespaces import Namespace
@@ -156,6 +160,25 @@ def DataForm(type: str) -> types.DataForm:
     dataform = E('x', namespace=Namespace.DATA)
     dataform.set_type(type)
     return dataform
+
+
+def StreamStart(domain: str, lang: str) -> types.Base:
+    return _StreamStart(attrib={'version': '1.0',
+                                'to': domain,
+                                f'{{{Namespace.XML}}}lang': lang},
+                        nsmap={'stream': Namespace.STREAMS,
+                               'xml': Namespace.XML,
+                                None: Namespace.CLIENT})
+
+def Open(domain: str, lang: str) -> types.Base:
+    return _Open(attrib={'version': '1.0',
+                         'to': domain,
+                         f'{{{Namespace.XML}}}lang': lang},
+                 nsmap={None: Namespace.FRAMING,
+                        'xml': Namespace.XML})
+
+def Close() -> types.Base:
+    return _Close(nsmap={None: Namespace.FRAMING})
 
 
 def parse(data: str) -> Base:

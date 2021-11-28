@@ -128,9 +128,6 @@ class Connection(Observable):
     def connect(self) -> None:
         raise NotImplementedError
 
-    def send(self, stanza: Any, now: bool = False) -> None:
-        raise NotImplementedError
-
     def _log_stanza(self, data: Any, received: bool = True):
         if isinstance(data, bytes):
             data = data.decode()

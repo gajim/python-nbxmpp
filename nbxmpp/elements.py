@@ -147,6 +147,7 @@ class Base(etree.ElementBase):
         return self.nsmap.get(None)
 
     def tostring(self, pretty_print: bool = False) -> str:
+        etree.indent(self, space=8*' ')
         return etree.tostring(self, pretty_print=pretty_print).decode()
 
     def __str__(self) -> str:
@@ -204,3 +205,34 @@ class Stanza(Base):
         error.add_tag(condition, namespace=namespace)
         if text is not None:
             error.add_tag_text('text', text, namespace=namespace)
+
+
+class Nonza(Base):
+    pass
+
+
+class StreamStart(Base):
+    TAG = 'stream'
+    NAMESPACE = Namespace.STREAMS
+
+    def tostring(self, pretty_print: bool = False) -> str:
+        data = etree.tostring(self, pretty_print=False, encoding=str)
+        return '<?xml version="1.0"?>' + data[:-2] + '>'
+
+
+class StreamEnd(Base):
+    TAG = 'stream'
+    NAMESPACE = Namespace.STREAMS
+
+    def tostring(self, pretty_print: bool = False) -> str:
+        return '</stream:stream>'
+
+
+class Open(Base):
+    TAG = 'open'
+    NAMESPACE = Namespace.FRAMING
+
+
+class Close(Base):
+    TAG = 'close'
+    NAMESPACE = Namespace.FRAMING

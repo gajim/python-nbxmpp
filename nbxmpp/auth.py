@@ -26,6 +26,8 @@ import logging
 import hashlib
 from hashlib import pbkdf2_hmac
 
+from nbxmpp.elements import Nonza
+from nbxmpp.lookups import register_class_lookup
 from nbxmpp.namespaces import Namespace
 from nbxmpp.const import SASL_ERROR_CONDITIONS
 from nbxmpp.const import SASL_AUTH_MECHS
@@ -456,3 +458,8 @@ class SCRAM_SHA_256_PLUS(SCRAM_SHA_256):
 
 class AuthFail(Exception):
     pass
+
+
+register_class_lookup('challenge', Namespace.XMPP_SASL, Nonza)
+register_class_lookup('failure', Namespace.XMPP_SASL, Nonza)
+register_class_lookup('success', Namespace.XMPP_SASL, Nonza)

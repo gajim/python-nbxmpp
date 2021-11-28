@@ -151,7 +151,6 @@ class _Namespaces:
     SIGNED: str = 'jabber:x:signed'
     SIMS: str = 'urn:xmpp:sims:1'
     STICKERS: str = 'urn:xmpp:stickers:0'
-    STREAM: str = 'http://affinix.com/jabber/stream'
     STREAM_MGMT: str = 'urn:xmpp:sm:3'
     STREAMS: str = 'http://etherx.jabber.org/streams'
     STYLING: str = 'urn:xmpp:styling:0'

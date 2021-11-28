@@ -38,7 +38,6 @@ from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.builder import Iq
 from nbxmpp.lookups import register_class_lookup
-from nbxmpp.lookups import register_sub_element_lookup
 from nbxmpp.elements import Base
 
 
@@ -368,9 +367,6 @@ DiscoInfoGenerator = Generator[Union[types.Iq, DiscoInfo], types.Iq, None]
 DiscoItemsGenerator = Generator[Union[types.Iq, list[DiscoItem]], types.Iq, None]
 
 
-register_sub_element_lookup(f'{Namespace.DISCO_INFO}query',
-                            'identity',
-                            DiscoInfo)
-
+register_class_lookup('query', Namespace.DISCO_INFO, DiscoInfo)
 register_class_lookup('identity', Namespace.DISCO_INFO, DiscoIdentity)
 register_class_lookup('item', Namespace.DISCO_ITEMS, DiscoItem)

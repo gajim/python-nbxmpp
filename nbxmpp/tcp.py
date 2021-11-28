@@ -356,23 +356,15 @@ class TCPConnection(Connection, TCPElementQueue):
         if self.has_pending():
             self._write_all_async(*self.pop())
 
-    def send(self, stanza, now: bool = False):
+    def send(self, element: types.Base, now: bool = False):
         if self._state in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
             self._log.warning('send() not possible in state: %s', self._state)
             return
 
-        self.append(stanza, first=now)
+        self.append(element, first=now)
 
         if not self._con.get_output_stream().has_pending():
             self._write_all_async(*self.pop())
-
-    def _start_stream(self, data: bytes):
-        if not self._con.get_output_stream().has_pending():
-            self._write_all_async(data)
-
-    def _end_stream(self, data: bytes):
-        if not self._con.get_output_stream().has_pending():
-            self._write_all_async(data)
 
     def disconnect(self):
         self._remove_keepalive_timer()

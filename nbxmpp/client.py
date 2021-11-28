@@ -46,7 +46,7 @@ from nbxmpp.const import StreamError
 from nbxmpp.const import ConnectionType
 from nbxmpp.const import ConnectionProtocol
 from nbxmpp.const import Mode
-from nbxmpp.dispatcher import StanzaDispatcher
+from nbxmpp.dispatcher import Dispatcher
 from nbxmpp.util import generate_id
 from nbxmpp.util import Observable
 from nbxmpp.util import validate_stream_header
@@ -55,7 +55,7 @@ from nbxmpp.modules.stream import Features
 from nbxmpp.modules.stream import make_bind_request
 from nbxmpp import types
 
-log = logging.getLogger('nbxmpp.stream')
+log = logging.getLogger('nbxmpp.client')
 
 
 class Client(Observable):
@@ -127,10 +127,11 @@ class Client(Observable):
         self._ping_source_id = None
         self._tasks = []
 
-        self._dispatcher = StanzaDispatcher(self)
+        self._dispatcher = Dispatcher(self)
         self._dispatcher.subscribe('before-dispatch', self._on_before_dispatch)
         self._dispatcher.subscribe('parsing-error', self._on_parsing_error)
         self._dispatcher.subscribe('stream-end', self._on_stream_end)
+        self._dispatcher.subscribe('stream-start', self._on_stream_start)
 
         self._smacks = Smacks(self)
         self._sasl = SASL(self)
@@ -329,7 +330,9 @@ class Client(Observable):
     def proxy(self) -> Optional[ProxyData]:
         return self._proxy
 
-    def get_bound_jid(self) -> Optional[JID]:
+    def get_bound_jid(self) -> JID:
+        if self._jid is None:
+            raise ValueError('no jid bound')
         return self._jid
 
     def _set_bound_jid(self, jid: str):
@@ -495,7 +498,7 @@ class Client(Observable):
         self.disconnect()
 
     def _on_parsing_error(self,
-                          _dispatcher: StanzaDispatcher,
+                          _dispatcher: Dispatcher,
                           _signal_name: str,
                           error: str):
 
@@ -504,8 +507,16 @@ class Client(Observable):
             return
         self._disconnect_with_error(StreamError.PARSING, 'parsing-error', error)
 
+    def _on_stream_start(self,
+                         _dispatcher: Dispatcher,
+                         _signal_name: str,
+                         element: types.Base):
+
+        self.notify('stanza-received', element)
+        self._xmpp_state_machine(element)
+
     def _on_stream_end(self,
-                       _dispatcher: StanzaDispatcher,
+                       _dispatcher: Dispatcher,
                        _signal_name: str,
                        error: str):
 
@@ -557,7 +568,7 @@ class Client(Observable):
         self.notify('stanza-sent', data)
 
     def _on_before_dispatch(self,
-                            _dispatcher: StanzaDispatcher,
+                            _dispatcher: Dispatcher,
                             _signal_name: str,
                             data: Any):
 

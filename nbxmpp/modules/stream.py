@@ -20,14 +20,13 @@ from typing import cast
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.elements import Base
+from nbxmpp.elements import Nonza
 from nbxmpp.builder import E
 from nbxmpp.lookups import register_class_lookup
+from nbxmpp.lookups import register_sub_element_lookup
 
 
-class Features(Base):
-
-    TAG = 'features'
-    NAMESPACE = Namespace.STREAMS
+class Features(Nonza):
 
     def has_starttls(self) -> tuple[bool, bool]:
         tls = self.find_tag('starttls', namespace=Namespace.TLS)
@@ -37,7 +36,8 @@ class Features(Base):
         return False, False
 
     def has_sasl(self) -> bool:
-        return self.find_tag('mechanisms', namespace=Namespace.XMPP_SASL) is not None
+        return self.find_tag('mechanisms',
+                             namespace=Namespace.XMPP_SASL) is not None
 
     def get_mechs(self) -> set[str]:
         mechanisms = self.find_tag('mechanisms', namespace=Namespace.XMPP_SASL)
@@ -89,3 +89,7 @@ def make_bind_request(resource: Optional[str]) -> Base:
 
 
 register_class_lookup('features', Namespace.STREAMS, Features)
+
+register_sub_element_lookup(f'{{{Namespace.CLIENT}}}iq',
+                            f'{{{Namespace.BIND}}}bind',
+                            Nonza)

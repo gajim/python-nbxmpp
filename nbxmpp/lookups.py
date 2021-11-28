@@ -24,12 +24,12 @@ from lxml import etree
 
 from nbxmpp.elements import Base
 
-class ClassAtrributeLookup(etree.PythonElementClassLookup):
+class ClassAttributeLookup(etree.PythonElementClassLookup):
 
     _class_lookups: dict(str, dict(str, dict(str, Any))) = defaultdict(lambda: defaultdict(dict))
 
     @classmethod
-    def register(cls, tag: str, attr: str, value: Optonal[str], element_class: Any):
+    def register(cls, tag: str, attr: str, value: Optional[str], element_class: Any):
         cls._class_lookups[tag][attr][value] = element_class
 
     def lookup(self, _document: Any, element: etree._Element) -> Optional[Any]:
@@ -72,7 +72,7 @@ def register_attribute_lookup(tag: str,
                               attr: str,
                               value: Optional[str],
                               element_class: Any):
-    ClassAtrributeLookup.register(tag, attr, value, element_class)
+    ClassAttributeLookup.register(tag, attr, value, element_class)
 
 
 def register_sub_element_lookup(tag: str,
@@ -91,7 +91,7 @@ def register_class_lookup(tag: str,
 # Fallback order is important
 _BaseLookup = etree.ElementDefaultClassLookup(element=Base)
 _NamespaceLookup = etree.ElementNamespaceClassLookup(fallback=_BaseLookup)
-_SubElementLookup = SubElementLookup(fallback=_NamespaceLookup)
-_ClassAtrributeLookup = ClassAtrributeLookup(fallback=_SubElementLookup)
+# _SubElementLookup = SubElementLookup(fallback=_NamespaceLookup) # does not work with PullParser
+_ClassAttributeLookup = ClassAttributeLookup(fallback=_NamespaceLookup)
 
-ElementLookup = _ClassAtrributeLookup
+ElementLookup = _ClassAttributeLookup

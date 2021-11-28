@@ -17,58 +17,56 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 from collections import deque
 
-from lxml import etree
-
+from nbxmpp import types
+from nbxmpp import elements as elem
 from nbxmpp.namespaces import Namespace
-
-
-ElementT = etree._Element
+from nbxmpp.lookups import register_class_lookup
+from nbxmpp.builder import StreamStart
+from nbxmpp.builder import StreamEnd
+from nbxmpp.builder import Open
+from nbxmpp.builder import Close
 
 
 class XMPPElementQueue:
     def __init__(self) -> None:
         self._element_buffer = deque([])
-        self._domain = None
-        self._lang = None
+        self._domain = cast(str, None)
+        self._lang = cast(str, None)
 
-    def _get_stream_header(self) -> bytes:
+    def _get_stream_header(self) -> types.Base:
         raise NotImplementedError
 
-    def _get_stream_end(self) -> bytes:
+    def _get_stream_end(self) -> types.Base:
         raise NotImplementedError
 
     def has_pending(self) -> bool:
         return bool(self._element_buffer)
 
-    def append(self, element: ElementT, first: bool = False) -> None:
+    def append(self, element: types.Base, first: bool = False) -> None:
         if first:
             self._element_buffer.appendleft(element)
         else:
             self._element_buffer.append(element)
 
-    def serialise(self, element: ElementT) -> bytes:
-        return etree.tostring(element, encoding='utf-8')
-
     def start_stream(self, domain: str, lang: str = 'en') -> None:
         self._element_buffer.clear()
         self._domain = domain
         self._lang = lang
-        start = self._get_stream_header()
-        self._start_stream(start)
+        element = self._get_stream_header()
+        self.send(element)
 
-    def _start_stream(self, data: bytes) -> None:
+    def send(self, element: types.Base, now: bool = False) -> None:
         raise NotImplementedError
 
     def end_stream(self) -> None:
-        end = self._get_stream_end()
-        self._end_stream(end)
+        element = self._get_stream_end()
+        self.send(element)
 
-    def _end_stream(self, data: bytes) -> None:
-        raise NotImplementedError
-
-    def pop(self) -> tuple[bytes, list[ElementT]]:
+    def pop(self) -> tuple[bytes, list[types.Base]]:
         elements = list(self._element_buffer)
         data = b''
         while True:
@@ -77,7 +75,7 @@ class XMPPElementQueue:
             except IndexError:
                 break
 
-            data += etree.tostring(element, encoding='utf-8')
+            data += element.tostring().encode()
 
         return data, elements
 
@@ -87,26 +85,23 @@ class XMPPElementQueue:
 
 class TCPElementQueue(XMPPElementQueue):
 
-    def _get_stream_header(self) -> bytes:
-        return (
-            f'<?xml version="1.0"?><stream:stream xmlns="{Namespace.CLIENT}" '
-            f'version="1.0" xmlns:stream="{Namespace.STREAMS}" '
-            f'to="{self._domain}" xml:lang="{self._lang}">'.encode())
+    def _get_stream_header(self) -> types.Base:
+        return StreamStart(self._domain, self._lang)
 
-    def _get_stream_end(self) -> bytes:
-        return '</stream:stream>'.encode()
+    def _get_stream_end(self) -> types.Base:
+        return StreamEnd()
 
 
 class WebsocketElementQueue(XMPPElementQueue):
 
-    def _get_stream_header(self) -> bytes:
-        open_ = etree.Element('open',
-                              attrib={'version': '1.0',
-                                      'to': self._domain,
-                                      'xml:lang': self._lang},
-                              nsmap={None: Namespace.FRAMING})
-        return etree.tostring(open_, encoding='utf-8')
+    def _get_stream_header(self) -> types.Base:
+        return Open(self._domain, self._lang)
 
-    def _get_stream_end(self) -> bytes:
-        close = etree.Element('close', nsmap={None: Namespace.FRAMING})
-        return etree.tostring(close, encoding='utf-8')
+    def _get_stream_end(self) -> types.Base:
+        return Close()
+
+
+
+register_class_lookup('stream', Namespace.STREAMS, elem.StreamStart)
+register_class_lookup('open', Namespace.FRAMING, elem.Open)
+register_class_lookup('close', Namespace.FRAMING, elem.Close)

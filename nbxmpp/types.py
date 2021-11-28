@@ -23,6 +23,9 @@ from nbxmpp.modules.iq import Iq as Iq
 from nbxmpp.modules.message import Message as Message
 from nbxmpp.modules.presence import Presence as Presence
 from nbxmpp.elements import Base as Base
+from nbxmpp.elements import Open as Open
+from nbxmpp.elements import Close as Close
+from nbxmpp.elements import Nonza as Nonza
 
 if typing.TYPE_CHECKING:
 

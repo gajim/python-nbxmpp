@@ -16,23 +16,26 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import annotations
-from collections import defaultdict
 
 import typing
-from typing import Any, Callable, Optional
+from typing import Any
+from typing import Callable
+from typing import Optional
+from typing import cast
 
 import logging
-import re
 import time
 import inspect
 from pathlib import Path
 from importlib import import_module
 from xml.parsers.expat import ExpatError
 from functools import singledispatchmethod
+from collections import defaultdict
 
 from gi.repository import GLib
-from nbxmpp.const import ErrorCondition, ErrorType
 
+from nbxmpp.const import ErrorCondition
+from nbxmpp.const import ErrorType
 from nbxmpp.namespaces import Namespace
 from nbxmpp.exceptions import NodeProcessed
 from nbxmpp.exceptions import InvalidFrom
@@ -41,18 +44,18 @@ from nbxmpp.exceptions import InvalidStanza
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
-from nbxmpp.stream_parser import StreamParser
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import Properties
 from nbxmpp.util import get_child_namespaces
-from nbxmpp.util import get_invalid_xml_regex
 from nbxmpp.util import is_websocket_close
 from nbxmpp.util import is_websocket_stream_error
 from nbxmpp.util import Observable
 from nbxmpp.util import LogAdapter
+from nbxmpp.stream_parser import BaseParser
+from nbxmpp.stream_parser import get_stream_parser
 from nbxmpp import types
 
 if typing.TYPE_CHECKING:
@@ -70,7 +73,7 @@ TimeoutDictT = dict[str, tuple[Callable[..., Any],
 log = logging.getLogger('nbxmpp.dispatcher')
 
 
-class StanzaDispatcher(Observable):
+class Dispatcher(Observable):
     """
     Dispatches stanzas to handlers
 
@@ -78,14 +81,15 @@ class StanzaDispatcher(Observable):
         before-dispatch
         parsing-error
         stream-end
+        stream-start
 
     """
 
     def __init__(self, client: Client):
         Observable.__init__(self, log)
         self._client = client
-        self._modules = {}
-        self._parser = None
+        self._modules: dict[str, BaseModule] = {}
+        self._parser = cast(BaseParser, None)
         self._websocket_stream_error = None
 
         self._log = LogAdapter(log, {'context': client.log_context})
@@ -95,8 +99,6 @@ class StanzaDispatcher(Observable):
         self._id_callbacks: IdCallbackDictT = {}
         self._dispatch_callback = None
         self._timeout_id = None
-
-        self.invalid_chars_re = get_invalid_xml_regex()
 
         self._load_modules()
 
@@ -133,50 +135,35 @@ class StanzaDispatcher(Observable):
         self._log.info('Set dispatch callback: %s', callback)
         self._dispatch_callback = callback
 
-    def get_module(self, name):
+    def get_module(self, name: str) -> BaseModule:
         return self._modules[name]
 
     def reset_parser(self):
         if self._parser is not None:
             self._parser.destroy()
-        self._parser = StreamParser(self.prepare_dispatch)
 
-    def replace_non_character(self, data):
-        return re.sub(self.invalid_chars_re, '\ufffd', data)
+        self._parser = get_stream_parser(self._client.is_websocket,
+                                         self._client.log_context)
 
-    def process_data(self, data):
-        # Parse incoming data
+        self._parser.subscribe('stream-start', self._on_stream_start)
+        self._parser.subscribe('stream-end', self._on_stream_end)
+        self._parser.subscribe('element', self._on_element)
 
-        data = self.replace_non_character(data)
-
-        if self._client.is_websocket:
-            stanza = Node(node=data)
-            if is_websocket_stream_error(stanza):
-                for tag in stanza.get_children():
-                    name = tag.localname
-                    if (name != 'text' and
-                            tag.namespace == Namespace.XMPP_STREAMS):
-                        self._websocket_stream_error = name
-
-            elif is_websocket_close(stanza):
-                self._log.info('Stream <close> received')
-                self.notify('stream-end', self._websocket_stream_error)
-                return
-
-            self.dispatch(stanza)
-            return
+    def process_data(self, data: str):
+        # if self._client.is_websocket:
+        #     stanza = Node(node=data)
+        #     if is_websocket_stream_error(stanza):
+        #         for tag in stanza.get_children():
+        #             name = tag.localname
+        #             if (name != 'text' and
+        #                     tag.namespace == Namespace.XMPP_STREAMS):
+        #                 self._websocket_stream_error = name
 
         try:
             self._parser.feed(data)
         except (ExpatError, ValueError) as error:
             self._log.error('XML parsing error: %s', error)
             self.notify('parsing-error', str(error))
-            return
-
-        # end stream:stream tag received
-        if self._parser.is_stream_end():
-            self._log.info('End of stream: %s', self._parser.get_stream_error())
-            self.notify('stream-end', self._parser.get_stream_error())
             return
 
     def register_handler(self, handler: StanzaHandler):
@@ -187,7 +174,6 @@ class StanzaDispatcher(Observable):
         specific = handler.get_specific()
 
         self._handlers[toplevel][specific].append(handler)
-
 
     def unregister_handler(self, handler: StanzaHandler):
 
@@ -202,7 +188,6 @@ class StanzaDispatcher(Observable):
         except ValueError:
             self._log.warning('Failed to remove handler: %s', handler)
 
-
     def _default_handler(self, stanza: types.Stanza):
         if stanza.localname != 'iq':
             return
@@ -214,8 +199,36 @@ class StanzaDispatcher(Observable):
                     ErrorCondition.FEATURE_NOT_IMPLEMENTED,
                     Namespace.XMPP_STANZAS))
 
+    def _on_stream_start(self,
+                         _parser: BaseParser,
+                         _signal_name: str,
+                         element: types.Base):
+
+        self.notify('stream-start', element)
+
+    def _on_stream_end(self,
+                       _parser: BaseParser,
+                       _signal_name: str,
+                       element: types.Base):
+
+        self._log.info('End of stream: %s', element)
+        # TODO, get real error
+        self.notify('stream-end', 'error')
+
+    def _on_element(self,
+                    _parser: BaseParser,
+                    _signal_name: str,
+                    element: types.Base):
+
+        self.prepare_dispatch(element)
+
     @singledispatchmethod
-    def prepare_dispatch(self, element):
+    def prepare_dispatch(self, element: types.Base):
+        self._log.warning('Unknown element received')
+        self._log.warning(element)
+
+    @prepare_dispatch.register
+    def _(self, element: types.Nonza):
         self._dispatch(element, Properties())
 
     @prepare_dispatch.register
@@ -228,12 +241,8 @@ class StanzaDispatcher(Observable):
     @prepare_dispatch.register
     def _(self, element: types.Iq):
         own_jid = self._client.get_bound_jid()
-        if own_jid is None:
-            # Check if this is even possible, iq without bound JID
-            return
-
         if element.get_from() is None:
-            element.set_from(own_jid.bare)
+            element.set_from(own_jid.new_as_bare())
 
         properties = IqProperties(own_jid)
 
@@ -241,7 +250,7 @@ class StanzaDispatcher(Observable):
 
     @prepare_dispatch.register
     def _(self, element: types.Message):
-        # set defaul type attr
+        # set default type attr
         if element.get('type') is None:
             element.set('type', 'normal')
 
@@ -266,7 +275,6 @@ class StanzaDispatcher(Observable):
 
         properties = MessageProperties(own_jid)
 
-        # Unwrap carbon
         try:
             element, properties.carbon = unwrap_carbon(element, own_jid)
         except (InvalidFrom, InvalidJid) as exc:
@@ -277,7 +285,6 @@ class StanzaDispatcher(Observable):
             self._log.info(exc)
             return
 
-        # Unwrap mam
         try:
             element, properties.mam = unwrap_mam(element, own_jid)
         except (InvalidStanza, InvalidJid) as exc:
@@ -433,9 +440,9 @@ class StanzaDispatcher(Observable):
         self._id_callbacks.clear()
 
     def cleanup(self):
-        self._client = None
+        self._client = cast(Client, None)
         self._modules = {}
-        self._parser = None
+        self._parser = cast(BaseParser, None)
         self.clear_iq_callbacks()
         self._dispatch_callback = None
         self._handlers.clear()
