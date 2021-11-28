@@ -61,6 +61,12 @@ class StanzaHandler(NamedTuple):
     xmlns: Optional[str] = None
     priority: int = 50
 
+    def get_toplevel(self) -> str:
+        return '{%s}%s' % (self.xmlns or Namespace.CLIENT, self.name)
+
+    def get_specific(self) -> str:
+        return '{%s}%s' % (self.typ or '*', self.ns or '*')
+
 
 class CommonResult(NamedTuple):
     jid: Optional[JID] = None
@@ -285,7 +291,6 @@ class CorrectionData(NamedTuple):
     id: str
 
 
-<<<<<<< HEAD
 class ModerationData(NamedTuple):
     stanza_id: str
     moderator_jid: str
@@ -293,20 +298,6 @@ class ModerationData(NamedTuple):
     timestamp: Optional[str] = None
 
 
-class DiscoItems(NamedTuple):
-    jid: str
-    node: str
-    items: list[DiscoItem]
-
-
-class DiscoItem(NamedTuple):
-    jid: str
-    name: Optional[str]
-    node: Optional[str]
-
-
-=======
->>>>>>> 69f4594 (type)
 class RegisterData(NamedTuple):
     instructions: Optional[str]
     form: Optional[Any]

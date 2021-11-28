@@ -600,7 +600,7 @@ class Client(Observable):
                     stanza: types.Stanza,
                     now: bool = False,
                     callback: Optional[Any] = None,
-                    timeout: Optional[int] = None,
+                    timeout: Optional[float] = None,
                     user_data: Optional[dict[Any, Any]] = None):
 
         if etree.QName(stanza.tag).localname not in ['iq', 'message', 'presence']:

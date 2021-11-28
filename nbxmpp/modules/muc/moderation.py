@@ -15,23 +15,28 @@
 
 # XEP-0425: Message Moderation
 
-from typing import Optional
+from __future__ import annotations
 
+import typing
+from typing import Any, Optional
+
+from nbxmpp.client import Client
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import process_response
 
-from nbxmpp import JID
+from nbxmpp.jid import JID
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Iq
+from nbxmpp.builder import Iq
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import ModerationData
-from nbxmpp.simplexml import Node
 from nbxmpp.task import iq_request_task
+
+if typing.TYPE_CHECKING:
+    from nbxmpp import types
 
 
 class Moderation(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -53,36 +58,38 @@ class Moderation(BaseModule):
         yield process_response(response)
 
     @staticmethod
-    def _process_message(_client, stanza: Node,
-                        properties: MessageProperties) -> None:
+    def _process_message(_client: Client,
+                         stanza: types.Message,
+                         properties: Any):
+
         if not properties.jid.is_bare:
             return
 
-        apply_to = stanza.getTag(
+        apply_to = stanza.find_tag(
             'apply-to', namespace=Namespace.FASTEN)
         if apply_to is None:
             return
 
-        moderated = apply_to.getTag(
+        moderated = apply_to.find_tag(
             'moderated', namespace=Namespace.MESSAGE_MODERATE)
         if moderated is None:
             return
 
-        retract = moderated.getTag(
+        retract = moderated.find_tag(
                 'retract', namespace=Namespace.MESSAGE_RETRACT)
         if retract is None:
             # Tag can be 'retract' or 'retracted', depending on whether the
             # server applies a tombstone for MAM messages or not.
-            retract = moderated.getTag(
+            retract = moderated.find_tag(
                 'retracted', namespace=Namespace.MESSAGE_RETRACT)
         if retract is None:
             return
 
         properties.moderation = ModerationData(
-            stanza_id=apply_to.getAttr('id'),
-            moderator_jid=moderated.getAttr('by'),
-            reason=moderated.getTagData('reason'),
-            timestamp=retract.getAttr('stamp'))
+            stanza_id=apply_to.get('id'),
+            moderator_jid=moderated.get('by'),
+            reason=moderated.find_tag_text('reason'),
+            timestamp=retract.get('stamp'))
 
 
 def _make_retract_request(muc_jid: JID, stanza_id: str,

@@ -179,6 +179,10 @@ class DiscoInfo(Base):
         return self.supports(Namespace.HTTPUPLOAD_0)
 
     @property
+    def has_message_moderation(self) -> bool:
+        return self.supports(Namespace.MESSAGE_MODERATE)
+
+    @property
     def is_muc(self) -> bool:
         for identity in self.find_tags('identity'):
             if identity.category == 'conference':

@@ -19,6 +19,9 @@ from __future__ import annotations
 
 import logging
 
+from typing import Any, cast
+import typing
+
 from gi.repository import Soup
 from gi.repository import GLib
 from gi.repository import Gio
@@ -29,6 +32,9 @@ from nbxmpp.util import get_websocket_close_string
 from nbxmpp.util import convert_tls_error_flags
 from nbxmpp.connection import Connection
 from nbxmpp.queue import WebsocketElementQueue
+
+if typing.TYPE_CHECKING:
+    from nbxmpp import types
 
 log = logging.getLogger('nbxmpp.websocket')
 
@@ -45,7 +51,7 @@ class WebsocketConnection(Connection, WebsocketElementQueue):
             self._session.add_feature(
                 Soup.Logger.new(Soup.LoggerLogLevel.BODY, -1))
 
-        self._websocket = None
+        self._websocket = cast(Soup.WebsocketConnection, None)
         self._cancellable = Gio.Cancellable()
 
         self._input_closed = False
@@ -57,6 +63,9 @@ class WebsocketConnection(Connection, WebsocketElementQueue):
         self.state = TCPState.CONNECTING
 
         message = Soup.Message.new('GET', self._address.uri)
+        if message is None:
+            raise ValueError('invalid uri: %s' % self._address.uri)
+
         message.connect('starting', self._check_certificate)
         message.set_flags(Soup.MessageFlags.NO_REDIRECT)
         self._session.websocket_connect_async(message,
@@ -68,11 +77,12 @@ class WebsocketConnection(Connection, WebsocketElementQueue):
 
     def _on_connect(self,
                     session: Soup.Session,
-                    result,
-                    _user_data):
+                    result: Gio.AsyncResult,
+                    _user_data: Any):
+
         # TODO: check if protocol 'xmpp' is set
         try:
-            self._websocket = session.websocket_connect_finish(result)
+            websocket = session.websocket_connect_finish(result)
         except GLib.Error as error:
             quark = GLib.quark_try_string('g-io-error-quark')
             if error.matches(quark, Gio.IOErrorEnum.CANCELLED):
@@ -83,13 +93,14 @@ class WebsocketConnection(Connection, WebsocketElementQueue):
             self._finalize('connection-failed')
             return
 
-        self._websocket.set_keepalive_interval(5)
-        self._websocket.connect('message', self._on_websocket_message)
-        self._websocket.connect('closed', self._on_websocket_closed)
-        self._websocket.connect('closing', self._on_websocket_closing)
-        self._websocket.connect('error', self._on_websocket_error)
-        self._websocket.connect('pong', self._on_websocket_pong)
+        websocket.set_keepalive_interval(5)
+        websocket.connect('message', self._on_websocket_message)
+        websocket.connect('closed', self._on_websocket_closed)
+        websocket.connect('closing', self._on_websocket_closing)
+        websocket.connect('error', self._on_websocket_error)
+        websocket.connect('pong', self._on_websocket_pong)
 
+        self._websocket = websocket
         self.state = TCPState.CONNECTED
         self.notify('connected')
 
@@ -97,7 +108,7 @@ class WebsocketConnection(Connection, WebsocketElementQueue):
         # Soup.Session does this automatically
         raise NotImplementedError
 
-    def _check_certificate(self, message):
+    def _check_certificate(self, message: Soup.Message):
         https_used, certificate, errors = message.get_https_status()
         if not https_used and self._address.type == ConnectionType.PLAIN:
             return
@@ -113,7 +124,11 @@ class WebsocketConnection(Connection, WebsocketElementQueue):
         self.notify('bad-certificate')
         self._cancellable.cancel()
 
-    def _on_websocket_message(self, _websocket, _type, message):
+    def _on_websocket_message(self,
+                              _websocket: Soup.WebsocketConnection,
+                              _type: int,
+                              message: GLib.Bytes):
+
         data = message.get_data().decode()
         self._log_stanza(data)
 
@@ -123,22 +138,26 @@ class WebsocketConnection(Connection, WebsocketElementQueue):
 
         self.notify('data-received', data)
 
-    def _on_websocket_pong(self, _websocket, _message):
+    def _on_websocket_pong(self,
+                           _websocket: Soup.WebsocketConnection,
+                           _message: GLib.Bytes):
         self._log.info('Pong received')
 
-    def _on_websocket_closed(self, websocket):
+    def _on_websocket_closed(self, websocket: Soup.WebsocketConnection):
         self._log.info('Closed %s', get_websocket_close_string(websocket))
         self._finalize('disconnected')
 
-    def _on_websocket_closing(self, _websocket):
+    def _on_websocket_closing(self, _websocket: Soup.WebsocketConnection):
         self._log.info('Closing')
 
-    def _on_websocket_error(self, _websocket, error):
+    def _on_websocket_error(self,
+                            _websocket: Soup.WebsocketConnection,
+                            error: GLib.Error):
         self._log.error(error)
         if self._state not in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
             self._finalize('disconnected')
 
-    def send(self, stanza, now=False):
+    def send(self, stanza: types.Base, now: bool = False):
         if self._state in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
             self._log.warning('send() not possible in state: %s', self._state)
             return
@@ -184,7 +203,7 @@ class WebsocketConnection(Connection, WebsocketElementQueue):
         self._log.info('Shutdown output')
         self._output_closed = True
 
-    def _finalize(self, signal_name):
+    def _finalize(self, signal_name: str):
         self._input_closed = True
         self._output_closed = True
         self.state = TCPState.DISCONNECTED
@@ -194,5 +213,5 @@ class WebsocketConnection(Connection, WebsocketElementQueue):
     def destroy(self):
         super().destroy()
         self._session.abort()
-        self._session = None
-        self._websocket = None
+        self._session = cast(Soup.Session, None)
+        self._websocket = cast(Soup.WebsocketConnection, None)

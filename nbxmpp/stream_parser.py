@@ -97,6 +97,7 @@ class StreamParser:
     def _dispatch(self, element: ElementBase):
         if self._dispatch_callback is None:
             return
+
         self._dispatch_callback(element)
 
     def is_stream_end(self) -> bool:

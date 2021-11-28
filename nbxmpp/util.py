@@ -42,6 +42,7 @@ from gi.repository import Gio
 from nbxmpp.elements import Base
 from nbxmpp.exceptions import DiscoInfoMalformed
 from nbxmpp.const import GIO_TLS_ERRORS
+from nbxmpp.jid import JID
 from nbxmpp.namespaces import Namespace
 from nbxmpp.exceptions import StanzaMalformed
 from nbxmpp.structs import Properties
@@ -79,16 +80,6 @@ def b64encode(data: Union[str, bytes]) -> str:
 
     result = base64.b64encode(data)
     return result.decode()
-
-
-def get_properties_struct(name, own_jid):
-    if name == 'message':
-        return MessageProperties(own_jid)
-    if name == 'iq':
-        return IqProperties(own_jid)
-    if name == 'presence':
-        return PresenceProperties(own_jid)
-    return Properties()
 
 
 def from_xs_boolean(value: str) -> bool:
@@ -130,7 +121,7 @@ def error_factory(stanza: Node,
     return error_classes.get(app_namespace, CommonError)(stanza)
 
 
-def clip_rgb(red, green, blue):
+def clip_rgb(red: float, green: float, blue: float):
     return (
         min(max(red, 0), 1),
         min(max(green, 0), 1),
@@ -139,7 +130,7 @@ def clip_rgb(red, green, blue):
 
 
 @lru_cache(maxsize=1024)
-def text_to_color(text, background_color):
+def text_to_color(text: str, background_color: tuple[float, float, float]):
     # background color = (rb, gb, bb)
     hash_ = hashlib.sha1()
     hash_.update(text.encode())
@@ -315,13 +306,6 @@ def validate_stream_header(stanza: Base, domain: str, is_websocket: bool) -> str
     return stream_id
 
 
-def get_stream_header(domain: str, lang: str, is_websocket: bool) -> str:
-    if is_websocket:
-        return str(WebsocketOpenHeader(domain, lang))
-    header = StreamHeader(domain, lang)
-    return "<?xml version='1.0'?>%s>" % str(header)[:-3]
-
-
 def utf8_decode(data: bytes) -> tuple[str, bytes]:
     '''
     Decodes utf8 byte string to unicode string
@@ -393,12 +377,12 @@ def get_websocket_close_string(websocket: Any) -> str:
     return ' Data: %s Code: %s' % (data, code)
 
 
-def is_websocket_close(stanza: Node) -> bool:
+def is_websocket_close(stanza: types.Base) -> bool:
     return (stanza.localname == 'close' and
             stanza.namespace == Namespace.FRAMING)
 
 
-def is_websocket_stream_error(stanza: Node) -> bool:
+def is_websocket_stream_error(stanza: types.Base) -> bool:
     return (stanza.localname == 'error' and
             stanza.namespace == Namespace.STREAMS)
 
@@ -435,5 +419,5 @@ class LogAdapter(LoggerAdapter):
         return '(%s) %s' % (self.extra['context'], msg), kwargs
 
 
-def get_child_namespaces(element: Base) -> set[Base]:
+def get_child_namespaces(element: Base) -> set[str]:
     return {ele.namespace for ele in element.iterchildren()}

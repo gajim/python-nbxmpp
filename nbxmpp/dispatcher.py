@@ -16,8 +16,10 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import annotations
+from collections import defaultdict
 
 import typing
+from typing import Any, Callable, Optional
 
 import logging
 import re
@@ -26,29 +28,44 @@ import inspect
 from pathlib import Path
 from importlib import import_module
 from xml.parsers.expat import ExpatError
+from functools import singledispatchmethod
 
 from gi.repository import GLib
+from nbxmpp.const import ErrorCondition, ErrorType
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.exceptions import NodeProcessed
 from nbxmpp.exceptions import InvalidFrom
 from nbxmpp.exceptions import InvalidJid
 from nbxmpp.exceptions import InvalidStanza
-from nbxmpp.builder import Iq
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.stream_parser import StreamParser
-from nbxmpp.util import get_child_namespaces, get_properties_struct
+from nbxmpp.structs import StanzaHandler
+from nbxmpp.structs import MessageProperties
+from nbxmpp.structs import IqProperties
+from nbxmpp.structs import PresenceProperties
+from nbxmpp.structs import Properties
+from nbxmpp.util import get_child_namespaces
 from nbxmpp.util import get_invalid_xml_regex
 from nbxmpp.util import is_websocket_close
 from nbxmpp.util import is_websocket_stream_error
 from nbxmpp.util import Observable
 from nbxmpp.util import LogAdapter
+from nbxmpp import types
 
 if typing.TYPE_CHECKING:
     from nbxmpp.client import Client
 
+
+IdCallbackDictT = dict[str, tuple[Callable[..., Any],
+                                  Optional[float],
+                                  Optional[dict[str, Any]]]]
+
+TimeoutDictT = dict[str, tuple[Callable[..., Any],
+                               float,
+                               Optional[dict[str, Any]]]]
 
 log = logging.getLogger('nbxmpp.dispatcher')
 
@@ -73,20 +90,13 @@ class StanzaDispatcher(Observable):
 
         self._log = LogAdapter(log, {'context': client.log_context})
 
-        self._handlers = {}
+        self._handlers: dict[str, dict[str, list[StanzaHandler]]] = defaultdict(lambda: defaultdict(list))
 
-        self._id_callbacks = {}
+        self._id_callbacks: IdCallbackDictT = {}
         self._dispatch_callback = None
         self._timeout_id = None
 
         self.invalid_chars_re = get_invalid_xml_regex()
-
-        self._register_namespace('unknown')
-        self._register_namespace(Namespace.STREAMS)
-        self._register_namespace(Namespace.CLIENT)
-        self._register_protocol('iq')
-        self._register_protocol('presence')
-        self._register_protocol('message')
 
         self._load_modules()
 
@@ -129,7 +139,7 @@ class StanzaDispatcher(Observable):
     def reset_parser(self):
         if self._parser is not None:
             self._parser.destroy()
-        self._parser = StreamParser(self.dispatch)
+        self._parser = StreamParser(self.prepare_dispatch)
 
     def replace_non_character(self, data):
         return re.sub(self.invalid_chars_re, '\ufffd', data)
@@ -169,230 +179,229 @@ class StanzaDispatcher(Observable):
             self.notify('stream-end', self._parser.get_stream_error())
             return
 
-    def _register_namespace(self, xmlns):
-        """
-        Setup handler structure for namespace
-        """
-        self._log.debug('Register namespace "%s"', xmlns)
-        self._handlers[xmlns] = {}
-        self._register_protocol('error', xmlns=xmlns)
-        self._register_protocol('unknown', xmlns=xmlns)
-        self._register_protocol('default', xmlns=xmlns)
+    def register_handler(self, handler: StanzaHandler):
 
-    def _register_protocol(self, tag_name, xmlns=None):
-        """
-        Register protocol for top level tag names
-        """
-        if xmlns is None:
-            xmlns = Namespace.CLIENT
-        self._log.debug('Register protocol "%s (%s)"', tag_name, xmlns)
-        self._handlers[xmlns][tag_name] = {'default': []}
+        self._log.debug('Register handler: %s', handler)
 
-    def register_handler(self, handler):
-        """
-        Register handler
-        """
+        toplevel = handler.get_toplevel()
+        specific = handler.get_specific()
 
-        xmlns = handler.xmlns or Namespace.CLIENT
+        self._handlers[toplevel][specific].append(handler)
 
-        typ = handler.typ
-        if not typ and not handler.ns:
-            typ = 'default'
 
-        self._log.debug(
-            'Register handler %s for "%s" type->%s ns->%s(%s) priority->%s',
-            handler.callback, handler.name, typ, handler.ns,
-            xmlns, handler.priority
-        )
+    def unregister_handler(self, handler: StanzaHandler):
 
-        if xmlns not in self._handlers:
-            self._register_namespace(xmlns)
-        if handler.name not in self._handlers[xmlns]:
-            self._register_protocol(handler.name, xmlns)
 
-        specific = typ + handler.ns
-        if specific not in self._handlers[xmlns][handler.name]:
-            self._handlers[xmlns][handler.name][specific] = []
+        self._log.debug('Unregister handler: %s', handler)
 
-        self._handlers[xmlns][handler.name][specific].append(
-            {'func': handler.callback,
-             'priority': handler.priority,
-             'specific': specific})
+        toplevel = handler.get_toplevel()
+        specific = handler.get_specific()
 
-    def unregister_handler(self, handler):
-        """
-        Unregister handler
-        """
-
-        xmlns = handler.xmlns or Namespace.CLIENT
-
-        typ = handler.typ
-        if not typ and not handler.ns:
-            typ = 'default'
-
-        specific = typ + handler.ns
         try:
-            self._handlers[xmlns][handler.name][specific]
-        except KeyError:
+            self._handlers[toplevel][specific].remove(handler)
+        except ValueError:
+            self._log.warning('Failed to remove handler: %s', handler)
+
+
+    def _default_handler(self, stanza: types.Stanza):
+        if stanza.localname != 'iq':
             return
 
-        for handler_dict in self._handlers[xmlns][handler.name][specific]:
-            if handler_dict['func'] != handler.callback:
-                continue
-
-            try:
-                self._handlers[xmlns][handler.name][specific].remove(
-                    handler_dict)
-            except ValueError:
-                self._log.warning(
-                    'Unregister failed: %s for "%s" type->%s ns->%s(%s)',
-                    handler.callback, handler.name, typ, handler.ns, xmlns)
-            else:
-                self._log.debug(
-                    'Unregister handler %s for "%s" type->%s ns->%s(%s)',
-                    handler.callback, handler.name, typ, handler.ns, xmlns)
-
-    def _default_handler(self, stanza):
-        """
-        Return stanza back to the sender with <feature-not-implemented/> error
-        """
         if stanza.get('type') in ('get', 'set'):
-            self._client.send_stanza(Error(stanza, ERR_FEATURE_NOT_IMPLEMENTED))
+            self._client.send_stanza(
+                stanza.make_error(
+                    ErrorType.CANCEL,
+                    ErrorCondition.FEATURE_NOT_IMPLEMENTED,
+                    Namespace.XMPP_STANZAS))
 
-    def dispatch(self, stanza):
-        self.notify('before-dispatch', stanza)
+    @singledispatchmethod
+    def prepare_dispatch(self, element):
+        self._dispatch(element, Properties())
+
+    @prepare_dispatch.register
+    def _(self, element: types.Presence):
+        own_jid = self._client.get_bound_jid()
+        properties = PresenceProperties(own_jid)
+
+        self._dispatch(element, properties)
+
+    @prepare_dispatch.register
+    def _(self, element: types.Iq):
+        own_jid = self._client.get_bound_jid()
+        if own_jid is None:
+            # Check if this is even possible, iq without bound JID
+            return
+
+        if element.get_from() is None:
+            element.set_from(own_jid.bare)
+
+        properties = IqProperties(own_jid)
+
+        self._dispatch(element, properties)
+
+    @prepare_dispatch.register
+    def _(self, element: types.Message):
+        # set defaul type attr
+        if element.get('type') is None:
+            element.set('type', 'normal')
+
+        # https://tools.ietf.org/html/rfc6120#section-8.1.1.1
+        # If the stanza does not include a 'to' address then the client MUST
+        # treat it as if the 'to' address were included with a value of the
+        # client's full JID.
+
+        own_jid = self._client.get_bound_jid()
+
+        to = element.get_to()
+        if to is None:
+            element.set_to(own_jid)
+
+        elif not to.bare_match(own_jid):
+            self._log.warning('Message addressed to someone else: %s',
+                              element)
+            return
+
+        if element.get_from() is None:
+            element.set_from(own_jid.bare)
+
+        properties = MessageProperties(own_jid)
+
+        # Unwrap carbon
+        try:
+            element, properties.carbon = unwrap_carbon(element, own_jid)
+        except (InvalidFrom, InvalidJid) as exc:
+            self._log.warning(exc)
+            self._log.warning(element)
+            return
+        except NodeProcessed as exc:
+            self._log.info(exc)
+            return
+
+        # Unwrap mam
+        try:
+            element, properties.mam = unwrap_mam(element, own_jid)
+        except (InvalidStanza, InvalidJid) as exc:
+            self._log.warning(exc)
+            self._log.warning(element)
+            return
+
+        self._dispatch(element, properties)
+
+    def _dispatch(self, element: types.Base, properties: Any):
+        self.notify('before-dispatch', element)
 
         if self._dispatch_callback is not None:
-            self._dispatch_callback(stanza)
+            self._dispatch_callback(element)
             return
 
         # Count stanza
-        self._client._smacks.count_incoming(stanza.localname)
+        self._client._smacks.count_incoming(element.localname)
 
-        name = stanza.localname
-        xmlns = stanza.namespace
+        callback_data = self._get_iq_callback_data(element)
+        if callback_data is not None:
+            func, user_data = callback_data
 
-        if xmlns not in self._handlers:
-            self._log.warning('Unknown namespace: %s', xmlns)
-            xmlns = 'unknown'
-
-        if name not in self._handlers[xmlns]:
-            self._log.warning('Unknown stanza: %s', stanza)
-            name = 'unknown'
-
-        own_jid = self._client.get_bound_jid()
-        properties = get_properties_struct(name, own_jid)
-
-        if name == 'iq':
-            if stanza.get_from() is None and own_jid is not None:
-                stanza.set_from(own_jid.bare)
-
-        if name == 'message':
-            # https://tools.ietf.org/html/rfc6120#section-8.1.1.1
-            # If the stanza does not include a 'to' address then the client MUST
-            # treat it as if the 'to' address were included with a value of the
-            # client's full JID.
-
-            to = stanza.get_to()
-            if to is None:
-                stanza.set_to(own_jid)
-
-            elif not to.bare_match(own_jid):
-                self._log.warning('Message addressed to someone else: %s',
-                                  stanza)
-                return
-
-            if stanza.get_from() is None:
-                stanza.set_from(own_jid.bare)
-
-            # Unwrap carbon
             try:
-                stanza, properties.carbon = unwrap_carbon(stanza, own_jid)
-            except (InvalidFrom, InvalidJid) as exc:
-                self._log.warning(exc)
-                self._log.warning(stanza)
-                return
-            except NodeProcessed as exc:
-                self._log.info(exc)
-                return
-
-            # Unwrap mam
-            try:
-                stanza, properties.mam = unwrap_mam(stanza, own_jid)
-            except (InvalidStanza, InvalidJid) as exc:
-                self._log.warning(exc)
-                self._log.warning(stanza)
-                return
-
-        typ = stanza.get('type')
-        if name == 'message' and not typ:
-            typ = 'normal'
-        elif not typ:
-            typ = ''
-
-        stanza.props = get_child_namespaces(stanza)
-        self._log.debug('type: %s, properties: %s', typ, stanza.props)
-
-        # Process callbacks
-        _id = stanza.get('id')
-        func, _timeout, user_data = self._id_callbacks.pop(
-            _id, (None, None, {}))
-        if user_data is None:
-            user_data = {}
-
-        if func is not None:
-            try:
-                func(self._client, stanza, **user_data)
+                func(self._client, element, **user_data)
             except Exception:
-                self._log.exception('Error while handling stanza')
+                self._log.exception('Error while handling element')
             return
 
-        # Gather specifics depending on stanza properties
-        specifics = ['default']
-        if typ and typ in self._handlers[xmlns][name]:
-            specifics.append(typ)
-        for prop in stanza.props:
-            if prop in self._handlers[xmlns][name]:
-                specifics.append(prop)
-            if typ and typ + prop in self._handlers[xmlns][name]:
-                specifics.append(typ + prop)
+        handlers = self._generate_handler_chain(element)
 
-        # Create the handler chain
-        chain = []
-        chain += self._handlers[xmlns]['default']['default']
-        for specific in specifics:
-            chain += self._handlers[xmlns][name][specific]
-
-        # Sort chain with priority
-        chain.sort(key=lambda x: x['priority'])
-
-        for handler in chain:
-            self._log.info('Call handler: %s', handler['func'].__qualname__)
+        for handler in handlers:
+            self._log.debug('Call handler: %s', handler.callback.__qualname__)
             try:
-                handler['func'](self._client, stanza, properties)
+                handler.callback(self._client, element, properties)
             except NodeProcessed:
                 return
             except Exception:
                 self._log.exception('Handler exception:')
                 return
 
-        # Stanza was not processed call default handler
-        self._default_handler(stanza)
+        # Element was not processed call default handler
+        self._default_handler(element)
 
-    def add_callback_for_id(self, id_, func, timeout, user_data):
+    def _make_specifics(self, element: types.Base) -> set[str]:
+        # Example:
+        #
+        # <message type="error">
+        #   <extension xmlns="my:extension:1"/>
+        # </message>
+        #
+        # specifics = [
+        #     '{*}*',                   handlers catch on toplevel (message)
+        #     '{error}*',               handlers catch only on type
+        #     '{*}my:extension:1'       handlers catch only on namespace
+        #     '{error}my:extension:1'   handlers catch on type and namespace
+        # ]
+        #
+        # Code depends on sets deduplicating automatically
+
+        type_value = element.get('type') or '*'
+
+        specifics = {
+            '{*}*',
+            '{%s}*' % type_value
+        }
+
+        namespaces = get_child_namespaces(element)
+        for namespace in namespaces:
+            specifics.add('{*}%s' % namespace)
+            specifics.add('{%s}%s' % (type_value, namespace))
+
+        return specifics
+
+    def _generate_handler_chain(self,
+                                element: types.Base) -> list[StanzaHandler]:
+
+        specifics = self._make_specifics(element)
+
+        chain: list[StanzaHandler] = []
+        for specific in specifics:
+            chain += self._handlers[element.tag][specific]
+
+        chain.sort(key=lambda handler: handler.priority)
+
+        return chain
+
+    def _get_iq_callback_data(self, element: types.Base) -> Optional[tuple[Callable[..., Any], dict[str, Any]]]:
+        if element.localname != 'iq':
+            return None
+
+        id_ = element.get('id')
+        if id_ is None:
+            return None
+
+        callback_data = self._id_callbacks.pop(id_, None)
+        if callback_data is None:
+            return None
+
+        func, _, user_data = callback_data
+        if user_data is None:
+            user_data = {}
+
+        return func, user_data
+
+    def add_callback_for_id(self,
+                            id_: str,
+                            func: Callable[..., Any],
+                            timeout: Optional[float] = None,
+                            user_data: Optional[dict[str, Any]] = None):
+
         if timeout is not None and self._timeout_id is None:
             self._log.info('Add timeout check')
-            self._timeout_id = GLib.timeout_add_seconds(
-                1, self._timeout_check)
+            self._timeout_id = GLib.timeout_add_seconds(1, self._timeout_check)
             timeout = time.monotonic() + timeout
         self._id_callbacks[id_] = (func, timeout, user_data)
 
     def _timeout_check(self):
         self._log.info('Run timeout check')
-        timeouts = {}
+        timeouts: TimeoutDictT = {}
         for id_, data in self._id_callbacks.items():
-            if data[1] is not None:
-                timeouts[id_] = data
+            func, timeout, user_data = data
+            if timeout is not None:
+                timeouts[id_] = (func, timeout, user_data)
 
         if not timeouts:
             self._log.info('Remove timeout check, no timeouts scheduled')
@@ -408,6 +417,7 @@ class StanzaDispatcher(Observable):
             if timeout < time.monotonic():
                 self._id_callbacks.pop(id_)
                 func(self._client, None, **user_data)
+
         return True
 
     def _remove_timeout_source(self):
@@ -415,7 +425,7 @@ class StanzaDispatcher(Observable):
             GLib.source_remove(self._timeout_id)
             self._timeout_id = None
 
-    def remove_iq_callback(self, id_):
+    def remove_iq_callback(self, id_: str):
         self._id_callbacks.pop(id_, None)
 
     def clear_iq_callbacks(self):
