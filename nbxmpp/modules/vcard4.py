@@ -27,7 +27,7 @@ from nbxmpp.client import Client
 from nbxmpp.elements import Base
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.jid import JID
-from nbxmpp.lookups import register_class_lookup
+from nbxmpp.elements import register_class_lookup
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
 from nbxmpp.modules.util import raise_if_error

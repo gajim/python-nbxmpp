@@ -22,8 +22,8 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.elements import Base
 from nbxmpp.elements import Nonza
 from nbxmpp.builder import E
-from nbxmpp.lookups import register_class_lookup
-from nbxmpp.lookups import register_sub_element_lookup
+from nbxmpp.elements import register_class_lookup
+from nbxmpp.elements import register_sub_element_lookup
 
 
 class Features(Nonza):

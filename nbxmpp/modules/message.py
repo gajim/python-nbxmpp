@@ -24,7 +24,7 @@ from nbxmpp import types
 from nbxmpp.const import MessageType
 from nbxmpp.elements import Base
 from nbxmpp.elements import Stanza
-from nbxmpp.lookups import register_class_lookup
+from nbxmpp.elements import register_class_lookup
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
 from nbxmpp.exceptions import NodeProcessed

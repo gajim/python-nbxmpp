@@ -28,7 +28,7 @@ from nbxmpp.const import ErrorType
 from nbxmpp.const import PresenceShow
 from nbxmpp.const import PresenceType
 from nbxmpp.elements import Stanza
-from nbxmpp.lookups import register_class_lookup
+from nbxmpp.elements import register_class_lookup
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import log_calls
 from nbxmpp.namespaces import Namespace

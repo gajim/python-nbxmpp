@@ -50,8 +50,6 @@ from nbxmpp.structs import IqProperties
 from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import Properties
 from nbxmpp.util import get_child_namespaces
-from nbxmpp.util import is_websocket_close
-from nbxmpp.util import is_websocket_stream_error
 from nbxmpp.util import Observable
 from nbxmpp.util import LogAdapter
 from nbxmpp.stream_parser import BaseParser

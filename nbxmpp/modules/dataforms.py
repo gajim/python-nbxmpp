@@ -24,8 +24,8 @@ from typing import Iterable
 import copy
 
 from nbxmpp.elements import Base
-from nbxmpp.lookups import register_attribute_lookup
-from nbxmpp.lookups import register_class_lookup
+from nbxmpp.elements import register_attribute_lookup
+from nbxmpp.elements import register_class_lookup
 from nbxmpp.namespaces import Namespace
 from nbxmpp.exceptions import WrongFieldValue
 from nbxmpp.jid import JID

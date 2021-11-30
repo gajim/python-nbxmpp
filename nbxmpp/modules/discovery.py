@@ -37,7 +37,7 @@ from nbxmpp.task import iq_request_task
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.builder import Iq
-from nbxmpp.lookups import register_class_lookup
+from nbxmpp.elements import register_class_lookup
 from nbxmpp.elements import Base
 
 

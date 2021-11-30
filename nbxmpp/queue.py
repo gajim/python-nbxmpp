@@ -24,7 +24,7 @@ from collections import deque
 from nbxmpp import types
 from nbxmpp import elements as elem
 from nbxmpp.namespaces import Namespace
-from nbxmpp.lookups import register_class_lookup
+from nbxmpp.elements import register_class_lookup
 from nbxmpp.builder import StreamStart
 from nbxmpp.builder import StreamEnd
 from nbxmpp.builder import Open

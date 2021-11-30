@@ -25,9 +25,11 @@ import binascii
 import logging
 import hashlib
 from hashlib import pbkdf2_hmac
+from nbxmpp import types
+from nbxmpp.client import Client
 
 from nbxmpp.elements import Nonza
-from nbxmpp.lookups import register_class_lookup
+from nbxmpp.elements import register_class_lookup
 from nbxmpp.namespaces import Namespace
 from nbxmpp.const import SASL_ERROR_CONDITIONS
 from nbxmpp.const import SASL_AUTH_MECHS
@@ -65,10 +67,8 @@ class SASL:
     """
     Implements SASL authentication.
     """
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self._client = client
-
-        self._password = None
 
         self._allowed_mechs = None
         self._enabled_mechs = None
@@ -80,13 +80,6 @@ class SASL:
     @property
     def error(self):
         return self._error
-
-    def set_password(self, password):
-        self._password = password
-
-    @property
-    def password(self):
-        return self._password
 
     def delegate(self, stanza):
         if stanza.namespace != Namespace.XMPP_SASL:
@@ -139,31 +132,31 @@ class SASL:
         self._log.info('Chosen auth mechanism: %s', chosen_mechanism)
 
         if chosen_mechanism in ('SCRAM-SHA-256', 'SCRAM-SHA-1', 'PLAIN'):
-            if not self._password:
+            if not self._client.password:
                 self._on_sasl_finished(False, 'no-password')
                 return
 
         # if chosen_mechanism == 'SCRAM-SHA-256-PLUS':
         #     self._method = SCRAM_SHA_256_PLUS(self._client,
         #                                       channel_binding_data)
-        #     self._method.initiate(self._client.username, self._password)
+        #     self._method.initiate()
 
         # elif chosen_mechanism == 'SCRAM-SHA-1-PLUS':
         #     self._method = SCRAM_SHA_1_PLUS(self._client,
         #                                     channel_binding_data)
-        #     self._method.initiate(self._client.username, self._password)
+        #     self._method.initiate()
 
         if chosen_mechanism == 'SCRAM-SHA-256':
             self._method = SCRAM_SHA_256(self._client, None)
-            self._method.initiate(self._client.username, self._password)
+            self._method.initiate()
 
         elif chosen_mechanism == 'SCRAM-SHA-1':
             self._method = SCRAM_SHA_1(self._client, None)
-            self._method.initiate(self._client.username, self._password)
+            self._method.initiate()
 
         elif chosen_mechanism == 'PLAIN':
             self._method = PLAIN(self._client)
-            self._method.initiate(self._client.username, self._password)
+            self._method.initiate()
 
         elif chosen_mechanism == 'ANONYMOUS':
             self._method = ANONYMOUS(self._client)
@@ -171,7 +164,7 @@ class SASL:
 
         elif chosen_mechanism == 'EXTERNAL':
             self._method = EXTERNAL(self._client)
-            self._method.initiate(self._client.username, self._client.Server)
+            self._method.initiate()
 
         elif chosen_mechanism == 'GSSAPI':
             self._method = GSSAPI(self._client)
@@ -188,7 +181,7 @@ class SASL:
         else:
             self._log.error('Unknown auth mech')
 
-    def _on_challenge(self, stanza):
+    def _on_challenge(self, stanza: types.Nonza):
         try:
             self._method.response(stanza.text or '')
         except AttributeError:
@@ -198,7 +191,7 @@ class SASL:
             self._log.error(error)
             self._abort_auth()
 
-    def _on_success(self, stanza):
+    def _on_success(self, stanza: types.Nonza):
         self._log.info('Successfully authenticated with remote server')
         try:
             self._method.success(stanza.text or '')
@@ -211,7 +204,7 @@ class SASL:
 
         self._on_sasl_finished(True, None, None)
 
-    def _on_failure(self, stanza):
+    def _on_failure(self, stanza: types.Nonza):
         text = stanza.find_tag_text('text')
         reason = 'not-authorized'
         childs = stanza.get_children()
@@ -226,12 +219,19 @@ class SASL:
         self._log.info('Failed SASL authentification: %s %s', reason, text)
         self._abort_auth(reason, text)
 
-    def _abort_auth(self, reason='malformed-request', text=None):
+    def _abort_auth(self,
+                    reason: str = 'malformed-request',
+                    text: Optional[str] = None):
+
         element = make_sasl_element('abort')
         self._client.send_nonza(element)
         self._on_sasl_finished(False, reason, text)
 
-    def _on_sasl_finished(self, successful, reason, text=None):
+    def _on_sasl_finished(self,
+                          successful: bool,
+                          reason: str,
+                          text: Optional[str] = None):
+
         if not successful:
             self._error = (reason, text)
             self._client.set_state(StreamState.AUTH_FAILED)
@@ -243,11 +243,12 @@ class PLAIN:
 
     _mechanism = 'PLAIN'
 
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self._client = client
 
-    def initiate(self, username, password):
-        payload = b64encode('\x00%s\x00%s' % (username, password))
+    def initiate(self):
+        payload = b64encode('\x00%s\x00%s' % (self._client.username,
+                                              self._client.password))
         element = make_sasl_element('auth', mechanism='PLAIN', payload=payload)
         self._client.send_nonza(element)
 
@@ -256,11 +257,12 @@ class EXTERNAL:
 
     _mechanism = 'EXTERNAL'
 
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self._client = client
 
-    def initiate(self, username, server):
-        payload = b64encode('%s@%s' % (username, server))
+    def initiate(self):
+        payload = b64encode('%s@%s' % (self._client.username,
+                                       self._client.domain))
         element = make_sasl_element('auth',
                                     mechanism='EXTERNAL',
                                     payload=payload)
@@ -271,7 +273,7 @@ class ANONYMOUS:
 
     _mechanism = 'ANONYMOUS'
 
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self._client = client
 
     def initiate(self):
@@ -285,7 +287,7 @@ class GSSAPI:
 
     _mechanism = 'GSSAPI'
 
-    def __init__(self, client):
+    def __init__(self, client: Client):
         self._client = client
 
     def initiate(self, hostname):
@@ -328,32 +330,30 @@ class SCRAM:
     _channel_binding = ''
     _hash_method = ''
 
-    def __init__(self, client, channel_binding):
+    def __init__(self, client: Client, channel_binding: Optional[bytes]):
         self._client = client
         self._channel_binding_data = channel_binding
         self._client_nonce = '%x' % int(binascii.hexlify(os.urandom(24)), 16)
         self._client_first_message_bare = None
         self._server_signature = None
-        self._password = None
 
     @property
-    def nonce_length(self):
+    def nonce_length(self) -> int:
         return len(self._client_nonce)
 
     @property
-    def _b64_channel_binding_data(self):
+    def _b64_channel_binding_data(self) -> str:
         if self._mechanism.endswith('PLUS'):
             return b64encode(b'%s%s' % (self._channel_binding.encode(),
                                         self._channel_binding_data))
         return b64encode(self._channel_binding)
 
     @staticmethod
-    def _scram_parse(scram_data):
+    def _scram_parse(scram_data: str) -> dict[str, str]:
         return dict(s.split('=', 1) for s in scram_data.split(','))
 
-    def initiate(self, username, password):
-        self._password = password
-        self._client_first_message_bare = 'n=%s,r=%s' % (username,
+    def initiate(self):
+        self._client_first_message_bare = 'n=%s,r=%s' % (self._client.username,
                                                          self._client_nonce)
         client_first_message = '%s%s' % (self._channel_binding,
                                          self._client_first_message_bare)
@@ -364,7 +364,7 @@ class SCRAM:
 
         self._client.send_nonza(element)
 
-    def response(self, server_first_message):
+    def response(self, server_first_message: str):
         server_first_message = b64decode(server_first_message).decode()
         challenge = self._scram_parse(server_first_message)
 
@@ -379,7 +379,7 @@ class SCRAM:
             raise AuthFail('Salt iteration count to low: %s' % iteration_count)
 
         salted_password = pbkdf2_hmac(self._hash_method,
-                                      self._password.encode('utf8'),
+                                      self._client.password.encode('utf8'),
                                       salt,
                                       iteration_count)
 
@@ -410,23 +410,23 @@ class SCRAM:
 
         self._client.send_nonza(element)
 
-    def success(self, server_last_message):
+    def success(self, server_last_message: str):
         server_last_message = b64decode(server_last_message).decode()
         success = self._scram_parse(server_last_message)
         server_signature = b64decode(success['v'])
         if server_signature != self._server_signature:
             raise AuthFail('Invalid server signature')
 
-    def _hmac(self, key, message):
+    def _hmac(self, key: bytes, message: str) -> bytes:
         return hmac.new(key=key,
                         msg=message.encode(),
                         digestmod=self._hash_method).digest()
 
     @staticmethod
-    def _xor(x, y):
+    def _xor(x: bytes, y: bytes) -> bytes:
         return bytes([px ^ py for px, py in zip(x, y)])
 
-    def _h(self, data):
+    def _h(self, data: bytes) -> bytes:
         return hashlib.new(self._hash_method, data).digest()
 
 

@@ -25,7 +25,7 @@ from nbxmpp.const import ErrorCondition
 from nbxmpp.const import ErrorType
 from nbxmpp.const import IqType
 from nbxmpp.elements import Stanza
-from nbxmpp.lookups import register_class_lookup
+from nbxmpp.elements import register_class_lookup
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
 from nbxmpp.exceptions import NodeProcessed

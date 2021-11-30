@@ -53,6 +53,7 @@ from nbxmpp.util import validate_stream_header
 from nbxmpp.util import LogAdapter
 from nbxmpp.modules.stream import Features
 from nbxmpp.modules.stream import make_bind_request
+from nbxmpp import stream_states
 from nbxmpp import types
 
 log = logging.getLogger('nbxmpp.client')
@@ -86,6 +87,7 @@ class Client(Observable):
         self._domain = None
         self._username = None
         self._resource = None
+        self._password = None
 
         self._custom_host = None
 
@@ -137,6 +139,29 @@ class Client(Observable):
         self._sasl = SASL(self)
 
         self._state = StreamState.DISCONNECTED
+
+
+        self._state_map = {
+            # StreamState.RESOLVE: None,
+            # StreamState.RESOLVED: None,
+            # StreamState.CONNECTING: None,
+            StreamState.CONNECTED: stream_states.Connected(self),
+            # StreamState.DISCONNECTED: None,
+            # StreamState.DISCONNECTING: None,
+            StreamState.WAIT_FOR_STREAM_START: stream_states.WaitForStreamStart(self),
+            StreamState.WAIT_FOR_FEATURES: stream_states.WaitForFeatures(self),
+            StreamState.WAIT_FOR_TLS_PROCEED: stream_states.WaitForTlsProceed(self),
+            StreamState.PROCEED_WITH_AUTH: stream_states.ProceedWithAuth(self),
+            StreamState.AUTH_SUCCESSFUL: stream_states.AuthSuccessful(self),
+            # StreamState.AUTH_FAILED: None,
+            StreamState.WAIT_FOR_RESUMED: stream_states.WaitForResumed(self),
+            StreamState.RESUME_FAILED: stream_states.ResumeFailed(self),
+            StreamState.RESUME_SUCCESSFUL: stream_states.ResumeSuccessful(self),
+            StreamState.BIND_SUCCESSFUL: stream_states.BindSuccessful(self),
+            StreamState.WAIT_FOR_BIND: stream_states.WaitForBind(self),
+            StreamState.WAIT_FOR_SESSION: stream_states.WaitForSession(self),
+            # StreamState.ACTIVE: None,
+        }
 
     def add_task(self, task):
         self._tasks.append(task)
@@ -222,11 +247,11 @@ class Client(Observable):
         self._ignore_tls_errors = ignore
 
     def set_password(self, password: str):
-        self._sasl.set_password(password)
+        self._password = password
 
     @property
     def password(self) -> Optional[str]:
-        return self._sasl.password
+        return self._password
 
     @property
     def peer_certificate(self):
@@ -263,7 +288,7 @@ class Client(Observable):
 
     @state.setter
     def state(self, value: StreamState):
-        self._state = value
+        self._state = self._state_map.get(value, value)
         self._log.info('Set state: %s', value)
 
     def set_state(self, state: StreamState):
@@ -465,9 +490,9 @@ class Client(Observable):
             self._con.disconnect()
 
     def _on_connected(self, connection: Connection, _signal_name: str):
-        self.set_state(StreamState.CONNECTED)
         self._local_address = connection.local_address
         self._remote_address = connection.remote_address
+        self.set_state(StreamState.CONNECTED)
 
     def _on_disconnected(self, _connection: Connection, _signal_name: str):
         self.state = StreamState.DISCONNECTED
@@ -634,232 +659,7 @@ class Client(Observable):
 
     def _xmpp_state_machine(self, stanza: Optional[types.Base] = None):
         self._log.info('Execute state machine')
-        if stanza is not None:
-            if stanza.localname == 'error':
-                self._log.info('Stream error')
-                # TODO:
-                # self._disconnect_with_error(StreamError.SASL,
-                #                             stanza.get_condition())
-                return
-
-        if self.state == StreamState.CONNECTED:
-            self._dispatcher.set_dispatch_callback(self._xmpp_state_machine)
-            if (self.current_connection_type == ConnectionType.DIRECT_TLS and
-                    not self.is_websocket):
-                self._con.start_tls_negotiation()
-                self._stream_secure = True
-                self._start_stream()
-                return
-
-            self._start_stream()
-
-        elif self.state == StreamState.WAIT_FOR_STREAM_START:
-            try:
-                self._stream_id = validate_stream_header(stanza,
-                                                         self._domain,
-                                                         self.is_websocket)
-            except StanzaMalformed as error:
-                self._log.error(error)
-                self._disconnect_with_error(StreamError.STREAM,
-                                            'stanza-malformed',
-                                            'Invalid stream header')
-                return
-
-            if (self._stream_secure or
-                    self.current_connection_type == ConnectionType.PLAIN):
-                # TLS Negotiation succeeded or we are connected PLAIN
-                # We received the stream header and consider this as
-                # successfully connected, this means we will not try
-                # other connection methods if an error happensafterwards
-                self._connect_successful = True
-
-            self.state = StreamState.WAIT_FOR_FEATURES
-
-        elif self.state == StreamState.WAIT_FOR_FEATURES:
-            if stanza.localname != 'features':
-                self._log.error('Invalid response: %s', stanza)
-                self._disconnect_with_error(
-                    StreamError.STREAM,
-                    'stanza-malformed',
-                    'Invalid response, expected features')
-                return
-            self._on_stream_features(stanza)
-
-        elif self.state == StreamState.WAIT_FOR_TLS_PROCEED:
-            if stanza.namespace != Namespace.TLS:
-                self._disconnect_with_error(
-                    StreamError.TLS,
-                    'stanza-malformed',
-                    'Invalid namespace for TLS response')
-                return
-
-            if stanza.localname == 'failure':
-                self._disconnect_with_error(StreamError.TLS,
-                                            'negotiation-failed')
-                return
-
-            if stanza.localname == 'proceed':
-                self._con.start_tls_negotiation()
-                self._stream_secure = True
-                self._start_stream()
-                return
-
-            self._log.error('Invalid response')
-            self._disconnect_with_error(StreamError.TLS,
-                                        'stanza-malformed',
-                                        'Invalid TLS response')
-            return
-
-        elif self.state == StreamState.PROCEED_WITH_AUTH:
-            self._sasl.delegate(stanza)
-
-        elif self.state == StreamState.AUTH_SUCCESSFUL:
-            self._stream_authenticated = True
-            if self._mode.is_login_test:
-                self.notify('login-successful')
-                # Reset parser because we will receive a new stream header
-                # which will otherwise lead to a parsing error
-                self._dispatcher.reset_parser()
-                self.disconnect()
-                return
-
-            self._start_stream()
-
-        elif self.state == StreamState.AUTH_FAILED:
-            self._disconnect_with_error(StreamError.SASL,
-                                        *self._sasl.error)
-
-        elif self.state == StreamState.WAIT_FOR_BIND:
-            self._on_bind(stanza)
-
-        elif self.state == StreamState.BIND_SUCCESSFUL:
-            self._dispatcher.clear_iq_callbacks()
-            self._dispatcher.set_dispatch_callback(None)
-            self._smacks.send_enable()
-            self.state = StreamState.ACTIVE
-            self.notify('connected')
-
-        elif self.state == StreamState.WAIT_FOR_SESSION:
-            self._on_session(stanza)
-
-        elif self.state == StreamState.WAIT_FOR_RESUMED:
-            self._smacks.delegate(stanza)
-
-        elif self.state == StreamState.RESUME_FAILED:
-            self.notify('resume-failed')
-            self._start_bind()
-
-        elif self.state == StreamState.RESUME_SUCCESSFUL:
-            self._dispatcher.set_dispatch_callback(None)
-            self.state = StreamState.ACTIVE
-            self.notify('resume-successful')
-
-    def _on_stream_features(self, features: Features):
-        if self.is_stream_authenticated:
-            self._stream_features = features
-            self._smacks.sm_supported = features.has_sm()
-            self._session_required = features.session_required()
-            if self._smacks.resume_supported:
-                self._smacks.resume_request()
-                self.state = StreamState.WAIT_FOR_RESUMED
-            else:
-                self._start_bind()
-
-        elif self.is_stream_secure:
-            if self._mode.is_register:
-                if features.has_register():
-                    self.state = StreamState.ACTIVE
-                    self._dispatcher.set_dispatch_callback(None)
-                    self.notify('connected')
-                else:
-                    self._disconnect_with_error(StreamError.REGISTER,
-                                                'register-not-supported')
-                return
-
-            if self._mode.is_anonymous_test:
-                if features.has_anonymous():
-                    self.notify('anonymous-supported')
-                    self.disconnect()
-                else:
-                    self._disconnect_with_error(StreamError.SASL,
-                                                'anonymous-not-supported')
-                return
-
-            self._start_auth(features)
-
-        else:
-            tls_supported, required = features.has_starttls()
-            if self._current_address.type == ConnectionType.PLAIN:
-                if tls_supported and required:
-                    self._log.error('Server requires TLS')
-                    self._disconnect_with_error(StreamError.TLS, 'tls-required')
-                    return
-                self._start_auth(features)
-                return
-
-            if not tls_supported:
-                self._log.error('Server does not support TLS')
-                self._disconnect_with_error(StreamError.TLS,
-                                            'tls-not-supported')
-                return
-            self._start_tls()
-
-    def _start_stream(self):
-        self._log.info('Start stream')
-        self._stream_id = None
-        self._dispatcher.reset_parser()
-        self._con.start_stream(self.domain, lang=self._lang)
-        self.state = StreamState.WAIT_FOR_STREAM_START
-
-    def _start_tls(self):
-        self.send_nonza(TLSRequest())
-        self.state = StreamState.WAIT_FOR_TLS_PROCEED
-
-    def _start_auth(self, features):
-        if not features.has_sasl():
-            self._log.error('Server does not support SASL')
-            self._disconnect_with_error(StreamError.SASL,
-                                        'sasl-not-supported')
-            return
-        self.state = StreamState.PROCEED_WITH_AUTH
-        self._sasl.start_auth(features)
-
-    def _start_bind(self):
-        self._log.info('Send bind')
-
-        bind_request = make_bind_request(self.resource)
-        self.send_stanza(bind_request)
-        self.state = StreamState.WAIT_FOR_BIND
-
-    def _on_bind(self, stanza: types.Iq):
-        if not stanza.is_result():
-            self._disconnect_with_error(StreamError.BIND,
-                                        stanza.getError(),
-                                        stanza.getErrorMsg())
-            return
-
-        jid = stanza.find_tag('bind', namespace=Namespace.BIND).find_tag_text('jid')
-        self._log.info('Successfully bound %s', jid)
-        self._set_bound_jid(jid)
-
-        if not self._session_required:
-            # Server don't want us to initialize a session
-            self._log.info('No session required')
-            self.set_state(StreamState.BIND_SUCCESSFUL)
-        else:
-            session_request = SessionRequest()
-            self.send_stanza(session_request)
-            self.state = StreamState.WAIT_FOR_SESSION
-
-    def _on_session(self, stanza: types.Iq):
-        if stanza.is_result():
-            self._log.info('Successfully started session')
-            self.set_state(StreamState.BIND_SUCCESSFUL)
-        else:
-            self._log.error('Session open failed')
-            self._disconnect_with_error(StreamError.SESSION,
-                                        stanza.getError(),
-                                        stanza.getErrorMsg())
+        self.state.handle(stanza)
 
     def _ping(self):
         self._ping_source_id = None

@@ -24,7 +24,7 @@ from typing import cast
 from nbxmpp import types
 from nbxmpp.builder import E
 from nbxmpp.elements import Base
-from nbxmpp.lookups import register_class_lookup
+from nbxmpp.elements import register_class_lookup
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
 from nbxmpp.namespaces import Namespace

@@ -30,7 +30,7 @@ from lxml import etree
 from lxml.etree import ElementBase
 from nbxmpp import types
 
-from nbxmpp.lookups import ElementLookup
+from nbxmpp.elements import ElementLookup
 from nbxmpp.util import Observable
 from nbxmpp.util import LogAdapter
 

@@ -22,7 +22,7 @@ from typing import cast
 from lxml import etree
 from nbxmpp.const import IqType, MessageType, PresenceType
 
-from nbxmpp.lookups import ElementLookup
+from nbxmpp.elements import ElementLookup
 from nbxmpp.elements import Base
 from nbxmpp.elements import StreamStart as _StreamStart
 from nbxmpp.elements import StreamEnd as StreamEnd
