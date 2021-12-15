@@ -77,6 +77,7 @@ class WebsocketConnection(Connection):
             return
 
         self._websocket.set_keepalive_interval(5)
+        self._websocket.set_max_incoming_payload_size(1048576)
         self._websocket.connect('message', self._on_websocket_message)
         self._websocket.connect('closed', self._on_websocket_closed)
         self._websocket.connect('closing', self._on_websocket_closing)
