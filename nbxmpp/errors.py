@@ -32,7 +32,7 @@ class BaseError(Exception):
     def __str__(self):
         return self.text
 
-    def get_text(self):
+    def get_text(self, pref_lang=None):
         return self.text
 
 
