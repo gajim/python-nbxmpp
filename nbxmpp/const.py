@@ -154,11 +154,11 @@ class PresenceShow(Enum):
 
 
 PresenceShow._WEIGHTS = {
+    PresenceShow.DND: 2,
     PresenceShow.CHAT: 1,
     PresenceShow.ONLINE: 0,
     PresenceShow.AWAY: -1,
     PresenceShow.XA: -2,
-    PresenceShow.DND: -3,
 }
 
 
