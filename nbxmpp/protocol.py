@@ -683,7 +683,7 @@ class JID:
         return idna_encode(self.domain)
 
     @property
-    def bare(self) -> Optional[str]:
+    def bare(self) -> str:
         if self.localpart is not None:
             return f'{self.localpart}@{self.domain}'
         return self.domain
