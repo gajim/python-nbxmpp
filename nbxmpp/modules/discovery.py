@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Optional
+
 import time
 import logging
 
@@ -78,7 +83,8 @@ class Discovery(BaseModule):
 
 
 
-def parse_disco_info(stanza, timestamp=None):
+def parse_disco_info(stanza: Any,
+                     timestamp: Optional[float] = None) -> DiscoInfo:
     idenities = []
     features = []
     dataforms = []
