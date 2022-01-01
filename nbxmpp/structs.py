@@ -379,7 +379,7 @@ class RosterItem:
                    subscription=attrs.get('subscription'),
                    groups=groups)
 
-    def asdict(self):
+    def asdict(self) -> dict[str, Any]:
         return {'jid': self.jid,
                 'name': self.name,
                 'ask': self.ask,
@@ -751,7 +751,7 @@ class CommonError:
             self._text[lang] = text
 
     @classmethod
-    def from_string(cls, node_string):
+    def from_string(cls, node_string: Union[bytes, str]) -> CommonError:
         return cls(Protocol(node=node_string))
 
     def get_text(self, pref_lang=None):
@@ -783,7 +783,7 @@ class CommonError:
             text = ' - %s' % text
         return 'Error from %s: %s%s' % (self.jid, condition, text)
 
-    def serialize(self):
+    def serialize(self) -> str:
         return str(Protocol(name=self._stanza_name,
                             frm=self.jid,
                             xmlns=Namespace.CLIENT,
