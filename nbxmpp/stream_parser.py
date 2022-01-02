@@ -41,9 +41,9 @@ log = logging.getLogger('nbxmpp.parser')
 
 
 PARSER_SETTINGS = {
-    'load_dtd': True,
+    'load_dtd': False,
     'dtd_validation': False,
-    'no_network': False,
+    'no_network': True,
     'recover': False,
     'resolve_entities': False,
     'remove_comments': True,
