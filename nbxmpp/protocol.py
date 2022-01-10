@@ -595,7 +595,7 @@ class JID:
 
     @classmethod
     @functools.lru_cache(maxsize=None)
-    def from_string(cls, jid_string: str) -> JID:
+    def from_string(cls, jid_string: str, force_bare: bool = False) -> JID:
         # https://tools.ietf.org/html/rfc7622#section-3.2
 
         # Remove any portion from the first '/' character to the end of the
@@ -613,6 +613,11 @@ class JID:
             localpart, domainpart = rest.split('@', 1)
         else:
             localpart, domainpart = None, rest
+
+        if force_bare:
+            if localpart is None:
+                raise LocalpartByteLimit
+            resourcepart = None
 
         return cls(localpart=localpart,
                    domain=domainpart,
