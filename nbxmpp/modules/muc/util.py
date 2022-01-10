@@ -177,7 +177,7 @@ def parse_muc_user(muc_user, is_presence=True):
     jid = item_dict.get('jid')
     if jid is not None:
         try:
-            jid = JID.from_string(jid)
+            jid = JID.from_string(jid, force_bare=True)
         except InvalidJid as error:
             raise StanzaMalformed('invalid jid %s, %s' % (jid, error))
 
