@@ -671,7 +671,6 @@ class JID:
 
     def __eq__(self, other: Union[str, JID]) -> bool:
         if isinstance(other, str):
-            deprecation_warning('comparing string with JID is deprected')
             try:
                 return JID.from_string(other) == self
             except Exception:
