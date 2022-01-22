@@ -132,8 +132,8 @@ class MucConfigResult(NamedTuple):
 
 class MucSubject(NamedTuple):
     text: str
-    author: str
-    timestamp: float
+    author: Optional[str]
+    timestamp: Optional[float]
 
 
 class AffiliationResult(NamedTuple):
