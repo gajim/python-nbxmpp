@@ -25,6 +25,7 @@ from nbxmpp.protocol import DataForm
 from nbxmpp.protocol import DataField
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import StanzaMalformed
+from nbxmpp.structs import MucSubject
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import InviteType
 from nbxmpp.const import MessageType
@@ -79,9 +80,13 @@ class MUC(BaseModule):
                           ns=Namespace.MUC_USER,
                           priority=11),
             StanzaHandler(name='message',
-                          callback=self._process_groupchat_message,
+                          callback=self._process_message_before_decryption,
                           typ='groupchat',
                           priority=6),
+            StanzaHandler(name='message',
+                          callback=self._process_message_after_decryption,
+                          typ='groupchat',
+                          priority=16),
             StanzaHandler(name='message',
                           callback=self._process_mediated_invite,
                           typ='normal',
@@ -182,7 +187,7 @@ class MUC(BaseModule):
             self._log.warning(stanza)
             raise NodeProcessed
 
-    def _process_groupchat_message(self, _client, stanza, properties):
+    def _process_message_before_decryption(self, _client, stanza, properties):
         properties.from_muc = True
         properties.muc_jid = properties.jid.new_as_bare()
         properties.muc_nickname = properties.jid.resource
@@ -202,6 +207,13 @@ class MUC(BaseModule):
             address = addresses.getTag('address', attrs={'type': 'ofrom'})
             if address is not None:
                 properties.muc_ofrom = JID.from_string(address.getAttr('jid'))
+
+    def _process_message_after_decryption(self, _client, stanza, properties):
+        if properties.body is None and properties.subject:
+            properties.muc_subject = MucSubject(
+                text=properties.subject,
+                author=properties.muc_nickname,
+                timestamp=properties.user_timestamp)
 
     def _process_message(self, _client, stanza, properties):
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)

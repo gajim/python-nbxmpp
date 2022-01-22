@@ -130,6 +130,12 @@ class MucConfigResult(NamedTuple):
     form: Optional[Any] = None
 
 
+class MucSubject(NamedTuple):
+    text: str
+    author: str
+    timestamp: float
+
+
 class AffiliationResult(NamedTuple):
     jid: JID
     users: dict[JID, dict[str, str]]
@@ -957,6 +963,7 @@ class MessageProperties:
     muc_decline = None
     muc_user = None
     muc_ofrom = None
+    muc_subject: Optional[MucSubject] = None
     captcha: Optional[CaptchaData] = None
     voice_request: Optional[VoiceRequest] = None
     self_message: bool = False
