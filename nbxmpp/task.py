@@ -267,7 +267,7 @@ class Task:
             return self._error
         return self._result
 
-    def finish(self):
+    def finish(self) -> Any:
         if self._error is not None:
             raise self._error  # pylint: disable=raising-bad-type
         return self._result

@@ -936,7 +936,7 @@ class Protocol(Node):
         """
         self.setAttr('id', val)
 
-    def getError(self):
+    def getError(self) -> Optional[str]:
         """
         Return the error-condition (if present) or the textual description
         of the error (otherwise)
