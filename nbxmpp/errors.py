@@ -15,9 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import logging
+from typing import Optional
 
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Protocol
 
 
 def is_error(error):
@@ -25,14 +29,14 @@ def is_error(error):
 
 
 class BaseError(Exception):
-    def __init__(self, is_fatal=False):
+    def __init__(self, is_fatal: bool = False) -> None:
         self.is_fatal = is_fatal
         self.text = ''
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.text
 
-    def get_text(self, pref_lang=None):
+    def get_text(self, pref_lang: Optional[str] = None) -> str:
         return self.text
 
 
@@ -41,18 +45,18 @@ class StanzaError(BaseError):
     log_level = logging.INFO
     app_namespace = None
 
-    def __init__(self, stanza):
+    def __init__(self, stanza: Protocol):
         BaseError.__init__(self)
         self.stanza = stanza
         self._stanza_name = stanza.getName()
         self._error_node = stanza.getTag('error')
-        self.condition = stanza.getError()
+        self.condition: Optional[str] = stanza.getError()
         self.condition_data = self._error_node.getTagData(self.condition)
         self.app_condition = self._get_app_condition()
         self.type = stanza.getErrorType()
         self.jid = stanza.getFrom()
         self.id = stanza.getID()
-        self._text = {}
+        self._text: dict[str, str] = {}
 
         text_elements = self._error_node.getTags('text',
                                                  namespace=Namespace.STANZAS)
@@ -61,7 +65,7 @@ class StanzaError(BaseError):
             text = element.getData()
             self._text[lang] = text
 
-    def _get_app_condition(self):
+    def _get_app_condition(self) -> Optional[str]:
         if self.app_namespace is None:
             return None
 
@@ -70,7 +74,7 @@ class StanzaError(BaseError):
                 return node.getName()
         return None
 
-    def get_text(self, pref_lang=None):
+    def get_text(self, pref_lang: Optional[str] = None) -> str:
         if pref_lang is not None:
             text = self._text.get(pref_lang)
             if text is not None:
@@ -87,10 +91,10 @@ class StanzaError(BaseError):
             return self._text.popitem()[1]
         return ''
 
-    def set_text(self, lang, text):
+    def set_text(self, lang: str, text: str) -> None:
         self._text[lang] = text
 
-    def __str__(self):
+    def __str__(self) -> str:
         condition = self.condition
         if self.app_condition is not None:
             condition = '%s (%s)' % (self.condition, self.app_condition)
