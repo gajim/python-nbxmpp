@@ -150,6 +150,10 @@ class Client(Observable):
         return self._stream_features
 
     @property
+    def resumeable(self):
+        return self._smacks.resumeable
+
+    @property
     def sm_supported(self):
         return self._smacks.sm_supported
 

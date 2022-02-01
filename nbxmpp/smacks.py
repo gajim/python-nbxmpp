@@ -73,6 +73,10 @@ class Smacks:
         self._log.info('Server supports detected: %s', value)
         self._sm_supported = value
 
+    @property
+    def resumeable(self):
+        return self._session_id is not None and self.resume_supported
+
     def delegate(self, stanza):
         if stanza.getNamespace() != Namespace.STREAM_MGMT:
             return
