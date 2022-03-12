@@ -188,7 +188,7 @@ class TCPConnection(Connection):
 
         self._con.get_input_stream().read_bytes_async(
             READ_BUFFER_SIZE,
-            GLib.PRIORITY_DEFAULT,
+            GLib.PRIORITY_LOW,
             self._read_cancellable,
             self._on_read_async_finish,
             None)
