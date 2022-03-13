@@ -367,6 +367,7 @@ class RosterItem:
     name: Optional[str] = None
     ask: Optional[str] = None
     subscription: Optional[str] = None
+    approved: Optional[str] = None
     groups: Set[str] = field(default_factory=set)
 
     @classmethod
@@ -382,7 +383,8 @@ class RosterItem:
         return cls(jid=jid,
                    name=attrs.get('name'),
                    ask=attrs.get('ask'),
-                   subscription=attrs.get('subscription'),
+                   subscription=attrs.get('subscription') or 'none',
+                   approved=attrs.get('approved'),
                    groups=groups)
 
     def asdict(self) -> dict[str, Any]:
@@ -390,6 +392,7 @@ class RosterItem:
                 'name': self.name,
                 'ask': self.ask,
                 'subscription': self.subscription,
+                'approved': self.approved,
                 'groups': self.groups}
 
 
