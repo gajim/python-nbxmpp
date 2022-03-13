@@ -18,10 +18,13 @@
 import logging
 from collections import namedtuple
 
+from gi.repository import Soup
+
+import nbxmpp
 from nbxmpp.util import Observable
-from nbxmpp.resolver import GioResolver
 from nbxmpp.const import ConnectionType
 from nbxmpp.const import ConnectionProtocol
+from nbxmpp.util import parse_websocket_uri
 
 
 log = logging.getLogger('nbxmpp.addresses')
@@ -130,8 +133,58 @@ class ServerAddresses(Observable):
             self._on_request_resolved()
             return
 
-        GioResolver().resolve_alternatives(self._domain,
-                                           self._on_alternatives_result)
+        self._resolve_alternatives()
+
+    def _resolve_alternatives(self) -> None:
+        session = Soup.Session()
+        session.props.user_agent = f'nbxmpp/{nbxmpp.__version__}'
+        message = Soup.Message.new(
+            'GET', f'https://{self._domain}/.well-known/host-meta')
+        session.queue_message(message, self._on_alternatives_result)
+
+    def _on_alternatives_result(self,
+                                _session: Soup.Session,
+                                message: Soup.Message) -> None:
+
+        status = message.props.status_code
+        if status != Soup.Status.OK:
+            error = message.props.reason_phrase
+            log.info('Failed to retrieve host-meta file: %s %s', status, error)
+            self._on_request_resolved()
+            return
+
+        response_body = message.props.response_body
+        if response_body is None or not response_body.data:
+            log.info('No response body data found')
+            self._on_request_resolved()
+            return
+
+        try:
+            uri = parse_websocket_uri(response_body.data)
+        except ValueError as error:
+            log.info('Error parsing websocket uri: %s', error)
+            self._on_request_resolved()
+            return
+
+        if uri.startswith('wss'):
+            type_ = ConnectionType.DIRECT_TLS
+        elif uri.startswith('ws'):
+            type_ = ConnectionType.PLAIN
+        else:
+            log.warning('Invalid websocket uri: %s', uri)
+            self._on_request_resolved()
+            return
+
+        addr = ServerAddress(domain=self._domain,
+                             service=None,
+                             host=None,
+                             uri=uri,
+                             protocol=ConnectionProtocol.WEBSOCKET,
+                             type=type_,
+                             proxy=None)
+        self._addresses.append(addr)
+
+        self._on_request_resolved()
 
     def cancel_resolve(self):
         self.remove_subscriptions()
@@ -160,31 +213,6 @@ class ServerAddresses(Observable):
 
     def set_proxy(self, proxy):
         self._proxy = proxy
-
-    def _on_alternatives_result(self, uri):
-        if uri is None:
-            self._on_request_resolved()
-            return
-
-        if uri.startswith('wss'):
-            type_ = ConnectionType.DIRECT_TLS
-        elif uri.startswith('ws'):
-            type_ = ConnectionType.PLAIN
-        else:
-            log.warning('Invalid websocket uri: %s', uri)
-            self._on_request_resolved()
-            return
-
-        addr = ServerAddress(domain=self._domain,
-                             service=None,
-                             host=None,
-                             uri=uri,
-                             protocol=ConnectionProtocol.WEBSOCKET,
-                             type=type_,
-                             proxy=None)
-        self._addresses.append(addr)
-
-        self._on_request_resolved()
 
     def _on_request_resolved(self):
         self._is_resolved = True
