@@ -172,6 +172,7 @@ class _Namespaces:
     XHTML: str = 'http://www.w3.org/1999/xhtml'
     XMPP_STREAMS: str = 'urn:ietf:params:xml:ns:xmpp-streams'
     X_OOB: str = 'jabber:x:oob'
+    XRD: str = 'http://docs.oasis-open.org/ns/xri/xrd-1.0'
 
 
 Namespace: _Namespaces = _Namespaces()

@@ -30,6 +30,7 @@ import re
 import logging
 from logging import LoggerAdapter
 from collections import defaultdict
+import xml.etree.ElementTree as ET
 
 from functools import lru_cache
 
@@ -434,3 +435,24 @@ class LogAdapter(LoggerAdapter):
 
     def process(self, msg, kwargs):
         return '(%s) %s' % (self.extra['context'], msg), kwargs
+
+
+def parse_websocket_uri(data: str) -> str:
+    '''
+    Example:
+    <?xml version='1.0' encoding='utf-8'?>
+    <XRD xmlns='http://docs.oasis-open.org/ns/xri/xrd-1.0'>
+      <Link rel='urn:xmpp:alt-connections:xbosh'
+            href='https://bosh.domain.org/'/>
+      <Link rel='urn:xmpp:alt-connections:websocket'
+            href='wss://ws.domain.org/'/>
+    </XRD>
+    '''
+    host_meta_xml = ET.fromstring(data)
+    for link in host_meta_xml.findall(f'{{{Namespace.XRD}}}Link'):
+        if link.attrib.get('rel') == 'urn:xmpp:alt-connections:websocket':
+            href = link.attrib.get('href')
+            if href is None:
+                raise ValueError('No href attr found')
+            return href
+    raise ValueError('no websocket uri found')
