@@ -5,3 +5,5 @@ nbxmpp.egg-info
 dist
 .idea
 *~
+*.sublime-workspace
+*.sublime-project
