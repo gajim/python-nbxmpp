@@ -161,7 +161,7 @@ class ServerAddresses(Observable):
 
         try:
             uri = parse_websocket_uri(response_body.data)
-        except ValueError as error:
+        except Exception as error:
             log.info('Error parsing websocket uri: %s', error)
             self._on_request_resolved()
             return
