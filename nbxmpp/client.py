@@ -16,6 +16,8 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+from typing import Any
+from typing import Optional
 
 from gi.repository import GLib
 
@@ -570,8 +572,13 @@ class Client(Observable):
         GLib.source_remove(self._ping_source_id)
         self._ping_source_id = None
 
-    def send_stanza(self, stanza, now=False, callback=None,
-                    timeout=None, user_data=None):
+    def send_stanza(self,
+                    stanza: Protocol,
+                    now: bool = False,
+                    callback: Optional[Any] = None,
+                    timeout: Optional[int] = None,
+                    user_data: Optional[Any] = None) -> str:
+
         if user_data is not None and not isinstance(user_data, dict):
             raise ValueError('arg user_data must be of dict type')
 
