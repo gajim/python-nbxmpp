@@ -119,7 +119,10 @@ class SASL:
 
         self._log.info('Chosen auth mechanism: %s', chosen_mechanism)
 
-        if chosen_mechanism in ('SCRAM-SHA-256', 'SCRAM-SHA-1', 'PLAIN'):
+        if chosen_mechanism in ('SCRAM-SHA-512',
+                                'SCRAM-SHA-256',
+                                'SCRAM-SHA-1',
+                                'PLAIN'):
             if not self._password:
                 self._on_sasl_finished(False, 'no-password')
                 return
@@ -134,7 +137,11 @@ class SASL:
         #                                     channel_binding_data)
         #     self._method.initiate(self._client.username, self._password)
 
-        if chosen_mechanism == 'SCRAM-SHA-256':
+        if chosen_mechanism == 'SCRAM-SHA-512':
+            self._method = SCRAM_SHA_512(self._client, None)
+            self._method.initiate(self._client.username, self._password)
+
+        elif chosen_mechanism == 'SCRAM-SHA-256':
             self._method = SCRAM_SHA_256(self._client, None)
             self._method.initiate(self._client.username, self._password)
 
@@ -440,6 +447,13 @@ class SCRAM_SHA_256_PLUS(SCRAM_SHA_256):
 
     _mechanism = 'SCRAM-SHA-256-PLUS'
     _channel_binding = 'p=tls-unique,,'
+
+
+class SCRAM_SHA_512(SCRAM):
+
+    _mechanism = 'SCRAM-SHA-512'
+    _channel_binding = 'n,,'
+    _hash_method = 'sha512'
 
 
 class AuthFail(Exception):

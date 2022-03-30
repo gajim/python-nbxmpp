@@ -44,6 +44,7 @@ def ascii_upper(s):
     return s.upper()
 
 SASL_AUTH_MECHS = [
+    'SCRAM-SHA-512',
     'SCRAM-SHA-256-PLUS',
     'SCRAM-SHA-256',
     'SCRAM-SHA-1-PLUS',
