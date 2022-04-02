@@ -170,6 +170,8 @@ class IdleCommand(IdleObject):
     def _start_nt(self):
         # if program is started from noninteraactive shells stdin is closed and
         # cannot be forwarded, so we have to keep it open
+
+        # pylint: disable=consider-using-with
         self.pipe = subprocess.Popen(self._compose_command_args(),
                                      stdout=subprocess.PIPE,
                                      bufsize=1024,

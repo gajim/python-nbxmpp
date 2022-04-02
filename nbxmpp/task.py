@@ -322,6 +322,7 @@ class IqRequestTask(Task):
         self._iq_id = None
 
     def _run_async(self, stanza: Node):
+        # pylint: disable=arguments-renamed
         self._iq_id = self._client.send_stanza(stanza,
                                                callback=self._async_finished,
                                                timeout=self._timeout)
@@ -358,6 +359,7 @@ class HTTPRequestTask(Task):
         self._session = session
 
     def _run_async(self, message):
+        # pylint: disable=arguments-renamed
         self._session.queue_message(message, self._async_finished, None)
 
     def _async_finished(self, _session, message, _user_data):

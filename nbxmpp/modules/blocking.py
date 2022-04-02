@@ -17,8 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Literal, Optional
-from typing import Union
+from typing import Optional
 from typing import Set
 from typing import TYPE_CHECKING
 

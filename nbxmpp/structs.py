@@ -434,6 +434,8 @@ class DiscoInfo(NamedTuple):
             except Exception:
                 continue
 
+        return None
+
     def supports(self, feature: str) -> bool:
         return feature in self.features
 

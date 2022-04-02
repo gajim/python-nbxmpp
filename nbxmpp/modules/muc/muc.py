@@ -208,7 +208,7 @@ class MUC(BaseModule):
             if address is not None:
                 properties.muc_ofrom = JID.from_string(address.getAttr('jid'))
 
-    def _process_message_after_decryption(self, _client, stanza, properties):
+    def _process_message_after_decryption(self, _client, _stanza, properties):
         if properties.body is None and properties.subject:
             properties.muc_subject = MucSubject(
                 text=properties.subject,
@@ -444,7 +444,7 @@ class MUC(BaseModule):
 
     @iq_request_task
     def request_config(self, room_jid):
-        task = yield
+        _task = yield
 
         response = yield make_config_request(room_jid)
         if response.isError():

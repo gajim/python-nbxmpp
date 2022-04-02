@@ -189,7 +189,7 @@ def _parse_omemo_message(stanza):
 
     try:
         sid = int(header.getAttr('sid'))
-    except Exception as error:
+    except Exception:
         raise MalformedStanzaError('sid attr not found', stanza)
 
     iv_node = header.getTag('iv')

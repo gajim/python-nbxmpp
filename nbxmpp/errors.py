@@ -36,7 +36,7 @@ class BaseError(Exception):
     def __str__(self) -> str:
         return self.text
 
-    def get_text(self, pref_lang: Optional[str] = None) -> str:
+    def get_text(self, _pref_lang: Optional[str] = None) -> str:
         return self.text
 
 

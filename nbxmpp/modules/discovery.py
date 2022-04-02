@@ -57,7 +57,7 @@ class Discovery(BaseModule):
         ]
 
     @staticmethod
-    def _process_disco_info(client, stanza, properties):
+    def _process_disco_info(client, stanza, _properties):
         iq = stanza.buildReply('error')
         iq.addChild(node=ErrorNode(ERR_ITEM_NOT_FOUND))
         client.send_stanza(iq)

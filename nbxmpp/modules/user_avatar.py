@@ -226,7 +226,7 @@ def _get_avatar_data(item, id_):
 
     avatar_sha = hashlib.sha1(avatar).hexdigest()
     if avatar_sha != id_:
-        raise MalformedStanzaError(f'avatar does not match sha', item)
+        raise MalformedStanzaError('avatar does not match sha', item)
 
     return AvatarData(data=avatar, sha=avatar_sha)
 

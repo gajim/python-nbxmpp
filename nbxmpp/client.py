@@ -479,8 +479,8 @@ class Client(Observable):
         else:
             self._set_error(StreamError.CONNECTION_FAILED,
                             'connection-failed',
-                            (f'Unable to connect to last '
-                             'successful address: {self._current_address}'))
+                            ('Unable to connect to last '
+                             f'successful address: {self._current_address}'))
             self.notify('connection-failed')
 
     def _disconnect_with_error(self, error_domain, error, text=None):

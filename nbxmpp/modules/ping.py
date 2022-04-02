@@ -37,7 +37,7 @@ class Ping(BaseModule):
                           priority=15),
         ]
 
-    def _process_ping(self, _client, stanza, properties):
+    def _process_ping(self, _client, stanza, _properties):
         self._log.info('Send pong to %s', stanza.getFrom())
         iq = stanza.buildSimpleReply('result')
         self._client.send_stanza(iq)

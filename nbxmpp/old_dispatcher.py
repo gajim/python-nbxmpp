@@ -290,7 +290,7 @@ class XMPPDispatcher(PlugIn):
         self._owner.send("%s%s>" % (XML_DECLARATION,
                                     str(self._metastream)[:-2]))
 
-    def _check_stream_start(self, ns, tag, attrs):
+    def _check_stream_start(self, ns, tag, _attrs):
         if ns != Namespace.STREAMS or tag != 'stream':
             raise ValueError('Incorrect stream start: '
                              '(%s,%s). Terminating.' % (tag, ns))

@@ -155,7 +155,7 @@ class SASL:
 
         elif chosen_mechanism == 'ANONYMOUS':
             self._method = ANONYMOUS(self._client)
-            self._method.initiate()
+            self._method.initiate()  # pylint: disable=E1120
 
         elif chosen_mechanism == 'EXTERNAL':
             self._method = EXTERNAL(self._client)
@@ -168,7 +168,7 @@ class SASL:
             else:
                 hostname = self._client.domain
             try:
-                self._method.initiate(hostname)
+                self._method.initiate(hostname)  # pylint: disable=E1120
             except AuthFail as error:
                 self._log.error(error)
                 self._abort_auth()
@@ -300,7 +300,7 @@ class GSSAPI:
             if not self.ctx.complete:
                 output_token = self.ctx.step(server_message)
             else:
-                result = self.ctx.unwrap(server_message)
+                _result = self.ctx.unwrap(server_message)
                 # TODO(jelmer): Log result.message
                 data = b'\x00\x00\x00\x00' + bytes(self.ctx.initiator_name)
                 output_token = self.ctx.wrap(data, False).message

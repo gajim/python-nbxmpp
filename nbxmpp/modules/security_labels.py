@@ -63,7 +63,7 @@ class SecurityLabels(BaseModule):
 
         catalog_node = response.getTag('catalog',
                                        namespace=Namespace.SECLABEL_CATALOG)
-        to = catalog_node.getAttr('to')
+
         items = catalog_node.getTags('item')
 
         labels = {}
