@@ -592,7 +592,6 @@ class NodeBuilder:
     _parser: Any
     Parse: Callable[[str, bool], None]
     __depth: int
-    __last_depth: int
     __max_depth: int
     _dispatch_depth: int
     _document_attrs: Optional[Attrs]
@@ -634,7 +633,6 @@ class NodeBuilder:
         self.Parse = self._parser.Parse
 
         self.__depth = 0
-        self.__last_depth = 0
         self.__max_depth = 0
         self._dispatch_depth = dispatch_depth
         self._document_attrs = None
@@ -799,12 +797,10 @@ class NodeBuilder:
         return self.__depth <= level < self.__max_depth
 
     def _inc_depth(self) -> None:
-        self.__last_depth = self.__depth
         self.__depth += 1
         self.__max_depth = max(self.__depth, self.__max_depth)
 
     def _dec_depth(self) -> None:
-        self.__last_depth = self.__depth
         self.__depth -= 1
 
 def XML2Node(xml_str: str) -> Optional[Node]:
