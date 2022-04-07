@@ -30,6 +30,12 @@ Run the following:
 
     pip install .
 
+or
+
+    pip install .[gssapi]
+
+to also install the optional dependency `gssapi`.
+
 ### Usage
 
 To use python-nbxmpp, `import nbxmpp` in your application.
