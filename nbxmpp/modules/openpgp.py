@@ -345,8 +345,7 @@ def create_message_stanza(stanza, encrypted_payload, with_fallback_text):
     stanza.addChild(node=eme_node)
 
     if with_fallback_text:
-        stanza.setBody(
-            '[This message is *encrypted* with OpenPGP (See :XEP:`0373`]')
+        stanza.setBody('This message is *encrypted* with OpenPGP')
 
 
 def _make_keylist(keylist):
