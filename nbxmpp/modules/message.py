@@ -61,10 +61,7 @@ class BaseMessage(BaseModule):
         properties.id = stanza.getID()
         properties.self_message = self._parse_self_message(stanza, properties)
 
-        # Stanza ID
-        id_, by = stanza.getStanzaIDAttrs()
-        if id_ is not None and by is not None:
-            properties.stanza_id = StanzaIDData(id=id_, by=by)
+        properties.stanza_ids = self._parse_stanza_ids(stanza)
 
         if properties.type.is_error:
             properties.error = error_factory(stanza)
@@ -107,3 +104,17 @@ class BaseMessage(BaseModule):
         if properties.type.is_groupchat:
             return False
         return stanza.getFrom().bare_match(stanza.getTo())
+
+    def _parse_stanza_ids(self, stanza):
+        stanza_ids = []
+        for stanza_id in stanza.getTags('stanza-id', namespace=Namespace.SID):
+            id_ = stanza_id.getAttr('id')
+            by = stanza_id.getAttr('by')
+            if not id_ or not by:
+                self._log.warning('Missing attributes on stanza-id')
+                self._log.warning(stanza)
+                continue
+
+            stanza_ids.append(StanzaIDData(id=id_, by=by))
+
+        return stanza_ids

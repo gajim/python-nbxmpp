@@ -945,7 +945,7 @@ class MessageProperties:
     carbon: Optional[CarbonData] = None
     type: MessageType = MessageType.NORMAL
     id: Optional[str] = None
-    stanza_id: Optional[str] = None
+    stanza_ids: list[StanzaIDData] = field(default_factory=list)
     from_: Optional[JID] = None
     to: Optional[JID] = None
     jid: Optional[JID] = None
