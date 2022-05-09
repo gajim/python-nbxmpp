@@ -1,3 +1,73 @@
+python-nbxmpp 3.0.0 (09 May 2022)
+
+ New
+
+ * Add Roster module
+ * Add Last Activity module
+ * Add EntityTime module
+ * Bookmarks: Add extensions support
+ * Add Message Moderation
+ * Implement SCRAM-SHA-512
+
+ Bugfixes
+
+ * AdHoc: Improve XEP-0050 Compliance
+ * Correctly handle RSM count request
+ * Correction: Ignore messages where message id == replace id
+ * Blocking: Don’t abort processing after parsing unblocks
+ * Handle multiple stanza-id elements
+
+ Others
+
+ * Many breaking changes to methods and structs
+
+python-nbxmpp 2.0.6 (14 March 2022)
+
+ Bugfixes
+
+ * Don’t fail on invalid host meta file
+
+python-nbxmpp 2.0.5 (13 March 2022)
+
+ Bugfixes
+
+ * Fix bookmarks compat namespace
+ * Resolve websocket uri only via https
+
+python-nbxmpp 2.0.4 (09 October 2021)
+
+ Bugfixes
+
+ * Ignore messages with incorrect id
+ * AdHoc: Make parsing AdHoc commands more compliant
+
+python-nbxmpp 2.0.3 (24 July 2021)
+
+ Bugfixes
+
+ * Correctly handle RSM count request
+ * Improve XEP-0050 Compliance
+ * GSSAPI: Catch OSError
+
+python-nbxmpp 2.0.2 (18 February 2021)
+
+ Bugfixes
+
+ * Add get_text() for Error Base class
+ * Client: Remove GSSAPI from default mechanisms
+ * Presence: Fix is_nickname_changed check
+ * UserAvatar: Add default argument
+
+python-nbxmpp 2.0.1 (07 February 2021)
+
+ New
+
+ * Properties: is_from_us() Method
+
+ Bugfixes
+
+ * Fix handling invalid websocket uris
+
 python-nbxmpp 2.0.0 (29 December 2020)
 
  New
