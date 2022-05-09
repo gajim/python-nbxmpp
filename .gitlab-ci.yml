@@ -12,6 +12,7 @@ run-test:
     - coverage run --source=nbxmpp -m unittest discover -v
     - coverage report -mi
     - coverage xml -i
+    - pip install .
   coverage: "/TOTAL.+ ([0-9]{1,3}%)/"
   artifacts:
     reports:
