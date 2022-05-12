@@ -120,7 +120,10 @@ class Roster(BaseModule):
         if ver_support:
             version = query.getAttr('ver')
             if version is None:
-                raise MalformedStanzaError('ver attribute missing', stanza)
+                # raise MalformedStanzaError('ver attribute missing', stanza)
+                # Prosody sometimes does not send ver attribute with some
+                # community modules
+                self._log.warning('no version attribute found')
 
         pushed_items = []
         for item in query.getTags('item'):
