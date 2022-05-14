@@ -50,8 +50,6 @@ class AdHoc(BaseModule):
             raise StanzaError(response)
 
         children = response.getQueryChildren()
-        if not children:
-            raise MalformedStanzaError('query children missing', response)
 
         command_list = []
         for item in children:
