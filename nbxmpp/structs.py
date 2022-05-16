@@ -378,6 +378,9 @@ class RosterItem:
             raise Exception('jid attribute missing')
 
         jid = JID.from_string(jid)
+        if jid.is_full:
+            raise Exception('full jid in roster not allowed')
+
         groups = {group.getData() for group in node.getTags('group')}
 
         return cls(jid=jid,
