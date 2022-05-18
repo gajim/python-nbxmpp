@@ -1,3 +1,12 @@
+python-nbxmpp 3.0.2 (18 May 2022)
+
+ Bug Fixes
+ 
+ * Roster: Raise exception if a full jid is found
+ * AdHoc: Don’t raise on empty nodes
+ * Roster: Don’t fail when no roster attribute is found
+ * #126 Remove redundant wheel dependency
+
 python-nbxmpp 3.0.1 (09 May 2022)
 
  Bugfix
