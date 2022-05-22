@@ -1,0 +1,23 @@
+Source: python3-nbxmpp-nightly
+Section: python
+Priority: optional
+Maintainer: Yann Leboulanger <asterix@lagaule.org>
+Build-Depends:
+    debhelper (>= 9),
+    dh-python,
+    python3-all,
+    python3-gi,
+Standards-Version: 3.9.8
+Homepage: https://dev.gajim.org/gajim/python-nbxmpp
+Vcs-Svn: https://dev.gajim.org/gajim/python-nbxmpp.git
+Vcs-Browser: https://dev.gajim.org/gajim/python-nbxmpp/tree/master
+
+Package: python3-nbxmpp-nightly
+Architecture: all
+Depends: ${misc:Depends},${python3:Depends}, python3-gi, gir1.2-soup-2.4
+Conflicts: python3-nbxmpp
+Description: Non blocking XMPP Python library
+ python-nbxmpp is a XMPP library forked from xmpppy but which uses non-blocking
+ sockets. It supports many authentication mechanisms, TLS, proxies, BOSH, ...
+ .
+ This is the Python 3 version of this library.
