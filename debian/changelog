@@ -1,6 +1,5 @@
-python3-nbxmpp-nightly (20161014) unstable; urgency=low
+python3-nbxmpp-nightly ({DATE}) unstable; urgency=low
 
-  * daily snapshot
+  * https://dev.gajim.org/gajim/python-nbxmpp/-/commits/master
 
- -- Yann Leboulanger <asterix@lagaule.org>  Fri, 14 Oct 2016 21:23:01 +0200
-
+ -- nbxmpp CI <ci@gajim.org>  {DATE_TIME}
