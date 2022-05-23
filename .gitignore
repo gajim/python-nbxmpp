@@ -2,6 +2,7 @@ build/
 __pycache__/
 .mypy_cache/
 nbxmpp.egg-info
+debian_build/
 dist
 .idea
 *~
