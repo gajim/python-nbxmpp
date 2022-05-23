@@ -5,7 +5,7 @@ stages:
   - build
   - deploy
 
-run-test:
+test-pylint:
   stage: test
   script:
     - python3 .ci/pylint-test.py
@@ -18,10 +18,11 @@ run-test:
     reports:
       cobertura: coverage.xml
 
-run-build:
+build-linux:
   stage: build
   script:
     - python3 setup.py sdist
+    - python3 .ci/debian_build.py "$(find dist/nbxmpp-*)" 1 --pkgprefix=python3-
 
   artifacts:
     name: "nbxmpp-$CI_COMMIT_SHA"
