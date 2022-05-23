@@ -1,4 +1,4 @@
-image: ci-gajim:master
+image: ci-nbxmpp:master
 
 stages:
   - test
@@ -34,6 +34,5 @@ deploy-pypi:
   stage: deploy
   rules:
     - if: '$CI_COMMIT_TAG'
-      when: manual
   script:
     - python3 .ci/deploy.py
