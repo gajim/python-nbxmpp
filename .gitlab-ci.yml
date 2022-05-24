@@ -1,21 +1,23 @@
+image: nbxmpp-master:latest
+
 stages:
-  # - test
+  - test
   - build
   - deploy
 
-# test-pylint:
-#   image: ci-gajim:master
-#   stage: test
-#   script:
-#     - python3 .ci/pylint-test.py
-#     - coverage run --source=nbxmpp -m unittest discover -v
-#     - coverage report -mi
-#     - coverage xml -i
-#     - pip install .
-#   coverage: "/TOTAL.+ ([0-9]{1,3}%)/"
-#   artifacts:
-#     reports:
-#       cobertura: coverage.xml
+test-pylint:
+  
+  stage: test
+  script:
+    - python3 .ci/pylint-test.py
+    - coverage run --source=nbxmpp -m unittest discover -v
+    - coverage report -mi
+    - coverage xml -i
+    - pip install .
+  coverage: "/TOTAL.+ ([0-9]{1,3}%)/"
+  artifacts:
+    reports:
+      cobertura: coverage.xml
 
 build-linux:
   image: nbxmpp-deb-build:latest
