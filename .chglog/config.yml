@@ -8,17 +8,20 @@ options:
     filters:
       Type:
         - feat
+        - imprv
         - perf
         - fix
   commit_groups:
     sort_by: Custom
     title_order:
       - feat
+      - imprv
       - perf
       - fix
     title_maps:
       feat: New
-      perf: Performance Improvements
+      imprv: Improvements
+      perf: Performance
       fix: Bug Fixes
   header:
     pattern: "^(\\w*)\\:\\s(.*)$"
