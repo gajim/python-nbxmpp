@@ -645,6 +645,11 @@ class Client(Observable):
                 # other connection methods if an error happensafterwards
                 self._connect_successful = True
 
+            if self._stream_authenticated and self._mode.is_login_test:
+                self.notify('login-successful')
+                self.disconnect()
+                return
+
             self.state = StreamState.WAIT_FOR_FEATURES
 
         elif self.state == StreamState.WAIT_FOR_FEATURES:
@@ -687,14 +692,6 @@ class Client(Observable):
 
         elif self.state == StreamState.AUTH_SUCCESSFUL:
             self._stream_authenticated = True
-            if self._mode.is_login_test:
-                self.notify('login-successful')
-                # Reset parser because we will receive a new stream header
-                # which will otherwise lead to a parsing error
-                self._dispatcher.reset_parser()
-                self.disconnect()
-                return
-
             self._start_stream()
 
         elif self.state == StreamState.AUTH_FAILED:
