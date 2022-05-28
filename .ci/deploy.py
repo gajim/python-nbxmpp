@@ -13,7 +13,7 @@ PASSWORD = os.environ['PYPI_TOKEN']
 
 def build() -> None:
     cmd = [
-        'python',
+        'python3',
         'setup.py',
         'sdist',
         'bdist_wheel'
