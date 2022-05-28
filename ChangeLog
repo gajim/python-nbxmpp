@@ -1,3 +1,13 @@
+python-nbxmpp 3.1.0 (28 May 2022)
+
+ New
+ 
+ * Examples: Allow to connect with different modes
+ 
+ Bug Fixes
+ 
+ * Client: Disconnect after stream restart in Login mode
+
 python-nbxmpp 3.0.2 (18 May 2022)
 
  Bug Fixes
