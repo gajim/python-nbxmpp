@@ -16,10 +16,10 @@ from nbxmpp.protocol import JID
 from nbxmpp.client import Client
 from nbxmpp.structs import ProxyData
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.addresses import ServerAddress
 from nbxmpp.const import ConnectionType
 from nbxmpp.const import ConnectionProtocol
 from nbxmpp.const import StreamError
+from nbxmpp.const import Mode
 
 consoleloghandler = logging.StreamHandler()
 log = logging.getLogger('nbxmpp')
@@ -93,6 +93,17 @@ class TestClient(Gtk.Window):
                               self._builder.proxy_username.get_text() or None,
                               self._builder.proxy_password.get_text() or None)
             self._client.set_proxy(proxy)
+
+        if self._builder.login_mode.get_active():
+            self._client.set_mode(Mode.LOGIN_TEST)
+        elif self._builder.client_mode.get_active():
+            self._client.set_mode(Mode.CLIENT)
+        elif self._builder.register_mode.get_active():
+            self._client.set_mode(Mode.REGISTER)
+        elif self._builder.anon_mode.get_active():
+            self._client.set_mode(Mode.ANONYMOUS_TEST)
+        else:
+            raise ValueError('No mode selected')
 
         self._client.set_connection_types(self._get_connection_types())
         self._client.set_protocols(self._get_connection_protocols())
@@ -168,8 +179,10 @@ class TestClient(Gtk.Window):
         self._scroll_timeout = GLib.timeout_add(50, self.scroll_to_end)
 
     def _connect_clicked(self, *args):
-        if self._client is None:
-            self._create_client()
+        if self._client is not None:
+            self._client.destroy()
+
+        self._create_client()
 
         self._client.connect()
 
