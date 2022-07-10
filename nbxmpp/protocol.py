@@ -700,9 +700,7 @@ class JID:
     def new_as_bare(self) -> JID:
         if self.resource is None:
             return self
-        new = asdict(self)
-        new.pop('resource')
-        return JID(**new)
+        return JID.from_string(self.bare)
 
     def bare_match(self, other: Union[str, JID]) -> bool:
         if isinstance(other, str):
