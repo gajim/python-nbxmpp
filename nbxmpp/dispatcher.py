@@ -421,10 +421,13 @@ class StanzaDispatcher(Observable):
                 return
 
         typ = stanza.getType()
-        if name == 'message' and not typ:
-            typ = 'normal'
-        elif not typ:
-            typ = ''
+        if not typ:
+            if name == 'message':
+                typ = 'normal'
+            elif name == 'presence':
+                typ = 'available'
+            else:
+                typ = ''
 
         stanza.props = stanza.getProperties()
         self._log.debug('type: %s, properties: %s', typ, stanza.props)
