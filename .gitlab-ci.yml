@@ -22,6 +22,7 @@ test-pylint:
 build-linux:
   image: nbxmpp-deb-build:latest
   stage: build
+  dependencies: []
   script:
     - python3 setup.py sdist
     - python3 .ci/debian_build.py "$(find dist/nbxmpp-*)" 1 --pkgprefix=python3-
@@ -31,9 +32,12 @@ build-linux:
     expire_in: 1 week
     paths:
       - dist/nbxmpp-*.tar.gz
+      - dist/nbxmpp-*.whl
 
 deploy-pypi:
   stage: deploy
+  dependencies:
+    - "build-linux"
   rules:
     - if: '$CI_COMMIT_TAG'
   script:

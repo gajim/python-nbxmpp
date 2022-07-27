@@ -22,7 +22,7 @@ def build() -> None:
     try:
         subprocess.run(cmd, cwd=REPO_DIR, check=True)
     except subprocess.CalledProcessError:
-        sys.exit('buid failed')
+        sys.exit('build failed')
 
 
 def upload() -> None:
@@ -41,5 +41,5 @@ def upload() -> None:
 
 
 if __name__ == '__main__':
-    build()
+    # build()
     upload()
