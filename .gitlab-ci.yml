@@ -25,7 +25,7 @@ build-linux:
   dependencies: []
   script:
     - python3 setup.py sdist bdist_wheel
-    - python3 .ci/debian_build.py "$(find dist/nbxmpp-*)" 1 --pkgprefix=python3-
+    - python3 .ci/debian_build.py "$(find dist/nbxmpp-*.tar.gz)" 1 --pkgprefix=python3-
 
   artifacts:
     name: "nbxmpp-$CI_COMMIT_SHA"
