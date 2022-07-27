@@ -9,6 +9,7 @@ options:
       Type:
         - feat
         - imprv
+        - change
         - perf
         - fix
   commit_groups:
@@ -16,11 +17,13 @@ options:
     title_order:
       - feat
       - imprv
+      - change
       - perf
       - fix
     title_maps:
       feat: New
       imprv: Improvements
+      change: Change
       perf: Performance
       fix: Bug Fixes
   header:
@@ -34,3 +37,6 @@ options:
   refs:
     actions:
       - Fixes
+  notes:
+    keywords:
+      - NOTES
