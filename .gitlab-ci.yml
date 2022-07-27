@@ -24,7 +24,7 @@ build-linux:
   stage: build
   dependencies: []
   script:
-    - python3 setup.py sdist
+    - python3 setup.py sdist bdist_wheel
     - python3 .ci/debian_build.py "$(find dist/nbxmpp-*)" 1 --pkgprefix=python3-
 
   artifacts:
