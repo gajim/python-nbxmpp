@@ -1,3 +1,17 @@
+nbxmpp 3.1.1 (27 Jul 2022)
+
+  Improvements
+
+  * Add more datetime test cases
+
+  Performance
+
+  * Use cache when calling JID.new_as_bare()
+
+  Bug Fixes
+
+  * Allow handlers to connect to presence type available
+
 nbxmpp 3.1.0 (28 May 2022)
 
   New
