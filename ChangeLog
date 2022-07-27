@@ -1,266 +1,266 @@
-python-nbxmpp 3.1.0 (28 May 2022)
+nbxmpp 3.1.0 (28 May 2022)
 
- New
+  New
  
- * Examples: Allow to connect with different modes
+  * Examples: Allow to connect with different modes
+
+  Bug Fixes
  
- Bug Fixes
+  * Client: Disconnect after stream restart in Login mode
+
+nbxmpp 3.0.2 (18 May 2022)
  
- * Client: Disconnect after stream restart in Login mode
+  Bug Fixes
 
-python-nbxmpp 3.0.2 (18 May 2022)
+  * Roster: Raise exception if a full jid is found
+  * AdHoc: Don’t raise on empty nodes
+  * Roster: Don’t fail when no roster attribute is found
+  * #126 Remove redundant wheel dependency
 
- Bug Fixes
+nbxmpp 3.0.1 (09 May 2022)
+
+  Bugfix
+
+  * Fix non-installable release
+
+nbxmpp 3.0.0 (09 May 2022)
+
+  New
+
+  * Add Roster module
+  * Add Last Activity module
+  * Add EntityTime module
+  * Bookmarks: Add extensions support
+  * Add Message Moderation
+  * Implement SCRAM-SHA-512
+
+  Bugfixes
+
+  * AdHoc: Improve XEP-0050 Compliance
+  * Correctly handle RSM count request
+  * Correction: Ignore messages where message id == replace id
+  * Blocking: Don’t abort processing after parsing unblocks
+  * Handle multiple stanza-id elements
+
+  Others
+
+  * Many breaking changes to methods and structs
+
+nbxmpp 2.0.6 (14 March 2022)
+
+  Bugfixes
+
+  * Don’t fail on invalid host meta file
+
+nbxmpp 2.0.5 (13 March 2022)
+
+  Bugfixes
+
+  * Fix bookmarks compat namespace
+  * Resolve websocket uri only via https
+
+nbxmpp 2.0.4 (09 October 2021)
+
+  Bugfixes
+
+  * Ignore messages with incorrect id
+  * AdHoc: Make parsing AdHoc commands more compliant
+
+nbxmpp 2.0.3 (24 July 2021)
+
+  Bugfixes
+
+  * Correctly handle RSM count request
+  * Improve XEP-0050 Compliance
+  * GSSAPI: Catch OSError
+
+nbxmpp 2.0.2 (18 February 2021)
+
+  Bugfixes
+
+  * Add get_text() for Error Base class
+  * Client: Remove GSSAPI from default mechanisms
+  * Presence: Fix is_nickname_changed check
+  * UserAvatar: Add default argument
+
+nbxmpp 2.0.1 (07 February 2021)
+
+  New
+
+  * Properties: is_from_us() Method
+
+  Bugfixes
+
+  * Fix handling invalid websocket uris
+
+nbxmpp 2.0.0 (29 December 2020)
+
+  New
+
+  * New JID object
+  * Add JID Escaping (XEP-0106) support
+  * Add VCard4 (XEP-0292) support
+  * Make module calls generator based
+  * Add GSSAPI support (XEP-0233)
+  * Simplify and harmonize module API
+
+nbxmpp 1.0.2 (14 August 2020)
+
+  New
+
+  * Client: Expose more information about the connection
+  * Client: set_ignored_tls_errors() allow to pass None
+  * Add method to disable stream management
+
+  Bugfixes
+
+  * TCP: Set input/output closed on finalize()
+  * TCP: Catch Runtime error
+  * Perform UTS46 mapping on domain names
+
+nbxmpp 1.0.1 (07 July 2020)
+
+  New
+
+  * Add XEP-0377 support
+  * MUC: Return message id when using inivite()
+
+  Bugfixes
+
+  * OMEMO: Correctly parse prekey value
+  * Client: Determine protocol and type correctly if a custom host is used
+  * Smacks: Don't fail on saving error replies
+
+nbxmpp 1.0.0 (18 June 2020)
+
+  * Library rewritten in most parts
+  * Replace BOSH with Websocket
+  * Add new example client
+  * Many other improvements
  
- * Roster: Raise exception if a full jid is found
- * AdHoc: Don’t raise on empty nodes
- * Roster: Don’t fail when no roster attribute is found
- * #126 Remove redundant wheel dependency
-
-python-nbxmpp 3.0.1 (09 May 2022)
-
- Bugfix
-
- * Fix non-installable release
-
-python-nbxmpp 3.0.0 (09 May 2022)
-
- New
-
- * Add Roster module
- * Add Last Activity module
- * Add EntityTime module
- * Bookmarks: Add extensions support
- * Add Message Moderation
- * Implement SCRAM-SHA-512
-
- Bugfixes
-
- * AdHoc: Improve XEP-0050 Compliance
- * Correctly handle RSM count request
- * Correction: Ignore messages where message id == replace id
- * Blocking: Don’t abort processing after parsing unblocks
- * Handle multiple stanza-id elements
-
- Others
-
- * Many breaking changes to methods and structs
-
-python-nbxmpp 2.0.6 (14 March 2022)
-
- Bugfixes
-
- * Don’t fail on invalid host meta file
-
-python-nbxmpp 2.0.5 (13 March 2022)
-
- Bugfixes
-
- * Fix bookmarks compat namespace
- * Resolve websocket uri only via https
-
-python-nbxmpp 2.0.4 (09 October 2021)
-
- Bugfixes
-
- * Ignore messages with incorrect id
- * AdHoc: Make parsing AdHoc commands more compliant
-
-python-nbxmpp 2.0.3 (24 July 2021)
-
- Bugfixes
-
- * Correctly handle RSM count request
- * Improve XEP-0050 Compliance
- * GSSAPI: Catch OSError
-
-python-nbxmpp 2.0.2 (18 February 2021)
-
- Bugfixes
-
- * Add get_text() for Error Base class
- * Client: Remove GSSAPI from default mechanisms
- * Presence: Fix is_nickname_changed check
- * UserAvatar: Add default argument
-
-python-nbxmpp 2.0.1 (07 February 2021)
-
- New
-
- * Properties: is_from_us() Method
-
- Bugfixes
-
- * Fix handling invalid websocket uris
-
-python-nbxmpp 2.0.0 (29 December 2020)
-
- New
-
- * New JID object
- * Add JID Escaping (XEP-0106) support
- * Add VCard4 (XEP-0292) support
- * Make module calls generator based
- * Add GSSAPI support (XEP-0233)
- * Simplify and harmonize module API
-
-python-nbxmpp 1.0.2 (14 August 2020)
-
- New
-
- * Client: Expose more information about the connection
- * Client: set_ignored_tls_errors() allow to pass None
- * Add method to disable stream management
-
- Bugfixes
-
- * TCP: Set input/output closed on finalize()
- * TCP: Catch Runtime error
- * Perform UTS46 mapping on domain names
-
-python-nbxmpp 1.0.1 (07 July 2020)
-
- New
-
- * Add XEP-0377 support
- * MUC: Return message id when using inivite()
-
- Bugfixes
-
- * OMEMO: Correctly parse prekey value
- * Client: Determine protocol and type correctly if a custom host is used
- * Smacks: Don't fail on saving error replies
-
-python-nbxmpp 1.0.0 (18 June 2020)
-
- * Library rewritten in most parts
- * Replace BOSH with Websocket
- * Add new example client
- * Many other improvements
+  Known Issues:
  
- Known Issues:
- 
- * Currently no Client Cert support
+  * Currently no Client Cert support
 
-python-nbxmpp 0.6.10 (19 February 2019)
+nbxmpp 0.6.10 (19 February 2019)
 
- * Add support for domain based name in features for GSSAPI
- * Fix usage of BOSH
- * Fix Jingle hash namespace
+  * Add support for domain based name in features for GSSAPI
+  * Fix usage of BOSH
+  * Fix Jingle hash namespace
 
-python-nbxmpp 0.6.9 (10 January 2019)
+nbxmpp 0.6.9 (10 January 2019)
 
- * Always bind after SM failed Fixes #64
- * Dont try and guess system language
+  * Always bind after SM failed Fixes #64
+  * Dont try and guess system language
 
-python-nbxmpp 0.6.8 (07 October 2018)
+nbxmpp 0.6.8 (07 October 2018)
 
- * Reset SM counter after receiving <enabled>
- * Issue event when SM resume fails
+  * Reset SM counter after receiving <enabled>
+  * Issue event when SM resume fails
 
-python-nbxmpp 0.6.7 (19 August 2018)
+nbxmpp 0.6.7 (19 August 2018)
 
- * Raise default TLS version to 1.2
- * Remove DIGEST-MD5 from the default auth mechs
- * Add STANZA RECEIVED Event (Some servers send more than one stanza in one packet)
- * Add alternative locations to load TLS certs from
+  * Raise default TLS version to 1.2
+  * Remove DIGEST-MD5 from the default auth mechs
+  * Add STANZA RECEIVED Event (Some servers send more than one stanza in one packet)
+  * Add alternative locations to load TLS certs from
 
-python-nbxmpp 0.6.6 (20 May 2018)
+nbxmpp 0.6.6 (20 May 2018)
 
- * Record all SSL errors instead of only the first
- * Pass arguments to plugin/plugout methods
- * Allow the Roster to be initalized without requesting it from the server
+  * Record all SSL errors instead of only the first
+  * Pass arguments to plugin/plugout methods
+  * Allow the Roster to be initalized without requesting it from the server
 
-python-nbxmpp 0.6.5 (30 April 2018)
+nbxmpp 0.6.5 (30 April 2018)
 
- * Fix BOSH usage (don't set ALPN)
- * Better handling of certificate files
+  * Fix BOSH usage (don't set ALPN)
+  * Better handling of certificate files
 
-python-nbxmpp 0.6.4 (17 March 2018)
+nbxmpp 0.6.4 (17 March 2018)
 
- * Fix SOCKS5 usage
+  * Fix SOCKS5 usage
 
-python-nbxmpp 0.6.3 (26 January 2018)
+nbxmpp 0.6.3 (26 January 2018)
 
- * Add ALPN and SNI support for when using DirectTLS
- * Bugfixes
+  * Add ALPN and SNI support for when using DirectTLS
+  * Bugfixes
 
-python-nbxmpp 0.6.2 (27 December 2017)
+nbxmpp 0.6.2 (27 December 2017)
 
- * Correctly load client certs
- * Warn on any error in the certificate chain
- * Fixed a traceback loop
+  * Correctly load client certs
+  * Warn on any error in the certificate chain
+  * Fixed a traceback loop
 
-python-nbxmpp 0.6.1 (29 November 2017)
+nbxmpp 0.6.1 (29 November 2017)
 
- * Add new getStanzaIDAttrs method
- * Fix BOSH connexion
- * stop using PyOpenSSL for random generator
+  * Add new getStanzaIDAttrs method
+  * Fix BOSH connexion
+  * stop using PyOpenSSL for random generator
 
-python-nbxmpp 0.6.0 (25 September 2017)
+nbxmpp 0.6.0 (25 September 2017)
 
- * Add new getOriginID/SetOriginID method for Messages
- * Add new getJid() method for Protocol
- * getTagAttr() accepts now a namespace argument
- * Add new `protocol` argument for getTag()
- * Add new XEP Namespaces
+  * Add new getOriginID/SetOriginID method for Messages
+  * Add new getJid() method for Protocol
+  * getTagAttr() accepts now a namespace argument
+  * Add new `protocol` argument for getTag()
+  * Add new XEP Namespaces
 
-python-nbxmpp 0.5.6 (03 June 2017)
+nbxmpp 0.5.6 (03 June 2017)
 
   * Support XEP-0198 Version 1.5.2
   * Add new XEP Namespaces
 
-python-nbxmpp 0.5.5 (30 January 2017)
+nbxmpp 0.5.5 (30 January 2017)
 
   * Some cleanup
   * Add some namespaces
 
-python-nbxmpp 0.5.4 (04 September 2016)
+nbxmpp 0.5.4 (04 September 2016)
 
   * Fix SCRAM authentication
   * Fix BOSH connection with UTF-8 messages
   * Fix smacks implementation
   * Use uuid in stanza ids
 
-python-nbxmpp 0.5.3 (13 July 2015)
+nbxmpp 0.5.3 (13 July 2015)
 
   * Fix receiving long utf8 strings under py3
   * Fix issue with pyopenssl 0.15.1
   * Fix decoding issues
 
-python-nbxmpp 0.5.2 (27 December 2014)
+nbxmpp 0.5.2 (27 December 2014)
 
   * Fix BOSH HTTP requests
   * Fix handling of binary SASL data for mechanism GSSAPI
   * Update MAM namespace
 
-python-nbxmpp 0.5.1 (04 October 2014)
+nbxmpp 0.5.1 (04 October 2014)
 
   * Fix printing network errors in a non-utf-8 console
 
-python-nbxmpp 0.5 (02 July 2014)
+nbxmpp 0.5 (02 July 2014)
 
   * support both python2 and python3
   * Fix storing server certificate when there is no error
 
-python-nbxmpp 0.4 (15 March 2014)
+nbxmpp 0.4 (15 March 2014)
 
   * Ability to configure TLS protocol version
   * Add support for SCRAM-SHA-1-PLUS
   * Security improvements
 
-python-nbxmpp 0.3 (23 December 2013)
+nbxmpp 0.3 (23 December 2013)
 
   * Improve security level
   * Ability to configure cipher list
   * Store only depth 0 SSL certificate
 
-python-nbxmpp 0.2 (26 July 2013)
+nbxmpp 0.2 (26 July 2013)
 
   * Add some namespace
   * do TLS handshake without blocking
   * store all SSL errors instead of only last one
 
-python-nbxmpp 0.1 (05 August 2012)
+nbxmpp 0.1 (05 August 2012)
 
   * Initial release
