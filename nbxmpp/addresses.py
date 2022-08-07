@@ -137,6 +137,7 @@ class ServerAddresses(Observable):
 
     def _resolve_alternatives(self) -> None:
         session = Soup.Session()
+        session.props.timeout = 5
         session.props.user_agent = f'nbxmpp/{nbxmpp.__version__}'
         message = Soup.Message.new(
             'GET', f'https://{self._domain}/.well-known/host-meta')
