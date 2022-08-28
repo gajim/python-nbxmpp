@@ -14,6 +14,7 @@ DISABLED_CHECKS = [
     'W0201',  # attribute-defined-outside-init
     'W0212',  # protected-access
     'W0221',  # arguments-differ
+    'W0223',  # abstract-method
     'W0231',  # super-init-not-called
     'W0233',  # non-parent-init-called
     'W0621',  # redefined-outer-name
