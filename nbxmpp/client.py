@@ -39,7 +39,7 @@ from nbxmpp.addresses import NoMoreAddresses
 from nbxmpp.tcp import TCPConnection
 from nbxmpp.websocket import WebsocketConnection
 from nbxmpp.smacks import Smacks
-from nbxmpp.auth import SASL
+from nbxmpp.sasl import SASL
 from nbxmpp.const import StreamState
 from nbxmpp.const import StreamError
 from nbxmpp.const import ConnectionType
