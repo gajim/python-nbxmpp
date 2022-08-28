@@ -1709,10 +1709,15 @@ class Features(Node):
     def has_sasl(self):
         return self.getTag('mechanisms', namespace=Namespace.SASL) is not None
 
+    def has_sasl_2(self):
+        return self.getTag('mechanisms', namespace=Namespace.SASL2) is not None
+
     def get_mechs(self) -> set[str]:
-        mechanisms = self.getTag('mechanisms', namespace=Namespace.SASL)
+        mechanisms = self.getTag('mechanisms', namespace=Namespace.SASL2)
         if mechanisms is None:
-            return set()
+            mechanisms = self.getTag('mechanisms', namespace=Namespace.SASL)
+            if mechanisms is None:
+                return set()
         mechanisms = mechanisms.getTags('mechanism')
         return set(mech.getData() for mech in mechanisms)
 

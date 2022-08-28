@@ -692,7 +692,10 @@ class Client(Observable):
 
         elif self.state == StreamState.AUTH_SUCCESSFUL:
             self._stream_authenticated = True
-            self._start_stream()
+            if self._sasl.is_sasl2():
+                self.state = StreamState.WAIT_FOR_FEATURES
+            else:
+                self._start_stream()
 
         elif self.state == StreamState.AUTH_FAILED:
             self._disconnect_with_error(StreamError.SASL,
@@ -786,7 +789,7 @@ class Client(Observable):
         self.state = StreamState.WAIT_FOR_TLS_PROCEED
 
     def _start_auth(self, features):
-        if not features.has_sasl():
+        if not features.has_sasl() and not features.has_sasl_2():
             self._log.error('Server does not support SASL')
             self._disconnect_with_error(StreamError.SASL,
                                         'sasl-not-supported')

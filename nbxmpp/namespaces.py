@@ -143,6 +143,7 @@ class _Namespaces:
     ROSTER_VER: str = 'urn:xmpp:features:rosterver'
     RSM: str = 'http://jabber.org/protocol/rsm'
     SASL: str = 'urn:ietf:params:xml:ns:xmpp-sasl'
+    SASL2: str = 'urn:xmpp:sasl:1'
     SEARCH: str = 'jabber:iq:search'
     SECLABEL: str = 'urn:xmpp:sec-label:0'
     SECLABEL_CATALOG: str = 'urn:xmpp:sec-label:catalog:2'
