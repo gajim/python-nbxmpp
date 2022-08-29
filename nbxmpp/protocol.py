@@ -521,7 +521,7 @@ def validate_domainpart(domainpart: str) -> str:
         domainpart = domainpart[:-1]
 
     try:
-        idna_encode(domainpart)
+        domainpart = idna2008_prep(domainpart)
     except Exception:
         raise DomainpartNotAllowedChar
 
@@ -529,8 +529,16 @@ def validate_domainpart(domainpart: str) -> str:
 
 
 @functools.lru_cache(maxsize=None)
-def idna_encode(domain: str) -> str:
-    return idna.encode(domain, uts46=True).decode()
+def idna2008_prep(domain: str) -> str:
+    '''
+    Prepare with UTS46 case mapping to stay compatibel with the IDNA2003
+    mapping. Further try to encode the domain to catch illegal domains.
+    Only return the case mapped domain because on the XMPP wire,UTF8 domains
+    are fine.
+    '''
+    domain = idna.uts46_remap(domain)
+    idna.encode(domain)
+    return domain
 
 
 @functools.lru_cache(maxsize=None)
