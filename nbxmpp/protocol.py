@@ -529,7 +529,7 @@ def validate_domainpart(domainpart: str) -> str:
 
 
 @functools.lru_cache(maxsize=None)
-def idna2008_prep(domain: str) -> str:
+def idna2008_prep(domain: str, to_ascii: bool = False) -> str:
     '''
     Prepare with UTS46 case mapping to stay compatibel with the IDNA2003
     mapping. Further try to encode the domain to catch illegal domains.
@@ -537,7 +537,9 @@ def idna2008_prep(domain: str) -> str:
     are fine.
     '''
     domain = idna.uts46_remap(domain)
-    idna.encode(domain)
+    encoded_domain = idna.encode(domain)
+    if to_ascii:
+        return encoded_domain.decode()
     return domain
 
 
@@ -694,7 +696,7 @@ class JID:
         return not self.__eq__(other)
 
     def domain_to_ascii(self) -> str:
-        return idna_encode(self.domain)
+        return idna2008_prep(self.domain, to_ascii=True)
 
     @property
     def bare(self) -> str:
