@@ -1,3 +1,4 @@
+import os
 import unittest
 
 from nbxmpp.protocol import LocalpartByteLimit
@@ -7,6 +8,7 @@ from nbxmpp.protocol import ResourcepartNotAllowedChar
 from nbxmpp.protocol import DomainpartByteLimit
 from nbxmpp.protocol import DomainpartNotAllowedChar
 from nbxmpp.protocol import JID
+
 
 class JIDParsing(unittest.TestCase):
 
@@ -36,11 +38,9 @@ class JIDParsing(unittest.TestCase):
         tests = [
             ('"juliet"@example.com', LocalpartNotAllowedChar),
             ('foo bar@example.com', LocalpartNotAllowedChar),
-            ('henry\U00002163@example.com', LocalpartNotAllowedChar),
             ('@example.com', LocalpartByteLimit),
             ('user@example.com/', ResourcepartByteLimit),
             ('user@example.com/\U00000001', ResourcepartNotAllowedChar),
-            ('\U0000265A@example.com', LocalpartNotAllowedChar),
             ('user@host@example.com', DomainpartNotAllowedChar),
             ('juliet@', DomainpartByteLimit),
             ('/foobar', DomainpartByteLimit),
@@ -49,6 +49,19 @@ class JIDParsing(unittest.TestCase):
         for jid, exception in tests:
             with self.assertRaises(exception):
                 JID.from_string(jid)
+
+    def test_invalid_precis_jids(self):
+        os.environ['NBXMPP_USE_PRECIS'] = 'true'
+        tests = [
+            ('henry\U00002163@example.com', LocalpartNotAllowedChar),
+            ('\U0000265A@example.com', LocalpartNotAllowedChar),
+        ]
+
+        for jid, exception in tests:
+            with self.assertRaises(exception):
+                JID.from_string(jid)
+
+        del os.environ['NBXMPP_USE_PRECIS']
 
     def test_ip_literals(self):
         tests = [
