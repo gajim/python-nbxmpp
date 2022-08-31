@@ -25,6 +25,7 @@ from typing import Union
 from typing import Optional
 from typing import cast
 
+import os
 import time
 import hashlib
 import functools
@@ -39,9 +40,13 @@ import idna
 from precis_i18n import get_profile
 from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
+from nbxmpp.stringprep import nodeprep
+from nbxmpp.stringprep import resourceprep
+
 
 def ascii_upper(s):
     return s.upper()
+
 
 SASL_AUTH_MECHS = [
     'SCRAM-SHA-512-PLUS',
@@ -482,6 +487,12 @@ def validate_localpart(localpart: str) -> str:
     if not localpart or len(localpart.encode()) > 1023:
         raise LocalpartByteLimit
 
+    if os.environ.get('NBXMPP_USE_PRECIS') is None:
+        try:
+            return nodeprep(localpart)
+        except Exception:
+            raise LocalpartNotAllowedChar
+
     if _localpart_disallowed_chars & set(localpart):
         raise LocalpartNotAllowedChar
 
@@ -496,6 +507,12 @@ def validate_localpart(localpart: str) -> str:
 def validate_resourcepart(resourcepart: str) -> str:
     if not resourcepart or len(resourcepart.encode()) > 1023:
         raise ResourcepartByteLimit
+
+    if os.environ.get('NBXMPP_USE_PRECIS') is None:
+        try:
+            return resourceprep(resourcepart)
+        except Exception:
+            raise ResourcepartNotAllowedChar
 
     try:
         opaque = get_profile('OpaqueString')
