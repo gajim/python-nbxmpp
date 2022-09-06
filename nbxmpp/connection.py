@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Optional
+
 import logging
 
 from gi.repository import Gio
@@ -64,6 +66,14 @@ class Connection(Observable):
         self._accepted_certificates = accepted_certificates
         self._ignore_tls_errors = ignore_tls_errors
         self._ignored_tls_errors = ignored_tls_errors
+
+    @property
+    def tls_version(self) -> Optional[int]:
+        return None
+
+    @property
+    def ciphersuite(self) -> Optional[int]:
+        return None
 
     @property
     def local_address(self):

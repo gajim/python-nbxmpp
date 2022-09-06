@@ -17,6 +17,7 @@
 
 import logging
 from collections import deque
+from typing import Optional
 
 from gi.repository import GLib
 from gi.repository import Gio
@@ -26,6 +27,7 @@ from nbxmpp.const import TCPState
 from nbxmpp.const import ConnectionType
 from nbxmpp.util import utf8_decode
 from nbxmpp.util import convert_tls_error_flags
+from nbxmpp.util import min_version
 from nbxmpp.connection import Connection
 
 log = logging.getLogger('nbxmpp.tcp')
@@ -61,6 +63,24 @@ class TCPConnection(Connection):
         self._output_closed = False
 
         self._keepalive_id = None
+
+    @property
+    def tls_version(self) -> Optional[int]:
+        if self._con is None:
+            return None
+
+        if min_version('GLib', '2.69.0'):
+            tls_con = self._con.get_base_io_stream()
+            return tls_con.get_protocol_version()
+
+    @property
+    def ciphersuite(self) -> Optional[int]:
+        if self._con is None:
+            return None
+
+        if min_version('GLib', '2.69.0'):
+            tls_con = self._con.get_base_io_stream()
+            return tls_con.get_ciphersuite_name()
 
     def connect(self):
         self.state = TCPState.CONNECTING

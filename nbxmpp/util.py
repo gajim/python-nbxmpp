@@ -31,13 +31,15 @@ import logging
 from logging import LoggerAdapter
 from collections import defaultdict
 import xml.etree.ElementTree as ET
-
 from functools import lru_cache
+
+from packaging.version import Version
 
 from gi.repository import Gio
 
 from nbxmpp.protocol import DiscoInfoMalformed
 from nbxmpp.const import GIO_TLS_ERRORS
+from nbxmpp.const import GLIB_VERSION
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.protocol import StreamHeader
@@ -403,6 +405,12 @@ def is_websocket_close(stanza: Node) -> bool:
 def is_websocket_stream_error(stanza: Node) -> bool:
     return (stanza.getName() == 'error' and
             stanza.getNamespace() == Namespace.STREAMS)
+
+
+def min_version(name: str, min_version: str) -> bool:
+    if name == 'GLib':
+        return GLIB_VERSION >= Version(min_version)
+    raise ValueError('Unknown library name')
 
 
 class Observable:

@@ -212,6 +212,14 @@ class Client(Observable):
     def ignore_tls_errors(self):
         return self._ignore_tls_errors
 
+    @property
+    def tls_version(self):
+        return self._con.tls_version
+
+    @property
+    def ciphersuite(self):
+        return self._con.ciphersuite
+
     def set_ignore_tls_errors(self, ignore):
         self._ignore_tls_errors = ignore
 
