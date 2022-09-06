@@ -9,6 +9,7 @@
 - GLib >= 2.60
 - libsoup
 - precis-i18n
+- packaging
 - idna
 
 ## Optional Runtime Requirements
