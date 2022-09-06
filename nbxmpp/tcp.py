@@ -69,18 +69,22 @@ class TCPConnection(Connection):
         if self._con is None:
             return None
 
-        if min_version('GLib', '2.69.0'):
-            tls_con = self._con.get_base_io_stream()
-            return tls_con.get_protocol_version()
+        if not min_version('GLib', '2.69.0'):
+            return None
+
+        tls_con = self._con.get_base_io_stream()
+        return tls_con.get_protocol_version()
 
     @property
     def ciphersuite(self) -> Optional[int]:
         if self._con is None:
             return None
 
-        if min_version('GLib', '2.69.0'):
-            tls_con = self._con.get_base_io_stream()
-            return tls_con.get_ciphersuite_name()
+        if not min_version('GLib', '2.69.0'):
+            return None
+
+        tls_con = self._con.get_base_io_stream()
+        return tls_con.get_ciphersuite_name()
 
     def connect(self):
         self.state = TCPState.CONNECTING

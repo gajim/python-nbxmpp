@@ -32,7 +32,8 @@ def run_pylint_test():
     cmd = [
         'pylint',
         'nbxmpp',
-        f'--disable={",".join(DISABLED_CHECKS)}'
+        f'--disable={",".join(DISABLED_CHECKS)}',
+        '--ignore=examples'
     ]
 
     try:
