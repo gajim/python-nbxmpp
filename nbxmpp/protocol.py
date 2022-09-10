@@ -37,11 +37,12 @@ from dataclasses import asdict
 from gi.repository import GLib
 
 import idna
-from precis_i18n import get_profile
 from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
 from nbxmpp.stringprep import nodeprep
 from nbxmpp.stringprep import resourceprep
+from nbxmpp.precis import enforce_precis_username
+from nbxmpp.precis import enforce_precis_opaque
 
 
 def ascii_upper(s):
@@ -256,7 +257,6 @@ _errorcodes = {
 }
 
 
-_localpart_disallowed_chars = set('"&\'/:<>@')
 _localpart_escape_chars = ' "&\'/:<>@'
 
 
@@ -487,18 +487,17 @@ def validate_localpart(localpart: str) -> str:
     if not localpart or len(localpart.encode()) > 1023:
         raise LocalpartByteLimit
 
-    if os.environ.get('NBXMPP_USE_PRECIS') is None:
+    if os.environ.get('NBXMPP_ENFORCE_PRECIS') is None:
         try:
             return nodeprep(localpart)
         except Exception:
-            raise LocalpartNotAllowedChar
-
-    if _localpart_disallowed_chars & set(localpart):
-        raise LocalpartNotAllowedChar
+            try:
+                return enforce_precis_username(localpart)
+            except Exception:
+                raise LocalpartNotAllowedChar
 
     try:
-        username = get_profile('UsernameCaseMapped')
-        return username.enforce(localpart)
+        return enforce_precis_username(localpart)
     except Exception:
         raise LocalpartNotAllowedChar
 
@@ -508,15 +507,17 @@ def validate_resourcepart(resourcepart: str) -> str:
     if not resourcepart or len(resourcepart.encode()) > 1023:
         raise ResourcepartByteLimit
 
-    if os.environ.get('NBXMPP_USE_PRECIS') is None:
+    if os.environ.get('NBXMPP_ENFORCE_PRECIS') is None:
         try:
             return resourceprep(resourcepart)
         except Exception:
-            raise ResourcepartNotAllowedChar
+            try:
+                return enforce_precis_opaque(resourcepart)
+            except Exception:
+                raise ResourcepartNotAllowedChar
 
     try:
-        opaque = get_profile('OpaqueString')
-        return opaque.enforce(resourcepart)
+        return enforce_precis_opaque(resourcepart)
     except Exception:
         raise ResourcepartNotAllowedChar
 

@@ -51,7 +51,7 @@ class JIDParsing(unittest.TestCase):
                 JID.from_string(jid)
 
     def test_invalid_precis_jids(self):
-        os.environ['NBXMPP_USE_PRECIS'] = 'true'
+        os.environ['NBXMPP_ENFORCE_PRECIS'] = 'true'
         tests = [
             ('henry\U00002163@example.com', LocalpartNotAllowedChar),
             ('\U0000265A@example.com', LocalpartNotAllowedChar),
@@ -61,7 +61,7 @@ class JIDParsing(unittest.TestCase):
             with self.assertRaises(exception):
                 JID.from_string(jid)
 
-        del os.environ['NBXMPP_USE_PRECIS']
+        del os.environ['NBXMPP_ENFORCE_PRECIS']
 
     def test_ip_literals(self):
         tests = [
