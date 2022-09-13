@@ -1,3 +1,24 @@
+nbxmpp 3.2.2 (13 Sep 2022)
+
+  New
+
+  * Expose TLS version and ciphersuite
+  * Add stringprep implementation
+
+  Change
+
+  * Add packaging as dependency
+  * Use stringprep instead of precis for JID validation
+
+  Bug Fixes
+
+  * Add missing __init__.py to examples
+
+  Notes
+
+  * You can set the env variable NBXMPP_USE_PRECIS to revert back
+    to the old behavior.
+
 nbxmpp 3.2.1 (29 Aug 2022)
 
   Bug Fixes
