@@ -13,7 +13,7 @@ nbxmpp {{ .Tag.Name }} ({{ datetime "02 Jan 2006" .Tag.Date }})
 {{ range .NoteGroups -}}
 {{ .Title }}
 {{ range .Notes }}
-{{ .Body }}
+  * {{ .Body }}
 {{ end }}
 {{ end -}}
 {{ end -}}
