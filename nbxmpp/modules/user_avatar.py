@@ -16,6 +16,7 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from typing import List
+from typing import Optional
 from typing import Dict
 
 import hashlib
@@ -307,7 +308,7 @@ class AvatarData:
 @dataclass
 class AvatarMetaData:
     infos: List[AvatarInfo] = field(default_factory=list)
-    default: AvatarInfo = None
+    default: Optional[str] = None
 
     @classmethod
     def from_node(cls, node, default=None):
