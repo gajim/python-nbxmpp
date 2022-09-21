@@ -76,7 +76,7 @@ class TCPConnection(Connection):
         return tls_con.get_protocol_version()
 
     @property
-    def ciphersuite(self) -> Optional[int]:
+    def ciphersuite(self) -> Optional[str]:
         if self._con is None:
             return None
 
