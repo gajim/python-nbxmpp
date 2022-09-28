@@ -257,11 +257,8 @@ class TCPConnection(Connection):
 
         data = data.get_data()
         if not data:
-            if self._state == TCPState.DISCONNECTING:
-                self._log.info('Reveived zero data on _read_async()')
-                self._finalize('disconnected')
-            else:
-                self._log.warning('Reveived zero data on _read_async()')
+            self._log.info('Reveived zero data on _read_async()')
+            self._finalize('disconnected')
             return
 
         self._renew_keepalive_timer()
