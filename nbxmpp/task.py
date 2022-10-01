@@ -28,6 +28,7 @@ from enum import IntEnum
 from functools import wraps
 
 from gi.repository import Soup
+from gi.repository import GLib
 from nbxmpp.modules.base import BaseModule
 
 from nbxmpp.simplexml import Node
@@ -146,6 +147,7 @@ class Task:
         self._error = None
         self._user_data: Optional[Any] = None
         self._timeout: Optional[int] = None
+        self._timeout_id: Optional[int] = None
         self._finalize_func = None
         self._finalize_context = None
         self._state = TaskState.INIT
@@ -176,6 +178,12 @@ class Task:
     def start(self):
         if not self._state.is_init:
             raise RuntimeError('Task already started')
+
+        if self._timeout is not None:
+            self._logger.info('Add timeout for task: %s s, task id: %s',
+                              self._timeout, id(self))
+            self._timeout_id = GLib.timeout_add_seconds(
+                self._timeout, self._on_timeout)
 
         self._state = TaskState.RUNNING
         next(self._gen)
@@ -284,19 +292,36 @@ class Task:
         self._finalize_func = func
         self._finalize_context = context
 
-    def cancel(self):
+    def _on_timeout(self) -> None:
+        self._logger.info('Timeout reached, task id: %s', id(self))
+        if not self._state.is_running:
+            return
+
+        self._timeout_id = None
+
+        if self._sub_task is not None:
+            self._sub_task.cancel(invoke_callbacks=False)
+
+        self._error = TimeoutStanzaError()
+        self._set_finished()
+
+    def cancel(self, invoke_callbacks: bool = True) -> None:
         if not self._state.is_running:
             return
 
         self._state = TaskState.CANCELLED
         if self._sub_task is not None:
-            self._sub_task.cancel()
+            self._sub_task.cancel(invoke_callbacks=False)
 
         self._error = CancelledError()
-        self._invoke_callbacks()
+        if invoke_callbacks:
+            self._invoke_callbacks()
         self._finalize()
 
     def _finalize(self):
+        if self._timeout_id is not None:
+            GLib.source_remove(self._timeout_id)
+            self._timeout_id = None
         self._done_callbacks.clear()
         self._sub_task = None
         self._error = None
