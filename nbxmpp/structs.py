@@ -1057,7 +1057,7 @@ class MessageProperties:
 
     @property
     def is_muc_config_change(self) -> bool:
-        return self.body is None and bool(self.muc_status_codes)
+        return bool(self.muc_status_codes)
 
     @property
     def is_muc_pm(self) -> bool:
