@@ -226,7 +226,7 @@ class PGPKeyMetadata(NamedTuple):
 
 
 class OMEMOMessage(NamedTuple):
-    sid: str
+    sid: int
     iv: bytes
     keys: dict[int, tuple[bytes, bool]]
     payload: bytes
