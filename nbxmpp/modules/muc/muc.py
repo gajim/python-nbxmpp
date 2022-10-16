@@ -116,12 +116,25 @@ class MUC(BaseModule):
         properties.muc_jid = properties.jid.new_as_bare()
         properties.muc_nickname = properties.jid.resource
 
+        occupant_id = stanza.getTagAttr('occupant-id',
+                                        'id',
+                                        namespace=Namespace.OCCUPANT_ID)
+
+        properties.occupant_id = occupant_id
+
     def _process_muc_user_presence(self, _client, stanza, properties):
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
         properties.from_muc = True
         properties.muc_jid = properties.jid.new_as_bare()
+
+
+        occupant_id = stanza.getTagAttr('occupant-id',
+                                        'id',
+                                        namespace=Namespace.OCCUPANT_ID)
+
+        properties.occupant_id = occupant_id
 
         destroy = muc_user.getTag('destroy')
         if destroy is not None:
@@ -192,6 +205,12 @@ class MUC(BaseModule):
         properties.muc_jid = properties.jid.new_as_bare()
         properties.muc_nickname = properties.jid.resource
 
+        occupant_id = stanza.getTagAttr('occupant-id',
+                                        'id',
+                                        namespace=Namespace.OCCUPANT_ID)
+
+        properties.occupant_id = occupant_id
+
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is not None:
             try:
@@ -219,6 +238,12 @@ class MUC(BaseModule):
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
+
+        occupant_id = stanza.getTagAttr('occupant-id',
+                                        'id',
+                                        namespace=Namespace.OCCUPANT_ID)
+
+        properties.occupant_id = occupant_id
 
         # MUC Private message
         if (properties.type.is_chat or

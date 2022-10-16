@@ -114,6 +114,7 @@ class _Namespaces:
     MUC_REQUEST: str = 'http://jabber.org/protocol/muc#request'
     MUC_INFO: str = 'http://jabber.org/protocol/muc#roominfo'
     NICK: str = 'http://jabber.org/protocol/nick'
+    OCCUPANT_ID: str = 'urn:xmpp:occupant-id:0'
     OMEMO_TEMP: str = 'eu.siacs.conversations.axolotl'
     OMEMO_TEMP_BUNDLE: str = 'eu.siacs.conversations.axolotl.bundles'
     OMEMO_TEMP_DL: str = 'eu.siacs.conversations.axolotl.devicelist'

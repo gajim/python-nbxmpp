@@ -963,6 +963,7 @@ class MessageProperties:
     http_auth: Optional[HTTPAuthData] = None
     nickname: Optional[str] = None
     from_muc: bool = False
+    occupant_id: Optional[str] = None
     muc_jid: Optional[JID] = None
     muc_nickname: Optional[str] = None
     muc_status_codes: Optional[Set[StatusCode]] = None
@@ -1183,6 +1184,7 @@ class PresenceProperties:
     self_presence: bool = False
     self_bare: bool = False
     from_muc: bool = False
+    occupant_id: Optional[str] = None
     status: str = ''
     timestamp: float = field(default_factory=time.time)
     user_timestamp: Optional[float] = None
