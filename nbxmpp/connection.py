@@ -37,7 +37,6 @@ class Connection(Observable):
         data-sent
         data-received
         bad-certificate
-        certificate-set
         connection-failed
         disconnected
     '''

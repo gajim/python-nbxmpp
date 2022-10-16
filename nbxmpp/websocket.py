@@ -99,8 +99,6 @@ class WebsocketConnection(Connection):
         self._peer_certificate = certificate
         self._peer_certificate_errors = convert_tls_error_flags(errors)
 
-        self.notify('certificate-set')
-
         if self._accept_certificate():
             return
 

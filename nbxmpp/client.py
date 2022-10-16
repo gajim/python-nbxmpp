@@ -232,6 +232,8 @@ class Client(Observable):
 
     @property
     def peer_certificate(self):
+        if self._con is not None:
+            return self._con.peer_certificate
         return self._peer_certificate, self._peer_certificate_errors
 
     @property
@@ -360,6 +362,8 @@ class Client(Observable):
             return
 
         self.state = StreamState.CONNECTING
+        self._peer_certificate = None
+        self._peer_certificate_errors = None
         self._reset_error()
 
         self._con = self._get_connection(self._log_context,
@@ -375,7 +379,6 @@ class Client(Observable):
         self._con.subscribe('data-sent', self._on_data_sent)
         self._con.subscribe('data-received', self._on_data_received)
         self._con.subscribe('bad-certificate', self._on_bad_certificate)
-        self._con.subscribe('certificate-set', self._on_certificate_set)
         self._con.connect()
 
     def _get_connection(self, *args):
@@ -537,12 +540,9 @@ class Client(Observable):
             connection.peer_certificate
         self._set_error(StreamError.BAD_CERTIFICATE, 'bad certificate')
 
-    def _on_certificate_set(self, connection, _signal_name):
-        self._peer_certificate, self._peer_certificate_errors = \
-            connection.peer_certificate
-
     def accept_certificate(self):
         self._log.info('Certificate accepted')
+        assert self._peer_certificate is not None
         self._accepted_certificates.append(self._peer_certificate)
         self._connect()
 

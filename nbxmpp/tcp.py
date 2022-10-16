@@ -125,11 +125,15 @@ class TCPConnection(Connection):
         return False
 
     def _on_certificate_set(self, connection, _param):
-        self._peer_certificate = connection.props.peer_certificate
-        self._peer_certificate_errors = convert_tls_error_flags(
-            connection.props.peer_certificate_errors)
+        if self._peer_certificate is None:
+            # If the cert has errors _check_certificate() will set the cert and
+            # _accept_certificate() will modify the error set. If this is the
+            # case _accept_certificate() modifies the errors.
+            self._peer_certificate = connection.props.peer_certificate
+            self._peer_certificate_errors = convert_tls_error_flags(
+                connection.props.peer_certificate_errors)
+
         self._tls_handshake_in_progress = False
-        self.notify('certificate-set')
 
     def _on_connect_finished(self, client, result, _user_data):
         try:
