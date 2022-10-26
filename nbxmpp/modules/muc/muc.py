@@ -228,7 +228,7 @@ class MUC(BaseModule):
                 properties.muc_ofrom = JID.from_string(address.getAttr('jid'))
 
     def _process_message_after_decryption(self, _client, _stanza, properties):
-        if properties.body is None and properties.subject:
+        if properties.body is None and properties.subject is not None:
             properties.muc_subject = MucSubject(
                 text=properties.subject,
                 author=properties.muc_nickname,
