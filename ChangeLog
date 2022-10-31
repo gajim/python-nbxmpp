@@ -1,3 +1,14 @@
+nbxmpp 3.2.5 (26 Oct 2022)
+
+  New
+
+  * Add support for XEP-0421
+
+  Bug Fixes
+
+  * MUC: Check correctly for muc subject
+  * Client: Don’t override modified certification errors
+
 nbxmpp 3.2.4 (05 Oct 2022)
 
   Improvements
