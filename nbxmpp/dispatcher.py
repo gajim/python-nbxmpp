@@ -72,6 +72,7 @@ from nbxmpp.modules.chat_markers import ChatMarkers
 from nbxmpp.modules.receipts import Receipts
 from nbxmpp.modules.oob import OOB
 from nbxmpp.modules.correction import Correction
+from nbxmpp.modules.replies import Replies
 from nbxmpp.modules.attention import Attention
 from nbxmpp.modules.security_labels import SecurityLabels
 from nbxmpp.modules.chatstates import Chatstates
@@ -185,6 +186,7 @@ class StanzaDispatcher(Observable):
         self._modules['Discovery'] = Discovery(self._client)
         self._modules['ChatMarkers'] = ChatMarkers(self._client)
         self._modules['Receipts'] = Receipts(self._client)
+        self._modules['Replies'] = Replies(self._client)
         self._modules['OOB'] = OOB(self._client)
         self._modules['Correction'] = Correction(self._client)
         self._modules['Attention'] = Attention(self._client)

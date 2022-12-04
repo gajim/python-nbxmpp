@@ -290,6 +290,13 @@ class CorrectionData(NamedTuple):
     id: str
 
 
+class ReplyData(NamedTuple):
+    to: str
+    id: str
+    fallback_start: Optional[int]
+    fallback_end: Optional[int]
+
+
 class ModerationData(NamedTuple):
     stanza_id: str
     moderator_jid: str
@@ -993,6 +1000,7 @@ class MessageProperties:
     receipt: Optional[ReceiptData] = None
     oob: Optional[OOBData] = None
     correction: Optional[CorrectionData] = None
+    reply_data: Optional[ReplyData] = None
     moderation: Optional[ModerationData] = None
     attention: bool = False
     forms = None

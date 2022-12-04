@@ -1258,6 +1258,30 @@ class Message(Protocol):
     def setReceiptReceived(self, id_):
         self.setTag('received', namespace=Namespace.RECEIPTS, attrs={'id': id_})
 
+    def setReply(self,
+                 recipient_jid: str,
+                 reply_to_id: str,
+                 fallback_start: int,
+                 fallback_end: int
+                 ) -> None:
+
+        self.setTag(
+            'reply',
+            namespace=Namespace.REPLY,
+            attrs={
+                'id': reply_to_id,
+                'to': recipient_jid})
+
+        fallback_tag = self.setTag(
+            'fallback',
+            namespace=Namespace.FALLBACK,
+            attrs={'for': Namespace.REPLY})
+        fallback_tag.addChild(
+            'body',
+            attrs={
+                'start': str(fallback_start),
+                'end': str(fallback_end)})
+
     def setOOB(self, url, desc=None):
         oob = self.setTag('x', namespace=Namespace.X_OOB)
         oob.setTagData('url', url)
