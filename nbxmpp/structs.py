@@ -746,6 +746,11 @@ class ChatMarker(NamedTuple):
         return self.type == 'acknowledged'
 
 
+class Reactions(NamedTuple):
+    id: str
+    emojis: set[str]
+
+
 class CommonError:
     def __init__(self, stanza):
         self._stanza_name = stanza.getName()
@@ -993,6 +998,7 @@ class MessageProperties:
     xhtml: Optional[str] = None
     security_label = None
     chatstate = None
+    reactions: Optional[Reactions] = None
 
     def is_from_us(self, bare_match: bool = True):
         if self.from_ is None:

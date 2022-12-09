@@ -21,6 +21,7 @@ sub- stanzas) handling routines
 from __future__ import annotations
 
 from typing import Any
+from typing import Iterable
 from typing import Union
 from typing import Optional
 from typing import cast
@@ -1271,6 +1272,27 @@ class Message(Protocol):
 
     def setHint(self, hint):
         self.setTag(hint, namespace=Namespace.HINTS)
+
+    def setReactions(self, target_id: str, emojis: Iterable[str]):
+        reactions = self.addChild(
+            'reactions', namespace=Namespace.REACTIONS, attrs={"id": target_id})
+        for e in emojis:
+            reactions.addChild(
+                'reaction', namespace=Namespace.REACTIONS, payload=[e])
+
+    def getReactions(self) -> Optional[tuple[str, set[str]]]:
+        reactions = self.getTag('reactions', namespace=Namespace.REACTIONS)
+        if not reactions:
+            return None
+
+        react_to = reactions.getAttr('id')
+        if not react_to:
+            return None
+
+        tags = reactions.getTags('reaction', namespace=Namespace.REACTIONS)
+
+        # strip() in case clients surround emojis with whitespace
+        return react_to, {t.getData().strip() for t in tags}
 
 
 class Presence(Protocol):

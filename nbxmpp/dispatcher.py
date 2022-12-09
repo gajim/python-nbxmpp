@@ -85,6 +85,7 @@ from nbxmpp.modules.delimiter import Delimiter
 from nbxmpp.modules.roster import Roster
 from nbxmpp.modules.last_activity import LastActivity
 from nbxmpp.modules.entity_time import EntityTime
+from nbxmpp.modules.reactions import Reactions
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.util import get_properties_struct
@@ -199,6 +200,7 @@ class StanzaDispatcher(Observable):
         self._modules['Roster'] = Roster(self._client)
         self._modules['LastActivity'] = LastActivity(self._client)
         self._modules['EntityTime'] = EntityTime(self._client)
+        self._modules['Reactions'] = Reactions(self._client)
 
         for instance in self._modules.values():
             for handler in instance.handlers:
