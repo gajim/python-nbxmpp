@@ -6,7 +6,6 @@ stages:
   - deploy
 
 test-pylint:
-  
   stage: test
   script:
     - python3 .ci/pylint-test.py
@@ -22,7 +21,6 @@ test-pylint:
         path: coverage.xml
 
 build-linux:
-  image: nbxmpp-deb-build:latest
   stage: build
   dependencies: []
   script:
