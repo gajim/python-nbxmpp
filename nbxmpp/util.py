@@ -53,7 +53,7 @@ from nbxmpp.structs import CommonError
 from nbxmpp.structs import HTTPUploadError
 from nbxmpp.structs import StanzaMalformedError
 from nbxmpp.modules.dataforms import extend_form
-from nbxmpp.third_party.hsluv import hsluv_to_rgb
+from nbxmpp.third_party import hsluv
 
 log = logging.getLogger('nbxmpp.util')
 
@@ -136,26 +136,38 @@ def clip_rgb(red, green, blue):
     )
 
 
-@lru_cache(maxsize=1024)
-def text_to_color(text, background_color):
-    # background color = (rb, gb, bb)
+def text_to_hue(text: str) -> float:
     hash_ = hashlib.sha1()
     hash_.update(text.encode())
-    hue = int.from_bytes(hash_.digest()[:2], 'little') / 65536
+    return int.from_bytes(hash_.digest()[:2], 'little') / 65536 * 360
 
-    red, green, blue = clip_rgb(*hsluv_to_rgb((hue * 360, 100, 50)))
 
-    rb, gb, bb = background_color
+def hsluv_to_rgb(hue: float,
+                 saturation: float,
+                 lightness: float,
+                 ) -> tuple[float, float, float]:
+    return clip_rgb(*hsluv.hsluv_to_rgb((hue, saturation, lightness)))
 
-    rb_inv = 1 - rb
-    gb_inv = 1 - gb
-    bb_inv = 1 - bb
 
-    rc = 0.2 * rb_inv + 0.8 * red
-    gc = 0.2 * gb_inv + 0.8 * green
-    bc = 0.2 * bb_inv + 0.8 * blue
+@lru_cache(maxsize=1024)
+def text_to_color(text: str,
+                  saturation: float,
+                  lightness: float,
+                  ) -> tuple[float, float, float]:
+    '''
+    Combines algorithms from XEP-0392 (version 0.8.0
+    <https://xmpp.org/extensions/attic/xep-0392-0.8.0.html>):
+        5.1 Angle generation,
+        5.4 RGB generation.
 
-    return rc, gc, bc
+    Input:
+        text: the subject to compute hue for,
+        saturation ∈ [0, 100],
+        lightness ∈ [0, 100].
+
+    Returns color in sRGB color space: r, g, b ∈ [0, 1].
+    '''
+    return hsluv_to_rgb(text_to_hue(text), saturation, lightness)
 
 
 def compute_caps_hash(info, compare=True):
