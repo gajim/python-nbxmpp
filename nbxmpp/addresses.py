@@ -18,9 +18,8 @@
 import logging
 from collections import namedtuple
 
-from gi.repository import Soup
-
-import nbxmpp
+from nbxmpp.http import HTTPRequest
+from nbxmpp.http import HTTPSession
 from nbxmpp.util import Observable
 from nbxmpp.const import ConnectionType
 from nbxmpp.const import ConnectionProtocol
@@ -63,6 +62,7 @@ class ServerAddresses(Observable):
         Observable.__init__(self, log)
 
         self._domain = domain
+        self._http_session = None
         self._custom_host = None
         self._proxy = None
         self._is_resolved = False
@@ -136,32 +136,31 @@ class ServerAddresses(Observable):
         self._resolve_alternatives()
 
     def _resolve_alternatives(self) -> None:
-        session = Soup.Session()
-        session.props.timeout = 5
-        session.props.user_agent = f'nbxmpp/{nbxmpp.__version__}'
-        message = Soup.Message.new(
-            'GET', f'https://{self._domain}/.well-known/host-meta')
-        session.queue_message(message, self._on_alternatives_result)
-
-    def _on_alternatives_result(self,
-                                _session: Soup.Session,
-                                message: Soup.Message) -> None:
-
-        status = message.props.status_code
-        if status != Soup.Status.OK:
-            error = message.props.reason_phrase
-            log.info('Failed to retrieve host-meta file: %s %s', status, error)
+        if self._http_session is None:
             self._on_request_resolved()
             return
 
-        response_body = message.props.response_body
-        if response_body is None or not response_body.data:
+        request = self._http_session.create_request()
+        request.send('GET', f'https://{self._domain}/.well-known/host-meta',
+                     timeout=5,
+                     callback=self._on_alternatives_result)
+
+    def _on_alternatives_result(self, request: HTTPRequest) -> None:
+
+        if not request.is_complete():
+            log.info('Failed to retrieve host-meta file: %s',
+                     request.get_error_string())
+            self._on_request_resolved()
+            return
+
+        response_body = request.get_data()
+        if not response_body:
             log.info('No response body data found')
             self._on_request_resolved()
             return
 
         try:
-            uri = parse_websocket_uri(response_body.data)
+            uri = parse_websocket_uri(response_body.decode())
         except Exception as error:
             log.info('Error parsing websocket uri: %s', error)
             self._on_request_resolved()
@@ -214,6 +213,9 @@ class ServerAddresses(Observable):
 
     def set_proxy(self, proxy):
         self._proxy = proxy
+
+    def set_http_session(self, session: HTTPSession) -> None:
+        self._http_session = session
 
     def _on_request_resolved(self):
         self._is_resolved = True

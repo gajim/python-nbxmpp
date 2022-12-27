@@ -7,7 +7,7 @@
 - python >= 3.9.0
 - PyGObject
 - GLib >= 2.60
-- libsoup
+- libsoup3
 - precis-i18n
 - packaging
 - idna

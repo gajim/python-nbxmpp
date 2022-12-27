@@ -453,6 +453,16 @@ class Mode(IntEnum):
         return self == Mode.ANONYMOUS_TEST
 
 
+class HTTPRequestError(IntEnum):
+    UNKNOWN = 0
+    MISSING_CONTENT_LENGTH = 1
+    INCOMPLETE = 2
+    STATUS_NOT_OK = 3
+    CANCELLED = 4
+    CONTENT_OVERFLOW = 5
+    TIMEOUT = 6
+
+
 MOODS = [
     'afraid',
     'amazed',

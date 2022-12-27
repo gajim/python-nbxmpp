@@ -17,8 +17,6 @@
 
 import json
 
-from gi.repository import Soup
-
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import Iq
@@ -43,15 +41,6 @@ class Muclumbus(BaseModule):
 
         self._client = client
         self.handlers = []
-
-        self._proxy_resolver = None
-        self._soup_session = Soup.Session()
-
-    def set_proxy(self, proxy):
-        if proxy is None:
-            return
-        self._proxy_resolver = proxy.get_resolver()
-        self._soup_session.props.proxy_resolver = self._proxy_resolver
 
     @iq_request_task
     def request_parameters(self, jid):
@@ -141,24 +130,25 @@ class Muclumbus(BaseModule):
         if after is not None:
             search['after'] = after
 
-        message = Soup.Message.new('POST', uri)
-        message.set_request('application/json',
-                            Soup.MemoryUse.COPY,
-                            json.dumps(search).encode())
+        body = json.dumps(search).encode()
 
-        response_message = yield message
+        session = self._client.http_session
+        request = session.create_request()
+        request.set_request_body('application/json', body)
+        request.send('POST', uri)
 
-        soup_body = response_message.get_property('response-body')
+        request = yield request
 
-        if response_message.status_code != 200:
-            self._log.warning(soup_body.data)
+        if not request.is_complete():
+            self._log.warning(request.get_error_string())
             yield MuclumbusResult(first=None,
                                   last=None,
                                   max=None,
                                   end=True,
                                   items=[])
 
-        response = json.loads(soup_body.data)
+        response_body = request.get_data()
+        response = json.loads(response_body)
 
         result = response['result']
         items = result.get('items')

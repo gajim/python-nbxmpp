@@ -27,14 +27,14 @@ import logging
 from enum import IntEnum
 from functools import wraps
 
-from gi.repository import Soup
 from gi.repository import GLib
-from nbxmpp.modules.base import BaseModule
 
 from nbxmpp.simplexml import Node
 from nbxmpp.errors import is_error
 from nbxmpp.errors import CancelledError
 from nbxmpp.errors import TimeoutStanzaError
+from nbxmpp.http import HTTPRequest
+from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import make_func_arguments_string
 
 
@@ -109,8 +109,7 @@ def http_request_task(func):
     @wraps(func)
     def func_wrapper(self, *args, callback=None, user_data=None, **kwargs):
         task = HTTPRequestTask(func(self, *args, **kwargs),
-                               self._log,
-                               self._soup_session)
+                               self._log)
         return _setup_task(task, self._client, callback, user_data)
     return func_wrapper
 
@@ -251,7 +250,7 @@ class Task:
 
     def _invoke_callbacks(self):
         for callback in self._done_callbacks:
-            if isinstance(callback, weakref.WeakMethod):
+            if isinstance(callback, (weakref.WeakMethod, weakref.ref)):
                 callback = callback()
                 if callback is None:
                     return
@@ -377,19 +376,21 @@ class HTTPRequestTask(Task):
 
     '''
 
-    _process_types = (Soup.Message,)
+    _process_types = (HTTPRequest,)
 
-    def __init__(self, gen, logger, session):
+    def __init__(self, gen, logger):
         super().__init__(gen, logger)
-        self._session = session
 
-    def _run_async(self, message):
+    def _run_async(self, request: HTTPRequest):
         # pylint: disable=arguments-renamed
-        self._session.queue_message(message, self._async_finished, None)
+        request.connect('finished', self._async_finished)
 
-    def _async_finished(self, _session, message, _user_data):
-        if self._state != TaskState.CANCELLED:
-            self._next_step(message)
+    def _async_finished(self, request: HTTPRequest):
+
+        if self._state == TaskState.CANCELLED:
+            return
+
+        self._next_step(request)
 
     def _finalize(self):
         self._session = None

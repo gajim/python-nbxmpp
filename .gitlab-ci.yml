@@ -9,7 +9,7 @@ test-pylint:
   stage: test
   script:
     - python3 .ci/pylint-test.py
-    - coverage run --source=nbxmpp -m unittest discover -v
+    - NBXMPP_EXTERNAL_UNIT_TESTS=1 coverage run --source=nbxmpp -m unittest discover -v
     - coverage report -mi
     - coverage xml -i
     - pip install .

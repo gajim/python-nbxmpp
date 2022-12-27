@@ -22,7 +22,6 @@ from gi.repository import GLib
 from gi.repository import Gio
 
 from nbxmpp.const import TCPState
-from nbxmpp.const import ConnectionType
 from nbxmpp.util import get_websocket_close_string
 from nbxmpp.util import convert_tls_error_flags
 from nbxmpp.connection import Connection
@@ -35,11 +34,10 @@ class WebsocketConnection(Connection):
         Connection.__init__(self, *args, **kwargs)
 
         self._session = Soup.Session()
-        self._session.props.ssl_strict = False
 
         if self._log.getEffectiveLevel() == logging.INFO:
             self._session.add_feature(
-                Soup.Logger.new(Soup.LoggerLogLevel.BODY, -1))
+                Soup.Logger.new(Soup.LoggerLogLevel.BODY))
 
         self._websocket = None
         self._cancellable = Gio.Cancellable()
@@ -53,11 +51,12 @@ class WebsocketConnection(Connection):
         self.state = TCPState.CONNECTING
 
         message = Soup.Message.new('GET', self._address.uri)
-        message.connect('starting', self._check_certificate)
+        message.connect('accept-certificate', self._check_certificate)
         message.set_flags(Soup.MessageFlags.NO_REDIRECT)
         self._session.websocket_connect_async(message,
                                               None,
                                               ['xmpp'],
+                                              GLib.PRIORITY_DEFAULT,
                                               self._cancellable,
                                               self._on_connect,
                                               None)
@@ -91,19 +90,20 @@ class WebsocketConnection(Connection):
         # Soup.Session does this automatically
         raise NotImplementedError
 
-    def _check_certificate(self, message):
-        https_used, certificate, errors = message.get_https_status()
-        if not https_used and self._address.type == ConnectionType.PLAIN:
-            return
+    def _check_certificate(self,
+                           _message,
+                           certificate,
+                           errors):
 
         self._peer_certificate = certificate
         self._peer_certificate_errors = convert_tls_error_flags(errors)
 
         if self._accept_certificate():
-            return
+            return True
 
         self.notify('bad-certificate')
         self._cancellable.cancel()
+        return False
 
     def _on_websocket_message(self, _websocket, _type, message):
         data = message.get_data().decode()

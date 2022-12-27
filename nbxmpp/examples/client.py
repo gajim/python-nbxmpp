@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 import gi
+
 gi.require_version('Gtk', '3.0')
 gi.require_version('GLib', '2.0')
 from gi.repository import Gtk
@@ -14,6 +15,7 @@ from gi.repository import GLib
 import nbxmpp
 from nbxmpp.protocol import JID
 from nbxmpp.client import Client
+from nbxmpp.http import HTTPSession
 from nbxmpp.structs import ProxyData
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.const import ConnectionType
@@ -83,6 +85,7 @@ class TestClient(Gtk.Window):
         self._client.set_domain(self.address.domain)
         self._client.set_username(self.address.localpart)
         self._client.set_resource('test')
+        self._client.set_http_session(HTTPSession())
 
         proxy_ip = self._builder.proxy_ip.get_text()
         if proxy_ip:

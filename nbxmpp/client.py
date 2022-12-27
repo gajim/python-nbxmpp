@@ -22,6 +22,7 @@ from typing import Optional
 from gi.repository import GLib
 
 from nbxmpp.namespaces import Namespace
+from nbxmpp.http import HTTPSession
 from nbxmpp.protocol import Features
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.protocol import SessionRequest
@@ -93,6 +94,7 @@ class Client(Observable):
         self._client_cert = None
         self._client_cert_pass = None
         self._proxy = None
+        self._http_session = HTTPSession()
 
         self._allowed_con_types = None
         self._allowed_protocols = None
@@ -329,11 +331,17 @@ class Client(Observable):
 
     def set_proxy(self, proxy):
         self._proxy = proxy
-        self._dispatcher.get_module('Muclumbus').set_proxy(proxy)
 
     @property
     def proxy(self):
         return self._proxy
+
+    def set_http_session(self, session: HTTPSession) -> None:
+        self._http_session = session
+
+    @property
+    def http_session(self) -> HTTPSession:
+        return self._http_session
 
     def get_bound_jid(self):
         return self._jid
@@ -402,6 +410,7 @@ class Client(Observable):
         self.state = StreamState.RESOLVE
 
         self._addresses = ServerAddresses(self._domain)
+        self._addresses.set_http_session(self._http_session)
         self._addresses.set_custom_host(self._custom_host)
         self._addresses.set_proxy(self._proxy)
         self._addresses.subscribe('resolved', self._on_addresses_resolved)

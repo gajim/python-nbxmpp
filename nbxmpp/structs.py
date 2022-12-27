@@ -30,8 +30,8 @@ from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
 
-from gi.repository import Soup
 from gi.repository import Gio
+from gi.repository import GLib
 
 from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
@@ -708,8 +708,9 @@ class ProxyData(NamedTuple):
 
     def get_uri(self) -> str:
         if self.username is not None:
-            user_pass = Soup.uri_encode('%s:%s' % (self.username,
-                                                   self.password))
+            username = GLib.uri_escape_string(self.username, None, False)
+            password = GLib.uri_escape_string(self.password, None, False)
+            user_pass = f'{username}:{password}'
             return '%s://%s@%s' % (self.type,
                                    user_pass,
                                    self.host)
