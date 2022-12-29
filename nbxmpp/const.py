@@ -23,6 +23,7 @@ from packaging.version import Version
 
 from gi.repository import Gio
 from gi.repository import GLib
+from gi.repository import Soup
 
 
 GLIB_VERSION = Version(
@@ -705,4 +706,14 @@ NOT_ALLOWED_XML_CHARS = {
     '"': '&quot;',
     '\x0C': '',
     '\x1B': ''
+}
+
+
+SOUP_ENCODING: set[Soup.Encoding] = {
+    Soup.Encoding.UNRECOGNIZED,
+    Soup.Encoding.NONE,
+    Soup.Encoding.CONTENT_LENGTH,
+    Soup.Encoding.EOF,
+    Soup.Encoding.CHUNKED,
+    Soup.Encoding.BYTERANGES,
 }

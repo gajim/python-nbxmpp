@@ -36,9 +36,11 @@ from functools import lru_cache
 from packaging.version import Version
 
 from gi.repository import Gio
+from gi.repository import Soup
 
 from nbxmpp.protocol import DiscoInfoMalformed
 from nbxmpp.const import GIO_TLS_ERRORS
+from nbxmpp.const import SOUP_ENCODING
 from nbxmpp.const import GLIB_VERSION
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import StanzaMalformed
@@ -398,6 +400,10 @@ def convert_tls_error_flags(flags):
         raise ValueError
 
     return set(filter(lambda error: error & flags, GIO_TLS_ERRORS.keys()))
+
+
+def convert_soup_encoding(flags: int) -> set[Soup.Encoding]:
+    return set(filter(lambda enc: enc & flags, SOUP_ENCODING))
 
 
 def get_websocket_close_string(websocket: Any) -> str:
