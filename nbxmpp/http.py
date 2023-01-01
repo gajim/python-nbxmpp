@@ -419,13 +419,6 @@ class HTTPRequest(GObject.GObject):
             self.cancel()
             return
 
-        self._response_content_length = headers.get_content_length()
-        if self._response_content_length == 0:
-            self._log.warning('No content-length in response')
-            self._no_content_length_set = True
-            self.cancel()
-            return
-
         self._response_content_type = content_type
 
         self._log.info('Sniffed: content-type: %s, content-length: %s',
