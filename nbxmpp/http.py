@@ -290,7 +290,7 @@ class HTTPRequest(GObject.GObject):
             self._timeout_id = GLib.timeout_add_seconds(
                 timeout, self._on_timeout)
 
-        self._log.info('Request sent')
+        self._log.info('Request sent, method: %s, uri: %s', method, uri_string)
 
     def _on_request_body_progress(self,
                                   _message: Soup.Message,
@@ -325,8 +325,10 @@ class HTTPRequest(GObject.GObject):
             self._set_failed(HTTPRequestError.UNKNOWN)
             return
 
-        if self._message.get_status() not in (Soup.Status.OK,
-                                              Soup.Status.CREATED):
+        status = self._message.get_status()
+        if status not in (Soup.Status.OK, Soup.Status.CREATED):
+            self._log.info('Response status: %s %s',
+                           int(status), self._message.get_reason_phrase())
             self._set_failed(HTTPRequestError.STATUS_NOT_OK)
             return
 
@@ -421,6 +423,11 @@ class HTTPRequest(GObject.GObject):
             return
 
         self._response_content_type = content_type
+
+        self._log.info('Sniffed: content-type: %s, content-length: %s',
+                       self._response_content_type,
+                       self._response_content_length)
+
         self.emit('content-sniffed',
                   self._response_content_length,
                   self._response_content_type)
