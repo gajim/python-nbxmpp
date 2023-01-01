@@ -419,6 +419,8 @@ class HTTPRequest(GObject.GObject):
             self.cancel()
             return
 
+        self._response_content_length = headers.get_content_length()
+
         if content_type is None:
             # According to the docs, content_type is None when the sniffer
             # decides to trust the content-type sent by the server.
