@@ -30,7 +30,6 @@ from gi.repository import GLib
 from gi.repository import GObject
 
 import nbxmpp
-from .util import convert_soup_encoding
 from .const import HTTPRequestError
 
 
@@ -109,7 +108,6 @@ class HTTPRequest(GObject.GObject):
         self._is_complete = False
         self._timeout_reached = False
         self._timeout_id = None
-        self._no_content_length_set = False
 
         self._response_body_file: Optional[Gio.File] = None
         self._response_body_data = b''
@@ -315,10 +313,7 @@ class HTTPRequest(GObject.GObject):
         except GLib.Error as error:
             quark = GLib.quark_try_string('g-io-error-quark')
             if error.matches(quark, Gio.IOErrorEnum.CANCELLED):
-                if self._no_content_length_set:
-                    self._set_failed(HTTPRequestError.MISSING_CONTENT_LENGTH)
-                else:
-                    self._set_failed(HTTPRequestError.CANCELLED)
+                self._set_failed(HTTPRequestError.CANCELLED)
                 return
 
             self._log.error(error)
@@ -407,26 +402,18 @@ class HTTPRequest(GObject.GObject):
                             _params: GLib.HashTable,
                             ) -> None:
 
-        if self._message.get_status() not in (Soup.Status.OK,
-                                              Soup.Status.CREATED):
-            return
+        # Signal is only raised when there is content in the response
 
         headers = message.get_response_headers()
-        encoding = headers.get_encoding()
-        if Soup.Encoding.CONTENT_LENGTH not in convert_soup_encoding(encoding):
-            self._log.warning('No content-length in response')
-            self._no_content_length_set = True
-            self.cancel()
-            return
 
         self._response_content_length = headers.get_content_length()
 
         if content_type is None:
             # According to the docs, content_type is None when the sniffer
             # decides to trust the content-type sent by the server.
-            self._response_content_type = headers.get_content_type()
-        else:
-            self._response_content_type = content_type
+            content_type, _ = headers.get_content_type()
+
+        self._response_content_type = content_type or ''
 
         self._log.info('Sniffed: content-type: %s, content-length: %s',
                        self._response_content_type,

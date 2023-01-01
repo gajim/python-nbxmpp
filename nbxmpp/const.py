@@ -456,12 +456,11 @@ class Mode(IntEnum):
 
 class HTTPRequestError(IntEnum):
     UNKNOWN = 0
-    MISSING_CONTENT_LENGTH = 1
-    INCOMPLETE = 2
-    STATUS_NOT_OK = 3
-    CANCELLED = 4
-    CONTENT_OVERFLOW = 5
-    TIMEOUT = 6
+    INCOMPLETE = 1
+    STATUS_NOT_OK = 2
+    CANCELLED = 3
+    CONTENT_OVERFLOW = 4
+    TIMEOUT = 5
 
 
 MOODS = [
