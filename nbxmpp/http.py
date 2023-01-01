@@ -403,7 +403,7 @@ class HTTPRequest(GObject.GObject):
 
     def _on_content_sniffed(self,
                             message: Soup.Message,
-                            content_type: str,
+                            content_type: Optional[str],
                             _params: GLib.HashTable,
                             ) -> None:
 
@@ -419,7 +419,12 @@ class HTTPRequest(GObject.GObject):
             self.cancel()
             return
 
-        self._response_content_type = content_type
+        if content_type is None:
+            # According to the docs, content_type is None when the sniffer
+            # decides to trust the content-type sent by the server.
+            self._response_content_type = headers.get_content_type()
+        else:
+            self._response_content_type = content_type
 
         self._log.info('Sniffed: content-type: %s, content-length: %s',
                        self._response_content_type,
