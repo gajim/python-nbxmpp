@@ -407,6 +407,10 @@ class HTTPRequest(GObject.GObject):
                             _params: GLib.HashTable,
                             ) -> None:
 
+        if self._message.get_status() not in (Soup.Status.OK,
+                                              Soup.Status.CREATED):
+            return
+
         headers = message.get_response_headers()
         encoding = headers.get_encoding()
         if Soup.Encoding.CONTENT_LENGTH not in convert_soup_encoding(encoding):
