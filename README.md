@@ -4,17 +4,21 @@
 
 ## Runtime Requirements
 
-- python >= 3.9.0
-- PyGObject
-- GLib >= 2.60
-- libsoup3
-- precis-i18n
-- packaging
-- idna
+- [Python](https://www.python.org/) (>=3.9)
+- [PyGObject](https://pypi.org/project/PyGObject/) (>=3.42.0)
+- [GLib](https://gitlab.com/gnome/glib) (>=2.60.0)
+- [libsoup3](https://libsoup.org/)
+- [precis-i18n](https://pypi.org/project/precis-i18n/)
+- [packaging](https://pypi.org/project/packaging/)
+- [idna](https://pypi.org/project/idna/)
 
 ## Optional Runtime Requirements
 
-- python-gssapi (for GSSAPI authentication https://pypi.org/project/gssapi/)
+- [python-gssapi](https://pypi.org/project/gssapi/) GSSAPI authentication
+
+## Build Requirements
+
+- [setuptools](https://pypi.org/project/setuptools/)
 
 ## Features
 
