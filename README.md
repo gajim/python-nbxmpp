@@ -4,7 +4,7 @@
 
 ## Runtime Requirements
 
-- [Python](https://www.python.org/) (>=3.9)
+- [Python](https://www.python.org/) (>=3.10)
 - [PyGObject](https://pypi.org/project/PyGObject/) (>=3.42.0)
 - [GLib](https://gitlab.com/gnome/glib) (>=2.60.0)
 - [libsoup3](https://libsoup.org/)
