@@ -3,3 +3,13 @@ requires = [
   "setuptools >= 43.0.0",
 ]
 build-backend = "setuptools.build_meta"
+
+
+[tool.pyright]
+pythonVersion = "3.10"
+pythonPlatform = "All"
+typeCheckingMode = "strict"
+
+reportUnnecessaryTypeIgnoreComment = "error"
+reportPropertyTypeMismatch = "error"
+reportMissingModuleSource = "none"
