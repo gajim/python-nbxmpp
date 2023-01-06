@@ -1,3 +1,17 @@
+nbxmpp 4.0.0 (06 Jan 2023)
+
+  New
+
+  * Add message reactions (XEP-0444) support
+  * Add HTTP module
+
+  Change
+
+  * Raise required python version to 3.10
+  * Remove example client
+  * Port to libsoup3
+  * XEP-0392: Update to 0.8.0
+
 nbxmpp 3.2.5 (26 Oct 2022)
 
   New
