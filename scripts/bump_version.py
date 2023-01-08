@@ -9,7 +9,6 @@ REPO_DIR = Path(__file__).resolve().parent.parent
 
 
 INIT = REPO_DIR / 'nbxmpp' / '__init__.py'
-CFG = REPO_DIR / 'setup.cfg'
 CHANGELOG = REPO_DIR / 'ChangeLog'
 
 VERSION_RX = r'\d+\.\d+\.\d+'
@@ -27,10 +26,6 @@ def bump_version(current_version: str, new_version: str) -> None:
     content = INIT.read_text(encoding='utf8')
     content = content.replace(current_version, new_version, 1)
     INIT.write_text(content, encoding='utf8')
-
-    content = CFG.read_text(encoding='utf8')
-    content = content.replace(current_version, new_version, 1)
-    CFG.write_text(content, encoding='utf8')
 
 
 def make_changelog(new_version: str) -> None:

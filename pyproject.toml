@@ -1,9 +1,44 @@
 [build-system]
-requires = [
-  "setuptools >= 43.0.0",
-]
+requires = ["setuptools >= 65.0.0"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "nbxmpp"
+description = "XMPP Library"
+keywords = ["chat", "messaging", "im", "xmpp"]
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "GPL-3.0-or-later"}
+authors = [
+    {name = "Philipp Hörist", email = "philipp@hoerist.com"},
+    {name = "Yann Leboulanger", email = "yann@leboulanger.org"},
+]
+classifiers = [
+    "Programming Language :: Python :: 3.10",
+]
+dependencies = [
+    "precis-i18n>=1.0.0",
+    "packaging",
+    "idna",
+    "PyGObject",
+]
+
+dynamic = ["version"]
+
+[project.optional-dependencies]
+gssapi = ["gssapi"]
+
+[project.urls]
+repository = "https://dev.gajim.org/gajim/python-nbxmpp"
+
+[tool.setuptools.packages.find]
+include = ["nbxmpp*"]
+
+[tool.setuptools.package-data]
+"nbxmpp" = ["py.typed"]
+
+[tool.setuptools.dynamic]
+version = {attr = "nbxmpp.__version__"}
 
 [tool.pyright]
 pythonVersion = "3.10"
