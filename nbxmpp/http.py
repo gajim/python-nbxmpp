@@ -252,7 +252,7 @@ class HTTPRequest(GObject.GObject):
                 Gio.FileCreateFlags.REPLACE_DESTINATION,
                 self._cancellable)
 
-        uri = GLib.Uri.parse(uri_string, GLib.UriFlags.HAS_PASSWORD)
+        uri = GLib.Uri.parse(uri_string, GLib.UriFlags(Soup.HTTP_URI_FLAGS))
         self._message.set_uri(uri)
 
         if self._request_body_data is not None:
