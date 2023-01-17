@@ -449,6 +449,17 @@ class HTTPRequest(GObject.GObject):
             self._set_failed(HTTPRequestError.STATUS_NOT_OK)
             return
 
+        self._log.info('Request status: %s', Soup.Status.get_phrase(status))
+
+        if self._cancellable.is_cancelled():
+            # It can happen that the message is finished before the
+            # response callback returns after calling cancel(). If
+            # we call complete, the response callback will also
+            # try to cleanup and will fail.
+            self._log.info('Skip setting message complete because '
+                           'cancel is in progess')
+            return
+
         self._set_complete()
 
     def _set_failed(self, error: HTTPRequestError) -> None:
