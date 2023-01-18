@@ -60,5 +60,5 @@ deploy-debian:
         --host=$FTP_HOST \
         --user=$FTP_USER \
         --password=$FTP_PASS \
-        --directory=debian/"$(date +'%Y%m%d')" \
+        --directory=debian/nbxmpp/"$(date +'%Y%m%d')" \
         debian_build
