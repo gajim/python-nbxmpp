@@ -35,7 +35,7 @@ build-linux:
     paths:
       - dist/nbxmpp-*.tar.gz
       - dist/nbxmpp-*.whl
-      - debian_build/python3-nbxmpp*.deb
+      - debian_build/*
 
 deploy-pypi:
   stage: deploy
@@ -46,3 +46,19 @@ deploy-pypi:
   script:
     - python3 .ci/deploy.py
     - twine upload --username=__token__ --password=$PYPI_TOKEN dist/*
+
+deploy-debian:
+  stage: deploy
+  dependencies:
+    - build-linux
+  rules:
+    - if: '$NIGHTLY_BUILD'
+  script:
+    - pip install git+https://dev.gajim.org/gajim/release-helper.git
+    - >
+      release-helper deploy-to-ftp \
+        --host=$FTP_HOST \
+        --user=$FTP_USER \
+        --password=$FTP_PASS \
+        --directory=debian/"$(date +'%Y%m%d')" \
+        debian_build
