@@ -24,9 +24,10 @@ build-linux:
   stage: build
   dependencies: []
   script:
+    - pip install git+https://dev.gajim.org/gajim/release-helper.git
     - pip install build
     - python3 -m build
-    - python3 .ci/debian_build.py "$(find dist/nbxmpp-*.tar.gz)" 1 --pkgprefix=python3-
+    - release-helper build-debian-pkg "$(find dist/nbxmpp-*.tar.gz)" 1 --pkgprefix=python3 --pkgsuffix=nightly
 
   artifacts:
     name: "nbxmpp-$CI_COMMIT_SHA"
@@ -34,6 +35,7 @@ build-linux:
     paths:
       - dist/nbxmpp-*.tar.gz
       - dist/nbxmpp-*.whl
+      - debian_build/python3-nbxmpp*.deb
 
 deploy-pypi:
   stage: deploy
@@ -43,3 +45,4 @@ deploy-pypi:
     - if: '$CI_COMMIT_TAG'
   script:
     - python3 .ci/deploy.py
+    - twine upload --username=__token__ --password=$PYPI_TOKEN dist/*
