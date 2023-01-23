@@ -38,23 +38,23 @@ build-linux:
       - debian_build/*
 
 deploy-pypi:
+  image: nbxmpp-deploy:latest
   stage: deploy
   dependencies:
     - "build-linux"
   rules:
     - if: '$CI_COMMIT_TAG'
   script:
-    - python3 .ci/deploy.py
     - twine upload --username=__token__ --password=$PYPI_TOKEN dist/*
 
 deploy-debian:
+  image: nbxmpp-deploy:latest
   stage: deploy
   dependencies:
     - build-linux
   rules:
     - if: '$NIGHTLY_BUILD'
   script:
-    - pip install git+https://dev.gajim.org/gajim/release-helper.git
     - >
       release-helper deploy-to-ftp \
         --host=$FTP_HOST \
