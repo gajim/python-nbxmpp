@@ -1,3 +1,13 @@
+nbxmpp 4.1.0 (24 Jan 2023)
+
+  Change
+
+  * Port package to pyproject.toml
+
+  Bug Fixes
+
+  * Handle race condition when cancelling request (#136)
+
 nbxmpp 4.0.1 (10 Jan 2023)
 
   Bug Fixes
