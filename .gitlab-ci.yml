@@ -20,7 +20,7 @@ test-pylint:
         coverage_format: cobertura
         path: coverage.xml
 
-build-linux:
+build-unix:
   stage: build
   dependencies: []
   script:
@@ -41,17 +41,17 @@ deploy-pypi:
   image: nbxmpp-deploy:latest
   stage: deploy
   dependencies:
-    - "build-linux"
+    - "build-unix"
   rules:
     - if: '$CI_COMMIT_TAG'
   script:
     - twine upload --username=__token__ --password=$PYPI_TOKEN dist/*
 
-deploy-debian:
+deploy-debian-nightly:
   image: nbxmpp-deploy:latest
   stage: deploy
   dependencies:
-    - build-linux
+    - build-unix
   rules:
     - if: '$NIGHTLY_BUILD'
   script:
