@@ -8,7 +8,7 @@
 - [PyGObject](https://pypi.org/project/PyGObject/) (>=3.42.0)
 - [GLib](https://gitlab.com/gnome/glib) (>=2.60.0)
 - [libsoup3](https://libsoup.org/)
-- [precis-i18n](https://pypi.org/project/precis-i18n/)
+- [precis-i18n](https://pypi.org/project/precis-i18n/) (>=1.0.0)
 - [packaging](https://pypi.org/project/packaging/)
 - [idna](https://pypi.org/project/idna/)
 
@@ -18,16 +18,11 @@
 
 ## Build Requirements
 
-- [setuptools](https://pypi.org/project/setuptools/)
+- [setuptools](https://pypi.org/project/setuptools/) (>=65.0.0)
 
 ## Features
 
-* List of [supported XEPs](https://dev.gajim.org/gajim/python-nbxmpp/-/wikis/Supported-XEPs-in-python-nbxmpp/)
-
-## Starting Points
-
-* [Downloads](https://dev.gajim.org/gajim/python-nbxmpp/tags)
-* You can also clone the [git repository](https://dev.gajim.org/gajim/python-nbxmpp.git)
+* List of [supported XEPs](https://xmpp.org/software/libraries/python-nbxmpp/)
 
 ### Setup
 
@@ -45,4 +40,4 @@ to also install the optional dependency `gssapi`.
 
 To use python-nbxmpp, `import nbxmpp` in your application.
 
-or use the example client `python3 -m nbxmpp.examples.client`
+To see an example check out [nbxmpp-client](https://pypi.org/project/nbxmpp-client/)
