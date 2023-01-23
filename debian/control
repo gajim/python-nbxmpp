@@ -7,10 +7,10 @@ Build-Depends:
     dh-python,
     gir1.2-soup-3.0,
     python3-all,
-    python3-gi,
+    python3-gi (>=3.42.0),
     python3-idna,
     python3-packaging,
-    python3-precis-i18n,
+    python3-precis-i18n (>=1.0.0),
     python3-setuptools (>= 65.0.0),
 Standards-Version: 4.1.4
 Rules-Requires-Root: no
@@ -23,7 +23,7 @@ Architecture: all
 Depends: ${misc:Depends},
     ${python3:Depends},
     gir1.2-soup-3.0,
-    python3-gi,
+    python3-gi (>=3.42.0),
 Recommends: python3-gssapi,
 Breaks: gajim (<< 1.6~)
 Conflicts: python3-nbxmpp
