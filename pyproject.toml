@@ -20,7 +20,7 @@ dependencies = [
     "precis-i18n>=1.0.0",
     "packaging",
     "idna",
-    "PyGObject",
+    "PyGObject>=3.42.0",
 ]
 
 dynamic = ["version"]
