@@ -54,7 +54,11 @@ deploy-debian-nightly:
     - build-unix
   rules:
     - if: '$NIGHTLY_BUILD'
+  allow_failure:
+    exit_codes:
+      - 100
   script:
+    - release-helper nightly-check
     - >
       release-helper deploy-to-ftp \
         --host=$FTP_HOST \
