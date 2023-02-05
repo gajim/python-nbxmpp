@@ -241,3 +241,51 @@ def nameprep(string: str, allow_unassigned: bool = False) -> str:
         )
 
     return ''.join(chars)
+
+
+def _saslprep_do_mapping(chars: list[str]) -> None:
+    i = 0
+    while i < len(chars):
+        c = chars[i]
+        if stringprep.in_table_b1(c):
+            del chars[i]
+
+        elif stringprep.in_table_c12(c):
+            chars[i] = ' '
+
+        i += 1
+
+
+def saslprep(string: str, allow_unassigned: bool = False) -> str:
+    '''
+    Process the given `string` using the SASLprep (`RFC 4013`_) profile.
+    '''
+
+    chars = list(string)
+    _saslprep_do_mapping(chars)
+    do_normalization(chars)
+    check_against_tables(
+        chars,
+        (
+            stringprep.in_table_c12,
+            stringprep.in_table_c21,
+            stringprep.in_table_c22,
+            stringprep.in_table_c3,
+            stringprep.in_table_c4,
+            stringprep.in_table_c5,
+            stringprep.in_table_c6,
+            stringprep.in_table_c7,
+            stringprep.in_table_c8,
+            stringprep.in_table_c9,
+        ))
+    check_bidi(chars)
+
+    if not allow_unassigned:
+        check_against_tables(
+            chars,
+            (
+                stringprep.in_table_a1,
+            )
+        )
+
+    return ''.join(chars)

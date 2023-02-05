@@ -1,6 +1,7 @@
 import unittest
 
 from nbxmpp.stringprep import nodeprep
+from nbxmpp.stringprep import saslprep
 from nbxmpp.stringprep import resourceprep
 from nbxmpp.stringprep import nameprep
 from nbxmpp.stringprep import check_bidi
@@ -201,3 +202,56 @@ class TestResourceprep(unittest.TestCase):
         self.assertEqual(
             '\u0221',
             resourceprep('\u0221', allow_unassigned=True))
+
+
+class TestSASLprep(unittest.TestCase):
+    def test_map_to_nothing(self):
+        self.assertEqual(
+            'IX',
+            saslprep('I\u00ADX'),
+            'SASLprep requirement: map SOFT HYPHEN to nothing')
+
+    def test_nfkc(self):
+        self.assertEqual(
+            'a',
+            saslprep('\u00AA'),
+            'SASLprep requirement: NFKC')
+        self.assertEqual(
+            'IX',
+            saslprep('\u2168'),
+            'SASLprep requirement: NFKC')
+
+    def test_case_fold(self):
+        self.assertNotEqual(
+            'user',
+            saslprep('USER'),
+            'SASLprep requirement: No CaseFold')
+
+    def test_prohibited_character(self):
+        with self.assertRaisesRegex(
+                ValueError,
+                r'U\+0007',
+                msg='SASLprep requirement: '
+                    'prohibited character (C.2.1)'):
+            saslprep('\u0007')
+
+    def test_bidi_check(self):
+        with self.assertRaises(
+                ValueError,
+                msg='SASLprep requirement: bidi check'):
+            saslprep('\u0627\u0031')
+
+    def test_unassigned(self):
+        with self.assertRaises(
+                ValueError,
+                msg='SASLprep requirement: unassigned'):
+            saslprep('\u0221', allow_unassigned=False)
+
+        with self.assertRaises(
+                ValueError,
+                msg='enforce no unassigned by default'):
+            saslprep('\u0221')
+
+        self.assertEqual(
+            '\u0221',
+            saslprep('\u0221', allow_unassigned=True))
