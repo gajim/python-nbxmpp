@@ -1,3 +1,17 @@
+nbxmpp 4.2.0 (05 Feb 2023)
+
+  New
+
+  * Add support for XEP-0461: Message Replies
+
+  Improvements
+
+  * Add SASLprep profile
+
+  Change
+
+  * Require PyGObject 3.42.0
+
 nbxmpp 4.1.0 (24 Jan 2023)
 
   Change
