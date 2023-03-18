@@ -1,3 +1,9 @@
+nbxmpp 4.2.1 (18 Mar 2023)
+
+  Bug Fixes
+
+  * HTTP: Make sure streams are closed only once (#139)
+
 nbxmpp 4.2.0 (05 Feb 2023)
 
   New
