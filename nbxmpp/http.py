@@ -483,13 +483,24 @@ class HTTPRequest(GObject.GObject):
         self._cleanup()
 
     def _close_all_streams(self) -> None:
-        if self._input_stream is not None:
-            if not self._input_stream.is_closed():
-                self._input_stream.close(None)
+        # stream.close() will invoke signals on the Message object
+        # which in turn can lead to this method called again in the
+        # same Mainloop iteration. This means is_closed() will not
+        # return True and we get an GLib.IOError.PENDING error.
 
-        if self._output_stream is not None:
-            if not self._output_stream.is_closed():
-                self._output_stream.close(None)
+        input_stream = self._input_stream
+        output_stream = self._output_stream
+
+        self._input_stream = None
+        self._output_stream = None
+
+        if input_stream is not None:
+            if not input_stream.is_closed():
+                input_stream.close(None)
+
+        if output_stream is not None:
+            if not output_stream.is_closed():
+                output_stream.close(None)
 
     def _cleanup(self) -> None:
         self._log.info('Run cleanup')
@@ -500,9 +511,6 @@ class HTTPRequest(GObject.GObject):
         del self._cancellable
         del self._session
         del self._user_data
-
-        self._input_stream = None
-        self._output_stream = None
 
         if self._timeout_id is not None:
             GLib.source_remove(self._timeout_id)
