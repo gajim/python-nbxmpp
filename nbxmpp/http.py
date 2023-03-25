@@ -276,6 +276,7 @@ class HTTPRequest(GObject.GObject):
 
         self._message.connect('content-sniffed', self._on_content_sniffed)
         self._message.connect('got-body', self._on_got_body)
+        self._message.connect('restarted', self._on_restarted)
         self._message.connect('finished', self._on_finished)
 
         soup_session = self._session.get_soup_session()
@@ -430,6 +431,12 @@ class HTTPRequest(GObject.GObject):
         # cancelled.
         self._log.info('Body received')
         self._body_received = True
+
+    def _on_restarted(self, _message: Soup.Message) -> None:
+        self._log.info('Restarted')
+        self._body_received = False
+        self._response_content_type = ''
+        self._response_content_length = 0
 
     def _on_finished(self, _message: Soup.Message) -> None:
         self._log.info('Message finished')
