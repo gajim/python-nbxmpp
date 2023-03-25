@@ -1,3 +1,9 @@
+nbxmpp 4.2.2 (25 Mar 2023)
+
+  Bug Fixes
+
+  * HTTP: Reset attributes on redirect (#141)
+
 nbxmpp 4.2.1 (18 Mar 2023)
 
   Bug Fixes
