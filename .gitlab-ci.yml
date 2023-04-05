@@ -58,7 +58,11 @@ deploy-debian-nightly:
     exit_codes:
       - 100
   script:
-    - release-helper nightly-check
+    - |
+      if [ "$FORCE_DEB_DEPLOY" != "true" ]
+      then
+        release-helper nightly-check
+      fi
     - >
       release-helper deploy-to-ftp \
         --host=$FTP_HOST \
