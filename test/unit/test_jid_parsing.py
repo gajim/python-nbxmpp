@@ -189,3 +189,26 @@ class JIDParsing(unittest.TestCase):
             # from_user_input does only support bare jids
             with self.assertRaises(Exception):
                 JID.from_user_input(user_input)
+
+    def test_jid_to_iri(self):
+        tests = [
+            ('nasty!#$%()*+,-.;=?[\\]^_`{|}~node@example.com', 'xmpp:nasty!%23$%25()*+,-.;=%3F%5B%5C%5D%5E_%60%7B%7C%7D~node@example.com'),
+            ('node@example.com/repulsive !#"$%&\'()*+,-./:;<=>?@[\\]^_`{|}~resource', 'xmpp:node@example.com/repulsive%20!%23%22$%25&\'()*+,-.%2F:;%3C=%3E%3F%40%5B%5C%5D%5E_%60%7B%7C%7D~resource'),
+        ]
+
+        for jid, iri in tests:
+            jid = JID.from_string(jid)
+            self.assertEqual(jid.to_iri(), iri)
+
+        jid = JID.from_string('example-node@example.com')
+        iri = jid.to_iri(('message', [('subject', 'Hello World')]), 'frag')
+        self.assertEqual(iri, 'xmpp:example-node@example.com?message;subject=Hello%20World#frag')
+
+        iri = jid.to_iri('message')
+        self.assertEqual(iri, 'xmpp:example-node@example.com?message')
+
+        iri = jid.to_iri(fragment='onlyfragment')
+        self.assertEqual(iri, 'xmpp:example-node@example.com#onlyfragment')
+
+        jid = JID.from_user_input('call me "ishmael"@example.com')
+        self.assertEqual(jid.to_iri(), 'xmpp:call%5C20me%5C20%5C22ishmael%5C22@example.com')

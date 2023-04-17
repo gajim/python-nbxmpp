@@ -38,6 +38,12 @@ from dataclasses import asdict
 from gi.repository import GLib
 
 import idna
+from nbxmpp.xmppiri import escape_ifragment
+from nbxmpp.xmppiri import escape_inode
+from nbxmpp.xmppiri import escape_ires
+from nbxmpp.xmppiri import escape_ivalue
+from nbxmpp.xmppiri import validate_ikey
+from nbxmpp.xmppiri import validate_querytype
 from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
 from nbxmpp.stringprep import nodeprep
@@ -314,6 +320,7 @@ STREAM_INVALID_NAMESPACE = 'urn:ietf:params:xml:ns:xmpp-streams invalid-namespac
 ERR_REDIRECT = 'urn:ietf:params:xml:ns:xmpp-stanzas redirect'
 STREAM_UNSUPPORTED_STANZA_TYPE = 'urn:ietf:params:xml:ns:xmpp-streams unsupported-stanza-type'
 ERR_FORBIDDEN = 'urn:ietf:params:xml:ns:xmpp-stanzas forbidden'
+
 
 def isResultNode(node):
     """
@@ -767,6 +774,45 @@ class JID:
         if self.resource is None:
             return f'{localpart}@{self.domain}{domain_encoded}'
         return f'{localpart}@{self.domain}/{self.resource}{domain_encoded}'
+
+    def to_iri(self,
+               query: Optional[str | tuple[str, list[tuple[str, str]]]] = None,
+               fragment: Optional[str] = None
+               ) -> str:
+
+        if self.localpart:
+            inode = escape_inode(self.localpart)
+            ipathxmpp = f'{inode}@{self.domain}'
+        else:
+            ipathxmpp = f'{self.domain}'
+
+        if self.resource is not None:
+            ires = escape_ires(self.resource)
+            ipathxmpp = f'{ipathxmpp}/{ires}'
+
+        iri = f'xmpp:{ipathxmpp}'
+
+        if query is not None:
+            if isinstance(query, str):
+                querytype = query
+                queryparams = None
+            else:
+                querytype, queryparams = query
+
+            iquerytype = validate_querytype(querytype)
+            iri += f'?{iquerytype}'
+
+            if queryparams is not None:
+                for ikey, ivalue in queryparams:
+                    ivalue = escape_ivalue(ivalue)
+                    ikey = validate_ikey(ikey)
+                    iri += f';{ikey}={ivalue}'
+
+        if fragment is not None:
+            ifragment = escape_ifragment(fragment)
+            iri += f'#{ifragment}'
+
+        return iri
 
     def copy(self) -> JID:
         deprecation_warning('copy() is not needed, JID is immutable')
