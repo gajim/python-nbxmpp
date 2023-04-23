@@ -41,7 +41,7 @@ try:
     gssapi = __import__('gssapi')
     GSSAPI_AVAILABLE = True
 except (ImportError, OSError) as error:
-    log.warning('GSSAPI not available: %s', error)
+    log.info('GSSAPI not available: %s', error)
     GSSAPI_AVAILABLE = False
 
 
