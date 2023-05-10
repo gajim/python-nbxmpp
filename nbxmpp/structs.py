@@ -732,6 +732,8 @@ class OMEMOBundle(NamedTuple):
     spk_signature: bytes
     ik: bytes
     otpks: list[dict[str, str]]
+    device_id: int = -1
+    namespace: str = Namespace.OMEMO_TEMP
 
     def pick_prekey(self) -> dict[str, str]:
         return random.SystemRandom().choice(self.otpks)

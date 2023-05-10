@@ -161,7 +161,7 @@ class OMEMO(BaseModule):
         if not items:
             yield task.set_result(None)
 
-        yield _parse_bundle(items[0])
+        yield _parse_bundle(items[0], device_id)
 
 
 def _parse_omemo_message(stanza):
@@ -235,7 +235,7 @@ def _parse_omemo_message(stanza):
     return OMEMOMessage(sid=sid, iv=iv, keys=keys, payload=payload)
 
 
-def _parse_bundle(item):
+def _parse_bundle(item, device_id):
     '''
     <item id='current'>
       <bundle xmlns='eu.siacs.conversations.axolotl'>
@@ -317,7 +317,9 @@ def _parse_bundle(item):
 
         result['otpks'].append({'key': key, 'id': id_})
 
-    return OMEMOBundle(**result)
+    return OMEMOBundle(**result,
+                       device_id=device_id,
+                       namespace=Namespace.OMEMO_TEMP)
 
 
 def _make_bundle(bundle):
