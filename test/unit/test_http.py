@@ -1,9 +1,6 @@
-from time import time
 import tempfile
 import unittest
-from unittest.mock import call
 from unittest.mock import Mock
-from unittest.mock import patch
 import os
 from pathlib import Path
 
@@ -124,13 +121,11 @@ class HTTP(unittest.TestCase):
         session = HTTPSession()
         request = session.create_request()
 
-        def _on_progress(req, progress):
-            self.assertIsInstance(progress, float)
+        def _on_start(req):
             req.cancel()
 
         callback_mock = Mock()
-        request.connect('starting-response-body', callback_mock.starting)
-        request.connect('response-progress', _on_progress)
+        request.connect('starting-response-body', _on_start)
         request.connect('finished', callback_mock.finished)
         request.connect('destroy', lambda *args: mainloop.quit())
         request.send('GET', LARGE_FILE_URL, timeout=10)
@@ -141,7 +136,6 @@ class HTTP(unittest.TestCase):
         self.assertTrue(request.is_finished())
         self.assertEqual(request.get_error(), HTTPRequestError.CANCELLED)
 
-        callback_mock.starting.assert_called()
         callback_mock.finished.assert_called()
 
     def test_download_failed_404(self):

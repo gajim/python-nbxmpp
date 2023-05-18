@@ -50,7 +50,7 @@ HTTP_METHODS_T = Literal[
 CHUNK_SIZE = 32768
 DEFAULT_USER_AGENT = f'nbxmpp/{nbxmpp.__version__}'
 SIGNAL_ACTIONS = GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.ACTION
-
+MIN_SOUP_3_4 = Soup.check_version(3, 4, 0)
 
 class HTTPLogAdapter(logging.LoggerAdapter):
     def process(self, msg: str, kwargs: Any) -> tuple[str, Any]:
@@ -278,6 +278,10 @@ class HTTPRequest(GObject.GObject):
         self._message.connect('got-body', self._on_got_body)
         self._message.connect('restarted', self._on_restarted)
         self._message.connect('finished', self._on_finished)
+        self._message.connect('got-headers', self._on_got_headers)
+
+        if MIN_SOUP_3_4:
+            self._message.connect('got-body-data', self._on_got_body_data)
 
         soup_session = self._session.get_soup_session()
         soup_session.send_async(self._message,
@@ -360,11 +364,9 @@ class HTTPRequest(GObject.GObject):
             self._finish_read()
             return
 
-        length = len(bytes_)
-        self._received_size += length
-        if self._received_size > self._response_content_length:
-            self._finish_read(HTTPRequestError.CONTENT_OVERFLOW)
-            return
+        if not MIN_SOUP_3_4:
+            self._received_size += len(bytes_)
+            self._check_content_overflow()
 
         if self._output_stream is None:
             self._response_body_data += bytes_
@@ -383,11 +385,8 @@ class HTTPRequest(GObject.GObject):
 
         self._read_async()
 
-        if (self._emit_response_progress and
-                self._message.get_method() == 'GET'):
-            self.emit('response-progress',
-                      self._received_size / self._response_content_length)
-
+        if not MIN_SOUP_3_4:
+            self._emit_progress()
 
     def _finish_read(self, error: Optional[HTTPRequestError] = None) -> None:
         self._log.info('Finished reading')
@@ -404,11 +403,7 @@ class HTTPRequest(GObject.GObject):
                             ) -> None:
 
         # Signal is only raised when there is content in the response
-
         headers = message.get_response_headers()
-
-        self._response_content_length = headers.get_content_length()
-
         if content_type is None:
             # According to the docs, content_type is None when the sniffer
             # decides to trust the content-type sent by the server.
@@ -416,13 +411,18 @@ class HTTPRequest(GObject.GObject):
 
         self._response_content_type = content_type or ''
 
-        self._log.info('Sniffed: content-type: %s, content-length: %s',
-                       self._response_content_type,
-                       self._response_content_length)
+        self._log.info('Sniffed: content-type: %s',
+                       self._response_content_type)
 
         self.emit('content-sniffed',
                   self._response_content_length,
                   self._response_content_type)
+
+    def _on_got_headers(self, message: Soup.Message) -> None:
+        headers = message.get_response_headers()
+        self._response_content_length = headers.get_content_length()
+        self._log.info('Got Headers: content-length: %s',
+                       self._response_content_length)
 
     def _on_got_body(self, _message: Soup.Message) -> None:
         # This signal tells us that the full body was received.
@@ -432,11 +432,38 @@ class HTTPRequest(GObject.GObject):
         self._log.info('Body received')
         self._body_received = True
 
+    def _on_got_body_data(self,
+                          _message: Soup.Message,
+                          chunk_size: int
+                          ) -> None:
+
+        self._received_size += chunk_size
+        self._check_content_overflow()
+
+        status = self._message.get_status()
+        if status in (Soup.Status.OK, Soup.Status.CREATED):
+            self._emit_progress()
+
+    def _emit_progress(self) -> None:
+        if not self._emit_response_progress:
+            return
+
+        if not self._message.get_method() == 'GET':
+            return
+
+        self.emit('response-progress',
+                  self._received_size / self._response_content_length)
+
+    def _check_content_overflow(self) -> None:
+        if self._received_size > self._response_content_length:
+            self._finish_read(HTTPRequestError.CONTENT_OVERFLOW)
+
     def _on_restarted(self, _message: Soup.Message) -> None:
         self._log.info('Restarted')
         self._body_received = False
         self._response_content_type = ''
         self._response_content_length = 0
+        self._received_size = 0
 
     def _on_finished(self, _message: Soup.Message) -> None:
         self._log.info('Message finished')
