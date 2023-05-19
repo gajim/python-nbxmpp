@@ -4,6 +4,7 @@ stages:
   - test
   - build
   - deploy
+  - publish
 
 test-pylint:
   stage: test
