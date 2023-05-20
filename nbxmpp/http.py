@@ -312,6 +312,9 @@ class HTTPRequest(GObject.GObject):
                      result: Gio.AsyncResult
                      ) -> None:
 
+        if self._is_finished:
+            return
+
         self._log.info('Request response received')
         try:
             self._input_stream = session.send_finish(result)
@@ -347,6 +350,10 @@ class HTTPRequest(GObject.GObject):
     def _on_bytes_read_result(self,
                               input_stream: Gio.InputStream,
                               result: Gio.AsyncResult) -> None:
+
+        if self._is_finished:
+            return
+
         try:
             data = input_stream.read_bytes_finish(result)
         except GLib.Error as error:
@@ -504,6 +511,7 @@ class HTTPRequest(GObject.GObject):
             self._error = HTTPRequestError.TIMEOUT
         else:
             self._error = error
+
         self._close_all_streams()
         self.emit('finished')
         self._cleanup()
