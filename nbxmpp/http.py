@@ -62,6 +62,7 @@ class HTTPSession:
         self._session = Soup.Session()
         self._session.set_user_agent(user_agent)
         self._session.add_feature_by_type(Soup.ContentSniffer)
+        self._session.remove_feature_by_type(Soup.ContentDecoder)
 
     def get_soup_session(self) -> Soup.Session:
         return self._session
