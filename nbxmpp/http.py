@@ -539,7 +539,6 @@ class HTTPRequest(GObject.GObject):
         self._message.run_dispose()
 
         del self._cancellable
-        del self._session
         del self._user_data
 
         if self._timeout_id is not None:
