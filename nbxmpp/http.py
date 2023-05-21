@@ -73,8 +73,8 @@ class HTTPSession:
 
         self._session.set_proxy_resolver(resolver)
 
-    def create_request(self) -> HTTPRequest:
-        return HTTPRequest(self)
+    def create_request(self, force_http1: bool = False) -> HTTPRequest:
+        return HTTPRequest(self, force_http1=force_http1)
 
 
 class HTTPRequest(GObject.GObject):
@@ -90,7 +90,10 @@ class HTTPRequest(GObject.GObject):
         'destroy': (SIGNAL_ACTIONS, None, ()),
     }
 
-    def __init__(self, session: HTTPSession) -> None:
+    def __init__(self,
+                 session: HTTPSession,
+                 force_http1: bool = False
+                 ) -> None:
         GObject.GObject.__init__(self)
 
         self._log = HTTPLogAdapter(log, extra={'request': self})
@@ -126,6 +129,7 @@ class HTTPRequest(GObject.GObject):
         self._emit_response_progress = False
 
         self._message = Soup.Message()
+        self._message.set_force_http1(force_http1)
         self._user_data = None
 
         self._log.info('Created')
@@ -311,6 +315,8 @@ class HTTPRequest(GObject.GObject):
                      result: Gio.AsyncResult
                      ) -> None:
 
+        self._log.info('HTTP version: %s',
+                       self._message.get_http_version().value_name)
         self._log.info('Request response received')
         try:
             self._input_stream = session.send_finish(result)
