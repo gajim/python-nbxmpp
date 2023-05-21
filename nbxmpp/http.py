@@ -50,7 +50,7 @@ HTTP_METHODS_T = Literal[
 CHUNK_SIZE = 32768
 DEFAULT_USER_AGENT = f'nbxmpp/{nbxmpp.__version__}'
 SIGNAL_ACTIONS = GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.ACTION
-MIN_SOUP_3_4 = Soup.check_version(3, 4, 0)
+
 
 class HTTPLogAdapter(logging.LoggerAdapter):
     def process(self, msg: str, kwargs: Any) -> tuple[str, Any]:
@@ -59,7 +59,6 @@ class HTTPLogAdapter(logging.LoggerAdapter):
 
 class HTTPSession:
     def __init__(self, user_agent: str = DEFAULT_USER_AGENT) -> None:
-
         self._session = Soup.Session()
         self._session.set_user_agent(user_agent)
         self._session.add_feature_by_type(Soup.ContentSniffer)
@@ -280,9 +279,6 @@ class HTTPRequest(GObject.GObject):
         self._message.connect('finished', self._on_finished)
         self._message.connect('got-headers', self._on_got_headers)
 
-        if MIN_SOUP_3_4:
-            self._message.connect('got-body-data', self._on_got_body_data)
-
         soup_session = self._session.get_soup_session()
         soup_session.send_async(self._message,
                                 GLib.PRIORITY_DEFAULT,
@@ -367,9 +363,8 @@ class HTTPRequest(GObject.GObject):
             self._finish_read()
             return
 
-        if not MIN_SOUP_3_4:
-            self._received_size += len(bytes_)
-            self._check_content_overflow()
+        self._received_size += len(bytes_)
+        self._check_content_overflow()
 
         if self._output_stream is None:
             self._response_body_data += bytes_
@@ -387,9 +382,7 @@ class HTTPRequest(GObject.GObject):
                 return
 
         self._read_async()
-
-        if not MIN_SOUP_3_4:
-            self._emit_progress()
+        self._emit_progress()
 
     def _finish_read(self, error: Optional[HTTPRequestError] = None) -> None:
         self._log.info('Finished reading')
@@ -435,18 +428,6 @@ class HTTPRequest(GObject.GObject):
         self._log.info('Body received')
         self._body_received = True
 
-    def _on_got_body_data(self,
-                          _message: Soup.Message,
-                          chunk_size: int
-                          ) -> None:
-
-        self._received_size += chunk_size
-        self._check_content_overflow()
-
-        status = self._message.get_status()
-        if status in (Soup.Status.OK, Soup.Status.CREATED):
-            self._emit_progress()
-
     def _emit_progress(self) -> None:
         if not self._emit_response_progress:
             return
@@ -459,11 +440,7 @@ class HTTPRequest(GObject.GObject):
 
     def _check_content_overflow(self) -> None:
         if self._received_size > self._response_content_length:
-            if MIN_SOUP_3_4:
-                self._set_error(HTTPRequestError.CONTENT_OVERFLOW)
-                self.cancel()
-            else:
-                self._finish_read(HTTPRequestError.CONTENT_OVERFLOW)
+            self._finish_read(HTTPRequestError.CONTENT_OVERFLOW)
 
     def _on_restarted(self, _message: Soup.Message) -> None:
         self._log.info('Restarted')
