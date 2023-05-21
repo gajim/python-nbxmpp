@@ -459,8 +459,11 @@ class HTTPRequest(GObject.GObject):
 
     def _check_content_overflow(self) -> None:
         if self._received_size > self._response_content_length:
-            self._set_error(HTTPRequestError.CONTENT_OVERFLOW)
-            self.cancel()
+            if MIN_SOUP_3_4:
+                self._set_error(HTTPRequestError.CONTENT_OVERFLOW)
+                self.cancel()
+            else:
+                self._finish_read(HTTPRequestError.CONTENT_OVERFLOW)
 
     def _on_restarted(self, _message: Soup.Message) -> None:
         self._log.info('Restarted')
