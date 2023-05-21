@@ -50,6 +50,7 @@ HTTP_METHODS_T = Literal[
 CHUNK_SIZE = 32768
 DEFAULT_USER_AGENT = f'nbxmpp/{nbxmpp.__version__}'
 SIGNAL_ACTIONS = GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.ACTION
+MIN_SOUP_3_3_0 = Soup.check_version(3, 3, 0)
 
 
 class HTTPLogAdapter(logging.LoggerAdapter):
@@ -129,7 +130,8 @@ class HTTPRequest(GObject.GObject):
         self._emit_response_progress = False
 
         self._message = Soup.Message()
-        self._message.set_force_http1(force_http1)
+        if MIN_SOUP_3_3_0:
+            self._message.set_force_http1(force_http1)
         self._user_data = None
 
         self._log.info('Created')
