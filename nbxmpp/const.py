@@ -462,6 +462,9 @@ class HTTPRequestError(IntEnum):
     CONTENT_OVERFLOW = 4
     TIMEOUT = 5
 
+    def __str__(self) -> str:
+        return self.name
+
 
 MOODS = [
     'afraid',

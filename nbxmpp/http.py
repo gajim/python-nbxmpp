@@ -305,15 +305,14 @@ class HTTPRequest(GObject.GObject):
 
     def _on_timeout(self) -> None:
         self._timeout_reached = True
+        self._timeout_id = None
+        self._set_error(HTTPRequestError.TIMEOUT)
         self.cancel()
 
     def _on_response(self,
                      session: Soup.Session,
                      result: Gio.AsyncResult
                      ) -> None:
-
-        if self._is_finished:
-            return
 
         self._log.info('Request response received')
         try:
@@ -350,9 +349,6 @@ class HTTPRequest(GObject.GObject):
     def _on_bytes_read_result(self,
                               input_stream: Gio.InputStream,
                               result: Gio.AsyncResult) -> None:
-
-        if self._is_finished:
-            return
 
         try:
             data = input_stream.read_bytes_finish(result)
@@ -463,7 +459,8 @@ class HTTPRequest(GObject.GObject):
 
     def _check_content_overflow(self) -> None:
         if self._received_size > self._response_content_length:
-            self._finish_read(HTTPRequestError.CONTENT_OVERFLOW)
+            self._set_error(HTTPRequestError.CONTENT_OVERFLOW)
+            self.cancel()
 
     def _on_restarted(self, _message: Soup.Message) -> None:
         self._log.info('Restarted')
@@ -503,14 +500,16 @@ class HTTPRequest(GObject.GObject):
 
         self._set_complete()
 
+    def _set_error(self, error: HTTPRequestError) -> None:
+        self._log.info('Set Error: %s', error)
+        self._error = error
+
     def _set_failed(self, error: HTTPRequestError) -> None:
         self._log.info('Set Failed: %s', error)
         self._is_finished = True
-        if self._timeout_reached:
-            self._timeout_id = None
-            self._error = HTTPRequestError.TIMEOUT
-        else:
-            self._error = error
+
+        if self._error is None:
+            self._set_error(error)
 
         self._close_all_streams()
         self.emit('finished')
