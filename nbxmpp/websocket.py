@@ -52,6 +52,8 @@ class WebsocketConnection(Connection):
 
         message = Soup.Message.new('GET', self._address.uri)
         message.connect('accept-certificate', self._check_certificate)
+        message.connect('notify::tls-peer-certificate',
+                        self._on_certificate_set)
         message.set_flags(Soup.MessageFlags.NO_REDIRECT)
         self._session.websocket_connect_async(message,
                                               None,
@@ -104,6 +106,15 @@ class WebsocketConnection(Connection):
         self.notify('bad-certificate')
         self._cancellable.cancel()
         return False
+
+    def _on_certificate_set(self, message, _param):
+        if self._peer_certificate is not None:
+            return
+
+        # If the cert has errors _check_certificate() will set the cert.
+        self._peer_certificate = message.props.tls_peer_certificate
+        self._peer_certificate_errors = convert_tls_error_flags(
+            message.props.tls_peer_certificate_errors)
 
     def _on_websocket_message(self, _websocket, _type, message):
         data = message.get_data().decode()
