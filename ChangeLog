@@ -1,3 +1,23 @@
+nbxmpp 4.3.0 (21 May 2023)
+
+  New
+
+  * Add option to force http1
+  * Add method to generate XMPP IRIs
+
+  Improvements
+
+  * Lower log level for missing GSSAPI dependency
+
+  Change
+
+  * OMEMO: Add device id and namespace to OMEMOBundle
+
+  Bug Fixes
+
+  * Don’t delete session object in cleanup()
+  * HTTP: Don’t accept content encoding (#143)
+
 nbxmpp 4.2.2 (25 Mar 2023)
 
   Bug Fixes
