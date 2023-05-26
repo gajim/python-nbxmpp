@@ -82,6 +82,6 @@ publish-release:
     - >
       release-helper create-release \
         $CI_PROJECT_ID \
-        '$CI_JOB_TOKEN' \
+        $CI_RELEASE_TOKEN \
         --version=$CI_COMMIT_TAG \
         --tag=$CI_COMMIT_TAG
