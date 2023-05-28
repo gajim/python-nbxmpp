@@ -373,7 +373,8 @@ class HTTPRequest(GObject.GObject):
             return
 
         self._received_size += len(bytes_)
-        self._check_content_overflow()
+        if self._check_content_overflow():
+            return
 
         if self._output_stream is None:
             self._response_body_data += bytes_
@@ -447,9 +448,11 @@ class HTTPRequest(GObject.GObject):
         self.emit('response-progress',
                   self._received_size / self._response_content_length)
 
-    def _check_content_overflow(self) -> None:
+    def _check_content_overflow(self) -> bool:
         if self._received_size > self._response_content_length:
             self._finish_read(HTTPRequestError.CONTENT_OVERFLOW)
+            return True
+        return False
 
     def _on_restarted(self, _message: Soup.Message) -> None:
         self._log.info('Restarted')

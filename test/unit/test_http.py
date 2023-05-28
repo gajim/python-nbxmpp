@@ -236,6 +236,30 @@ class HTTP(unittest.TestCase):
         self.assertTrue(request4.is_finished())
         self.assertTrue(request4.is_complete())
 
+    def test_content_overflow(self):
+
+        mainloop = GLib.MainLoop()
+
+        session = HTTPSession()
+        request = session.create_request()
+
+
+        def _on_starting(req) -> None:
+            req._received_size = 100000000000
+
+        callback_mock = Mock()
+        request.connect('starting-response-body', _on_starting)
+        request.connect('finished', callback_mock.finished)
+        request.connect('destroy', lambda *args: mainloop.quit())
+        request.send('GET', SMALL_FILE_URL, timeout=10)
+
+        mainloop.run()
+
+        self.assertTrue(request.is_finished())
+        self.assertFalse(request.is_complete())
+        self.assertEqual(request.get_error(), HTTPRequestError.CONTENT_OVERFLOW)
+
+        callback_mock.finished.assert_called()
 
 if __name__ == '__main__':
     unittest.main()
