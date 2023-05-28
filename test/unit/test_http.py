@@ -9,6 +9,7 @@ from gi.repository import Soup
 
 from nbxmpp.const import HTTPRequestError
 from nbxmpp.http import HTTPSession
+from test.lib.util import raise_all_exceptions
 
 
 SMALL_FILE_URL = 'https://gajim.org/downloads/ci/unittest_small_file'  # 200 KB
@@ -236,13 +237,13 @@ class HTTP(unittest.TestCase):
         self.assertTrue(request4.is_finished())
         self.assertTrue(request4.is_complete())
 
+    @raise_all_exceptions
     def test_content_overflow(self):
 
         mainloop = GLib.MainLoop()
 
         session = HTTPSession()
         request = session.create_request()
-
 
         def _on_starting(req) -> None:
             req._received_size = 100000000000

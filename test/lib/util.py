@@ -1,3 +1,4 @@
+import sys
 import unittest
 from unittest.mock import Mock
 
@@ -18,3 +19,29 @@ class StanzaHandlerTest(unittest.TestCase):
 
         self.dispatcher.reset_parser()
         self.dispatcher.process_data(STREAM_START)
+
+
+def raise_all_exceptions(func):
+    # Exceptions which are raised from async callbacks
+    # in GLib or GTK do not bubble up to the unittest
+    # This decorator catches all exceptions and raises them
+    # after the unittest
+    def func_wrapper(self, *args, **kwargs):
+
+        exceptions = []
+
+        def on_hook(type_, value, tback):
+            exceptions.append((type_, value, tback))
+
+        orig_excepthook = sys.excepthook
+        sys.excepthook = on_hook
+        try:
+            result = func(self)
+        finally:
+            sys.excepthook = orig_excepthook
+            if exceptions:
+                tp, value, tb = exceptions[0]
+                raise tp(value).with_traceback(tb)
+
+        return result
+    return func_wrapper
