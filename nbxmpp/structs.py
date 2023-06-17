@@ -299,9 +299,13 @@ class ReplyData(NamedTuple):
 
 class ModerationData(NamedTuple):
     stanza_id: str
-    moderator_jid: str
-    reason: Optional[str] = None
-    timestamp: Optional[str] = None
+    moderator_jid: Optional[str]
+    by: Optional[JID]
+    reason: Optional[str]
+    timestamp: Optional[str]
+    stamp: float
+    is_tombstone: bool
+    occupant_id: Optional[str]
 
 
 class DiscoItems(NamedTuple):
