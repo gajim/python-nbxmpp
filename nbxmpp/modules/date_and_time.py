@@ -124,7 +124,7 @@ def create_tzinfo(hours=0, minutes=0, tz_string=None):
     return timezone(timedelta(hours=hours, minutes=minutes))
 
 
-def parse_datetime(timestring, check_utc=False,
+def parse_datetime(timestring: str | None, check_utc=False,
                    convert='utc', epoch=False):
     '''
     Parse a XEP-0082 DateTime Profile String
