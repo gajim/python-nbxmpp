@@ -42,17 +42,9 @@ class BaseMessage(BaseModule):
     def _process_message_base(self, _client, stanza, properties):
         properties.type = self._parse_type(stanza)
 
-        # Determine remote JID
-        if properties.is_carbon_message and properties.carbon.is_sent:
+        own_jid = self._client.get_bound_jid()
+        if own_jid.bare_match(stanza.getFrom()):
             properties.jid = stanza.getTo()
-
-        elif properties.is_mam_message and not properties.type.is_groupchat:
-            own_jid = self._client.get_bound_jid()
-            if own_jid.bare_match(stanza.getFrom()):
-                properties.jid = stanza.getTo()
-            else:
-                properties.jid = stanza.getFrom()
-
         else:
             properties.jid = stanza.getFrom()
 
@@ -65,6 +57,27 @@ class BaseMessage(BaseModule):
 
         if properties.type.is_error:
             properties.error = error_factory(stanza)
+
+    def _determine_remote_jid(self, stanza, properties) -> None:
+        if properties.type.is_groupchat:
+            return
+        muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
+        if muc_user is not None:
+            return
+
+        occupant_id = stanza.getTagAttr('occupant-id',
+                                        'id',
+                                        namespace=Namespace.OCCUPANT_ID)
+
+        properties.occupant_id = occupant_id
+
+        # MUC Private message
+        if (properties.type.is_chat or
+                properties.type.is_error and
+                not muc_user.getChildren()):
+            properties.muc_private_message = True
+            return
+
 
     def _process_message_after_base(self, _client, stanza, properties):
         # This handler runs after decryption handlers had the chance
