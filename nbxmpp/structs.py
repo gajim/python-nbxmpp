@@ -921,7 +921,7 @@ class MAMData(NamedTuple):
     query_id: str
     archive: JID
     namespace: str
-    timestamp: datetime
+    timestamp: float
 
     @property
     def is_ver_1(self) -> bool:

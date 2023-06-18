@@ -103,7 +103,7 @@ def unwrap_mam(stanza, own_jid):
 
     # Timestamp parsing
     # Most servers dont set the 'from' attr, so we cant check for it
-    delay_timestamp = parse_delay(forwarded)
+    delay_timestamp = parse_delay(forwarded, epoch=True)
     if delay_timestamp is None:
         log.warning('No timestamp on MAM message')
         log.warning(stanza)
