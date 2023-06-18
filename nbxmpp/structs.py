@@ -971,6 +971,7 @@ class MessageProperties:
     from_: Optional[JID] = None
     to: Optional[JID] = None
     jid: Optional[JID] = None
+    remote_jid: Optional[JID] = None
     subject = None
     body: Optional[str] = None
     thread: Optional[str] = None

@@ -245,13 +245,6 @@ class MUC(BaseModule):
 
         properties.occupant_id = occupant_id
 
-        # MUC Private message
-        if (properties.type.is_chat or
-                properties.type.is_error and
-                not muc_user.getChildren()):
-            properties.muc_private_message = True
-            return
-
         if properties.is_muc_invite_or_decline:
             return
 
