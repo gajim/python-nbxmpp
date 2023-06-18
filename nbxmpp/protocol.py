@@ -30,6 +30,7 @@ import os
 import time
 import hashlib
 import functools
+import sqlite3
 import warnings
 from base64 import b64encode
 from dataclasses import dataclass
@@ -703,6 +704,11 @@ class JID:
         if self.resource is not None:
             return f'{jid}/{self.resource}'
         return jid
+
+    def __conform__(self, protocol: sqlite3.PrepareProtocol):
+        if protocol is sqlite3.PrepareProtocol:
+            return str(self)
+        raise ValueError
 
     def __hash__(self):
         return hash(str(self))
