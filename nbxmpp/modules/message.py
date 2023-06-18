@@ -56,6 +56,7 @@ class BaseMessage(BaseModule):
         properties.id = stanza.getID()
         properties.self_message = self._parse_self_message(stanza, properties)
 
+        properties.origin_id = stanza.getOriginID()
         properties.stanza_ids = self._parse_stanza_ids(stanza)
 
         if properties.type.is_error:

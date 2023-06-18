@@ -968,6 +968,7 @@ class MessageProperties:
     type: MessageType = MessageType.NORMAL
     id: Optional[str] = None
     stanza_ids: list[StanzaIDData] = field(default_factory=list)
+    origin_id: Optional[str] = None
     from_: Optional[JID] = None
     to: Optional[JID] = None
     jid: Optional[JID] = None
