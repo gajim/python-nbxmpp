@@ -18,6 +18,7 @@
 from typing import Dict
 
 from dataclasses import dataclass
+import hashlib
 
 from nbxmpp.protocol import Iq
 from nbxmpp.simplexml import Node
@@ -150,6 +151,10 @@ class SecurityLabel:
 
         return cls(displaymarking=displaymarking, label=label)
 
+    def get_label_hash(self) -> str:
+        sha = hashlib.sha512()
+        sha.update(str(self.label).encode())
+        return sha.hexdigest()
 
 @dataclass
 class Catalog:
