@@ -773,9 +773,17 @@ class CommonError:
         self.condition_data = self._error_node.getTagData(self.condition)
         self.app_condition = stanza.getAppError()
         self.type = stanza.getErrorType()
+        self.by = None
         self.jid = stanza.getFrom()
         self.id = stanza.getID()
         self._text = {}
+
+        by = self._error_node.getAttr('by')
+        if by is not None:
+            try:
+                self.by = JID.from_string(by)
+            except Exception:
+                pass
 
         text_elements = self._error_node.getTags('text', namespace=Namespace.STANZAS)
         for element in text_elements:
