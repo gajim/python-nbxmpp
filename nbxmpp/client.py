@@ -203,7 +203,7 @@ class Client(Observable):
 
     @property
     def ignored_tls_errors(self):
-        return self._ignored_tls_errors
+        return set(self._ignored_tls_errors)
 
     def set_ignored_tls_errors(self, errors):
         if errors is None:
