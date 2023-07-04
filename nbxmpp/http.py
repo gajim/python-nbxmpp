@@ -112,6 +112,7 @@ class HTTPRequest(GObject.GObject):
         self._is_complete = False
         self._timeout_reached = False
         self._timeout_id = None
+        self._accept_certificate_func = None
 
         self._response_body_file: Optional[Gio.File] = None
         self._response_body_data = b''
@@ -182,6 +183,9 @@ class HTTPRequest(GObject.GObject):
 
         self._log.info('Cancel requested')
         self._cancellable.cancel()
+
+    def set_accept_certificate_func(self, func: Any) -> None:
+        self._accept_certificate_func = func
 
     def set_request_body_from_path(self, content_type: str, path: Path) -> None:
         if not path.exists():
@@ -285,6 +289,8 @@ class HTTPRequest(GObject.GObject):
         self._message.connect('restarted', self._on_restarted)
         self._message.connect('finished', self._on_finished)
         self._message.connect('got-headers', self._on_got_headers)
+        if self._accept_certificate_func is not None:
+            self._message.connect('accept-certificate', self._accept_certificate_func)
 
         soup_session = self._session.get_soup_session()
         soup_session.send_async(self._message,
