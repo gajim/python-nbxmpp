@@ -1,3 +1,22 @@
+nbxmpp 4.3.2 (04 Jul 2023)
+
+  New
+
+  * SecurityLabels: Add get_label_hash()
+  * JID: Add sqlite3 adapter magic method
+  * MessageProperties: Add origin_id attribute
+  * MessageProperties: Add remote_jid attribute
+
+  Improvements
+
+  * Client: Return only copy of ignored errors
+  * CommonError: Add 'by' attribute
+  * Moderation: Parse more data
+
+  Bug Fixes
+
+  * HTTP: Add set_accept_certificate()
+
 nbxmpp 4.3.1 (28 May 2023)
 
   Bug Fixes
