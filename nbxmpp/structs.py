@@ -566,7 +566,9 @@ class DiscoInfo(NamedTuple):
     def muc_subjectmod(self) -> Optional[Any]:
         # muc#roominfo_changesubject stems from a wrong example in the MUC XEP
         # Ejabberd and Prosody use this value
+        # muc#roomconfig_changesubject is also used by Prosody
         return (self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_subjectmod') or
+                self.get_field_value(Namespace.MUC_INFO, 'muc#roomconfig_changesubject') or
                 self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_changesubject'))
 
     @property
