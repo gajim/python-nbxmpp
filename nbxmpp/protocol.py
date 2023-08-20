@@ -713,18 +713,21 @@ class JID:
     def __hash__(self):
         return hash(str(self))
 
-    def __eq__(self, other: Union[str, JID]) -> bool:
+    def __eq__(self, other: object) -> bool:
         if isinstance(other, str):
             try:
                 return JID.from_string(other) == self
             except Exception:
                 return False
 
-        return (self.localpart == other.localpart and
-                self.domain == other.domain and
-                self.resource == other.resource)
+        if isinstance(other, JID):
+            return (self.localpart == other.localpart and
+                    self.domain == other.domain and
+                    self.resource == other.resource)
 
-    def __ne__(self, other: Union[str, JID]) -> bool:
+        return False
+
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def domain_to_ascii(self) -> str:
