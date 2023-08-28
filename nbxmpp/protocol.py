@@ -654,8 +654,6 @@ class JID:
             localpart, domainpart = None, rest
 
         if force_bare:
-            if localpart is None:
-                raise LocalpartByteLimit
             resourcepart = None
 
         return cls(localpart=localpart,
