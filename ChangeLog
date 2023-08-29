@@ -1,3 +1,14 @@
+nbxmpp 4.3.3 (28 Aug 2023)
+
+  Improvements
+
+  * JID: Allow comparisons against any object
+  * DiscoInfo: Improve discovery if subject is allowed to be modified
+
+  Bug Fixes
+
+  * Don’t expect localpart for bare JIDs
+
 nbxmpp 4.3.2 (04 Jul 2023)
 
   New
