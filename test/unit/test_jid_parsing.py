@@ -194,6 +194,7 @@ class JIDParsing(unittest.TestCase):
         tests = [
             ('nasty!#$%()*+,-.;=?[\\]^_`{|}~node@example.com', 'xmpp:nasty!%23$%25()*+,-.;=%3F%5B%5C%5D%5E_%60%7B%7C%7D~node@example.com'),
             ('node@example.com/repulsive !#"$%&\'()*+,-./:;<=>?@[\\]^_`{|}~resource', 'xmpp:node@example.com/repulsive%20!%23%22$%25&\'()*+,-.%2F:;%3C=%3E%3F%40%5B%5C%5D%5E_%60%7B%7C%7D~resource'),
+            ('jiři@čechy.example/v Praze', 'xmpp:jiři@čechy.example/v%20Praze')
         ]
 
         for jid, iri in tests:
