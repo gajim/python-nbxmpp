@@ -115,3 +115,20 @@ def escape_inode(node: str) -> str:
 
 def escape_ires(res: str) -> str:
     return _escape(res, rx_ires)
+
+
+def clean_iri(iri_str: str) -> str:
+    if not iri_str.startswith('xmpp:'):
+        raise ValueError('IRI must start with xmpp scheme')
+
+    iri_str = iri_str.removeprefix('xmpp:')
+
+    if iri_str.startswith('//'):
+        # Remove auth component
+        iri_str = iri_str.removeprefix('//')
+        iri_str = iri_str.split('/', maxsplit=1)[1]
+
+    # Remove query and fragment
+    iri_str = iri_str.split('?', maxsplit=1)[0]
+    iri_str = iri_str.split('#', maxsplit=1)[0]
+    return iri_str

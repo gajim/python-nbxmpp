@@ -39,6 +39,7 @@ from dataclasses import asdict
 from gi.repository import GLib
 
 import idna
+from nbxmpp.xmppiri import clean_iri
 from nbxmpp.xmppiri import escape_ifragment
 from nbxmpp.xmppiri import escape_inode
 from nbxmpp.xmppiri import escape_ires
@@ -491,6 +492,31 @@ def deprecation_warning(message):
     warnings.warn(message, DeprecationWarning)
 
 
+def split_jid_string(
+    jid_string: str
+) -> tuple[str | None, str, str | None]:
+
+    # https://tools.ietf.org/html/rfc7622#section-3.2
+
+    # Remove any portion from the first '/' character to the end of the
+    # string (if there is a '/' character present).
+
+    # Remove any portion from the beginning of the string to the first
+    # '@' character (if there is an '@' character present).
+
+    if jid_string.find('/') != -1:
+        rest, resourcepart = jid_string.split('/', 1)
+    else:
+        rest, resourcepart = jid_string, None
+
+    if rest.find('@') != -1:
+        localpart, domainpart = rest.split('@', 1)
+    else:
+        localpart, domainpart = None, rest
+
+    return localpart, domainpart, resourcepart
+
+
 @functools.lru_cache(maxsize=None)
 def validate_localpart(localpart: str) -> str:
     if not localpart or len(localpart.encode()) > 1023:
@@ -635,23 +661,7 @@ class JID:
     @classmethod
     @functools.lru_cache(maxsize=None)
     def from_string(cls, jid_string: str, force_bare: bool = False) -> JID:
-        # https://tools.ietf.org/html/rfc7622#section-3.2
-
-        # Remove any portion from the first '/' character to the end of the
-        # string (if there is a '/' character present).
-
-        # Remove any portion from the beginning of the string to the first
-        # '@' character (if there is an '@' character present).
-
-        if jid_string.find('/') != -1:
-            rest, resourcepart = jid_string.split('/', 1)
-        else:
-            rest, resourcepart = jid_string, None
-
-        if rest.find('@') != -1:
-            localpart, domainpart = rest.split('@', 1)
-        else:
-            localpart, domainpart = None, rest
+        localpart, domainpart, resourcepart = split_jid_string(jid_string)
 
         if force_bare:
             resourcepart = None
@@ -692,6 +702,25 @@ class JID:
         return cls(localpart=localpart,
                    domain=domainpart,
                    resource=None)
+
+    @classmethod
+    @functools.lru_cache(maxsize=None)
+    def from_iri(cls, iri_str: str, *, force_bare: bool = False) -> JID:
+        iri_str = clean_iri(iri_str)
+        localpart, domainpart, resourcepart = split_jid_string(iri_str)
+
+        if localpart is not None:
+            localpart = GLib.Uri.unescape_string(localpart)
+
+        if force_bare:
+            resourcepart = None
+
+        if resourcepart is not None:
+            resourcepart = GLib.Uri.unescape_string(resourcepart)
+
+        return cls(localpart=localpart,
+                   domain=domainpart,
+                   resource=resourcepart)
 
     def __str__(self) -> str:
         if self.localpart:

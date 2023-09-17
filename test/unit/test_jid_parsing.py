@@ -213,3 +213,14 @@ class JIDParsing(unittest.TestCase):
 
         jid = JID.from_user_input('call me "ishmael"@example.com')
         self.assertEqual(jid.to_iri(), 'xmpp:call%5C20me%5C20%5C22ishmael%5C22@example.com')
+
+    def test_iri_to_jid(self):
+        tests = [
+            ('nasty!#$%()*+,-.;=?[\\]^_`{|}~node@example.com', 'xmpp:nasty!%23$%25()*+,-.;=%3F%5B%5C%5D%5E_%60%7B%7C%7D~node@example.com'),
+            ('node@example.com/repulsive !#"$%&\'()*+,-./:;<=>?@[\\]^_`{|}~resource', 'xmpp:node@example.com/repulsive%20!%23%22$%25&\'()*+,-.%2F:;%3C=%3E%3F%40%5B%5C%5D%5E_%60%7B%7C%7D~resource'),
+            ('jiři@čechy.example/v Praze', 'xmpp:jiři@čechy.example/v%20Praze')
+        ]
+
+        for jid_string, iri_string in tests:
+            parsed_jid = JID.from_iri(iri_string)
+            self.assertEqual(str(parsed_jid), jid_string)
