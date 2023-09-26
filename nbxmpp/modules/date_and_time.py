@@ -147,7 +147,7 @@ def parse_datetime(
 
     match = PATTERN_DATETIME.match(timestring)
     if match is None:
-        return
+        return None
 
     timestring = ''.join(match.groups(''))
     strformat = '%Y-%m-%d%H:%M:%S%z'
