@@ -25,24 +25,15 @@ from datetime import tzinfo
 
 log = logging.getLogger('nbxmpp.m.date_and_time')
 
-PATTERN_DATETIME = re.compile(
-    r'([0-9]{4}-[0-9]{2}-[0-9]{2})'
-    r'T'
-    r'([0-9]{2}:[0-9]{2}:[0-9]{2})'
-    r'(\.[0-9]{0,6})?'
-    r'(?:[0-9]+)?'
-    r'(?:(Z)|(?:([-+][0-9]{2}):([0-9]{2})))$'
-)
-
-PATTERN_DELAY = re.compile(
-    r'([0-9]{4}-[0-9]{2}-[0-9]{2})'
-    r'T'
-    r'([0-9]{2}:[0-9]{2}:[0-9]{2})'
-    r'(\.[0-9]{0,6})?'
-    r'(?:[0-9]+)?'
-    r'(?:(Z)|(?:([-+][0]{2}):([0]{2})))$'
-)
-
+PATTERN_DATETIME = re.compile(r'''
+    ([0-9]{4}-[0-9]{2}-[0-9]{2})    # Date
+    T                               # Separator
+    ([0-9]{2}:[0-9]{2}:[0-9]{2})    # Time
+    (?P<frac>\.[0-9]{0,6})?         # Fractual Seconds
+    [0-9]*                          # lose everything > 6
+    (Z|[-+][0-9]{2}:[0-9]{2})       # UTC Offset
+    $                               # End of String
+''', re.VERBOSE)
 
 ZERO = timedelta(0)
 HOUR = timedelta(hours=1)
@@ -124,8 +115,12 @@ def create_tzinfo(hours=0, minutes=0, tz_string=None):
     return timezone(timedelta(hours=hours, minutes=minutes))
 
 
-def parse_datetime(timestring: str | None, check_utc=False,
-                   convert='utc', epoch=False):
+def parse_datetime(
+    timestring: str | None,
+    check_utc: bool = False,
+    convert: str | None = 'utc',
+    epoch: bool = False
+) -> datetime | float | None:
     '''
     Parse a XEP-0082 DateTime Profile String
 
@@ -149,52 +144,51 @@ def parse_datetime(timestring: str | None, check_utc=False,
         return None
     if convert not in (None, 'utc', 'local'):
         raise TypeError('"%s" is not a valid value for convert')
+
+    match = PATTERN_DATETIME.match(timestring)
+    if match is None:
+        return
+
+    timestring = ''.join(match.groups(''))
+    strformat = '%Y-%m-%d%H:%M:%S%z'
+    if match.group('frac'):
+        # Fractional second addendum to Time
+        strformat = '%Y-%m-%d%H:%M:%S.%f%z'
+
+    try:
+        date_time = datetime.strptime(timestring, strformat)
+    except ValueError:
+        return None
+
     if check_utc:
-        match = PATTERN_DELAY.match(timestring)
-    else:
-        match = PATTERN_DATETIME.match(timestring)
+        if convert != 'utc':
+            raise ValueError(
+                'check_utc can only be used with convert="utc"')
 
-    if match:
-        timestring = ''.join(match.groups(''))
-        strformat = '%Y-%m-%d%H:%M:%S%z'
-        if match.group(3):
-            # Fractional second addendum to Time
-            strformat = '%Y-%m-%d%H:%M:%S.%f%z'
-        if match.group(4):
-            # UTC string denoted by addition of the character 'Z'
-            timestring = timestring[:-1] + '+0000'
-        try:
-            date_time = datetime.strptime(timestring, strformat)
-        except ValueError:
-            pass
-        else:
-            if check_utc:
-                if convert != 'utc':
-                    raise ValueError(
-                        'check_utc can only be used with convert="utc"')
-                date_time.replace(tzinfo=timezone.utc)
-                if epoch:
-                    return date_time.timestamp()
-                return date_time
+        if date_time.tzinfo != timezone.utc:
+            return None
 
-            if convert == 'utc':
-                date_time = date_time.astimezone(timezone.utc)
-                if epoch:
-                    return date_time.timestamp()
-                return date_time
+        if epoch:
+            return date_time.timestamp()
+        return date_time
 
-            if epoch:
-                # epoch is always UTC, use convert='utc' or check_utc=True
-                raise ValueError(
-                    'epoch not available while converting to local')
+    if convert == 'utc':
+        date_time = date_time.astimezone(timezone.utc)
+        if epoch:
+            return date_time.timestamp()
+        return date_time
 
-            if convert == 'local':
-                date_time = date_time.astimezone(LocalTimezone())
-                return date_time
+    if epoch:
+        # epoch is always UTC, use convert='utc' or check_utc=True
+        raise ValueError(
+            'epoch not available while converting to local')
 
-            # convert=None
-            return date_time
-    return None
+    if convert == 'local':
+        date_time = date_time.astimezone(LocalTimezone())
+        return date_time
+
+    # convert=None
+    return date_time
 
 
 def get_local_time():

@@ -33,8 +33,10 @@ class TestDateTime(unittest.TestCase):
 
         strings2 = {
             # Valid strings with offset
-            '2017-11-05T01:41:20-05:00': datetime(2017, 11, 5, 1, 41, 20, 0, create_tzinfo(hours=-5)),
-            '2017-11-05T01:41:20+05:00': datetime(2017, 11, 5, 1, 41, 20, 0, create_tzinfo(hours=5)),
+            '2017-11-05T07:41:20-05:00': datetime(2017, 11, 5, 12, 41, 20, 0, timezone.utc),
+            '2017-11-05T07:41:20+05:00': datetime(2017, 11, 5, 2, 41, 20, 0, timezone.utc),
+            '2017-11-05T01:41:20+00:00': datetime(2017, 11, 5, 1, 41, 20, 0, timezone.utc),
+            '2017-11-05T01:41:20Z': datetime(2017, 11, 5, 1, 41, 20, 0, timezone.utc),
         }
 
         for time_string, expected_value in strings.items():
@@ -43,7 +45,7 @@ class TestDateTime(unittest.TestCase):
 
         for time_string, expected_value in strings2.items():
             result = parse_datetime(time_string, convert='utc')
-            self.assertEqual(result, expected_value.astimezone(timezone.utc))
+            self.assertEqual(result, expected_value)
 
     def test_convert_to_local(self):
 
@@ -79,6 +81,7 @@ class TestDateTime(unittest.TestCase):
 
         for time_string, expected_value in strings.items():
             result = parse_datetime(time_string, convert=None)
+            assert result is not None
             self.assertEqual(result.utcoffset(), expected_value)
 
     def test_check_utc(self):
