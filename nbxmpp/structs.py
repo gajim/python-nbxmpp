@@ -650,6 +650,13 @@ class DiscoInfo(NamedTuple):
                 return True
         return False
 
+    def has_identity(self, category: str, type_: str) -> bool:
+        for identity in self.identities:
+            if (identity.category == category and
+                identity.type == type_):
+                    return True
+        return False
+
     @property
     def httpupload_max_file_size(self) -> Optional[float]:
         size = self.get_field_value(Namespace.HTTPUPLOAD_0, 'max-file-size')
