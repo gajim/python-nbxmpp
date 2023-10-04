@@ -653,8 +653,8 @@ class DiscoInfo(NamedTuple):
     def has_identity(self, category: str, type_: str) -> bool:
         for identity in self.identities:
             if (identity.category == category and
-                identity.type == type_):
-                    return True
+                    identity.type == type_):
+                return True
         return False
 
     @property
