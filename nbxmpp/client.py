@@ -20,6 +20,7 @@ from typing import Any
 from typing import Optional
 
 from gi.repository import GLib
+from gi.repository import Gio
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.http import HTTPSession
@@ -221,6 +222,12 @@ class Client(Observable):
     @property
     def ciphersuite(self):
         return self._con.ciphersuite
+
+    def get_channel_binding_data(
+        self,
+        type_: Gio.TlsChannelBindingType
+    ) -> Optional[bytes]:
+        return self._con.get_channel_binding_data(type_)
 
     def set_ignore_tls_errors(self, ignore):
         self._ignore_tls_errors = ignore

@@ -74,6 +74,12 @@ class Connection(Observable):
     def ciphersuite(self) -> Optional[int]:
         return None
 
+    def get_channel_binding_data(
+        self,
+        type_: Gio.TlsChannelBindingType  # pylint: disable=unused-argument
+    ) -> Optional[bytes]:
+        return None
+
     @property
     def local_address(self):
         return self._local_address

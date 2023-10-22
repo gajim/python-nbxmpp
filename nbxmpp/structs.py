@@ -1346,3 +1346,9 @@ class XHTMLData:
         if body is not None:
             return str(body)
         return str(self._bodys.popitem()[1])
+
+
+@dataclass
+class ChannelBindingData:
+    type: str
+    data: bytes

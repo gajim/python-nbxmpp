@@ -86,6 +86,25 @@ class TCPConnection(Connection):
         tls_con = self._con.get_base_io_stream()
         return tls_con.get_ciphersuite_name()
 
+    def get_channel_binding_data(
+        self,
+        type_: Gio.TlsChannelBindingType
+    ) -> Optional[bytes]:
+        if self._con is None:
+            return None
+
+        tls_con = self._con.get_base_io_stream()
+
+        try:
+            success, data = tls_con.get_channel_binding_data(type_)
+        except Exception as error:
+            self._log.warning('Unable to get channel binding data: %s', error)
+            return None
+
+        if not success:
+            return None
+        return data
+
     def connect(self):
         self.state = TCPState.CONNECTING
 

@@ -37,6 +37,7 @@ from dataclasses import dataclass
 from dataclasses import asdict
 
 from gi.repository import GLib
+from gi.repository import Gio
 
 import idna
 from nbxmpp.xmppiri import clean_iri
@@ -60,10 +61,10 @@ def ascii_upper(s):
 
 SASL_AUTH_MECHS = [
     'SCRAM-SHA-512-PLUS',
-    'SCRAM-SHA-512',
     'SCRAM-SHA-256-PLUS',
-    'SCRAM-SHA-256',
     'SCRAM-SHA-1-PLUS',
+    'SCRAM-SHA-512',
+    'SCRAM-SHA-256',
     'SCRAM-SHA-1',
     'GSSAPI',
     'PLAIN',
@@ -1866,14 +1867,15 @@ class Features(Node):
         return self.getTag('mechanisms', namespace=Namespace.SASL) is not None
 
     def has_sasl_2(self):
-        return self.getTag('mechanisms', namespace=Namespace.SASL2) is not None
+        return self.getTag('authentication', namespace=Namespace.SASL2) is not None
 
     def get_mechs(self) -> set[str]:
-        mechanisms = self.getTag('mechanisms', namespace=Namespace.SASL2)
+        mechanisms = self.getTag('authentication', namespace=Namespace.SASL2)
         if mechanisms is None:
             mechanisms = self.getTag('mechanisms', namespace=Namespace.SASL)
-            if mechanisms is None:
-                return set()
+
+        if mechanisms is None:
+            return set()
         mechanisms = mechanisms.getTags('mechanism')
         return set(mech.getData() for mech in mechanisms)
 
@@ -1906,6 +1908,23 @@ class Features(Node):
 
     def has_anonymous(self):
         return 'ANONYMOUS' in self.get_mechs()
+
+    def get_channel_binding_type(self) -> Optional[Gio.TlsChannelBindingType]:
+        sasl_cb = self.getTag('sasl-channel-binding',
+                              namespace=Namespace.CHANNEL_BINDING)
+        if sasl_cb is None:
+            return None
+
+        exporter = sasl_cb.getTag(
+            'channel-binding', attrs={'type': 'tls-exporter'})
+        if exporter is not None:
+            return Gio.TlsChannelBindingType.EXPORTER
+
+        server_end_point = sasl_cb.getTag(
+            'channel-binding', attrs={'type': 'tls-server-end-point'})
+        if server_end_point is not None:
+            return Gio.TlsChannelBindingType.SERVER_END_POINT
+        return None
 
 
 class ErrorNode(Node):
