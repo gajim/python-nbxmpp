@@ -47,9 +47,6 @@ class Chatstates(BaseModule):
         if properties.is_mam_message:
             return
 
-        if stanza.getTag('delay', namespace=Namespace.DELAY2) is not None:
-            return
-
         properties.chatstate = chatstate
 
 
