@@ -1,3 +1,18 @@
+nbxmpp 4.4.0 (22 Oct 2023)
+
+  New
+
+  * Add DiscoInfo.has_identity()
+  * JID: Add JID.from_iri()
+
+  Improvements
+
+  * JID: Improve compliance when generating IRIs
+
+  Change
+
+  * Chatstates: Accept chatstates with delay tag
+
 nbxmpp 4.3.3 (28 Aug 2023)
 
   Improvements
