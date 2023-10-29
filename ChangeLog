@@ -1,3 +1,13 @@
+nbxmpp 4.5.0 (24 Oct 2023)
+
+  New
+
+  * Support XEP-0440 SASL Channel-Binding Type Capability
+
+  Change
+
+  * Raise GLib version
+
 nbxmpp 4.4.0 (22 Oct 2023)
 
   New
