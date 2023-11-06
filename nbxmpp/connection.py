@@ -59,6 +59,7 @@ class Connection(Observable):
         self._state = None
 
         self._state = TCPState.DISCONNECTED
+        self._tls_con: Optional[Gio.TlsConnection] = None
 
         self._peer_certificate = None
         self._peer_certificate_errors = None
@@ -71,14 +72,24 @@ class Connection(Observable):
         return None
 
     @property
-    def ciphersuite(self) -> Optional[int]:
+    def ciphersuite(self) -> Optional[str]:
         return None
 
     def get_channel_binding_data(
         self,
         type_: Gio.TlsChannelBindingType  # pylint: disable=unused-argument
     ) -> Optional[bytes]:
-        return None
+        assert self._tls_con is not None
+
+        try:
+            success, data = self._tls_con.get_channel_binding_data(type_)
+        except Exception as error:
+            self._log.warning('Unable to get channel binding data: %s', error)
+            return None
+
+        if not success:
+            return None
+        return data
 
     @property
     def local_address(self):
@@ -160,3 +171,4 @@ class Connection(Observable):
         self._peer_certificate = None
         self._client_cert = None
         self._address = None
+        self._tls_con = None

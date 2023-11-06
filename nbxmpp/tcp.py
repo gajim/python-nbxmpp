@@ -66,44 +66,23 @@ class TCPConnection(Connection):
 
     @property
     def tls_version(self) -> Optional[int]:
-        if self._con is None:
+        if self._tls_con is None:
             return None
 
         if not min_version('GLib', '2.69.0'):
             return None
 
-        tls_con = self._con.get_base_io_stream()
-        return tls_con.get_protocol_version()
+        return self._tls_con.get_protocol_version()
 
     @property
     def ciphersuite(self) -> Optional[str]:
-        if self._con is None:
+        if self._tls_con is None:
             return None
 
         if not min_version('GLib', '2.69.0'):
             return None
 
-        tls_con = self._con.get_base_io_stream()
-        return tls_con.get_ciphersuite_name()
-
-    def get_channel_binding_data(
-        self,
-        type_: Gio.TlsChannelBindingType
-    ) -> Optional[bytes]:
-        if self._con is None:
-            return None
-
-        tls_con = self._con.get_base_io_stream()
-
-        try:
-            success, data = tls_con.get_channel_binding_data(type_)
-        except Exception as error:
-            self._log.warning('Unable to get channel binding data: %s', error)
-            return None
-
-        if not success:
-            return None
-        return data
+        return self._tls_con.get_ciphersuite_name()
 
     def connect(self):
         self.state = TCPState.CONNECTING
@@ -216,16 +195,16 @@ class TCPConnection(Connection):
         identity = Gio.NetworkAddress.new(self._address.domain,
                                           remote_address.props.port)
 
-        tls_client = Gio.TlsClientConnection.new(self._con, identity)
+        self._tls_con = Gio.TlsClientConnection.new(self._con, identity)
 
         if self._address.type == ConnectionType.DIRECT_TLS:
-            tls_client.set_advertised_protocols(['xmpp-client'])
-        tls_client.connect('accept-certificate', self._check_certificate)
-        tls_client.connect('notify::peer-certificate', self._on_certificate_set)
+            self._tls_con.set_advertised_protocols(['xmpp-client'])
+        self._tls_con.connect('accept-certificate', self._check_certificate)
+        self._tls_con.connect('notify::peer-certificate', self._on_certificate_set)
 
         # This Wraps the Gio.TlsClientConnection and the Gio.Socket together
         # so we get back a Gio.SocketConnection
-        self._con = Gio.TcpWrapperConnection.new(tls_client,
+        self._con = Gio.TcpWrapperConnection.new(self._tls_con,
                                                  self._con.get_socket())
 
     def _read_async(self):

@@ -51,9 +51,11 @@ class WebsocketConnection(Connection):
         self.state = TCPState.CONNECTING
 
         message = Soup.Message.new('GET', self._address.uri)
+        assert message is not None
         message.connect('accept-certificate', self._check_certificate)
         message.connect('notify::tls-peer-certificate',
                         self._on_certificate_set)
+        message.connect('network-event', self._on_network_event)
         message.set_flags(Soup.MessageFlags.NO_REDIRECT)
         self._session.websocket_connect_async(message,
                                               None,
@@ -106,6 +108,16 @@ class WebsocketConnection(Connection):
         self.notify('bad-certificate')
         self._cancellable.cancel()
         return False
+
+    def _on_network_event(
+        self,
+        message: Soup.Message,
+        event: Gio.SocketClientEvent,
+        connection: Gio.TlsConnection
+    ) -> None:
+
+        if event == Gio.SocketClientEvent.TLS_HANDSHAKED:
+            self._tls_con = connection
 
     def _on_certificate_set(self, message, _param):
         if self._peer_certificate is not None:
