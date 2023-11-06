@@ -17,6 +17,7 @@
 
 from collections import namedtuple
 
+from nbxmpp.const import MessageType
 from nbxmpp.task import iq_request_task
 from nbxmpp.errors import is_error
 from nbxmpp.errors import PubSubStanzaError
@@ -47,6 +48,9 @@ class PubSub(BaseModule):
         ]
 
     def _process_pubsub_base(self, _client, stanza, properties):
+        if properties.type not in (MessageType.HEADLINE, MessageType.NORMAL):
+            return
+
         properties.pubsub = True
         event = stanza.getTag('event', namespace=Namespace.PUBSUB_EVENT)
 
