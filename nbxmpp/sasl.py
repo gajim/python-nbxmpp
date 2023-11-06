@@ -58,6 +58,7 @@ class SASL:
         self._password = None
 
         self._mechanism_classes = {
+            'ANONYMOUS': ANONYMOUS,
             'PLAIN': PLAIN,
             'EXTERNAL': EXTERNAL,
             'GSSAPI': GSSAPI,
