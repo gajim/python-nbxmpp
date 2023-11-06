@@ -1,3 +1,9 @@
+nbxmpp 4.5.1 (06 Nov 2023)
+
+  Bug Fixes
+
+  * SASL: Add back lost ANONYMOUS auth mechanism
+
 nbxmpp 4.5.0 (24 Oct 2023)
 
   New
