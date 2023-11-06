@@ -22,6 +22,7 @@ import logging
 from gi.repository import Gio
 
 from nbxmpp.const import TCPState
+from nbxmpp.util import min_version
 from nbxmpp.util import Observable
 from nbxmpp.util import LogAdapter
 
@@ -69,11 +70,23 @@ class Connection(Observable):
 
     @property
     def tls_version(self) -> Optional[int]:
-        return None
+        if self._tls_con is None:
+            return None
+
+        if not min_version('GLib', '2.69.0'):
+            return None
+
+        return self._tls_con.get_protocol_version()
 
     @property
     def ciphersuite(self) -> Optional[str]:
-        return None
+        if self._tls_con is None:
+            return None
+
+        if not min_version('GLib', '2.69.0'):
+            return None
+
+        return self._tls_con.get_ciphersuite_name()
 
     def get_channel_binding_data(
         self,
