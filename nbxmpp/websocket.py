@@ -111,7 +111,7 @@ class WebsocketConnection(Connection):
 
     def _on_network_event(
         self,
-        message: Soup.Message,
+        _message: Soup.Message,
         event: Gio.SocketClientEvent,
         connection: Gio.TlsConnection
     ) -> None:
