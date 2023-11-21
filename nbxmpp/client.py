@@ -669,14 +669,14 @@ class Client(Observable):
                 # other connection methods if an error happensafterwards
                 self._connect_successful = True
 
+            self.state = StreamState.WAIT_FOR_FEATURES
+
+        elif self.state == StreamState.WAIT_FOR_FEATURES:
             if self._stream_authenticated and self._mode.is_login_test:
                 self.notify('login-successful')
                 self.disconnect()
                 return
 
-            self.state = StreamState.WAIT_FOR_FEATURES
-
-        elif self.state == StreamState.WAIT_FOR_FEATURES:
             if stanza.getName() != 'features':
                 self._log.error('Invalid response: %s', stanza)
                 self._disconnect_with_error(
