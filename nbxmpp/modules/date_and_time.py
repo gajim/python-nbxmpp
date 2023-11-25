@@ -160,6 +160,11 @@ def parse_datetime(
     except ValueError:
         return None
 
+    if not 1 < date_time.year < 9999:
+        # Raise/Reduce MIN/MAX year so converting to different
+        # timezones cannot get out of range
+        return None
+
     if check_utc:
         if convert != 'utc':
             raise ValueError(

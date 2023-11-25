@@ -37,6 +37,10 @@ class TestDateTime(unittest.TestCase):
             '2017-11-05T07:41:20+05:00': datetime(2017, 11, 5, 2, 41, 20, 0, timezone.utc),
             '2017-11-05T01:41:20+00:00': datetime(2017, 11, 5, 1, 41, 20, 0, timezone.utc),
             '2017-11-05T01:41:20Z': datetime(2017, 11, 5, 1, 41, 20, 0, timezone.utc),
+            '0002-11-05T01:41:20Z': datetime(2, 11, 5, 1, 41, 20, 0, timezone.utc),
+            '9998-11-05T01:41:20Z': datetime(9998, 11, 5, 1, 41, 20, 0, timezone.utc),
+            '0001-11-05T01:41:20Z': None,
+            '9999-11-05T01:41:20Z': None,
         }
 
         for time_string, expected_value in strings.items():
