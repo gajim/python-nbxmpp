@@ -57,8 +57,10 @@ class Nickname(BaseModule):
             # the nickname MUST NOT be included in presence broadcasts
             # (i.e., <presence/> stanzas with no 'type' attribute or
             # of type "unavailable").
-            if properties.type in (PresenceType.AVAILABLE,
-                                   PresenceType.UNAVAILABLE):
+            # Usage is not recommended in MUC, but it is a workaround
+            # to allow code points forbidden in resource parts in nicknames.
+            if not properties.from_muc and properties.type in (
+                    PresenceType.AVAILABLE, PresenceType.UNAVAILABLE):
                 return
             properties.nickname = self._parse_nickname(stanza)
 
