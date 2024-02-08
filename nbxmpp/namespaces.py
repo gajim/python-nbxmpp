@@ -98,6 +98,7 @@ class _Namespaces:
     JINGLE_RTP_AUDIO: str = 'urn:xmpp:jingle:apps:rtp:audio'
     JINGLE_RTP_VIDEO: str = 'urn:xmpp:jingle:apps:rtp:video'
     JINGLE_XTLS: str = 'urn:xmpp:jingle:security:xtls:0'
+    JINGLE_MESSAGE: str = 'urn:xmpp:jingle-message:0'
     LAST: str = 'jabber:iq:last'
     LOCATION: str = 'http://jabber.org/protocol/geoloc'
     MAM_1: str = 'urn:xmpp:mam:1'
