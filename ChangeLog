@@ -1,3 +1,14 @@
+nbxmpp 4.5.4 (12 Feb 2024)
+
+  New
+
+  * Add XEP-0353 namespace
+
+  Bug Fixes
+
+  * Correctly discover subject change (#154)
+  * DateTime: Be more strict with parsing
+
 nbxmpp 4.5.3 (21 Nov 2023)
 
   New
