@@ -308,6 +308,12 @@ class ModerationData(NamedTuple):
     occupant_id: Optional[str]
 
 
+class RetractionData(NamedTuple):
+    id: Optional[str]
+    is_tombstone: bool
+    timestamp: Optional[float]
+
+
 class DiscoItems(NamedTuple):
     jid: JID
     node: str
@@ -1027,6 +1033,7 @@ class MessageProperties:
     correction: Optional[CorrectionData] = None
     reply_data: Optional[ReplyData] = None
     moderation: Optional[ModerationData] = None
+    retraction: Optional[RetractionData] = None
     attention: bool = False
     forms = None
     xhtml: Optional[str] = None
@@ -1140,6 +1147,10 @@ class MessageProperties:
     @property
     def is_moderation(self) -> bool:
         return self.moderation is not None
+
+    @property
+    def is_retraction(self) -> bool:
+        return self.retraction is not None
 
     @property
     def has_attention(self) -> bool:

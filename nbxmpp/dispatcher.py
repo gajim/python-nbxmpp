@@ -22,6 +22,7 @@ from xml.parsers.expat import ExpatError
 
 from gi.repository import GLib
 
+from nbxmpp.modules.retraction import Retraction
 from nbxmpp.simplexml import NodeBuilder
 from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
@@ -160,6 +161,7 @@ class StanzaDispatcher(Observable):
         self._modules['Nickname'] = Nickname(self._client)
         self._modules['MUC'] = MUC(self._client)
         self._modules['Moderation'] = Moderation(self._client)
+        self._modules['Retraction'] = Retraction(self._client)
         self._modules['Delay'] = Delay(self._client)
         self._modules['Captcha'] = Captcha(self._client)
         self._modules['Idle'] = Idle(self._client)

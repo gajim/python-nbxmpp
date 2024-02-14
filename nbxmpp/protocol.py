@@ -1401,6 +1401,22 @@ class Message(Protocol):
         # strip() in case clients surround emojis with whitespace
         return react_to, {t.getData().strip() for t in tags}
 
+    def setRetracted(self, target_id: str, fallback_text: Optional[str] = None):
+        retract = self.addChild('retract',
+                                namespace=Namespace.MESSAGE_RETRACT_1)
+        retract.setAttr('id', target_id)
+
+        if not fallback_text:
+            return
+
+        self.setTag(
+            'fallback',
+            namespace=Namespace.FALLBACK,
+            attrs={'for': Namespace.MESSAGE_RETRACT_1},
+        )
+
+        self.setBody(fallback_text)
+
 
 class Presence(Protocol):
 
