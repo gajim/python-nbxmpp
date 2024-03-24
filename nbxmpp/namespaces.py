@@ -153,6 +153,7 @@ class _Namespaces:
     SEARCH: str = 'jabber:iq:search'
     SECLABEL: str = 'urn:xmpp:sec-label:0'
     SECLABEL_CATALOG: str = 'urn:xmpp:sec-label:catalog:2'
+    SERVICE_DISCOVERY: str = 'urn:xmpp:extdisco:2'
     SESSION: str = 'urn:ietf:params:xml:ns:xmpp-session'
     SFS: str = 'urn:xmpp:sfs:0'
     SID: str = 'urn:xmpp:sid:0'
