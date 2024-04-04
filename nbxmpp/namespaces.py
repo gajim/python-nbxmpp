@@ -94,6 +94,7 @@ class _Namespaces:
     JINGLE_IBB: str = 'urn:xmpp:jingle:transports:ibb:1'
     JINGLE_ICE_UDP: str = 'urn:xmpp:jingle:transports:ice-udp:1'
     JINGLE_RAW_UDP: str = 'urn:xmpp:jingle:transports:raw-udp:1'
+    JINGLE_RTCP_FB: str = 'urn:xmpp:jingle:apps:rtp:rtcp-fb:0'
     JINGLE_RTP: str = 'urn:xmpp:jingle:apps:rtp:1'
     JINGLE_RTP_AUDIO: str = 'urn:xmpp:jingle:apps:rtp:audio'
     JINGLE_RTP_VIDEO: str = 'urn:xmpp:jingle:apps:rtp:video'
