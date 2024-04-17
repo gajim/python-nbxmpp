@@ -80,6 +80,10 @@ class MUC(BaseModule):
                           ns=Namespace.MUC_USER,
                           priority=11),
             StanzaHandler(name='message',
+                          callback=self._process_message_base,
+                          ns=Namespace.MUC_USER,
+                          priority=5),
+            StanzaHandler(name='message',
                           callback=self._process_message_before_decryption,
                           typ='groupchat',
                           priority=6),
@@ -211,16 +215,6 @@ class MUC(BaseModule):
 
         properties.occupant_id = occupant_id
 
-        muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
-        if muc_user is not None:
-            try:
-                properties.muc_user = parse_muc_user(muc_user,
-                                                     is_presence=False)
-            except StanzaMalformed as error:
-                self._log.warning(error)
-                self._log.warning(stanza)
-                raise NodeProcessed
-
         addresses = stanza.getTag('addresses', namespace=Namespace.ADDRESS)
         if addresses is not None:
             address = addresses.getTag('address', attrs={'type': 'ofrom'})
@@ -239,6 +233,19 @@ class MUC(BaseModule):
             text=properties.subject,
             author=properties.muc_nickname,
             timestamp=properties.user_timestamp)
+
+    def _process_message_base(self, _client, stanza, properties):
+        muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
+        if muc_user is None:
+            return
+
+        try:
+            properties.muc_user = parse_muc_user(muc_user,
+                                                 is_presence=False)
+        except StanzaMalformed as error:
+            self._log.warning(error)
+            self._log.warning(stanza)
+            raise NodeProcessed
 
     def _process_message(self, _client, stanza, properties):
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
