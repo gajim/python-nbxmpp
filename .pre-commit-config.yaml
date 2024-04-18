@@ -1,0 +1,11 @@
+repos:
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.3.7
+    hooks:
+      - id: ruff
+        exclude: ".githooks/"
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
