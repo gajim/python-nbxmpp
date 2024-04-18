@@ -279,9 +279,9 @@ class AdHocCommandNote(NamedTuple):
 class IBBData(NamedTuple):
     type: str
     sid: str
-    block_size: Optional[int]
-    seq: Optional[int]
-    data: Optional[str]
+    block_size: Optional[int] = None
+    seq: Optional[int] = None
+    data: Optional[str] = None
 
 
 class OOBData(NamedTuple):
