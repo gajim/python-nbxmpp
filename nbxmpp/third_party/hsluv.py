@@ -28,12 +28,12 @@ m = [[3.240969941904521, -1.537383177570093, -0.498610760293],
 minv = [[0.41239079926595, 0.35758433938387, 0.18048078840183],
         [0.21263900587151, 0.71516867876775, 0.072192315360733],
         [0.019330818715591, 0.11919477979462, 0.95053215224966]]
-refY = 1.0
-refU = 0.19783000664283
-refV = 0.46831999493879
-kappa = 903.2962962
-epsilon = 0.0088564516
-hex_chars = "0123456789abcdef"
+REF_Y = 1.0
+REF_U = 0.19783000664283
+REF_V = 0.46831999493879
+KAPPA = 903.2962962
+EPSILON = 0.0088564516
+HEX_CHARS = "0123456789abcdef"
 
 
 def _distance_line_from_origin(line):
@@ -49,10 +49,10 @@ def _length_of_ray_until_intersect(theta, line):
 def _get_bounds(l):
     result = []
     sub1 = math.pow(l + 16, 3) / 1560896
-    if sub1 > epsilon:
+    if sub1 > EPSILON:
         sub2 = sub1
     else:
-        sub2 = l / kappa
+        sub2 = l / KAPPA
     _g = 0
     while _g < 3:
         c = _g
@@ -109,14 +109,14 @@ def _max_chroma_for_lh(l, h):
 
 
 def _dot_product(a, b):
-    sum = 0
+    sum_ = 0
     _g1 = 0
     _g = len(a)
     while _g1 < _g:
         i = _g1
         _g1 = _g1 + 1
-        sum += a[i] * b[i]
-    return sum
+        sum_ += a[i] * b[i]
+    return sum_
 
 
 def _from_linear(c):
@@ -148,15 +148,15 @@ def rgb_to_xyz(_hx_tuple):
 
 
 def _y_to_l(y):
-    if y <= epsilon:
-        return y / refY * kappa
-    return 116 * math.pow(y / refY, 0.333333333333333315) - 16
+    if y <= EPSILON:
+        return y / REF_Y * KAPPA
+    return 116 * math.pow(y / REF_Y, 0.333333333333333315) - 16
 
 
 def _l_to_y(l):
     if l <= 8:
-        return refY * l / kappa
-    return refY * math.pow((l + 16) / 116, 3)
+        return REF_Y * l / KAPPA
+    return REF_Y * math.pow((l + 16) / 116, 3)
 
 
 def xyz_to_luv(_hx_tuple):
@@ -175,8 +175,8 @@ def xyz_to_luv(_hx_tuple):
     l = _y_to_l(y)
     if l == 0:
         return [0, 0, 0]
-    u = 13 * l * (var_u - refU)
-    v = 13 * l * (var_v - refV)
+    u = 13 * l * (var_u - REF_U)
+    v = 13 * l * (var_v - REF_V)
     return [l, u, v]
 
 
@@ -186,8 +186,8 @@ def luv_to_xyz(_hx_tuple):
     v = float(_hx_tuple[2])
     if l == 0:
         return [0, 0, 0]
-    var_u = u / (13 * l) + refU
-    var_v = v / (13 * l) + refV
+    var_u = u / (13 * l) + REF_U
+    var_v = v / (13 * l) + REF_V
     y = _l_to_y(l)
     x = 0 - ((9 * y * var_u) / (((var_u - 4) * var_v) - var_u * var_v))
     z = (((9 * y) - (15 * var_v * y)) - (var_v * x)) / (3 * var_v)
@@ -286,23 +286,23 @@ def rgb_to_hex(_hx_tuple):
         digit2 = int(c % 16)
         digit1 = int((c - digit2) / 16)
 
-        h += hex_chars[digit1] + hex_chars[digit2]
+        h += HEX_CHARS[digit1] + HEX_CHARS[digit2]
     return h
 
 
-def hex_to_rgb(hex):
-    hex = hex.lower()
+def hex_to_rgb(hex_):
+    hex_ = hex_.lower()
     ret = []
     _g = 0
     while _g < 3:
         i = _g
         _g = _g + 1
         index = i * 2 + 1
-        _hx_str = hex[index]
-        digit1 = hex_chars.find(_hx_str)
+        _hx_str = hex_[index]
+        digit1 = HEX_CHARS.find(_hx_str)
         index1 = i * 2 + 2
-        str1 = hex[index1]
-        digit2 = hex_chars.find(str1)
+        str1 = hex_[index1]
+        digit2 = HEX_CHARS.find(str1)
         n = digit1 * 16 + digit2
         ret.append(n / 255.0)
     return ret
