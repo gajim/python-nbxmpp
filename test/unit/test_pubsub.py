@@ -1,8 +1,8 @@
 from test.lib.util import StanzaHandlerTest
 
 from nbxmpp.namespaces import Namespace
-from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import PubSubEventData
+from nbxmpp.structs import StanzaHandler
 
 
 class PubsubTest(StanzaHandlerTest):

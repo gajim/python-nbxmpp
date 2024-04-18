@@ -20,25 +20,24 @@ from __future__ import annotations
 from typing import Any
 from typing import Optional
 
-import time
 import logging
+import time
 
-from nbxmpp.protocol import Iq
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import ErrorNode
-from nbxmpp.protocol import ERR_ITEM_NOT_FOUND
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.modules.dataforms import extend_form
-from nbxmpp.modules.base import BaseModule
-from nbxmpp.structs import DiscoIdentity
-from nbxmpp.structs import DiscoInfo
-from nbxmpp.structs import DiscoItems
-from nbxmpp.structs import DiscoItem
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.task import iq_request_task
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
-
+from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import ERR_ITEM_NOT_FOUND
+from nbxmpp.protocol import ErrorNode
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import DiscoIdentity
+from nbxmpp.structs import DiscoInfo
+from nbxmpp.structs import DiscoItem
+from nbxmpp.structs import DiscoItems
+from nbxmpp.structs import StanzaHandler
+from nbxmpp.task import iq_request_task
 
 log = logging.getLogger('nbxmpp.m.discovery')
 

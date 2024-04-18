@@ -17,24 +17,21 @@
 
 # pylint: disable=E1120
 
-import logging
-
 from typing import List
 from typing import Optional
 from typing import Set
 
+import logging
 from dataclasses import dataclass
 from dataclasses import field
 
-from nbxmpp.simplexml import Node
-from nbxmpp.namespaces import Namespace
-
 from nbxmpp.errors import MalformedStanzaError
-from nbxmpp.task import iq_request_task
 from nbxmpp.modules.base import BaseModule
-from nbxmpp.modules.util import raise_if_error
 from nbxmpp.modules.util import finalize
-
+from nbxmpp.modules.util import raise_if_error
+from nbxmpp.namespaces import Namespace
+from nbxmpp.simplexml import Node
+from nbxmpp.task import iq_request_task
 
 log = logging.getLogger('nbxmpp.m.vcard4')
 

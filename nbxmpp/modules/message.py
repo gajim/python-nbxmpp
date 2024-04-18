@@ -15,14 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import NodeProcessed
+from nbxmpp.const import MessageType
+from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import StanzaIDData
 from nbxmpp.structs import XHTMLData
 from nbxmpp.util import error_factory
-from nbxmpp.const import MessageType
-from nbxmpp.modules.base import BaseModule
 
 
 class BaseMessage(BaseModule):

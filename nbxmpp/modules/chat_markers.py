@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import ChatMarker
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.namespaces import Namespace
+from nbxmpp.structs import ChatMarker
+from nbxmpp.structs import StanzaHandler
 
 
 class ChatMarkers(BaseModule):

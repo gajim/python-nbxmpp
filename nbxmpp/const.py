@@ -19,12 +19,10 @@ from enum import Enum
 from enum import IntEnum
 from functools import total_ordering
 
-from packaging.version import Version
-
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import Soup
-
+from packaging.version import Version
 
 GLIB_VERSION = Version(
     f'{GLib.MAJOR_VERSION}.{GLib.MINOR_VERSION}.{GLib.MICRO_VERSION}')

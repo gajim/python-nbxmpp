@@ -1,8 +1,8 @@
 from test.lib.util import StanzaHandlerTest
 
-from nbxmpp.structs import Reactions as ReactionStruct
 from nbxmpp.modules.reactions import Reactions
 from nbxmpp.protocol import Message
+from nbxmpp.structs import Reactions as ReactionStruct
 
 
 class MockLog:

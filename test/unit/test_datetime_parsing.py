@@ -1,11 +1,11 @@
 import unittest
 from datetime import datetime
-from datetime import timezone
 from datetime import timedelta
+from datetime import timezone
 
-from nbxmpp.modules.date_and_time import parse_datetime
-from nbxmpp.modules.date_and_time import LocalTimezone
 from nbxmpp.modules.date_and_time import create_tzinfo
+from nbxmpp.modules.date_and_time import LocalTimezone
+from nbxmpp.modules.date_and_time import parse_datetime
 
 
 class TestDateTime(unittest.TestCase):

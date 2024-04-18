@@ -15,18 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import Error
-from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
-from nbxmpp.protocol import ERR_FORBIDDEN
-from nbxmpp.namespaces import Namespace
-from nbxmpp.task import iq_request_task
-from nbxmpp.structs import LastActivityData
-from nbxmpp.structs import StanzaHandler
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import ERR_FORBIDDEN
+from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
+from nbxmpp.protocol import Error
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import LastActivityData
+from nbxmpp.structs import StanzaHandler
+from nbxmpp.task import iq_request_task
 
 
 class LastActivity(BaseModule):

@@ -5,7 +5,6 @@ from typing import Callable
 import functools
 import re
 
-
 # https://www.rfc-editor.org/rfc/rfc3987
 ucschar = (
     '\xA0-\uD7FF'

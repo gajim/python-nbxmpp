@@ -18,12 +18,12 @@ Idlequeues are Gajim's network heartbeat. Transports can be plugged as idle
 objects and be informed about possible IO
 """
 
-import os
 import errno
-import select
 import logging
-import time
+import os
+import select
 import subprocess
+import time
 
 # needed for get_idleqeue
 try:

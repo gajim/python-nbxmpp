@@ -15,44 +15,45 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 from typing import Any
 from typing import Optional
 
-from gi.repository import GLib
-from gi.repository import Gio
+import logging
 
-from nbxmpp.namespaces import Namespace
+from gi.repository import Gio
+from gi.repository import GLib
+
+from nbxmpp.addresses import NoMoreAddresses
+from nbxmpp.addresses import ServerAddresses
+from nbxmpp.const import ConnectionProtocol
+from nbxmpp.const import ConnectionType
+from nbxmpp.const import Mode
+from nbxmpp.const import StreamError
+from nbxmpp.const import StreamState
+from nbxmpp.dispatcher import StanzaDispatcher
+from nbxmpp.errors import CancelledError
+from nbxmpp.errors import StanzaError
+from nbxmpp.errors import TimeoutStanzaError
 from nbxmpp.http import HTTPSession
-from nbxmpp.protocol import Features
-from nbxmpp.protocol import StanzaMalformed
-from nbxmpp.protocol import SessionRequest
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import BindRequest
-from nbxmpp.protocol import TLSRequest
+from nbxmpp.protocol import Features
 from nbxmpp.protocol import isResultNode
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import Protocol
+from nbxmpp.protocol import SessionRequest
+from nbxmpp.protocol import StanzaMalformed
+from nbxmpp.protocol import TLSRequest
 from nbxmpp.protocol import WebsocketCloseHeader
-from nbxmpp.errors import TimeoutStanzaError
-from nbxmpp.errors import StanzaError
-from nbxmpp.errors import CancelledError
-from nbxmpp.addresses import ServerAddresses
-from nbxmpp.addresses import NoMoreAddresses
-from nbxmpp.tcp import TCPConnection
-from nbxmpp.websocket import WebsocketConnection
-from nbxmpp.smacks import Smacks
 from nbxmpp.sasl import SASL
-from nbxmpp.const import StreamState
-from nbxmpp.const import StreamError
-from nbxmpp.const import ConnectionType
-from nbxmpp.const import ConnectionProtocol
-from nbxmpp.const import Mode
-from nbxmpp.dispatcher import StanzaDispatcher
-from nbxmpp.util import get_stream_header
+from nbxmpp.smacks import Smacks
+from nbxmpp.tcp import TCPConnection
 from nbxmpp.util import generate_id
+from nbxmpp.util import get_stream_header
+from nbxmpp.util import LogAdapter
 from nbxmpp.util import Observable
 from nbxmpp.util import validate_stream_header
-from nbxmpp.util import LogAdapter
+from nbxmpp.websocket import WebsocketConnection
 
 log = logging.getLogger('nbxmpp.stream')
 

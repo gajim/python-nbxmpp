@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import isMucPM
 from nbxmpp.protocol import Message
-from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import ReceiptData
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import generate_id
-from nbxmpp.modules.base import BaseModule
 
 
 class Receipts(BaseModule):

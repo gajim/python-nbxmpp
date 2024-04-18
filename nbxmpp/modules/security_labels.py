@@ -17,16 +17,16 @@
 
 from typing import Dict
 
-from dataclasses import dataclass
 import hashlib
+from dataclasses import dataclass
 
+from nbxmpp.errors import StanzaError
+from nbxmpp.modules.base import BaseModule
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.simplexml import Node
-from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.errors import StanzaError
 from nbxmpp.task import iq_request_task
-from nbxmpp.modules.base import BaseModule
 
 
 class SecurityLabels(BaseModule):

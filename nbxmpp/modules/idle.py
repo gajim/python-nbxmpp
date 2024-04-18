@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.modules.date_and_time import parse_datetime
-from nbxmpp.modules.base import BaseModule
 
 
 class Idle(BaseModule):

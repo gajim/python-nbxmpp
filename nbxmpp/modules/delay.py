@@ -17,10 +17,10 @@
 
 import logging
 
+from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.modules.date_and_time import parse_datetime
-from nbxmpp.modules.base import BaseModule
 
 log = logging.getLogger('nbxmpp.m.delay')
 

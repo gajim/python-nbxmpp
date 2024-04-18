@@ -1,8 +1,7 @@
 import sys
 import unittest
-from unittest.mock import Mock
-
 from test.lib.const import STREAM_START
+from unittest.mock import Mock
 
 from nbxmpp.dispatcher import StanzaDispatcher
 from nbxmpp.protocol import JID

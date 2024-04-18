@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import CaptchaData
-from nbxmpp.modules.dataforms import extend_form
-from nbxmpp.modules.bits_of_binary import parse_bob_data
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.bits_of_binary import parse_bob_data
+from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.namespaces import Namespace
+from nbxmpp.structs import CaptchaData
+from nbxmpp.structs import StanzaHandler
 
 
 class Captcha(BaseModule):

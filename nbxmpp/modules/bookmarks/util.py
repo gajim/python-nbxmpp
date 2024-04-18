@@ -15,18 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 from typing import Optional
 
+import logging
+
+from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import validate_resourcepart
-from nbxmpp.protocol import JID
-from nbxmpp.protocol import Iq
+from nbxmpp.structs import BookmarkData
 from nbxmpp.util import from_xs_boolean
 from nbxmpp.util import to_xs_boolean
-from nbxmpp.namespaces import Namespace
-from nbxmpp.errors import MalformedStanzaError
-from nbxmpp.structs import BookmarkData
 
 
 def parse_nickname(nick: Optional[str]) -> Optional[str]:

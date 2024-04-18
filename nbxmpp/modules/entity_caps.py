@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import EntityCapsData
 from nbxmpp.structs import DiscoInfo
+from nbxmpp.structs import EntityCapsData
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import compute_caps_hash
-from nbxmpp.modules.base import BaseModule
 
 
 class EntityCaps(BaseModule):

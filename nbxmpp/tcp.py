@@ -18,15 +18,15 @@
 import logging
 from collections import deque
 
-from gi.repository import GLib
 from gi.repository import Gio
+from gi.repository import GLib
 from gi.repository import GObject
 
-from nbxmpp.const import TCPState
-from nbxmpp.const import ConnectionType
-from nbxmpp.util import utf8_decode
-from nbxmpp.util import convert_tls_error_flags
 from nbxmpp.connection import Connection
+from nbxmpp.const import ConnectionType
+from nbxmpp.const import TCPState
+from nbxmpp.util import convert_tls_error_flags
+from nbxmpp.util import utf8_decode
 
 log = logging.getLogger('nbxmpp.tcp')
 

@@ -15,21 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import Node
-from nbxmpp.protocol import Message
-from nbxmpp.util import b64decode
-from nbxmpp.util import b64encode
-from nbxmpp.util import from_xs_boolean
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import OMEMOMessage
-from nbxmpp.structs import OMEMOBundle
+from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
 from nbxmpp.modules.util import raise_if_error
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Message
+from nbxmpp.protocol import Node
+from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import OMEMOBundle
+from nbxmpp.structs import OMEMOMessage
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
-from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.util import b64decode
+from nbxmpp.util import b64encode
+from nbxmpp.util import from_xs_boolean
 
 
 class OMEMO(BaseModule):

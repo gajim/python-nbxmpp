@@ -15,16 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import time
 import logging
+import time
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.simplexml import Node
 from nbxmpp.const import StreamState
-from nbxmpp.util import LogAdapter
-from nbxmpp.structs import StanzaHandler
+from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Error
-
+from nbxmpp.simplexml import Node
+from nbxmpp.structs import StanzaHandler
+from nbxmpp.util import LogAdapter
 
 log = logging.getLogger('nbxmpp.smacks')
 

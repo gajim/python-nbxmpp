@@ -17,11 +17,11 @@
 
 from typing import Optional
 
-import logging
 import hashlib
+import logging
 
-from nbxmpp.simplexml import Node
 from nbxmpp.namespaces import Namespace
+from nbxmpp.simplexml import Node
 from nbxmpp.structs import BobData
 from nbxmpp.util import b64decode
 

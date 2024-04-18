@@ -1,7 +1,8 @@
 import unittest
 
-from nbxmpp.protocol import Node
 from nbxmpp.modules.delay import parse_delay
+from nbxmpp.protocol import Node
+
 
 class TestHelpers(unittest.TestCase):
 

@@ -15,20 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Iq
-from nbxmpp.util import get_form
-from nbxmpp.task import iq_request_task
-from nbxmpp.errors import StanzaError
-from nbxmpp.errors import RegisterStanzaError
 from nbxmpp.errors import ChangePasswordStanzaError
+from nbxmpp.errors import RegisterStanzaError
+from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
-from nbxmpp.modules.util import process_response
-from nbxmpp.modules.register.util import _make_unregister_request
-from nbxmpp.modules.register.util import _make_register_form
 from nbxmpp.modules.register.util import _make_password_change_request
 from nbxmpp.modules.register.util import _make_password_change_with_form
+from nbxmpp.modules.register.util import _make_register_form
+from nbxmpp.modules.register.util import _make_unregister_request
 from nbxmpp.modules.register.util import _parse_register_data
+from nbxmpp.modules.util import process_response
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Iq
+from nbxmpp.task import iq_request_task
+from nbxmpp.util import get_form
 
 
 class Register(BaseModule):

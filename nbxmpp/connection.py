@@ -22,9 +22,9 @@ import logging
 from gi.repository import Gio
 
 from nbxmpp.const import TCPState
+from nbxmpp.util import LogAdapter
 from nbxmpp.util import min_version
 from nbxmpp.util import Observable
-from nbxmpp.util import LogAdapter
 
 log = logging.getLogger('nbxmpp.connection')
 

@@ -20,21 +20,20 @@ projects. It is designed to be as standalone as possible
 
 from __future__ import annotations
 
+from typing import Any
+from typing import Callable
 from typing import Dict
+from typing import Iterator
 from typing import List
 from typing import Optional
 from typing import Union
-from typing import Iterator
-from typing import Callable
-from typing import Any
 
 import logging
 import xml.parsers.expat
-from xml.parsers.expat import ExpatError
 from copy import deepcopy
+from xml.parsers.expat import ExpatError
 
 from nbxmpp.const import NOT_ALLOWED_XML_CHARS
-
 
 Attrs = Dict[str, str]
 

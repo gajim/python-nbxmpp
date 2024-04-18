@@ -27,6 +27,10 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 gssapi = ["gssapi"]
+dev = [
+  "isort>=5.13.2",
+  "PyGObject-stubs @ git+https://github.com/pygobject/pygobject-stubs.git",
+]
 
 [project.urls]
 repository = "https://dev.gajim.org/gajim/python-nbxmpp"
@@ -48,3 +52,18 @@ typeCheckingMode = "strict"
 reportUnnecessaryTypeIgnoreComment = "error"
 reportPropertyTypeMismatch = "error"
 reportMissingModuleSource = "none"
+
+[tool.isort]
+force_alphabetical_sort_within_sections = true
+force_single_line = true
+group_by_package = true
+known_typing = ["typing"]
+sections = [
+  "FUTURE",
+  "TYPING",
+  "STDLIB",
+  "THIRDPARTY",
+  "FIRSTPARTY",
+  "LOCALFOLDER"
+]
+skip_gitignore = true

@@ -18,25 +18,24 @@
 from typing import Any
 from typing import Optional
 
-import os
-import hmac
 import binascii
-import logging
 import hashlib
+import hmac
+import logging
+import os
 from hashlib import pbkdf2_hmac
 
 from gi.repository import Gio
 
+from nbxmpp.const import StreamState
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
-from nbxmpp.protocol import SASL_ERROR_CONDITIONS
 from nbxmpp.protocol import SASL_AUTH_MECHS
+from nbxmpp.protocol import SASL_ERROR_CONDITIONS
 from nbxmpp.structs import ChannelBindingData
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
 from nbxmpp.util import LogAdapter
-from nbxmpp.const import StreamState
-
 
 log = logging.getLogger('nbxmpp.sasl')
 

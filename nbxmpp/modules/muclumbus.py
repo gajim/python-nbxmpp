@@ -17,20 +17,19 @@
 
 import json
 
+from nbxmpp.const import AnonymityMode
+from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.errors import StanzaError
+from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.modules.util import finalize
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Node
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import Node
 from nbxmpp.structs import MuclumbusItem
 from nbxmpp.structs import MuclumbusResult
-from nbxmpp.const import AnonymityMode
-from nbxmpp.modules.dataforms import extend_form
-from nbxmpp.errors import StanzaError
-from nbxmpp.errors import MalformedStanzaError
-from nbxmpp.task import iq_request_task
 from nbxmpp.task import http_request_task
-from nbxmpp.modules.base import BaseModule
-from nbxmpp.modules.util import finalize
-
+from nbxmpp.task import iq_request_task
 
 # API Documentation
 # https://search.jabber.network/docs/api

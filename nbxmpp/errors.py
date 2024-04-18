@@ -17,8 +17,9 @@
 
 from __future__ import annotations
 
-import logging
 from typing import Optional
+
+import logging
 
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Protocol

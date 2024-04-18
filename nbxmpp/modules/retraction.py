@@ -1,9 +1,10 @@
-from nbxmpp.modules.date_and_time import parse_datetime
-
-from nbxmpp import Namespace, Node
-from nbxmpp.structs import StanzaHandler, MessageProperties, RetractionData
-
+from nbxmpp import Namespace
+from nbxmpp import Node
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.date_and_time import parse_datetime
+from nbxmpp.structs import MessageProperties
+from nbxmpp.structs import RetractionData
+from nbxmpp.structs import StanzaHandler
 
 
 class Retraction(BaseModule):

@@ -16,20 +16,20 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 
-from nbxmpp.protocol import JID
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import Node
-from nbxmpp.namespaces import Namespace
-from nbxmpp.structs import MAMQueryData
-from nbxmpp.structs import MAMPreferencesData
-from nbxmpp.task import iq_request_task
-from nbxmpp.errors import StanzaError
 from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
-from nbxmpp.modules.rsm import parse_rsm
-from nbxmpp.modules.dataforms import SimpleDataForm
 from nbxmpp.modules.dataforms import create_field
+from nbxmpp.modules.dataforms import SimpleDataForm
+from nbxmpp.modules.rsm import parse_rsm
 from nbxmpp.modules.util import process_response
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
+from nbxmpp.protocol import Node
+from nbxmpp.structs import MAMPreferencesData
+from nbxmpp.structs import MAMQueryData
+from nbxmpp.task import iq_request_task
 
 
 class MAM(BaseModule):

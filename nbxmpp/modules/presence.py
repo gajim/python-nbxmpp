@@ -15,17 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import Error as ErrorStanza
-from nbxmpp.protocol import ERR_BAD_REQUEST
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import Presence
-from nbxmpp.namespaces import Namespace
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.util import error_factory
-from nbxmpp.const import PresenceType
 from nbxmpp.const import PresenceShow
+from nbxmpp.const import PresenceType
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import log_calls
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import ERR_BAD_REQUEST
+from nbxmpp.protocol import Error as ErrorStanza
+from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import Presence
+from nbxmpp.structs import StanzaHandler
+from nbxmpp.util import error_factory
 
 
 class BasePresence(BaseModule):

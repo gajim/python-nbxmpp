@@ -18,13 +18,12 @@
 import logging
 from collections import namedtuple
 
+from nbxmpp.const import ConnectionProtocol
+from nbxmpp.const import ConnectionType
 from nbxmpp.http import HTTPRequest
 from nbxmpp.http import HTTPSession
 from nbxmpp.util import Observable
-from nbxmpp.const import ConnectionType
-from nbxmpp.const import ConnectionProtocol
 from nbxmpp.util import parse_websocket_uri
-
 
 log = logging.getLogger('nbxmpp.addresses')
 

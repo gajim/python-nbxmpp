@@ -17,15 +17,15 @@
 
 import logging
 
-from gi.repository import Soup
-from gi.repository import GLib
 from gi.repository import Gio
+from gi.repository import GLib
+from gi.repository import Soup
 
+from nbxmpp.connection import Connection
 from nbxmpp.const import TCPState
 from nbxmpp.http import DEFAULT_USER_AGENT
-from nbxmpp.util import get_websocket_close_string
 from nbxmpp.util import convert_tls_error_flags
-from nbxmpp.connection import Connection
+from nbxmpp.util import get_websocket_close_string
 
 log = logging.getLogger('nbxmpp.websocket')
 

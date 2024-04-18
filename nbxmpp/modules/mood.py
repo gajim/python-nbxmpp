@@ -15,14 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Node
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import MoodData
 from nbxmpp.const import MOODS
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Node
+from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import MoodData
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
 

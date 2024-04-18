@@ -19,68 +19,67 @@ Main xmpp decision making logic. Provides library with methods to assign
 different handlers to different XMPP stanzas and namespaces
 """
 
-import sys
-import re
-import uuid
-import logging
 import inspect
+import logging
+import re
+import sys
+import uuid
 from xml.parsers.expat import ExpatError
 
-from nbxmpp.simplexml import NodeBuilder
-from nbxmpp.plugin import PlugIn
+from nbxmpp.modules.activity import Activity
+from nbxmpp.modules.adhoc import AdHoc
+from nbxmpp.modules.annotations import Annotations
+from nbxmpp.modules.attention import Attention
+from nbxmpp.modules.blocking import Blocking
+from nbxmpp.modules.captcha import Captcha
+from nbxmpp.modules.chat_markers import ChatMarkers
+from nbxmpp.modules.chatstates import Chatstates
+from nbxmpp.modules.correction import Correction
+from nbxmpp.modules.delay import Delay
+from nbxmpp.modules.discovery import Discovery
+from nbxmpp.modules.eme import EME
+from nbxmpp.modules.entity_caps import EntityCaps
+from nbxmpp.modules.http_auth import HTTPAuth
+from nbxmpp.modules.http_upload import HTTPUpload
+from nbxmpp.modules.ibb import IBB
+from nbxmpp.modules.idle import Idle
+from nbxmpp.modules.iq import BaseIq
+from nbxmpp.modules.location import Location
+from nbxmpp.modules.message import BaseMessage
+from nbxmpp.modules.misc import unwrap_carbon
+from nbxmpp.modules.misc import unwrap_mam
+from nbxmpp.modules.mood import Mood
+from nbxmpp.modules.muc import MUC
+from nbxmpp.modules.muclumbus import Muclumbus
+from nbxmpp.modules.nickname import Nickname
+from nbxmpp.modules.omemo import OMEMO
+from nbxmpp.modules.oob import OOB
+from nbxmpp.modules.openpgp import OpenPGP
+from nbxmpp.modules.pgplegacy import PGPLegacy
+from nbxmpp.modules.presence import BasePresence
+from nbxmpp.modules.pubsub import PubSub
+from nbxmpp.modules.receipts import Receipts
+from nbxmpp.modules.register import Register
+from nbxmpp.modules.security_labels import SecurityLabels
+from nbxmpp.modules.software_version import SoftwareVersion
+from nbxmpp.modules.tune import Tune
+from nbxmpp.modules.user_avatar import UserAvatar
+from nbxmpp.modules.vcard_avatar import VCardAvatar
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import NodeProcessed
+from nbxmpp.plugin import PlugIn
+from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
+from nbxmpp.protocol import Error
 from nbxmpp.protocol import InvalidFrom
 from nbxmpp.protocol import InvalidJid
 from nbxmpp.protocol import InvalidStanza
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import Presence
 from nbxmpp.protocol import Message
-from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import Node
-from nbxmpp.protocol import Error
-from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
-from nbxmpp.modules.eme import EME
-from nbxmpp.modules.http_auth import HTTPAuth
-from nbxmpp.modules.presence import BasePresence
-from nbxmpp.modules.message import BaseMessage
-from nbxmpp.modules.iq import BaseIq
-from nbxmpp.modules.nickname import Nickname
-from nbxmpp.modules.delay import Delay
-from nbxmpp.modules.muc import MUC
-from nbxmpp.modules.idle import Idle
-from nbxmpp.modules.pgplegacy import PGPLegacy
-from nbxmpp.modules.vcard_avatar import VCardAvatar
-from nbxmpp.modules.captcha import Captcha
-from nbxmpp.modules.entity_caps import EntityCaps
-from nbxmpp.modules.blocking import Blocking
-from nbxmpp.modules.pubsub import PubSub
-from nbxmpp.modules.activity import Activity
-from nbxmpp.modules.tune import Tune
-from nbxmpp.modules.mood import Mood
-from nbxmpp.modules.location import Location
-from nbxmpp.modules.user_avatar import UserAvatar
-from nbxmpp.modules.openpgp import OpenPGP
-from nbxmpp.modules.omemo import OMEMO
-from nbxmpp.modules.annotations import Annotations
-from nbxmpp.modules.muclumbus import Muclumbus
-from nbxmpp.modules.software_version import SoftwareVersion
-from nbxmpp.modules.adhoc import AdHoc
-from nbxmpp.modules.ibb import IBB
-from nbxmpp.modules.discovery import Discovery
-from nbxmpp.modules.chat_markers import ChatMarkers
-from nbxmpp.modules.receipts import Receipts
-from nbxmpp.modules.oob import OOB
-from nbxmpp.modules.correction import Correction
-from nbxmpp.modules.attention import Attention
-from nbxmpp.modules.security_labels import SecurityLabels
-from nbxmpp.modules.chatstates import Chatstates
-from nbxmpp.modules.register import Register
-from nbxmpp.modules.http_upload import HTTPUpload
-from nbxmpp.modules.misc import unwrap_carbon
-from nbxmpp.modules.misc import unwrap_mam
+from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import Presence
+from nbxmpp.protocol import Protocol
+from nbxmpp.simplexml import NodeBuilder
 from nbxmpp.util import get_properties_struct
-
 
 log = logging.getLogger('nbxmpp.dispatcher')
 

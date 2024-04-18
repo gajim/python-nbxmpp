@@ -18,21 +18,21 @@
 from collections import namedtuple
 
 from nbxmpp.const import MessageType
-from nbxmpp.task import iq_request_task
 from nbxmpp.errors import is_error
-from nbxmpp.errors import PubSubStanzaError
 from nbxmpp.errors import MalformedStanzaError
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import PubSubEventData
-from nbxmpp.structs import CommonResult
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import Node
-from nbxmpp.namespaces import Namespace
+from nbxmpp.errors import PubSubStanzaError
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.modules.util import finalize
 from nbxmpp.modules.util import process_response
 from nbxmpp.modules.util import raise_if_error
-from nbxmpp.modules.util import finalize
-from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import Node
+from nbxmpp.structs import CommonResult
+from nbxmpp.structs import PubSubEventData
+from nbxmpp.structs import StanzaHandler
+from nbxmpp.task import iq_request_task
 
 
 class PubSub(BaseModule):

@@ -2,7 +2,6 @@
 
 from precis_i18n import get_profile
 
-
 _localpart_disallowed_chars = set('"&\'/:<>@')
 
 

@@ -17,15 +17,14 @@
 
 import logging
 
+from nbxmpp.modules.delay import parse_delay
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import InvalidFrom
 from nbxmpp.protocol import InvalidStanza
 from nbxmpp.protocol import Message
-from nbxmpp.structs import MAMData
+from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import CarbonData
-from nbxmpp.modules.delay import parse_delay
-
+from nbxmpp.structs import MAMData
 
 log = logging.getLogger('nbxmpp.m.misc')
 

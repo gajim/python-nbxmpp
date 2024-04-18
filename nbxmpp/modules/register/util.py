@@ -15,16 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Iq
 from nbxmpp.const import REGISTER_FIELDS
-from nbxmpp.structs import RegisterData
-from nbxmpp.errors import StanzaError
 from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.errors import StanzaError
+from nbxmpp.modules.bits_of_binary import parse_bob_data
 from nbxmpp.modules.dataforms import create_field
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.modules.dataforms import SimpleDataForm
-from nbxmpp.modules.bits_of_binary import parse_bob_data
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Iq
+from nbxmpp.structs import RegisterData
 
 
 def _make_password_change_request(domain, username, password):

@@ -1,16 +1,15 @@
+import os
 import tempfile
 import unittest
-from unittest.mock import Mock
-import os
 from pathlib import Path
+from test.lib.util import raise_all_exceptions
+from unittest.mock import Mock
 
 from gi.repository import GLib
 from gi.repository import Soup
 
 from nbxmpp.const import HTTPRequestError
 from nbxmpp.http import HTTPSession
-from test.lib.util import raise_all_exceptions
-
 
 SMALL_FILE_URL = 'https://gajim.org/downloads/ci/unittest_small_file'  # 200 KB
 BIG_FILE_URL = 'https://gajim.org/downloads/ci/unittest_big_file'      # 7   MB

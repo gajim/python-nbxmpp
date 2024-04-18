@@ -15,19 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import Error as ErrorStanza
-from nbxmpp.protocol import ERR_BAD_REQUEST
-from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import Iq
-from nbxmpp.namespaces import Namespace
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import IBBData
-from nbxmpp.util import b64decode
-from nbxmpp.util import b64encode
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import process_response
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import ERR_BAD_REQUEST
+from nbxmpp.protocol import ERR_FEATURE_NOT_IMPLEMENTED
+from nbxmpp.protocol import Error as ErrorStanza
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import IBBData
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
+from nbxmpp.util import b64decode
+from nbxmpp.util import b64encode
 
 
 class IBB(BaseModule):

@@ -19,16 +19,16 @@ import hashlib
 from dataclasses import dataclass
 from dataclasses import field
 
+from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.errors import StanzaError
+from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.util import process_response
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Iq
+from nbxmpp.simplexml import Node
 from nbxmpp.task import iq_request_task
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
-from nbxmpp.errors import StanzaError
-from nbxmpp.errors import MalformedStanzaError
-from nbxmpp.protocol import Iq
-from nbxmpp.simplexml import Node
-from nbxmpp.namespaces import Namespace
-from nbxmpp.modules.base import BaseModule
-from nbxmpp.modules.util import process_response
 
 
 class VCardTemp(BaseModule):

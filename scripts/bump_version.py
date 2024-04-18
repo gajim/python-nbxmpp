@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import re
 import argparse
-from pathlib import Path
+import re
 import subprocess
+from pathlib import Path
 
 REPO_DIR = Path(__file__).resolve().parent.parent
 

@@ -1,9 +1,10 @@
 import unittest
 
-from nbxmpp.util import compute_caps_hash
 from nbxmpp.modules.discovery import parse_disco_info
-from nbxmpp.protocol import Iq
 from nbxmpp.protocol import DiscoInfoMalformed
+from nbxmpp.protocol import Iq
+from nbxmpp.util import compute_caps_hash
+
 
 class EntityCaps(unittest.TestCase):
 

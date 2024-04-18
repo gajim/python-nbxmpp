@@ -16,10 +16,11 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 import typing
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.structs import StanzaHandler, MessageProperties
-from nbxmpp.structs import Reactions as ReactionStruct
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.namespaces import Namespace
+from nbxmpp.structs import MessageProperties
+from nbxmpp.structs import Reactions as ReactionStruct
+from nbxmpp.structs import StanzaHandler
 
 if typing.TYPE_CHECKING:
     from nbxmpp.client import Client

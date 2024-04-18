@@ -1,10 +1,10 @@
 import unittest
 
-from nbxmpp.stringprep import nodeprep
-from nbxmpp.stringprep import saslprep
-from nbxmpp.stringprep import resourceprep
-from nbxmpp.stringprep import nameprep
 from nbxmpp.stringprep import check_bidi
+from nbxmpp.stringprep import nameprep
+from nbxmpp.stringprep import nodeprep
+from nbxmpp.stringprep import resourceprep
+from nbxmpp.stringprep import saslprep
 
 
 class TestBidi(unittest.TestCase):

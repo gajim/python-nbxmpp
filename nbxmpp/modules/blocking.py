@@ -21,20 +21,19 @@ from typing import Optional
 from typing import Set
 from typing import TYPE_CHECKING
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.simplexml import Node
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
-from nbxmpp.errors import StanzaError
 from nbxmpp.errors import MalformedStanzaError
-from nbxmpp.task import iq_request_task
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import BlockingProperties
-from nbxmpp.structs import BlockingPush
-from nbxmpp.types import BlockingReportValues
+from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import process_response
-
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
+from nbxmpp.simplexml import Node
+from nbxmpp.structs import BlockingProperties
+from nbxmpp.structs import BlockingPush
+from nbxmpp.structs import StanzaHandler
+from nbxmpp.task import iq_request_task
+from nbxmpp.types import BlockingReportValues
 
 if TYPE_CHECKING:
     from nbxmpp.client import Client

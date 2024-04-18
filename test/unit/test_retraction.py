@@ -1,9 +1,9 @@
-from nbxmpp.structs import MessageProperties
-
-from nbxmpp import Message, Namespace
-from nbxmpp.modules.retraction import Retraction
-
 from test.lib.util import StanzaHandlerTest
+
+from nbxmpp import Message
+from nbxmpp import Namespace
+from nbxmpp.modules.retraction import Retraction
+from nbxmpp.structs import MessageProperties
 
 
 class TestRetraction(StanzaHandlerTest):

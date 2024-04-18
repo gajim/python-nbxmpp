@@ -15,16 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Iq
-from nbxmpp.task import iq_request_task
 from nbxmpp.errors import StanzaError
-from nbxmpp.modules.util import process_response
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.bookmarks.util import build_storage_node
 from nbxmpp.modules.bookmarks.util import get_private_request
 from nbxmpp.modules.bookmarks.util import parse_private_bookmarks
-
+from nbxmpp.modules.util import process_response
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Iq
+from nbxmpp.task import iq_request_task
 
 
 class PrivateBookmarks(BaseModule):

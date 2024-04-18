@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import re
 import time
-import logging
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone

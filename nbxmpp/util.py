@@ -16,45 +16,44 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Any
-from typing import Optional
 from typing import Callable
 from typing import Literal
+from typing import Optional
 from typing import Union
 
 import base64
-import hashlib
-import uuid
 import binascii
+import hashlib
+import logging
 import os
 import re
-import logging
-from logging import LoggerAdapter
-from collections import defaultdict
+import uuid
 import xml.etree.ElementTree as ET
+from collections import defaultdict
 from functools import lru_cache
-
-from packaging.version import Version
+from logging import LoggerAdapter
 
 from gi.repository import Gio
 from gi.repository import Soup
+from packaging.version import Version
 
-from nbxmpp.protocol import DiscoInfoMalformed
 from nbxmpp.const import GIO_TLS_ERRORS
-from nbxmpp.const import SOUP_ENCODING
 from nbxmpp.const import GLIB_VERSION
+from nbxmpp.const import SOUP_ENCODING
+from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import DiscoInfoMalformed
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.protocol import StreamHeader
 from nbxmpp.protocol import WebsocketOpenHeader
 from nbxmpp.simplexml import Node
-from nbxmpp.structs import Properties
+from nbxmpp.structs import CommonError
+from nbxmpp.structs import HTTPUploadError
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import PresenceProperties
-from nbxmpp.structs import CommonError
-from nbxmpp.structs import HTTPUploadError
+from nbxmpp.structs import Properties
 from nbxmpp.structs import StanzaMalformedError
-from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.third_party import hsluv
 
 log = logging.getLogger('nbxmpp.util')

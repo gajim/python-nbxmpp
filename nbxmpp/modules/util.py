@@ -15,16 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-import logging
 import functools
 import inspect
-from urllib.parse import urlparse
+import logging
 from urllib.parse import unquote
+from urllib.parse import urlparse
 
-from nbxmpp.structs import CommonResult
-from nbxmpp.errors import StanzaError
 from nbxmpp.errors import is_error
+from nbxmpp.errors import StanzaError
 from nbxmpp.simplexml import Node
+from nbxmpp.structs import CommonResult
 
 
 def process_response(response):

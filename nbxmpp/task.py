@@ -18,25 +18,24 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Optional
 from typing import Callable
+from typing import Optional
 
-import weakref
 import inspect
 import logging
+import weakref
 from enum import IntEnum
 from functools import wraps
 
 from gi.repository import GLib
 
-from nbxmpp.simplexml import Node
-from nbxmpp.errors import is_error
 from nbxmpp.errors import CancelledError
+from nbxmpp.errors import is_error
 from nbxmpp.errors import TimeoutStanzaError
 from nbxmpp.http import HTTPRequest
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import make_func_arguments_string
-
+from nbxmpp.simplexml import Node
 
 log = logging.getLogger('nbxmpp.task')
 

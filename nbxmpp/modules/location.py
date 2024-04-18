@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Node
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import LocationData
 from nbxmpp.const import LOCATION_DATA
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Node
+from nbxmpp.structs import LocationData
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
 

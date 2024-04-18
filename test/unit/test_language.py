@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-import unittest
 import collections.abc
+import unittest
 
 from nbxmpp.language import basic_filter_languages
 from nbxmpp.language import LanguageMap

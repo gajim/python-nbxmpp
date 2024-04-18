@@ -18,15 +18,15 @@
 
 from dataclasses import dataclass
 
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
-from nbxmpp.protocol import InvalidJid
-from nbxmpp.protocol import StanzaMalformed
-from nbxmpp.protocol import Message
-from nbxmpp.simplexml import Node
 from nbxmpp.const import Affiliation
 from nbxmpp.const import Role
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import InvalidJid
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
+from nbxmpp.protocol import Message
+from nbxmpp.protocol import StanzaMalformed
+from nbxmpp.simplexml import Node
 from nbxmpp.structs import MucUserData
 
 

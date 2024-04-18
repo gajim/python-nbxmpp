@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from nbxmpp.protocol import Error as ErrorStanza
+from nbxmpp.const import IqType
+from nbxmpp.modules.base import BaseModule
 from nbxmpp.protocol import ERR_BAD_REQUEST
+from nbxmpp.protocol import Error as ErrorStanza
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import error_factory
-from nbxmpp.const import IqType
-from nbxmpp.modules.base import BaseModule
 
 
 class BaseIq(BaseModule):

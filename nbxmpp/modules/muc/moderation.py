@@ -18,17 +18,17 @@
 from typing import Optional
 
 from nbxmpp import JID
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.structs import StanzaHandler
-from nbxmpp.structs import MessageProperties
-from nbxmpp.structs import ModerationData
-from nbxmpp.simplexml import Node
-from nbxmpp.task import iq_request_task
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.modules.util import process_response
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Iq
+from nbxmpp.protocol import NodeProcessed
+from nbxmpp.simplexml import Node
+from nbxmpp.structs import MessageProperties
+from nbxmpp.structs import ModerationData
+from nbxmpp.structs import StanzaHandler
+from nbxmpp.task import iq_request_task
 
 
 class Moderation(BaseModule):

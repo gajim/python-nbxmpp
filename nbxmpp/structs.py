@@ -19,13 +19,13 @@ from __future__ import annotations
 
 import typing
 from typing import Any
+from typing import NamedTuple
 from typing import Optional
 from typing import Set
-from typing import NamedTuple
 from typing import Union
 
-import time
 import random
+import time
 from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
@@ -33,23 +33,23 @@ from datetime import datetime
 from gi.repository import Gio
 from gi.repository import GLib
 
-from nbxmpp.simplexml import Node
-from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import Protocol
-from nbxmpp.protocol import JID
 from nbxmpp.const import AdHocAction
-from nbxmpp.const import IqType
 from nbxmpp.const import AdHocNoteType
-from nbxmpp.const import MessageType
-from nbxmpp.const import AvatarState
-from nbxmpp.const import StatusCode
-from nbxmpp.const import PresenceType
 from nbxmpp.const import AdHocStatus
-from nbxmpp.const import InviteType
-from nbxmpp.const import Role
 from nbxmpp.const import Affiliation
 from nbxmpp.const import AnonymityMode
+from nbxmpp.const import AvatarState
+from nbxmpp.const import InviteType
+from nbxmpp.const import IqType
+from nbxmpp.const import MessageType
 from nbxmpp.const import PresenceShow
+from nbxmpp.const import PresenceType
+from nbxmpp.const import Role
+from nbxmpp.const import StatusCode
+from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import JID
+from nbxmpp.protocol import Protocol
+from nbxmpp.simplexml import Node
 
 
 class StanzaHandler(NamedTuple):

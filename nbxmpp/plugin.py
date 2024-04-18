@@ -17,6 +17,7 @@ Provides PlugIn class functionality to develop extentions for xmpppy
 """
 
 import logging
+
 log = logging.getLogger('nbxmpp.plugin')
 
 

@@ -15,23 +15,22 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from typing import Any
-from typing import Literal
 from typing import Callable
+from typing import Literal
 from typing import Optional
 
 import logging
+from pathlib import Path
 
-from gi.repository import Soup
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
+from gi.repository import Soup
 
 import nbxmpp
-from .const import HTTPRequestError
 
+from .const import HTTPRequestError
 
 log = logging.getLogger('nbxmpp.http')
 

@@ -15,19 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from nbxmpp.const import AdHocAction
+from nbxmpp.const import AdHocNoteType
+from nbxmpp.const import AdHocStatus
+from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.errors import StanzaError
+from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.discovery import get_disco_request
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Node
 from nbxmpp.structs import AdHocCommand
 from nbxmpp.structs import AdHocCommandNote
-from nbxmpp.const import AdHocStatus
-from nbxmpp.const import AdHocAction
-from nbxmpp.const import AdHocNoteType
-from nbxmpp.errors import StanzaError
-from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.task import iq_request_task
-from nbxmpp.modules.discovery import get_disco_request
-from nbxmpp.modules.base import BaseModule
 
 
 class AdHoc(BaseModule):

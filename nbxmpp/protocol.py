@@ -21,25 +21,31 @@ sub- stanzas) handling routines
 from __future__ import annotations
 
 from typing import Any
-from typing import Iterable
-from typing import Union
-from typing import Optional
 from typing import cast
+from typing import Iterable
+from typing import Optional
+from typing import Union
 
-import os
-import time
-import hashlib
 import functools
+import hashlib
+import os
 import sqlite3
+import time
 import warnings
 from base64 import b64encode
-from dataclasses import dataclass
 from dataclasses import asdict
-
-from gi.repository import GLib
-from gi.repository import Gio
+from dataclasses import dataclass
 
 import idna
+from gi.repository import Gio
+from gi.repository import GLib
+
+from nbxmpp.namespaces import Namespace
+from nbxmpp.precis import enforce_precis_opaque
+from nbxmpp.precis import enforce_precis_username
+from nbxmpp.simplexml import Node
+from nbxmpp.stringprep import nodeprep
+from nbxmpp.stringprep import resourceprep
 from nbxmpp.xmppiri import clean_iri
 from nbxmpp.xmppiri import escape_ifragment
 from nbxmpp.xmppiri import escape_inode
@@ -47,12 +53,6 @@ from nbxmpp.xmppiri import escape_ires
 from nbxmpp.xmppiri import escape_ivalue
 from nbxmpp.xmppiri import validate_ikey
 from nbxmpp.xmppiri import validate_querytype
-from nbxmpp.simplexml import Node
-from nbxmpp.namespaces import Namespace
-from nbxmpp.stringprep import nodeprep
-from nbxmpp.stringprep import resourceprep
-from nbxmpp.precis import enforce_precis_username
-from nbxmpp.precis import enforce_precis_opaque
 
 
 def ascii_upper(s):

@@ -18,13 +18,11 @@
 
 from __future__ import annotations
 
-from typing import Optional
 from typing import Callable
+from typing import Optional
 
 import stringprep
-
 from unicodedata import ucd_3_2_0
-
 
 _nodeprep_prohibited = frozenset('"&\'/:<>@')
 
