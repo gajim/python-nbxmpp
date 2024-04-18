@@ -16,6 +16,16 @@ test-isort:
     - isort --check .
   interruptible: true
 
+test-ruff:
+  stage: test
+  rules:
+    - changes:
+      - "**/*.py"
+  script:
+    - ruff --version
+    - ruff check .
+  interruptible: true
+
 build-unix:
   stage: build
   dependencies: []

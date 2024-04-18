@@ -30,6 +30,7 @@ gssapi = ["gssapi"]
 dev = [
   "isort>=5.13.2",
   "PyGObject-stubs @ git+https://github.com/pygobject/pygobject-stubs.git",
+  "ruff>=0.3.7",
 ]
 
 [project.urls]
@@ -67,3 +68,143 @@ sections = [
   "LOCALFOLDER"
 ]
 skip_gitignore = true
+
+[tool.ruff]
+line-length = 88
+
+target-version = "py310"
+
+[tool.ruff.lint]
+
+select = [
+    "A",     # flake8-builtins
+    # "AIR",   # Airflow
+    # "ANN",   # flake8-annotations
+    # "ARG",   # flake8-unused-arguments
+    # "ASYNC", # flake8-async
+    "B",     # flake8-bugbear
+    "BLE",   # flake8-blind-except
+    "C4",    # flake8-comprehensions
+    "C90",   # mccabe
+    "COM",   # flake8-commas
+    # "CPY",   # flake8-copyright
+    # "D",     # pydocstyle
+    # "DJ",    # flake8-django
+    # "DTZ",   # flake8-datetimez
+    "E",     # Error
+    # "EM",    # flake8-errmsg 
+    # "ERA",   # eradicate
+    "EXE",   # flake8-executable
+    "F",     # Pyflakes
+    "FA",    # flake8-future-annotations
+    # "FBT",   # flake8-boolean-trap
+    # "FIX",   # flake8-fixme
+    # "FLY",   # flynt
+    "G",     # flake8-logging-format
+    # "I",     # isort
+    "ICN",   # flake8-import-conventions
+    # "INP",   # flake8-no-pep420
+    "INT",   # flake8-gettext
+    # "ISC",   # flake8-implicit-str-concat
+    "N",     # pep8-naming
+    # "NPY",   # NumPy-specific rules
+    # "PD",    # pandas-vet
+    # "PERF",  # Perflint
+    "PGH",   # pygrep-hooks
+    "PIE",   # flake8-pie
+    "PL",    # Pylint
+    # "PT",    # flake8-pytest-style
+    # "PTH",   # flake8-use-pathlib
+    # "PYI",   # flake8-pyi
+    # "Q",     # flake8-quotes
+    # "RET",   # flake8-return
+    "RSE",   # flake8-raise
+    "RUF",   # Ruff-specific rules
+    "S",     # flake8-bandit
+    "SIM",   # flake8-simplify
+    # "SLF",   # flake8-self
+    "SLOT",  # flake8-slots
+    "T10",   # flake8-debugger
+    # "T20",   # flake8-print
+    # "TCH",   # flake8-type-checking
+    # "TD",    # flake8-todos
+    # "TID",   # flake8-tidy-imports
+    # "TRY",   # tryceratops
+    "UP",    # pyupgrade
+    "W",     # Warning
+    "YTT",   # flake8-2020
+]
+
+ignore = [
+  "A003",   # Class attribute is shadowing python builtin
+  "B904",   # Within an except clause ..
+  "BLE001", # Blind except Exception: statement
+  "C901",   # too complex
+  "COM812", # Trailing comma missing
+  "E501",   # Line too long
+  "E741",   # Ambiguous variable name
+  "FBT003", # Boolean positional value in function call
+  "N801",   # Class name `x` should use CapWords convention
+  "N802",   # Function name should be lower case
+  "N806",   # Variable should be lower case
+  "N817",   # CamelCase imported as acronym
+  "N818",   # Exception name should be named with an Error suffix
+  "PGH003", # Use specific rule codes when ignoring type issues
+  "PLC1901",# Expression can be simplified to x as an empty string is falsey
+  "PLR0911",# Too many return statements
+  "PLR0912",# Too many branches
+  "PLR0913",# Too many arguments to function call
+  "PLR0915",# Too many statements
+  "PLR2004",# Magic value used in comparison, consider replacing x with a constant variable
+  "PLR5501",# Consider using `elif` instead of `else` then `if` to remove one indentation level
+  "PLW0603",# Using the global statement to update `x` is discouraged
+  "PLW2901",# `for` loop variable `x` overwritten by assignment target
+  "RUF001", # AmbiguousUnicodeCharacterString
+  "RUF002", # AmbiguousUnicodeCharacterDocstring
+  "RUF003", # AmbiguousUnicodeCharacterComment
+  "RUF005", # Consider x instead of concatenation
+  "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
+  "RUF100", # Unused `noqa` directive
+  "S101",   # Use of `assert` detected
+  "S110",   # `try`-`except`-`pass` detected, consider logging the exception
+  "S112",   # try`-`except`-`continue`
+  "S301",   # `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
+  "S303",   # Use of insecure MD2, MD4, MD5, or SHA1 hash function
+  "S310",   # Audit URL open for permitted schemes
+  "S311",   # Standard pseudo-random generators are not suitable for cryptographic purposes
+  "S314",   # Using `xml` to parse untrusted data is known to be vulnerable to XML attacks; use `defusedxml` equivalents
+  "S324",   # Probable use of insecure hash functions
+  "S608",   # Possible SQL injection vector through string-based query construction
+  "SIM102", # Use a single `if` statement instead of nested `if` statements
+  "SIM105", # Use `contextlib.suppress(Exception)` instead of try-except-pass
+  "SIM108", # Use ternary operator
+  "SIM114", # Combine `if` branches using logical `or` operator"
+  "SIM115", # Use context handler for opening files
+  "SIM201", # Use x instead of not x
+  "SIM212", # Use `value if value else ''` instead of `'' if not value else value`
+  "SIM300", # Yoda conditions are discouraged use x instead
+  "UP037",  # Remove quotes from type annotation
+  "UP031",  # Use format specifiers instead of percent format
+  "UP032",  # Use f-string instead of `format` call
+  "UP007",  # Use `X | Y` for type annotations
+]
+
+exclude = [
+  ".eggs",
+  ".git",
+  ".ruff_cache",
+  ".venv",
+  "build",
+  "dist",
+  "venv",
+  "*.pyi",
+]
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+"nbxmpp/old_dispatcher.py" = ["B011", "N803"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
