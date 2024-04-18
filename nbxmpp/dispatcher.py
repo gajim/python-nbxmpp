@@ -53,6 +53,7 @@ from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.modules.mood import Mood
 from nbxmpp.modules.muc import MUC
+from nbxmpp.modules.muc.hats import Hats
 from nbxmpp.modules.muc.moderation import Moderation
 from nbxmpp.modules.muclumbus import Muclumbus
 from nbxmpp.modules.nickname import Nickname
@@ -204,6 +205,7 @@ class StanzaDispatcher(Observable):
         self._modules['LastActivity'] = LastActivity(self._client)
         self._modules['EntityTime'] = EntityTime(self._client)
         self._modules['Reactions'] = Reactions(self._client)
+        self._modules['Hats'] = Hats(self._client)
 
         for instance in self._modules.values():
             for handler in instance.handlers:

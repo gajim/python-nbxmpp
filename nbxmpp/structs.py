@@ -25,6 +25,7 @@ from typing import Union
 
 import random
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass
 from dataclasses import field
 from datetime import datetime
@@ -45,6 +46,9 @@ from nbxmpp.const import PresenceShow
 from nbxmpp.const import PresenceType
 from nbxmpp.const import Role
 from nbxmpp.const import StatusCode
+from nbxmpp.language import LanguageMap
+from nbxmpp.language import LanguageRange
+from nbxmpp.language import LanguageTag
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import Protocol
@@ -973,6 +977,36 @@ class ReceiptData(NamedTuple):
         return self.type == 'received'
 
 
+@dataclass
+class Hat:
+    uri: str
+    title: str
+
+
+class HatData:
+    def __init__(self) -> None:
+        self._hat_map = LanguageMap()
+
+    def add_hat(self, hat: Hat, lang: str | None) -> None:
+        language_tag = LanguageTag(tag=lang) if lang else None
+        if language_tag not in self._hat_map:
+            self._hat_map[language_tag] = []
+        self._hat_map[language_tag].append(hat)
+
+    def get_hats(
+        self,
+        language_range: Sequence[LanguageRange] | None = None
+    ) -> list[Hat]:
+
+        if language_range is None:
+            return self._hat_map.any()
+
+        try:
+            return self._hat_map.lookup(language_range)
+        except KeyError:
+            return self._hat_map.any()
+
+
 class Properties:
     pass
 
@@ -1243,6 +1277,7 @@ class PresenceProperties:
     muc_nickname: Optional[str] = None
     muc_destroyed: Optional[MucDestroyed] = None
     entity_caps: Optional[EntityCapsData] = None
+    hats: Optional[HatData] = None
 
     @property
     def is_self_presence(self) -> bool:
