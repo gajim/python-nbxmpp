@@ -17,8 +17,6 @@
 
 from dataclasses import dataclass
 
-# pylint: disable=invalid-name
-# pylint: disable=line-too-long
 
 @dataclass(frozen=True)
 class _Namespaces:

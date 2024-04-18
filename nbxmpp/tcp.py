@@ -164,7 +164,7 @@ class TCPConnection(Connection):
         self._log.info('Send keepalive')
         self._keepalive_id = None
         if not self._con.get_output_stream().has_pending():
-            self._write_all_async(' '.encode())
+            self._write_all_async(b' ')
 
     def start_tls_negotiation(self):
         self._log.info('Start TLS negotiation')

@@ -124,7 +124,7 @@ class EntityCaps(unittest.TestCase):
 
         info = parse_disco_info(Iq(node=node))
         with self.assertRaises(DiscoInfoMalformed):
-            hash_ = compute_caps_hash(info)
+            compute_caps_hash(info)
 
     def test_non_unique_form_type_value(self):
         node = """
@@ -159,7 +159,7 @@ class EntityCaps(unittest.TestCase):
 
         info = parse_disco_info(Iq(node=node))
         with self.assertRaises(DiscoInfoMalformed):
-            hash_ = compute_caps_hash(info)
+            compute_caps_hash(info)
 
     def test_non_unique_feature(self):
         node = """
@@ -177,7 +177,7 @@ class EntityCaps(unittest.TestCase):
 
         info = parse_disco_info(Iq(node=node))
         with self.assertRaises(DiscoInfoMalformed):
-            hash_ = compute_caps_hash(info)
+            compute_caps_hash(info)
 
     def test_non_unique_identity(self):
         node = """
@@ -195,4 +195,4 @@ class EntityCaps(unittest.TestCase):
 
         info = parse_disco_info(Iq(node=node))
         with self.assertRaises(DiscoInfoMalformed):
-            hash_ = compute_caps_hash(info)
+            compute_caps_hash(info)

@@ -43,7 +43,7 @@ class WrongFieldValue(Error):
 class ExtendedNode(Node):
     @classmethod
     def __new__(cls, *args, **kwargs):
-        if 'extend' not in kwargs.keys() or not kwargs['extend']:
+        if 'extend' not in kwargs or not kwargs['extend']:
             return object.__new__(cls)
 
         extend = kwargs['extend']
@@ -571,8 +571,7 @@ class DataRecord(ExtendedNode):
         """
         Iterate over fields in this record. Do not take associated into account
         """
-        for field in self.iterTags('field'):
-            yield field
+        yield from self.iterTags('field')
 
     def iter_with_associated(self):
         """
@@ -586,10 +585,7 @@ class DataRecord(ExtendedNode):
         return self.vars[item]
 
     def is_valid(self):
-        for field in self.iter_fields():
-            if not field.is_valid()[0]:
-                return False
-        return True
+        return all(field.is_valid()[0] for field in self.iter_fields())
 
     def is_fake_form(self):
         return bool(self.vars.get('fakeform', False))
@@ -748,5 +744,4 @@ class MultipleDataForm(DataForm):
             self.delChild(record)
 
     def iter_records(self):
-        for record in self.getTags('item'):
-            yield record
+        yield from self.getTags('item')

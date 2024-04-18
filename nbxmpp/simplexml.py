@@ -113,7 +113,7 @@ class Node:
                 self.kids = []
                 self.parent = node.parent
                 self.nsd = {}
-                for key in node.attrs.keys():
+                for key in node.attrs:
                     self.attrs[key] = node.attrs[key]
                 for data in node.data:
                     self.data.append(data)
@@ -184,7 +184,7 @@ class Node:
             if not self.parent or self.parent.namespace!=self.namespace:
                 if 'xmlns' not in self.attrs:
                     s += ' xmlns="%s"' % self.namespace
-        for key in self.attrs.keys():
+        for key in self.attrs:
             val = str(self.attrs[key])
             s += ' %s="%s"' % (key, XMLescape(val))
 
@@ -239,7 +239,8 @@ class Node:
         if node:
             newnode=node
             node.parent = self
-        else: newnode=Node(tag=name, parent=self, attrs=attrs, payload=payload)
+        else:
+            newnode=Node(tag=name, parent=self, attrs=attrs, payload=payload)
         if namespace:
             newnode.setNamespace(namespace)
         self.kids.append(newnode)
@@ -371,7 +372,7 @@ class Node:
             if node.getName() == name:
                 if attrs is None:
                     attrs = {}
-                for key in attrs.keys():
+                for key in attrs:
                     if key not in node.attrs or node.attrs[key] != attrs[key]:
                         break
                 else:
@@ -391,7 +392,7 @@ class Node:
             if node.getName() == name:
                 if attrs is None:
                     attrs = {}
-                for key in attrs.keys():
+                for key in attrs:
                     if key not in node.attrs or \
                             node.attrs[key]!=attrs[key]:
                         break
@@ -597,7 +598,7 @@ class NodeBuilder:
     last_is_data: bool
     _ptr: Optional[Node]
     data_buffer: Optional[list[str]]
-    streamError: str
+    stream_error: str
     _is_stream: bool
 
     def __init__(self,
@@ -638,7 +639,7 @@ class NodeBuilder:
         self.last_is_data = True
         self._ptr = None
         self.data_buffer = None
-        self.streamError = ''
+        self.stream_error = ''
         self._is_stream = not finished
         if data:
             self._parser.Parse(data, finished)
@@ -730,9 +731,9 @@ class NodeBuilder:
             if self._mini_dom.getName() == 'error':
                 children = self._mini_dom.getChildren()
                 if children:
-                    self.streamError = children[0].getName()
+                    self.stream_error = children[0].getName()
                 else:
-                    self.streamError = self._mini_dom.getData()
+                    self.stream_error = self._mini_dom.getData()
             self.dispatch(self._mini_dom)
         elif self.__depth > self._dispatch_depth:
             self._ptr = self._ptr.parent

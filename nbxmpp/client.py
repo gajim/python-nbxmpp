@@ -304,10 +304,10 @@ class Client(Observable):
 
     @property
     def mechs(self):
-        return set(self._allowed_mechs or set(['SCRAM-SHA-512',
-                                               'SCRAM-SHA-256',
-                                               'SCRAM-SHA-1',
-                                               'PLAIN']))
+        return set(self._allowed_mechs or {'SCRAM-SHA-512',
+                                           'SCRAM-SHA-256',
+                                           'SCRAM-SHA-1',
+                                           'PLAIN'})
 
     def set_mechs(self, mechs):
         self._allowed_mechs = mechs

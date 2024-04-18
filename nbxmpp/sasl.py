@@ -458,7 +458,7 @@ class SCRAM(BaseMechanism):
 
     @staticmethod
     def _xor(x: bytes, y: bytes) -> bytes:
-        return bytes([px ^ py for px, py in zip(x, y)])
+        return bytes([px ^ py for px, py in zip(x, y, strict=False)])
 
     def _h(self, data: bytes) -> bytes:
         return hashlib.new(self._hash_method, data).digest()

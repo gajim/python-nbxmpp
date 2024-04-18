@@ -4,16 +4,13 @@ from typing import Any
 
 import os
 import unittest
-from unittest.mock import Mock
 
 from gi.repository import GLib
 
 from nbxmpp.client import Client
 from nbxmpp.http import HTTPSession
 from nbxmpp.modules.muclumbus import Muclumbus
-from nbxmpp.sasl import SCRAM_SHA_1
 from nbxmpp.structs import MuclumbusResult
-from nbxmpp.util import b64encode
 
 # Test vector from https://wiki.xmpp.org/web/SASL_and_SCRAM-SHA-1
 

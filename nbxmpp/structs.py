@@ -630,10 +630,7 @@ class DiscoInfo(NamedTuple):
 
     @property
     def is_gateway(self) -> bool:
-        for identity in self.identities:
-            if identity.category == 'gateway':
-                return True
-        return False
+        return any(identity.category == 'gateway' for identity in self.identities)
 
     @property
     def gateway_name(self) -> Optional[str]:
@@ -650,10 +647,7 @@ class DiscoInfo(NamedTuple):
         return None
 
     def has_category(self, category: str) -> bool:
-        for identity in self.identities:
-            if identity.category == category:
-                return True
-        return False
+        return any(identity.category == category for identity in self.identities)
 
     def has_identity(self, category: str, type_: str) -> bool:
         for identity in self.identities:

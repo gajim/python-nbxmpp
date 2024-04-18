@@ -90,7 +90,7 @@ class Connection(Observable):
 
     def get_channel_binding_data(
         self,
-        type_: Gio.TlsChannelBindingType  # pylint: disable=unused-argument
+        type_: Gio.TlsChannelBindingType
     ) -> Optional[bytes]:
         assert self._tls_con is not None
 

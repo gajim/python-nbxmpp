@@ -52,7 +52,7 @@ def parse_xmpp_uri(uri):
     if url.scheme != 'xmpp':
         raise ValueError('not a xmpp uri')
 
-    if not ';' in url.query:
+    if ';' not in url.query:
         return (url.path, url.query, {})
 
     action, query = url.query.split(';', 1)

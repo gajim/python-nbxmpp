@@ -16,7 +16,7 @@ class BookmarkTest(StanzaHandlerTest):
                 BookmarkData(jid=JID.from_string('theplay@conference.shakespeare.lit'),
                              name='The Play\'s the Thing',
                              autojoin=True,
-                             password='pass',
+                             password='pass',  # noqa: S106
                              nick='JC'),
                 BookmarkData(jid=JID.from_string('second@conference.shakespeare.lit'),
                              name='Second room',

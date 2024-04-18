@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-# pylint: disable=E1120
-
 from typing import Optional
 
 import logging
@@ -721,7 +719,6 @@ class AdrProperty:
 
     @property
     def is_empty(self):
-        # pylint: disable=too-many-boolean-expressions
         if (self.pobox or
                 self.ext or
                 self.street or

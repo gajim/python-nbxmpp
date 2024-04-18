@@ -2,6 +2,6 @@ import gi
 
 gi.require_version('Soup', '3.0')
 
-from .protocol import *  # pylint: disable=wrong-import-position
+from .protocol import *  # noqa: F403, E402
 
 __version__: str = '4.5.4'

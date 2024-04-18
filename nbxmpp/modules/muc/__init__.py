@@ -1,1 +1,1 @@
-from .muc import MUC
+from .muc import MUC  # noqa: F401

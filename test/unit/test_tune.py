@@ -10,7 +10,7 @@ class TuneTest(StanzaHandlerTest):
 
     def test_tune_parsing(self):
         def _on_message(_con, _stanza, properties):
-   
+
             data = TuneData(artist='Yes',
                             length='686',
                             rating='8',

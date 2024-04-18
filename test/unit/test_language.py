@@ -94,13 +94,13 @@ class TestLanguageTag(unittest.TestCase):
     def test_dont_compare_with_None(self):
         tag1 = LanguageTag.fromstr("de-DE")
         with self.assertRaises(TypeError):
-            tag1 > None
+            tag1 > None  # noqa: B015
         with self.assertRaises(TypeError):
-            tag1 < None
+            tag1 < None  # noqa: B015
         with self.assertRaises(TypeError):
-            tag1 >= None
+            tag1 >= None  # noqa: B015
         with self.assertRaises(TypeError):
-            tag1 <= None
+            tag1 <= None  # noqa: B015
 
     def test__repr__(self):
         tag1 = LanguageTag.fromstr("de-DE")
@@ -195,7 +195,7 @@ class TestLanguageRange(unittest.TestCase):
             r.foo = "bar"
 
 
-class Testbasic_filter_languages(unittest.TestCase):
+class TestBasicFilterLanguages(unittest.TestCase):
     def setUp(self):
         self.languages = [
             LanguageTag.fromstr("de-Latn-DE-1999"),
@@ -309,7 +309,7 @@ class Testbasic_filter_languages(unittest.TestCase):
         )
 
 
-class Testlookup_language(unittest.TestCase):
+class TestLookupLanguage(unittest.TestCase):
     def setUp(self):
         self.languages = [
             LanguageTag.fromstr("de-Latn-DE-1999"),

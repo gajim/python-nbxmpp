@@ -27,8 +27,7 @@ class ReactionsTest(StanzaHandlerTest):
         xml = '''
             <message to='romeo@capulet.net/orchard' id='96d73204-a57a-11e9-88b8-4889e7820c76' type='chat'>
               <reactions id='744f6e18-a57a-11e9-a656-4889e7820c76' xmlns='urn:xmpp:reactions:0'>
-                <reaction>👋  
-                </reaction>
+                <reaction>👋  </reaction>
                 <reaction>🐢</reaction>
               </reactions>
               <store xmlns='urn:xmpp:hints'/>

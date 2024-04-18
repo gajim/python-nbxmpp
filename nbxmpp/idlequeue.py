@@ -171,11 +171,10 @@ class IdleCommand(IdleObject):
         # if program is started from noninteraactive shells stdin is closed and
         # cannot be forwarded, so we have to keep it open
 
-        # pylint: disable=consider-using-with
         self.pipe = subprocess.Popen(self._compose_command_args(),
                                      stdout=subprocess.PIPE,
                                      bufsize=1024,
-                                     shell=True,
+                                     shell=True,  # noqa: S602
                                      stderr=subprocess.STDOUT,
                                      stdin=subprocess.PIPE)
         if self.commandtimeout >= 0:
@@ -183,8 +182,8 @@ class IdleCommand(IdleObject):
             self.idlequeue.set_alarm(self.wait_child, 0.1)
 
     def _start_posix(self):
-        self.pipe = os.popen(self._compose_command_line())
-        self.fd = self.pipe.fileno()  # pylint: disable=no-member
+        self.pipe = os.popen(self._compose_command_line())  # noqa: S605
+        self.fd = self.pipe.fileno()
         fcntl.fcntl(self.pipe, fcntl.F_SETFL, os.O_NONBLOCK)
         self.idlequeue.plug_idle(self, False, True)
         if self.commandtimeout >= 0:
@@ -204,7 +203,7 @@ class IdleCommand(IdleObject):
 
     def pollin(self):
         try:
-            res = self.pipe.read()  # pylint: disable=no-member
+            res = self.pipe.read()
         except Exception:
             res = ''
         if res == '':
@@ -576,7 +575,7 @@ class GlibIdleQueue(IdleQueue):
         This method is called when we unplug a new idle object. Stop listening
         for events from fd
         """
-        if not fd in self.events:
+        if fd not in self.events:
             return
 
         GLib.source_remove(self.events[fd])

@@ -105,7 +105,7 @@ def create_tzinfo(hours=0, minutes=0, tz_string=None):
         log.warning('Wrong tz string: %s', tz_string)
         return None
 
-    if minutes not in range(0, 59):
+    if minutes not in range(59):
         log.warning('Wrong tz string: %s', tz_string)
         return None
 

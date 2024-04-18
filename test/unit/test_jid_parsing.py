@@ -146,7 +146,7 @@ class JIDParsing(unittest.TestCase):
         ]
 
         test4 = [
-            ('call\\20me@example.com', 'call me@example.com',)
+            ('call\\20me@example.com', 'call me@example.com')
         ]
 
         fail_tests = [
@@ -163,7 +163,7 @@ class JIDParsing(unittest.TestCase):
             self.assertTrue(jid.to_user_string() == user_input)
 
             # We must fail on invalid JIDs
-            with self.assertRaises(Exception):
+            with self.assertRaises(Exception):  # noqa: B017
                 JID.from_string(user_input)
 
             # Parse escaped JIDs
@@ -187,7 +187,7 @@ class JIDParsing(unittest.TestCase):
 
         for user_input in fail_tests:
             # from_user_input does only support bare jids
-            with self.assertRaises(Exception):
+            with self.assertRaises(Exception):  # noqa: B017
                 JID.from_user_input(user_input)
 
     def test_jid_to_iri(self):

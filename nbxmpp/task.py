@@ -249,7 +249,7 @@ class Task:
 
     def _invoke_callbacks(self):
         for callback in self._done_callbacks:
-            if isinstance(callback, (weakref.WeakMethod, weakref.ref)):
+            if isinstance(callback, weakref.WeakMethod | weakref.ref):
                 callback = callback()
                 if callback is None:
                     return
@@ -275,7 +275,7 @@ class Task:
 
     def finish(self) -> Any:
         if self._error is not None:
-            raise self._error  # pylint: disable=raising-bad-type
+            raise self._error
         return self._result
 
     def set_user_data(self, user_data: Any):
@@ -345,7 +345,6 @@ class IqRequestTask(Task):
         self._iq_id = None
 
     def _run_async(self, stanza: Node):
-        # pylint: disable=arguments-renamed
         self._iq_id = self._client.send_stanza(stanza,
                                                callback=self._async_finished,
                                                timeout=self._timeout)
@@ -381,7 +380,6 @@ class HTTPRequestTask(Task):
         super().__init__(gen, logger)
 
     def _run_async(self, request: HTTPRequest):
-        # pylint: disable=arguments-renamed
         request.connect('finished', self._async_finished)
 
     def _async_finished(self, request: HTTPRequest):

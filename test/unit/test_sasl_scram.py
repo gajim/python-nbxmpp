@@ -12,7 +12,7 @@ class SCRAM(unittest.TestCase):
         self.con = Mock()
         self.maxDiff = None
         self._username = 'user'
-        self._password = 'pencil'
+        self._password = 'pencil'  # noqa: S105
         self._mechanism = SCRAM_SHA_1(self._username, self._password, None)
         self._mechanism._client_nonce = 'fyko+d2lbbFgONRv9qkxdawL'
 

@@ -687,7 +687,6 @@ REGISTER_FIELDS = [
     'date',
 ]
 
-# pylint: disable=line-too-long
 GIO_TLS_ERRORS = {
     Gio.TlsCertificateFlags.UNKNOWN_CA: 'The signing certificate authority is not known',
     Gio.TlsCertificateFlags.REVOKED: 'The certificate has been revoked',
@@ -697,7 +696,6 @@ GIO_TLS_ERRORS = {
     Gio.TlsCertificateFlags.GENERIC_ERROR: 'Unknown validation error',
     Gio.TlsCertificateFlags.EXPIRED: 'The certificate has expired',
 }
-# pylint: enable=line-too-long
 
 NOT_ALLOWED_XML_CHARS = {
     '&': '&amp;',

@@ -490,7 +490,7 @@ stream_exceptions = {'bad-format': BadFormat,
 
 
 def deprecation_warning(message):
-    warnings.warn(message, DeprecationWarning)
+    warnings.warn(message, DeprecationWarning, stacklevel=1)
 
 
 def split_jid_string(
@@ -518,7 +518,7 @@ def split_jid_string(
     return localpart, domainpart, resourcepart
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def validate_localpart(localpart: str) -> str:
     if not localpart or len(localpart.encode()) > 1023:
         raise LocalpartByteLimit
@@ -538,7 +538,7 @@ def validate_localpart(localpart: str) -> str:
         raise LocalpartNotAllowedChar
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def validate_resourcepart(resourcepart: str) -> str:
     if not resourcepart or len(resourcepart.encode()) > 1023:
         raise ResourcepartByteLimit
@@ -558,7 +558,7 @@ def validate_resourcepart(resourcepart: str) -> str:
         raise ResourcepartNotAllowedChar
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def validate_domainpart(domainpart: str) -> str:
     if not domainpart:
         raise DomainpartByteLimit
@@ -582,7 +582,7 @@ def validate_domainpart(domainpart: str) -> str:
     return domainpart
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def idna2008_prep(domain: str, to_ascii: bool = False) -> str:
     '''
     Prepare with UTS46 case mapping to stay compatibel with the IDNA2003
@@ -597,7 +597,7 @@ def idna2008_prep(domain: str, to_ascii: bool = False) -> str:
     return domain
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def escape_localpart(localpart: str) -> str:
     # https://xmpp.org/extensions/xep-0106.html#bizrules-algorithm
     #
@@ -619,7 +619,7 @@ def escape_localpart(localpart: str) -> str:
     return localpart
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def unescape_localpart(localpart: str) -> str:
     if localpart.startswith('\\20') or localpart.endswith('\\20'):
         # Escaped JIDs are not allowed to start or end with \20
@@ -660,7 +660,7 @@ class JID:
             object.__setattr__(self, "resource", resource)
 
     @classmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def from_string(cls, jid_string: str, force_bare: bool = False) -> JID:
         localpart, domainpart, resourcepart = split_jid_string(jid_string)
 
@@ -672,7 +672,7 @@ class JID:
                    resource=resourcepart)
 
     @classmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def from_user_input(cls, user_input: str, escaped: bool = False) -> JID:
         # Use this if we want JIDs to be escaped according to XEP-0106
         # The standard JID parsing cannot be applied because user_input is
@@ -705,7 +705,7 @@ class JID:
                    resource=None)
 
     @classmethod
-    @functools.lru_cache(maxsize=None)
+    @functools.cache
     def from_iri(cls, iri_str: str, *, force_bare: bool = False) -> JID:
         iri_str = clean_iri(iri_str)
         localpart, domainpart, resourcepart = split_jid_string(iri_str)
@@ -1128,7 +1128,7 @@ class Protocol(Node):
         Set the error code. Obsolete. Use error-conditions instead
         """
         if code:
-            if str(code) in _errorcodes.keys():
+            if str(code) in _errorcodes:
                 error = ErrorNode(_errorcodes[str(code)], text=error)
             else:
                 error = ErrorNode(ERR_UNDEFINED_CONDITION, code=code,
@@ -1565,7 +1565,7 @@ class Iq(Protocol):
 
     def __init__(self,
                  typ: Optional[str] = None,
-                 queryNS: Optional[str] = None,
+                 query_ns: Optional[str] = None,
                  attrs: Optional[dict[str, str]] = None,
                  to: Optional[Union[JID, str]] = None,
                  frm: Optional[Union[JID, str]] = None,
@@ -1590,8 +1590,8 @@ class Iq(Protocol):
                           node=node)
         if payload:
             self.setQueryPayload(payload)
-        if queryNS:
-            self.setQueryNS(queryNS)
+        if query_ns:
+            self.setQueryNS(query_ns)
 
     def getQuery(self) -> Optional[Node]:
         """
@@ -1893,7 +1893,7 @@ class Features(Node):
         if mechanisms is None:
             return set()
         mechanisms = mechanisms.getTags('mechanism')
-        return set(mech.getData() for mech in mechanisms)
+        return {mech.getData() for mech in mechanisms}
 
     def get_domain_based_name(self):
         hostname = self.getTag('hostname',
@@ -2030,7 +2030,7 @@ class DataField(Node):
         Node.__init__(self, 'field', node=node)
         if name:
             self.setVar(name)
-        if isinstance(value, (list, tuple)):
+        if isinstance(value, list | tuple):
             self.setValues(value)
         elif value:
             self.setValue(value)
@@ -2201,7 +2201,7 @@ class DataForm(Node):
         if data is not None:
             if isinstance(data, dict):
                 newdata = []
-                for name in data.keys():
+                for name in data:
                     newdata.append(DataField(name, data[name]))
                 data = newdata
             for child in data:

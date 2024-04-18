@@ -3,6 +3,7 @@
 import argparse
 import re
 import subprocess
+import sys
 from pathlib import Path
 
 REPO_DIR = Path(__file__).resolve().parent.parent
@@ -18,7 +19,7 @@ def get_current_version() -> str:
     content = INIT.read_text(encoding='utf8')
     match = re.search(VERSION_RX, content)
     if match is None:
-        exit('Unable to find current version')
+        sys.exit('Unable to find current version')
     return match[0]
 
 
@@ -36,7 +37,7 @@ def make_changelog(new_version: str) -> None:
         new_version
     ]
 
-    result = subprocess.run(cmd,
+    result = subprocess.run(cmd,  # noqa: S603
                             cwd=REPO_DIR,
                             text=True,
                             check=True,
