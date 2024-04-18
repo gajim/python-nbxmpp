@@ -158,7 +158,7 @@ class SecurityLabel:
 
 @dataclass
 class Catalog:
-    labels: Dict[str, SecurityLabel]
+    labels: dict[str, SecurityLabel]
     default: str
 
     def get_label_names(self):

@@ -35,7 +35,7 @@ from xml.parsers.expat import ExpatError
 
 from nbxmpp.const import NOT_ALLOWED_XML_CHARS
 
-Attrs = Dict[str, str]
+Attrs = dict[str, str]
 
 log = logging.getLogger('nbxmpp.simplexml')
 
@@ -72,11 +72,11 @@ class Node:
     name: str
     namespace: str
     attrs: Attrs
-    data: List[str]
-    kids: List[Union[Node, str]]
+    data: list[str]
+    kids: list[Union[Node, str]]
     parent: Optional[Node]
-    nsd: Dict[str, str]
-    nsp_cache: Dict[Any, Any]
+    nsd: dict[str, str]
+    nsp_cache: dict[Any, Any]
 
     FORCE_NODE_RECREATION = False
 
@@ -84,9 +84,9 @@ class Node:
             self,
             tag: Optional[str] = None,
             attrs: Optional[Attrs] = None,
-            payload: Optional[Union[Node, str, List[Union[Node, str]]]] = None,
+            payload: Optional[Union[Node, str, list[Union[Node, str]]]] = None,
             parent: Optional[Node] = None,
-            nsp: Optional[Dict[Any, Any]] = None,
+            nsp: Optional[dict[Any, Any]] = None,
             node_built: bool = False,
             node: Optional[Union[Node, Any]] = None) -> None:
         """
@@ -224,7 +224,7 @@ class Node:
     def addChild(self,
                  name: Optional[str] = None,
                  attrs: Optional[Attrs] = None,
-                 payload: Optional[List[Any]] = None,
+                 payload: Optional[list[Any]] = None,
                  namespace: Optional[str] = None,
                  node: Optional[Node] = None) -> Node:
         """
@@ -293,7 +293,7 @@ class Node:
         """
         return self.attrs.get(key)
 
-    def getChildren(self) -> List[Union[Node, str]]:
+    def getChildren(self) -> list[Union[Node, str]]:
         """
         Return all node's child nodes as list
         """
@@ -361,12 +361,12 @@ class Node:
     def getTags(self,
                 name: str,
                 attrs: Optional[Attrs] = None,
-                namespace: Optional[str] = None) -> List[Node]:
+                namespace: Optional[str] = None) -> list[Node]:
         """
         Filter all child nodes using specified arguments as filter. Returns the
         list of nodes found
         """
-        nodes: List[Node] = []
+        nodes: list[Node] = []
         for node in self.kids:
             if namespace and namespace != node.getNamespace():
                 continue
@@ -433,7 +433,7 @@ class Node:
         self.parent = node
 
     def setPayload(self,
-                   payload: Union[List[Union[Node, str]], Node, str],
+                   payload: Union[list[Union[Node, str]], Node, str],
                    add: bool = False) -> None:
         """
         Set node payload according to the list specified. WARNING: completely
@@ -594,11 +594,11 @@ class NodeBuilder:
     __max_depth: int
     _dispatch_depth: int
     _document_attrs: Optional[Attrs]
-    _document_nsp: Optional[Dict[str, str]]
+    _document_nsp: Optional[dict[str, str]]
     _mini_dom: Optional[Node]
     last_is_data: bool
     _ptr: Optional[Node]
-    data_buffer: Optional[List[str]]
+    data_buffer: Optional[list[str]]
     streamError: str
     _is_stream: bool
 

@@ -307,7 +307,7 @@ class AvatarData:
 
 @dataclass
 class AvatarMetaData:
-    infos: List[AvatarInfo] = field(default_factory=list)
+    infos: list[AvatarInfo] = field(default_factory=list)
     default: Optional[str] = None
 
     @classmethod
@@ -341,7 +341,7 @@ class AvatarMetaData:
 @dataclass
 class Avatar:
     metadata: AvatarMetaData = field(default_factory=AvatarMetaData)
-    data: Dict[AvatarInfo, bytes] = field(init=False, default_factory=dict)
+    data: dict[AvatarInfo, bytes] = field(init=False, default_factory=dict)
 
     def add_image_source(self,
                          data,

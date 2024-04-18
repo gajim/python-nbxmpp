@@ -181,7 +181,7 @@ class MultiParameter:
 
     name: str
     type: str
-    values: Set[str]
+    values: set[str]
 
     @classmethod
     def from_node(cls, node):
@@ -438,7 +438,7 @@ class TextProperty:
 class TextListProperty:
 
     name: str
-    values: List[str]
+    values: list[str]
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
@@ -552,11 +552,11 @@ class FnProperty(TextProperty):
 class NProperty:
 
     name: str = field(default='n', init=False)
-    surname: List[str] = field(default_factory=list)
-    given: List[str] = field(default_factory=list)
-    additional: List[str] = field(default_factory=list)
-    prefix: List[str] = field(default_factory=list)
-    suffix: List[str] = field(default_factory=list)
+    surname: list[str] = field(default_factory=list)
+    given: list[str] = field(default_factory=list)
+    additional: list[str] = field(default_factory=list)
+    prefix: list[str] = field(default_factory=list)
+    suffix: list[str] = field(default_factory=list)
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
@@ -680,13 +680,13 @@ class GenderProperty:
 class AdrProperty:
 
     name: str = field(default='adr', init=False)
-    pobox: List[str] = field(default_factory=list)
-    ext: List[str] = field(default_factory=list)
-    street: List[str] = field(default_factory=list)
-    locality: List[str] = field(default_factory=list)
-    region: List[str] = field(default_factory=list)
-    code: List[str] = field(default_factory=list)
-    country: List[str] = field(default_factory=list)
+    pobox: list[str] = field(default_factory=list)
+    ext: list[str] = field(default_factory=list)
+    street: list[str] = field(default_factory=list)
+    locality: list[str] = field(default_factory=list)
+    region: list[str] = field(default_factory=list)
+    code: list[str] = field(default_factory=list)
+    country: list[str] = field(default_factory=list)
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod

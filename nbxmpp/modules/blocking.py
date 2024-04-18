@@ -145,7 +145,7 @@ def _parse_push(node: Node) -> BlockingPush:
     if not items:
         return BlockingPush(block=set(), unblock=set(), unblock_all=True)
 
-    jids: Set[JID] = set()
+    jids: set[JID] = set()
     for item in items:
         jid = item.getAttr('jid')
         if not jid:
@@ -158,8 +158,8 @@ def _parse_push(node: Node) -> BlockingPush:
 
         jids.add(jid)
 
-    block: Set[JID] = set()
-    unblock: Set[JID] = set()
+    block: set[JID] = set()
+    unblock: set[JID] = set()
     if node.getName() == 'block':
         block = jids
     else:

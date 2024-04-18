@@ -175,8 +175,8 @@ class MoodData(NamedTuple):
 
 
 class BlockingPush(NamedTuple):
-    block: Set[JID]
-    unblock: Set[JID]
+    block: set[JID]
+    unblock: set[JID]
     unblock_all: bool
 
 
@@ -385,7 +385,7 @@ class RosterItem:
     ask: Optional[str] = None
     subscription: Optional[str] = None
     approved: Optional[str] = None
-    groups: Set[str] = field(default_factory=set)
+    groups: set[str] = field(default_factory=set)
 
     @classmethod
     def from_node(cls, node: Node) -> RosterItem:
@@ -713,7 +713,7 @@ class AdHocCommand(NamedTuple):
     sessionid: Optional[str] = None
     status: Optional[AdHocStatus] = None
     data: Optional[Node] = None
-    actions: Optional[Set[AdHocAction]] = None
+    actions: Optional[set[AdHocAction]] = None
     default: Optional[AdHocAction] = None
     notes: Optional[list[AdHocCommandNote]] = None
 
@@ -1010,7 +1010,7 @@ class MessageProperties:
     occupant_id: Optional[str] = None
     muc_jid: Optional[JID] = None
     muc_nickname: Optional[str] = None
-    muc_status_codes: Optional[Set[StatusCode]] = None
+    muc_status_codes: Optional[set[StatusCode]] = None
     muc_private_message: bool = False
     muc_invite = None
     muc_decline = None
@@ -1245,7 +1245,7 @@ class PresenceProperties:
     avatar_sha: Optional[str] = None
     avatar_state: AvatarState = AvatarState.IGNORE
     muc_jid: Optional[JID] = None
-    muc_status_codes: Optional[Set[StatusCode]] = None
+    muc_status_codes: Optional[set[StatusCode]] = None
     muc_user: Optional[MucUserData] = None
     muc_nickname: Optional[str] = None
     muc_destroyed: Optional[MucDestroyed] = None
