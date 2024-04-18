@@ -1391,3 +1391,10 @@ class XHTMLData:
 class ChannelBindingData:
     type: str
     data: bytes
+
+
+@dataclass
+class MDSData:
+    jid: JID
+    stanza_id: str
+    stanza_id_by: JID

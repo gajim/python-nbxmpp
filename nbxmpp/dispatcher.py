@@ -48,6 +48,7 @@ from nbxmpp.modules.iq import BaseIq
 from nbxmpp.modules.last_activity import LastActivity
 from nbxmpp.modules.location import Location
 from nbxmpp.modules.mam import MAM
+from nbxmpp.modules.mds import MDS
 from nbxmpp.modules.message import BaseMessage
 from nbxmpp.modules.misc import unwrap_carbon
 from nbxmpp.modules.misc import unwrap_mam
@@ -206,6 +207,7 @@ class StanzaDispatcher(Observable):
         self._modules['EntityTime'] = EntityTime(self._client)
         self._modules['Reactions'] = Reactions(self._client)
         self._modules['Hats'] = Hats(self._client)
+        self._modules['MDS'] = MDS(self._client)
 
         for instance in self._modules.values():
             for handler in instance.handlers:
