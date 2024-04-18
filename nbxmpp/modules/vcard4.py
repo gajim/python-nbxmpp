@@ -17,9 +17,7 @@
 
 # pylint: disable=E1120
 
-from typing import List
 from typing import Optional
-from typing import Set
 
 import logging
 from dataclasses import dataclass
