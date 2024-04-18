@@ -16,7 +16,6 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from typing import Any
-from typing import Callable
 from typing import Literal
 from typing import Optional
 from typing import Union
@@ -30,6 +29,7 @@ import re
 import uuid
 import xml.etree.ElementTree as ET
 from collections import defaultdict
+from collections.abc import Callable
 from functools import lru_cache
 from logging import LoggerAdapter
 

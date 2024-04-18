@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Any
 from typing import cast
-from typing import Iterable
-from typing import Iterator
-from typing import Sequence
 
 import functools
+from collections.abc import Iterable
+from collections.abc import Iterator
+from collections.abc import Sequence
 
 # Copied from https://codeberg.org/jssfr/aioxmpp/src/branch/devel/aioxmpp/structs.py
 

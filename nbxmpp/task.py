@@ -18,12 +18,12 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Callable
 from typing import Optional
 
 import inspect
 import logging
 import weakref
+from collections.abc import Callable
 from enum import IntEnum
 from functools import wraps
 

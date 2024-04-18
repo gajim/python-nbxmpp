@@ -22,7 +22,6 @@ from __future__ import annotations
 
 from typing import Any
 from typing import cast
-from typing import Iterable
 from typing import Optional
 from typing import Union
 
@@ -33,6 +32,7 @@ import sqlite3
 import time
 import warnings
 from base64 import b64encode
+from collections.abc import Iterable
 from dataclasses import asdict
 from dataclasses import dataclass
 

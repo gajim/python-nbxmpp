@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from typing import Callable
-
 import functools
 import re
+from collections.abc import Callable
 
 # https://www.rfc-editor.org/rfc/rfc3987
 ucschar = (
