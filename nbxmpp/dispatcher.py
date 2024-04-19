@@ -257,8 +257,8 @@ class StanzaDispatcher(Observable):
 
         # end stream:stream tag received
         if self._parser.has_received_endtag():
-            self._log.info('End of stream: %s', self._parser.streamError)
-            self.notify('stream-end', self._parser.streamError)
+            self._log.info('End of stream: %s', self._parser.stream_error)
+            self.notify('stream-end', self._parser.stream_error)
             return
 
     def _register_namespace(self, xmlns):

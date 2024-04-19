@@ -323,7 +323,7 @@ class XMPPDispatcher(PlugIn):
             self.Stream.Parse(data)
             # end stream:stream tag received
             if self.Stream and self.Stream.has_received_endtag():
-                self._owner.disconnect(self.Stream.streamError)
+                self._owner.disconnect(self.Stream.stream_error)
                 return 0
         except ExpatError as error:
             log.error('Invalid XML received from server. Forcing disconnect.')
