@@ -1534,7 +1534,7 @@ class Iq(Protocol):
 
     def __init__(self,
                  typ: Optional[str] = None,
-                 query_ns: Optional[str] = None,
+                 queryNS: Optional[str] = None,  # noqa: N803
                  attrs: Optional[dict[str, str]] = None,
                  to: Optional[Union[JID, str]] = None,
                  frm: Optional[Union[JID, str]] = None,
@@ -1559,8 +1559,8 @@ class Iq(Protocol):
                           node=node)
         if payload:
             self.setQueryPayload(payload)
-        if query_ns:
-            self.setQueryNS(query_ns)
+        if queryNS:
+            self.setQueryNS(queryNS)
 
     def getQuery(self) -> Optional[Node]:
         """
