@@ -17,8 +17,11 @@
 
 from nbxmpp.const import MessageType
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.fallback import parse_fallback_indication
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Message
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import BodyData
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import StanzaIDData
 from nbxmpp.structs import XHTMLData
@@ -84,10 +87,15 @@ class BaseMessage(BaseModule):
                 not muc_user.getChildren()):
             properties.muc_private_message = True
 
-    def _process_message_after_base(self, _client, stanza, properties):
+    def _process_message_after_base(self, _client, stanza: Message, properties):
         # This handler runs after decryption handlers had the chance
         # to decrypt the body
+
+        fallbacks_for = parse_fallback_indication(self._log, stanza)
+
         properties.body = stanza.getBody()
+        properties.bodies = BodyData(
+            stanza, fallbacks_for, self._client.get_supported_fallback_ns())
         properties.thread = stanza.getThread()
         properties.subject = stanza.getSubject()
         forms = stanza.getTags('x', namespace=Namespace.DATA)

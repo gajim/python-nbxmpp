@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
 from typing import TYPE_CHECKING
 
 from nbxmpp.modules.base import BaseModule
@@ -63,36 +62,7 @@ class Replies(BaseModule):
             self._log.warning('Received reply without "id"')
             return
 
-        fallback_start, fallback_end = None, None
-        fallback_data = self._get_fallback_data(stanza)
-        if fallback_data is not None:
-            fallback_start, fallback_end = fallback_data
-
         properties.reply_data = ReplyData(
             to=reply_to,
-            id=reply_to_id,
-            fallback_start=fallback_start,
-            fallback_end=fallback_end)
-
-    def _get_fallback_data(self, stanza: Message) -> Optional[tuple[int, int]]:
-        fallback = stanza.getTag('fallback', namespace=Namespace.FALLBACK)
-        if fallback is None or fallback.getAttr('for') != Namespace.REPLY:
-            return None
-
-        fallback_data = fallback.getTag('body')
-        if fallback_data is None:
-            return None
-
-        start = fallback_data.getAttr('start')
-        end = fallback_data.getAttr('end')
-        if start is None or end is None:
-            return None
-
-        try:
-            start = int(start)
-            end = int(end)
-        except ValueError:
-            self._log.warning('Could not get fallback start/end')
-            return None
-
-        return start, end
+            id=reply_to_id
+        )

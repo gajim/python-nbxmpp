@@ -22,3 +22,7 @@ class EndOfConnection(Exception):
 
 class NonFatalSSLError(Exception):
     pass
+
+
+class FallbackLanguageError(Exception):
+    pass

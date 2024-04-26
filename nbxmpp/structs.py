@@ -23,6 +23,7 @@ from typing import NamedTuple
 from typing import Optional
 from typing import Union
 
+import logging
 import random
 import time
 from collections.abc import Sequence
@@ -33,6 +34,7 @@ from datetime import datetime
 from gi.repository import Gio
 from gi.repository import GLib
 
+from nbxmpp import exceptions
 from nbxmpp.const import AdHocAction
 from nbxmpp.const import AdHocNoteType
 from nbxmpp.const import AdHocStatus
@@ -49,10 +51,14 @@ from nbxmpp.const import StatusCode
 from nbxmpp.language import LanguageMap
 from nbxmpp.language import LanguageRange
 from nbxmpp.language import LanguageTag
+from nbxmpp.modules.fallback import FallbacksForT
+from nbxmpp.modules.fallback import strip_fallback
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import Protocol
 from nbxmpp.simplexml import Node
+
+log = logging.getLogger('nbxmpp.structs')
 
 
 class StanzaHandler(NamedTuple):
@@ -296,8 +302,6 @@ class CorrectionData(NamedTuple):
 class ReplyData(NamedTuple):
     to: str
     id: str
-    fallback_start: Optional[int]
-    fallback_end: Optional[int]
 
 
 class ModerationData(NamedTuple):
@@ -1025,6 +1029,7 @@ class MessageProperties:
     remote_jid: Optional[JID] = None
     subject = None
     body: Optional[str] = None
+    bodies: Optional[BodyData] = None
     thread: Optional[str] = None
     user_timestamp = None
     timestamp: float = field(default_factory=time.time)
@@ -1398,3 +1403,49 @@ class MDSData:
     jid: JID
     stanza_id: str
     stanza_id_by: JID
+
+
+@dataclass
+class BodyData:
+    def __init__(
+        self,
+        stanza: Node,
+        fallbacks_for: FallbacksForT | None = None,
+        fallback_ns: set[str] | None = None,
+    ) -> None:
+
+        self._body_map = LanguageMap()
+        self._fallbacks_for = fallbacks_for
+        self._fallback_ns = fallback_ns
+
+        for body in stanza.getTags('body'):
+            lang = body.getAttr('xml:lang')
+            lang_tag = LanguageTag(tag=lang) if lang else None
+            self._body_map[lang_tag] = (lang, body.getData())
+
+    def get(
+        self,
+        language_range: Sequence[LanguageRange] | None,
+    ) -> str:
+
+        if not self._body_map:
+            return ''
+
+        if language_range is None:
+            lang, text = self._body_map.any()
+
+        else:
+            try:
+                lang, text = self._body_map.lookup(language_range)
+            except KeyError:
+                lang, text = self._body_map.any()
+
+        if not self._fallbacks_for or not self._fallback_ns:
+            return text
+
+        try:
+            return strip_fallback(
+                self._fallbacks_for, self._fallback_ns, lang, text)
+        except exceptions.FallbackLanguageError:
+            log.warning('Missing fallback for language: %s', lang)
+            return text

@@ -19,6 +19,7 @@ from typing import Any
 from typing import Optional
 
 import logging
+from collections.abc import Sequence
 
 from gi.repository import Gio
 from gi.repository import GLib
@@ -124,6 +125,8 @@ class Client(Observable):
         self._local_address = None
         self._remote_address = None
         self._mode = Mode.CLIENT
+
+        self._fallback_ns: set[str] = set()
 
         self._ping_source_id = None
         self._tasks = []
@@ -356,6 +359,12 @@ class Client(Observable):
 
     def _set_bound_jid(self, jid):
         self._jid = JID.from_string(jid)
+
+    def set_supported_fallback_ns(self, ns: Sequence[str]) -> None:
+        self._fallback_ns = set(ns)
+
+    def get_supported_fallback_ns(self) -> set[str]:
+        return set(self._fallback_ns)
 
     @property
     def has_error(self):
