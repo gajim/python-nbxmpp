@@ -772,7 +772,7 @@ class JID:
                 self.domain is not None and
                 self.resource is not None)
 
-    def new_with(self, **kwargs: dict[str, str]) -> JID:
+    def new_with(self, **kwargs: Any) -> JID:
         new = asdict(self)
         new.update(kwargs)
         return JID(**new)
