@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import ReplyData
@@ -52,9 +53,15 @@ class Replies(BaseModule):
         if reply is None:
             return
 
-        reply_to = reply.getAttr('to')
-        if reply_to is None:
+        to = reply.getAttr('to')
+        if to is None:
             self._log.warning('Received reply without "to" attribute')
+            return
+
+        try:
+            reply_to = JID.from_string(to)
+        except Exception:
+            self._log.warning('Invalid jid on reply element: %s', to)
             return
 
         reply_to_id = reply.getAttr('id')

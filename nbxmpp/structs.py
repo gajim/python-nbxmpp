@@ -300,7 +300,7 @@ class CorrectionData(NamedTuple):
 
 
 class ReplyData(NamedTuple):
-    to: str
+    to: JID
     id: str
 
 
