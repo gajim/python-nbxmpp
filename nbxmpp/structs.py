@@ -1011,6 +1011,13 @@ class HatData:
             return self._hat_map.any()
 
 
+@dataclass
+class EncryptionData:
+    protocol: str
+    key: str | None
+    trust: int
+
+
 class Properties:
     pass
 
@@ -1057,7 +1064,7 @@ class MessageProperties:
     pubsub_event: Optional[PubSubEventData] = None
     openpgp = None
     omemo = None
-    encrypted = None
+    encrypted: EncryptionData | None = None
     pgp_legacy = None
     marker: Optional[ChatMarker] = None
     receipt: Optional[ReceiptData] = None
