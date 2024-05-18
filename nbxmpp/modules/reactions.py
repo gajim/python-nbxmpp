@@ -57,7 +57,7 @@ class Reactions(BaseModule):
             self._log.warning('Reactions without ID')
             return
 
-        emojis = set()
+        emojis: set[str] = set()
         for reaction in reactions.getTags('reaction'):
             # we strip for clients that might add white spaces and/or
             # new lines in the reaction content.
@@ -66,5 +66,6 @@ class Reactions(BaseModule):
                 emojis.add(emoji)
             else:
                 self._log.warning('Empty reaction')
+                self._log.warning(stanza)
 
         properties.reactions = ReactionStruct(id_, emojis)
