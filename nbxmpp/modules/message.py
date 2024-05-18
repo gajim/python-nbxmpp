@@ -82,6 +82,9 @@ class BaseMessage(BaseModule):
         if muc_user is None:
             return
 
+        if not properties.jid.is_full:
+            return
+
         if (properties.type.is_chat or
                 properties.type.is_error and
                 not muc_user.getChildren()):
