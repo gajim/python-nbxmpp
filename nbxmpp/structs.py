@@ -513,7 +513,18 @@ class DiscoInfo(NamedTuple):
 
     @property
     def has_message_moderation(self) -> bool:
-        return Namespace.MESSAGE_MODERATE in self.features
+        return (
+            Namespace.MESSAGE_MODERATE in self.features or
+            Namespace.MESSAGE_MODERATE_1 in self.features
+        )
+
+    @property
+    def moderation_namespace(self) -> Optional[str]:
+        if Namespace.MESSAGE_MODERATE_1 in self.features:
+            return Namespace.MESSAGE_MODERATE_1
+        if Namespace.MESSAGE_MODERATE in self.features:
+            return Namespace.MESSAGE_MODERATE
+        return None
 
     @property
     def is_muc(self) -> bool:
