@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Any
+
 import logging
 import re
 import time
@@ -22,6 +24,7 @@ from xml.parsers.expat import ExpatError
 
 from gi.repository import GLib
 
+from nbxmpp.exceptions import StanzaDecrypted
 from nbxmpp.modules.activity import Activity
 from nbxmpp.modules.adhoc import AdHoc
 from nbxmpp.modules.annotations import Annotations
@@ -92,6 +95,7 @@ from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import StreamErrorNode
 from nbxmpp.simplexml import Node
 from nbxmpp.simplexml import NodeBuilder
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import get_invalid_xml_regex
 from nbxmpp.util import get_properties_struct
 from nbxmpp.util import is_websocket_close
@@ -122,7 +126,7 @@ class StanzaDispatcher(Observable):
 
         self._log = LogAdapter(log, {'context': client.log_context})
 
-        self._handlers = {}
+        self._handlers: dict[str, dict[str, dict[str, Any]]] = {}
 
         self._id_callbacks = {}
         self._dispatch_callback = None
@@ -261,7 +265,7 @@ class StanzaDispatcher(Observable):
             self.notify('stream-end', self._parser.stream_error)
             return
 
-    def _register_namespace(self, xmlns):
+    def _register_namespace(self, xmlns: str) -> None:
         """
         Setup handler structure for namespace
         """
@@ -271,7 +275,12 @@ class StanzaDispatcher(Observable):
         self._register_protocol('unknown', Protocol, xmlns=xmlns)
         self._register_protocol('default', Protocol, xmlns=xmlns)
 
-    def _register_protocol(self, tag_name, protocol, xmlns=None):
+    def _register_protocol(
+        self,
+        tag_name: str,
+        protocol: Any,
+        xmlns: str | None = None
+    ) -> None:
         """
         Register protocol for top level tag names
         """
@@ -281,7 +290,7 @@ class StanzaDispatcher(Observable):
                         tag_name, xmlns, protocol)
         self._handlers[xmlns][tag_name] = {'type': protocol, 'default': []}
 
-    def register_handler(self, handler):
+    def register_handler(self, handler: StanzaHandler) -> None:
         """
         Register handler
         """
@@ -312,7 +321,7 @@ class StanzaDispatcher(Observable):
              'priority': handler.priority,
              'specific': specific})
 
-    def unregister_handler(self, handler):
+    def unregister_handler(self, handler: StanzaHandler) -> None:
         """
         Unregister handler
         """
@@ -345,14 +354,14 @@ class StanzaDispatcher(Observable):
                     'Unregister handler %s for "%s" type->%s ns->%s(%s)',
                     handler.callback, handler.name, typ, handler.ns, xmlns)
 
-    def _default_handler(self, stanza):
+    def _default_handler(self, stanza: Protocol) -> None:
         """
         Return stanza back to the sender with <feature-not-implemented/> error
         """
         if stanza.getType() in ('get', 'set'):
             self._client.send_stanza(Error(stanza, ERR_FEATURE_NOT_IMPLEMENTED))
 
-    def dispatch(self, stanza):
+    def dispatch(self, stanza: Protocol) -> None:
         self.notify('before-dispatch', stanza)
 
         if self._dispatch_callback is not None:
@@ -438,9 +447,6 @@ class StanzaDispatcher(Observable):
             else:
                 typ = ''
 
-        stanza.props = stanza.getProperties()
-        self._log.debug('type: %s, properties: %s', typ, stanza.props)
-
         # Process callbacks
         _id = stanza.getID()
         func, _timeout, user_data = self._id_callbacks.pop(
@@ -455,18 +461,43 @@ class StanzaDispatcher(Observable):
                 self._log.exception('Error while handling stanza')
             return
 
+        props = stanza.getProperties()
+        self._log.debug('type: %s, properties: %s', typ, props)
+
+        chain = self._build_handler_chain(xmlns, name, typ, props)
+
+        try:
+            self._execute_handler_chain(chain, stanza, properties)
+        except StanzaDecrypted:
+            props = stanza.getProperties()
+            self._log.debug('type: %s, properties after decryption: %s', typ, props)
+            chain = self._build_handler_chain(xmlns, name, typ, props, after_decryption=True)
+            self._execute_handler_chain(chain, stanza, properties)
+
+    def _build_handler_chain(
+        self,
+        xmlns: str,
+        name: str,
+        typ: str,
+        props: Any,
+        *,
+        after_decryption: bool = False
+    ) -> list[dict[str, Any]]:
+
         # Gather specifics depending on stanza properties
         specifics = ['default']
         if typ and typ in self._handlers[xmlns][name]:
             specifics.append(typ)
-        for prop in stanza.props:
+
+        for prop in props:
             if prop in self._handlers[xmlns][name]:
                 specifics.append(prop)
+
             if typ and typ + prop in self._handlers[xmlns][name]:
                 specifics.append(typ + prop)
 
         # Create the handler chain
-        chain = []
+        chain: list[dict[str, Any]] = []
         chain += self._handlers[xmlns]['default']['default']
         for specific in specifics:
             chain += self._handlers[xmlns][name][specific]
@@ -474,12 +505,28 @@ class StanzaDispatcher(Observable):
         # Sort chain with priority
         chain.sort(key=lambda x: x['priority'])
 
+        if after_decryption:
+            # Filter everything out which was executed before decryption
+            # so it is not executed again
+            chain = list(filter(lambda x: x['priority'] > 9, chain))
+
+        return chain
+
+    def _execute_handler_chain(
+        self,
+        chain: Any,
+        stanza: Protocol,
+        properties: Any
+    ) -> None:
+
         for handler in chain:
             self._log.info('Call handler: %s', handler['func'].__qualname__)
             try:
                 handler['func'](self._client, stanza, properties)
             except NodeProcessed:
                 return
+            except StanzaDecrypted:
+                raise
             except Exception:
                 self._log.exception('Handler exception:')
                 return

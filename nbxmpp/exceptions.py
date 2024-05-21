@@ -26,3 +26,7 @@ class NonFatalSSLError(Exception):
 
 class FallbackLanguageError(Exception):
     pass
+
+
+class StanzaDecrypted(Exception):
+    pass
