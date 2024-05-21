@@ -306,11 +306,9 @@ class ReplyData(NamedTuple):
 
 class ModerationData(NamedTuple):
     stanza_id: str
-    moderator_jid: Optional[str]
     by: Optional[JID]
     reason: Optional[str]
-    timestamp: Optional[str]
-    stamp: float
+    stamp: datetime
     is_tombstone: bool
     occupant_id: Optional[str]
 

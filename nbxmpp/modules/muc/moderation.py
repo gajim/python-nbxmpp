@@ -15,7 +15,11 @@
 
 # XEP-0425: Message Moderation
 
+from typing import Any
 from typing import Optional
+
+from datetime import datetime
+from datetime import timezone
 
 from nbxmpp import JID
 from nbxmpp.modules.base import BaseModule
@@ -32,20 +36,25 @@ from nbxmpp.task import iq_request_task
 
 
 class Moderation(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Any):
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = [
             StanzaHandler(name='message',
-                          callback=self._process_message,
+                          callback=self._process_moderation_0_message,
                           typ='groupchat',
                           ns=Namespace.FASTEN,
                           priority=20),
             StanzaHandler(name='message',
-                          callback=self._process_message_moderated_tombstone,
+                          callback=self._process_moderation_0_tombstone_message,
                           typ='groupchat',
                           ns=Namespace.MESSAGE_MODERATE,
+                          priority=20),
+            StanzaHandler(name='message',
+                          callback=self._process_moderation_1_message,
+                          typ='groupchat',
+                          ns=Namespace.MESSAGE_RETRACT_1,
                           priority=20),
         ]
 
@@ -58,9 +67,56 @@ class Moderation(BaseModule):
 
         yield process_response(response)
 
-    def _process_message_moderated_tombstone(
+    def _process_moderation_1_message(
         self,
-        _client,
+        _client: Any,
+        stanza: Node,
+        properties: MessageProperties
+    ) -> None:
+
+        retract, is_tombstone = _get_retract_element(stanza, properties)
+        if retract is None:
+            return
+
+        stamp = _parse_moderation_timestamp(retract, is_tombstone, properties)
+
+        moderated = stanza.getTag(
+            'moderated', namespace=Namespace.MESSAGE_MODERATE_1)
+        if moderated is None:
+            return
+
+        try:
+            by = _parse_by_attr(moderated)
+        except ValueError as error:
+            self._log.warning('Unable to determine by attribute: %s', error)
+            by = None
+
+        occupant_id = moderated.getTagAttr('occupant-id',
+                                           'id',
+                                           namespace=Namespace.OCCUPANT_ID)
+
+        if is_tombstone:
+            stanza_id = properties.mam.id
+        else:
+            stanza_id = retract.getAttr('id')
+
+        if stanza_id is None:
+            self._log.warning('Unable to determine stanza-id')
+            self._log.warning(stanza)
+            raise NodeProcessed
+
+        properties.moderation = ModerationData(
+            stanza_id=stanza_id,
+            by=by,
+            reason=retract.getTagData('reason'),
+            stamp=stamp,
+            is_tombstone=is_tombstone,
+            occupant_id=occupant_id,
+        )
+
+    def _process_moderation_0_tombstone_message(
+        self,
+        _client: Any,
         stanza: Node,
         properties: MessageProperties
     ) -> None:
@@ -73,13 +129,15 @@ class Moderation(BaseModule):
         if moderated is None:
             return
 
-        properties.moderation = self._parse_moderated(
+        properties.moderation = self._parse_moderated_0(
             moderated, properties, properties.mam.id)
 
-    def _process_message(self,
-                         _client,
-                         stanza: Node,
-                         properties: MessageProperties) -> None:
+    def _process_moderation_0_message(
+        self,
+        _client: Any,
+        stanza: Node,
+        properties: MessageProperties
+    ) -> None:
 
         if not properties.jid.is_bare:
             return
@@ -100,9 +158,9 @@ class Moderation(BaseModule):
             self._log.warning(stanza)
             raise NodeProcessed
 
-        properties.moderation = self._parse_moderated(moderated, properties, stanza_id)
+        properties.moderation = self._parse_moderated_0(moderated, properties, stanza_id)
 
-    def _parse_moderated(
+    def _parse_moderated_0(
         self,
         moderated: Node,
         properties: MessageProperties,
@@ -128,29 +186,46 @@ class Moderation(BaseModule):
 
         return ModerationData(
             stanza_id=stanza_id,
-            moderator_jid=str(by),
             by=by,
             occupant_id=occupant_id,
             reason=moderated.getTagData('reason'),
-            timestamp=retract.getAttr('stamp'),
             stamp=stamp,
             is_tombstone=is_tombstone)
 
 
 def _get_retract_element(
-    moderated: Node,
+    element: Node,
     properties: MessageProperties
 ) -> tuple[Node | None, bool]:
 
-    retract = moderated.getTag(
+    '''
+    returns a tuple
+        Node and a boolean value which signals if it is a tombstone
+    '''
+
+    retract = element.getTag(
             'retract', namespace=Namespace.MESSAGE_RETRACT)
     if retract is not None:
         return retract, False
 
-    retracted = moderated.getTag(
+    retract = element.getTag(
+            'retract', namespace=Namespace.MESSAGE_RETRACT_1)
+    if retract is not None:
+        return retract, False
+
+    if not properties.is_mam_message:
+        return None, False
+
+    retracted = element.getTag(
         'retracted', namespace=Namespace.MESSAGE_RETRACT)
     if retracted is not None:
-        return retracted, True and properties.is_mam_message
+        return retracted, True
+
+    retracted = element.getTag(
+        'retracted', namespace=Namespace.MESSAGE_RETRACT_1)
+    if retracted is not None:
+        return retracted, True
+
     return None, False
 
 
@@ -169,19 +244,22 @@ def _parse_moderation_timestamp(
     retract: Node,
     is_tombstone: bool,
     properties: MessageProperties
-) -> float:
+) -> datetime:
 
     if is_tombstone:
         stamp_attr = retract.getAttr('stamp')
         stamp = parse_datetime(
-            stamp_attr, check_utc=True, convert='utc', epoch=True)
+            stamp_attr, check_utc=True, convert='utc')
         if stamp is not None:
+            assert isinstance(stamp, datetime)
             return stamp
 
     if properties.is_mam_message:
-        return properties.mam.timestamp
+        stamp = properties.mam.timestamp
+    else:
+        stamp = properties.timestamp
 
-    return properties.timestamp
+    return datetime.fromtimestamp(stamp, timezone.utc)
 
 
 def _make_retract_request(muc_jid: JID, stanza_id: str,

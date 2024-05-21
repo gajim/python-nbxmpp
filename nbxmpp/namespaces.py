@@ -104,6 +104,7 @@ class _Namespaces:
     MAM_1: str = 'urn:xmpp:mam:1'
     MAM_2: str = 'urn:xmpp:mam:2'
     MESSAGE_MODERATE: str = 'urn:xmpp:message-moderate:0'
+    MESSAGE_MODERATE_1: str = 'urn:xmpp:message-moderate:1'
     MESSAGE_RETRACT: str = 'urn:xmpp:message-retract:0'
     MESSAGE_RETRACT_1: str = 'urn:xmpp:message-retract:1'
     MDS: str = 'urn:xmpp:mds:displayed:0'
