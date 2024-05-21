@@ -63,7 +63,7 @@ class MUC(BaseModule):
     _depends = {
         'disco_info': 'Discovery',
         'request_vcard': 'VCardTemp',
-        'send_retract_request': 'Moderation',
+        'send_moderation_request': 'Moderation',
     }
 
     def __init__(self, client):
@@ -513,9 +513,14 @@ class MUC(BaseModule):
         response = yield make_set_role_request(room_jid, nick, role, reason)
         yield process_response(response)
 
-    def retract_message(self, room_jid: JID, stanza_id: str,
-                        reason: Optional[str] = None) -> None:
-        self.send_retract_request(room_jid, stanza_id, reason)
+    def moderate_message(
+        self,
+        namespace: str,
+        room_jid: JID,
+        stanza_id: str,
+        reason: Optional[str] = None
+    ) -> None:
+        self.send_moderation_request(namespace, room_jid, stanza_id, reason)
 
     def set_subject(self, room_jid, subject):
         message = Message(room_jid, typ='groupchat', subject=subject)

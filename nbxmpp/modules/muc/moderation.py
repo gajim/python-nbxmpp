@@ -59,11 +59,19 @@ class Moderation(BaseModule):
         ]
 
     @iq_request_task
-    def send_retract_request(self, muc_jid: JID, stanza_id: str,
-                             reason: Optional[str] = None):
+    def send_moderation_request(
+        self,
+        namespace: str,
+        muc_jid: JID,
+        stanza_id: str,
+        reason: Optional[str] = None,
+    ):
         _task = yield
 
-        response = yield _make_retract_request(muc_jid, stanza_id, reason)
+        if namespace == Namespace.MESSAGE_MODERATE:
+            response = yield _make_moderation_request_0(muc_jid, stanza_id, reason)
+        else:
+            response = yield _make_moderation_request_1(muc_jid, stanza_id, reason)
 
         yield process_response(response)
 
@@ -262,8 +270,11 @@ def _parse_moderation_timestamp(
     return datetime.fromtimestamp(stamp, timezone.utc)
 
 
-def _make_retract_request(muc_jid: JID, stanza_id: str,
-                          reason: Optional[str]) -> Iq:
+def _make_moderation_request_0(
+    muc_jid: JID,
+    stanza_id: str,
+    reason: Optional[str]
+) -> Iq:
     iq = Iq('set', Namespace.FASTEN, to=muc_jid)
     query = iq.setQuery(name='apply-to')
     query.setAttr('id', stanza_id)
@@ -272,4 +283,18 @@ def _make_retract_request(muc_jid: JID, stanza_id: str,
     moderate.addChild(name='retract', namespace=Namespace.MESSAGE_RETRACT)
     if reason is not None:
         moderate.addChild(name='reason', payload=[reason])
+    return iq
+
+
+def _make_moderation_request_1(
+    muc_jid: JID,
+    stanza_id: str,
+    reason: Optional[str]
+) -> Iq:
+    iq = Iq('set', Namespace.MESSAGE_MODERATE_1, to=muc_jid)
+    query = iq.setQuery(name='moderate')
+    query.setAttr('id', stanza_id)
+    query.addChild(name='retract', namespace=Namespace.MESSAGE_RETRACT_1)
+    if reason is not None:
+        query.addChild(name='reason', payload=[reason])
     return iq
