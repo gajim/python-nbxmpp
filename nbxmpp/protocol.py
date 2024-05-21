@@ -1196,34 +1196,34 @@ class Message(Protocol):
         if subject is not None:
             self.setSubject(subject)
 
-    def getBody(self):
+    def getBody(self) -> str | None:
         """
         Return text of the message
         """
         return self.getTagData('body')
 
-    def getXHTML(self):
+    def getXHTML(self) -> Node | None:
         return self.getTag('html', namespace=Namespace.XHTML_IM)
 
-    def getSubject(self):
+    def getSubject(self) -> str | None:
         """
         Return subject of the message
         """
         return self.getTagData('subject')
 
-    def getThread(self):
+    def getThread(self) -> str | None:
         """
         Return thread of the message
         """
         return self.getTagData('thread')
 
-    def getOriginID(self):
+    def getOriginID(self) -> str | None:
         """
         Return origin-id of the message
         """
         return self.getTagAttr('origin-id', namespace=Namespace.SID, attr='id')
 
-    def getStanzaIDAttrs(self):
+    def getStanzaIDAttrs(self) -> tuple[str | None, str | None]:
         """
         Return the stanza-id attributes of the message
         """
@@ -1233,12 +1233,12 @@ class Message(Protocol):
             return None, None
         return attrs['id'], attrs['by']
 
-    def setBody(self, val):
+    def setBody(self, val: str) -> None:
         """
         Set the text of the message"""
         self.setTagData('body', val)
 
-    def setXHTML(self, body, add=False):
+    def setXHTML(self, body: str | Node, add: bool = False) -> None:
         if isinstance(body, str):
             body = Node(node=body)
         if add:
@@ -1255,25 +1255,25 @@ class Message(Protocol):
                 self.delChild(xhtml)
             self.addChild('html', namespace=Namespace.XHTML_IM, payload=body)
 
-    def setSubject(self, val):
+    def setSubject(self, val: str) -> None:
         """
         Set the subject of the message
         """
         self.setTagData('subject', val)
 
-    def setThread(self, val):
+    def setThread(self, val: str) -> None:
         """
         Set the thread of the message
         """
         self.setTagData('thread', val)
 
-    def setOriginID(self, val):
+    def setOriginID(self, val: str) -> None:
         """
         Sets the origin-id of the message
         """
         self.setTag('origin-id', namespace=Namespace.SID, attrs={'id': val})
 
-    def buildReply(self, text=None):
+    def buildReply(self, text: str | None = None) -> Message:
         """
         Builds and returns another message object with specified text. The to,
         from, thread and type properties of new message are pre-set as reply to
@@ -1288,26 +1288,26 @@ class Message(Protocol):
             m.setThread(th)
         return m
 
-    def getStatusCode(self):
+    def getStatusCode(self) -> list[str | None]:
         """
         Return the status code of the message (for groupchat config change)
         """
-        attrs = []
+        attrs: list[str | None] = []
         for xtag in self.getTags('x'):
             for child in xtag.getTags('status'):
                 attrs.append(child.getAttr('code'))
         return attrs
 
-    def setMarker(self, type_, id_):
+    def setMarker(self, type_: str, id_: str) -> None:
         self.setTag(type_, namespace=Namespace.CHATMARKERS, attrs={'id': id_})
 
-    def setMarkable(self):
+    def setMarkable(self) -> None:
         self.setTag('markable', namespace=Namespace.CHATMARKERS)
 
-    def setReceiptRequest(self):
+    def setReceiptRequest(self) -> None:
         self.setTag('request', namespace=Namespace.RECEIPTS)
 
-    def setReceiptReceived(self, id_):
+    def setReceiptReceived(self, id_: str) -> None:
         self.setTag('received', namespace=Namespace.RECEIPTS, attrs={'id': id_})
 
     def setReply(self,
@@ -1334,22 +1334,22 @@ class Message(Protocol):
                 'start': str(fallback_start),
                 'end': str(fallback_end)})
 
-    def setOOB(self, url, desc=None):
+    def setOOB(self, url: str, desc: str | None = None) -> None:
         oob = self.setTag('x', namespace=Namespace.X_OOB)
         oob.setTagData('url', url)
         if desc is not None:
             oob.setTagData('desc', desc)
 
-    def setCorrection(self, id_):
+    def setCorrection(self, id_: str) -> None:
         self.setTag('replace', namespace=Namespace.CORRECT, attrs={'id': id_})
 
-    def setAttention(self):
+    def setAttention(self) -> None:
         self.setTag('attention', namespace=Namespace.ATTENTION)
 
-    def setHint(self, hint):
+    def setHint(self, hint: str) -> None:
         self.setTag(hint, namespace=Namespace.HINTS)
 
-    def setReactions(self, target_id: str, emojis: Iterable[str]):
+    def setReactions(self, target_id: str, emojis: Iterable[str]) -> None:
         reactions = self.addChild(
             'reactions', namespace=Namespace.REACTIONS, attrs={"id": target_id})
         for e in emojis:
@@ -1370,7 +1370,7 @@ class Message(Protocol):
         # strip() in case clients surround emojis with whitespace
         return react_to, {t.getData().strip() for t in tags}
 
-    def setRetracted(self, target_id: str, fallback_text: Optional[str] = None):
+    def setRetracted(self, target_id: str, fallback_text: Optional[str] = None) -> None:
         retract = self.addChild('retract',
                                 namespace=Namespace.MESSAGE_RETRACT_1)
         retract.setAttr('id', target_id)
