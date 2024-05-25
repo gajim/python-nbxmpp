@@ -23,7 +23,13 @@ class Hats(BaseModule):
                 callback=self._process_hats,
                 ns=Namespace.HATS,
                 priority=15,
-            )
+            ),
+            StanzaHandler(
+                name="presence",
+                callback=self._process_hats,
+                ns=Namespace.HATS_LEGACY,
+                priority=15,
+            ),
         ]
 
     def _process_hats(
@@ -34,7 +40,9 @@ class Hats(BaseModule):
     ):
         hats = stanza.getTag("hats", namespace=Namespace.HATS)
         if hats is None:
-            return
+            hats = stanza.getTag("hats", namespace=Namespace.HATS_LEGACY)
+            if hats is None:
+                return
 
         hat_data = HatData()
         for hat in hats.getTags("hat"):

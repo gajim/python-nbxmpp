@@ -79,6 +79,7 @@ class _Namespaces:
     HASHES_SHA3_256: str = 'urn:xmpp:hash-function-text-names:sha3-256'
     HASHES_SHA3_512: str = 'urn:xmpp:hash-function-text-names:sha3-512'
     HATS: str = 'urn:xmpp:hats:0'
+    HATS_LEGACY: str = 'xmpp:prosody.im/protocol/hats:1'
     HINTS: str = 'urn:xmpp:hints'
     HTTPUPLOAD_0: str = 'urn:xmpp:http:upload:0'
     HTTP_AUTH: str = 'http://jabber.org/protocol/http-auth'
