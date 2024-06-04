@@ -3,6 +3,7 @@ import unittest
 
 from nbxmpp.protocol import DomainpartByteLimit
 from nbxmpp.protocol import DomainpartNotAllowedChar
+from nbxmpp.protocol import InvalidJid
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import LocalpartByteLimit
 from nbxmpp.protocol import LocalpartNotAllowedChar
@@ -47,8 +48,10 @@ class JIDParsing(unittest.TestCase):
         ]
 
         for jid, exception in tests:
-            with self.assertRaises(exception):
+            with self.assertRaises(InvalidJid) as cm:
                 JID.from_string(jid)
+
+            self.assertIsInstance(cm.exception.__cause__, exception)
 
     def test_invalid_precis_jids(self):
         os.environ['NBXMPP_ENFORCE_PRECIS'] = 'true'
@@ -58,8 +61,10 @@ class JIDParsing(unittest.TestCase):
         ]
 
         for jid, exception in tests:
-            with self.assertRaises(exception):
+            with self.assertRaises(InvalidJid) as cm:
                 JID.from_string(jid)
+
+            self.assertIsInstance(cm.exception.__cause__, exception)
 
         del os.environ['NBXMPP_ENFORCE_PRECIS']
 

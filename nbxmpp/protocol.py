@@ -648,9 +648,12 @@ class JID:
         if force_bare:
             resourcepart = None
 
-        return cls(localpart=localpart,
-                   domain=domainpart,
-                   resource=resourcepart)
+        try:
+            return cls(localpart=localpart,
+                       domain=domainpart,
+                       resource=resourcepart)
+        except Exception as error:
+            raise InvalidJid('Unable to parse "%s"' % jid_string) from error
 
     @classmethod
     @functools.cache
@@ -681,9 +684,12 @@ class JID:
             localpart = None
             domainpart = user_input
 
-        return cls(localpart=localpart,
-                   domain=domainpart,
-                   resource=None)
+        try:
+            return cls(localpart=localpart,
+                       domain=domainpart,
+                       resource=None)
+        except Exception as error:
+            raise InvalidJid('Unable to parse "%s"' % user_input) from error
 
     @classmethod
     @functools.cache
@@ -700,9 +706,12 @@ class JID:
         if resourcepart is not None:
             resourcepart = GLib.Uri.unescape_string(resourcepart)
 
-        return cls(localpart=localpart,
-                   domain=domainpart,
-                   resource=resourcepart)
+        try:
+            return cls(localpart=localpart,
+                       domain=domainpart,
+                       resource=resourcepart)
+        except Exception as error:
+            raise InvalidJid('Unable to parse "%s"' % iri_str) from error
 
     def __str__(self) -> str:
         if self.localpart:
