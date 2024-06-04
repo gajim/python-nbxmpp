@@ -1,6 +1,7 @@
 build/
 __pycache__/
 .mypy_cache/
+.venv/
 nbxmpp.egg-info
 debian_build/
 dist
