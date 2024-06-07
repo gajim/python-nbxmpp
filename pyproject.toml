@@ -29,7 +29,6 @@ dynamic = ["version"]
 gssapi = ["gssapi"]
 dev = [
   "isort>=5.13.2",
-  "PyGObject-stubs @ git+https://github.com/pygobject/pygobject-stubs.git",
   "ruff>=0.3.7",
 ]
 
