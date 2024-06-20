@@ -25,6 +25,7 @@ from nbxmpp.protocol import Iq
 from nbxmpp.simplexml import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
+from nbxmpp.util import from_xs_boolean
 
 
 class SecurityLabels(BaseModule):
@@ -63,18 +64,27 @@ class SecurityLabels(BaseModule):
         catalog_node = response.getTag('catalog',
                                        namespace=Namespace.SECLABEL_CATALOG)
 
+        try:
+            restrict = from_xs_boolean(catalog_node.getAttr('restrict'))
+        except Exception:
+            restrict = False
+
         items = catalog_node.getTags('item')
 
         labels = {}
         default = None
         for item in items:
-            label = item.getAttr('selector')
-            if label is None:
+            selector = item.getAttr('selector')
+            if selector is None:
                 continue
+
+            if item.getAttr('default') == 'true':
+                default = selector
 
             security = item.getTag('securitylabel',
                                    namespace=Namespace.SECLABEL)
             if security is None:
+                labels[selector] = None
                 continue
 
             try:
@@ -82,12 +92,9 @@ class SecurityLabels(BaseModule):
             except ValueError:
                 continue
 
-            labels[label] = security_label
+            labels[selector] = security_label
 
-            if item.getAttr('default') == 'true':
-                default = label
-
-        yield Catalog(labels=labels, default=default)
+        yield Catalog(labels=labels, default=default, restrict=restrict)
 
 
 def _make_catalog_request(domain, jid):
@@ -156,8 +163,9 @@ class SecurityLabel:
 
 @dataclass
 class Catalog:
-    labels: dict[str, SecurityLabel]
+    labels: dict[str, SecurityLabel | None]
     default: str
+    restrict: bool
 
-    def get_label_names(self):
+    def get_label_names(self) -> list[str]:
         return list(self.labels.keys())
