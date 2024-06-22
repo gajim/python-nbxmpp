@@ -1,3 +1,9 @@
+nbxmpp 5.0.1 (20 Jun 2024)
+
+  Improvements
+
+  * SecurityLabels: Add restrict attribute
+
 nbxmpp 5.0.0 (04 Jun 2024)
 
   New
