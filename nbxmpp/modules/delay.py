@@ -42,24 +42,22 @@ class Delay(BaseModule):
         ]
 
     def _process_message_delay(self, _client, stanza, properties):
+        # Determine if delay is from the server
+        # Some servers use the bare jid, others the domain
+        jid = self._client.get_bound_jid()
+        if properties.from_muc:
+            jid = properties.jid
+
+        jids = [jid.bare, jid.domain]
+
         if properties.is_muc_subject:
             # MUC Subjects can have a delay timestamp
             # to indicate when the user has set the subject,
             # the 'from' attr on these delays is the MUC server
             # but we treat it as user timestamp
-            jids = [properties.jid.bare,
-                    properties.jid.domain]
-
             properties.user_timestamp = parse_delay(stanza, from_=jids)
 
         else:
-            if properties.from_muc:
-                # Some servers use the MUC JID, others the domain
-                jids = [properties.jid.bare,
-                        properties.jid.domain]
-            else:
-                jids = [self._client.get_bound_jid().domain]
-
             server_delay = parse_delay(stanza, from_=jids)
             if server_delay is not None:
                 properties.has_server_delay = True
