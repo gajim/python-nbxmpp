@@ -38,15 +38,11 @@ class TCPConnection(Connection):
         Connection.__init__(self, *args, **kwargs)
 
         self._client = Gio.SocketClient.new()
-        self._client.set_protocol(Gio.SocketProtocol.TCP)
         self._client.set_timeout(7)
 
-        if self._address.proxy is None:
-            self._proxy_resolver = Gio.SimpleProxyResolver.new('direct://', None)
-        else:
+        if self._address.proxy is not None:
             self._proxy_resolver = self._address.proxy.get_resolver()
-
-        self._client.set_proxy_resolver(self._proxy_resolver)
+            self._client.set_proxy_resolver(self._proxy_resolver)
 
         GObject.Object.connect(self._client, 'event', self._on_event)
 
