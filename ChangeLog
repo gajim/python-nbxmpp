@@ -1,3 +1,9 @@
+nbxmpp 5.0.2 (07 Jul 2024)
+
+  Bug Fixes
+
+  * Delay: Better discover server delays (#156)
+
 nbxmpp 5.0.1 (20 Jun 2024)
 
   Improvements
