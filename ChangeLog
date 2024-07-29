@@ -1,3 +1,9 @@
+nbxmpp 5.0.3 (23 Jul 2024)
+
+  Bug Fixes
+
+  * Delay: Consider MUC and own server (#156)
+
 nbxmpp 5.0.2 (07 Jul 2024)
 
   Bug Fixes
