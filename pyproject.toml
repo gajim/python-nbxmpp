@@ -167,7 +167,6 @@ ignore = [
   "S101",   # Use of `assert` detected
   "S110",   # `try`-`except`-`pass` detected, consider logging the exception
   "S112",   # try`-`except`-`continue`
-  "S301",   # `pickle` and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue
   "S303",   # Use of insecure MD2, MD4, MD5, or SHA1 hash function
   "S310",   # Audit URL open for permitted schemes
   "S311",   # Standard pseudo-random generators are not suitable for cryptographic purposes
