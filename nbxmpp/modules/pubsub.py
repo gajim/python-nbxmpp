@@ -30,6 +30,7 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Node
 from nbxmpp.structs import CommonResult
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import PubSubEventData
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
@@ -47,11 +48,23 @@ class PubSub(BaseModule):
                           priority=15),
         ]
 
-    def _process_pubsub_base(self, _client, stanza, properties):
+    def _process_pubsub_base(
+        self,
+        _client,
+        stanza,
+        properties: MessageProperties
+    ):
         if properties.type not in (MessageType.HEADLINE, MessageType.NORMAL):
             return
 
         properties.pubsub = True
+
+        assert properties.jid is not None
+        if properties.jid.is_full:
+            self._log.warning('PubSub event from full jid %s', properties.jid)
+            self._log.warning(stanza)
+            return
+
         event = stanza.getTag('event', namespace=Namespace.PUBSUB_EVENT)
 
         delete = event.getTag('delete')
