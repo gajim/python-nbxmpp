@@ -1019,6 +1019,14 @@ class HatData:
         except KeyError:
             return self._hat_map.any()
 
+    def __eq__(self, other: Any):
+        if not isinstance(other, HatData):
+            return False
+        return self._hat_map == other._hat_map
+
+    def __ne__(self, other: Any):
+        return not self.__eq__(other)
+
 
 @dataclass
 class EncryptionData:
