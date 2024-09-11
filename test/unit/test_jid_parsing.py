@@ -9,6 +9,7 @@ from nbxmpp.protocol import LocalpartByteLimit
 from nbxmpp.protocol import LocalpartNotAllowedChar
 from nbxmpp.protocol import ResourcepartByteLimit
 from nbxmpp.protocol import ResourcepartNotAllowedChar
+from nbxmpp.protocol import validate_resourcepart
 
 
 class JIDParsing(unittest.TestCase):
@@ -67,6 +68,24 @@ class JIDParsing(unittest.TestCase):
             self.assertIsInstance(cm.exception.__cause__, exception)
 
         del os.environ['NBXMPP_ENFORCE_PRECIS']
+
+    def test_resources(self):
+        valid_resources = [
+            'res👔',
+            'res🔫',
+        ]
+
+        for res in valid_resources:
+            validate_resourcepart(res)
+
+        invalid_resources = [
+            ('res😀️', ResourcepartNotAllowedChar),
+            ('res🤖️', ResourcepartNotAllowedChar),
+        ]
+
+        for res, exception in invalid_resources:
+            with self.assertRaises(exception):
+                validate_resourcepart(res)
 
     def test_ip_literals(self):
         tests = [
