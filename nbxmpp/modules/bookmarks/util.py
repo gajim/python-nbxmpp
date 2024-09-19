@@ -134,6 +134,8 @@ def build_conference_node(bookmark: BookmarkData):
     conference = Node(tag='conference', attrs=attrs)
     if bookmark.nick:
         conference.setTagData('nick', bookmark.nick)
+    if bookmark.password:
+        conference.setTagData('password', bookmark.password)
     if bookmark.extensions is not None:
         conference.addChild(node=bookmark.extensions)
     return conference
