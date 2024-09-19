@@ -1,3 +1,11 @@
+nbxmpp 5.0.4 (19 Sep 2024)
+
+  Bug Fixes
+
+  * Bookmarks: Store password
+  * Hats: Make struct compareable
+  * Pubsub: Don’t process pubsub events from full jids (#159)
+
 nbxmpp 5.0.3 (23 Jul 2024)
 
   Bug Fixes
