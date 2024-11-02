@@ -19,9 +19,26 @@
 
 # XEP-0004: Data Forms
 
+from __future__ import annotations
+
+from typing import Any
+from typing import Union
+
+from collections.abc import Iterator
+
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import JID
 from nbxmpp.simplexml import Node
+
+FieldT = Union[
+    'BooleanField',
+    'StringField',
+    'JidMultiField',
+    'JidSingleField',
+    'ListMultiField',
+    'ListSingleField',
+    'TextMultiField'
+]
 
 
 # exceptions used in this module
@@ -53,9 +70,9 @@ class ExtendedNode(Node):
 
 
 # helper to create fields from scratch
-def create_field(typ, **attrs):
+def create_field(typ: str, **attrs: Any) -> FieldT:
     ''' Helper function to create a field of given type. '''
-    field = {
+    field: FieldT = {
         'boolean': BooleanField,
         'fixed': StringField,
         'hidden': StringField,
@@ -70,7 +87,7 @@ def create_field(typ, **attrs):
     return field
 
 
-def extend_field(node):
+def extend_field(node: Node) -> FieldT:
     """
     Helper function to extend a node to field of appropriate type
     """
@@ -129,7 +146,7 @@ class DataField(ExtendedNode):
             self.options = options
 
     @property
-    def type_(self):
+    def type_(self) -> str:
         """
         Type of field. Recognized values are: 'boolean', 'fixed', 'hidden',
         'jid-multi', 'jid-single', 'list-multi', 'list-single', 'text-multi',
@@ -142,28 +159,28 @@ class DataField(ExtendedNode):
         return type_
 
     @type_.setter
-    def type_(self, value):
+    def type_(self, value: str) -> None:
         assert isinstance(value, str)
         self.setAttr('type', value)
 
     @property
-    def var(self):
+    def var(self) -> str:
         """
         Field identifier
         """
         return self.getAttr('var')
 
     @var.setter
-    def var(self, value):
+    def var(self, value: str) -> None:
         assert isinstance(value, str)
         self.setAttr('var', value)
 
     @var.deleter
-    def var(self):
+    def var(self) -> None:
         self.delAttr('var')
 
     @property
-    def label(self):
+    def label(self) -> str:
         """
         Human-readable field name
         """
@@ -173,24 +190,24 @@ class DataField(ExtendedNode):
         return label_
 
     @label.setter
-    def label(self, value):
+    def label(self, value: str) -> None:
         assert isinstance(value, str)
         self.setAttr('label', value)
 
     @label.deleter
-    def label(self):
+    def label(self) -> None:
         if self.getAttr('label'):
             self.delAttr('label')
 
     @property
-    def description(self):
+    def description(self) -> str:
         """
         Human-readable description of field meaning
         """
         return self.getTagData('desc') or ''
 
     @description.setter
-    def description(self, value):
+    def description(self, value: str) -> None:
         assert isinstance(value, str)
         if value == '':
             del self.description
@@ -198,20 +215,20 @@ class DataField(ExtendedNode):
             self.setTagData('desc', value)
 
     @description.deleter
-    def description(self):
+    def description(self) -> None:
         desc = self.getTag('desc')
         if desc is not None:
             self.delChild(desc)
 
     @property
-    def required(self):
+    def required(self) -> bool:
         """
         Controls whether this field required to fill. Boolean
         """
         return bool(self.getTag('required'))
 
     @required.setter
-    def required(self, value):
+    def required(self, value: bool) -> None:
         required = self.getTag('required')
         if required and not value:
             self.delChild(required)
@@ -219,7 +236,7 @@ class DataField(ExtendedNode):
             self.addChild('required')
 
     @property
-    def media(self):
+    def media(self) -> Media | None:
         """
         Media data
         """
@@ -229,82 +246,81 @@ class DataField(ExtendedNode):
         return None
 
     @media.setter
-    def media(self, value):
+    def media(self, value: Media) -> None:
         del self.media
         self.addChild(node=value)
 
     @media.deleter
-    def media(self):
+    def media(self) -> None:
         media = self.getTag('media')
         if media is not None:
             self.delChild(media)
 
-    @staticmethod
-    def is_valid():
+    def is_valid(self) -> tuple[bool, str]:
         return True, ''
 
 
 class Uri(Node):
-    def __init__(self, uri_tag):
+    def __init__(self, uri_tag: Node) -> None:
         Node.__init__(self, node=uri_tag)
 
     @property
-    def type_(self):
+    def type_(self) -> str | None:
         """
         uri type
         """
         return self.getAttr('type')
 
     @type_.setter
-    def type_(self, value):
+    def type_(self, value: str) -> None:
         self.setAttr('type', value)
 
     @type_.deleter
-    def type_(self):
+    def type_(self) -> None:
         self.delAttr('type')
 
     @property
-    def uri_data(self):
+    def uri_data(self) -> str:
         """
         uri data
         """
         return self.getData()
 
     @uri_data.setter
-    def uri_data(self, value):
+    def uri_data(self, value: str) -> None:
         self.setData(value)
 
     @uri_data.deleter
-    def uri_data(self):
+    def uri_data(self) -> None:
         self.setData(None)
 
 
 class Media(Node):
-    def __init__(self, media_tag):
+    def __init__(self, media_tag: Node):
         Node.__init__(self, node=media_tag)
 
     @property
-    def uris(self):
+    def uris(self) -> list[Uri]:
         """
         URIs of the media element.
         """
-        return map(Uri, self.getTags('uri'))
+        return list(map(Uri, self.getTags('uri')))
 
     @uris.setter
-    def uris(self, value):
+    def uris(self, value: list[Uri]) -> None:
         del self.uris
         for uri in value:
             self.addChild(node=uri)
 
     @uris.deleter
-    def uris(self):
+    def uris(self) -> None:
         for element in self.getTags('uri'):
             self.delChild(element)
 
 
 class BooleanField(DataField):
     @property
-    def value(self):
+    def value(self) -> bool:
         """
         Value of field. May contain True, False or None
         """
@@ -318,11 +334,11 @@ class BooleanField(DataField):
         raise WrongFieldValue
 
     @value.setter
-    def value(self, value):
+    def value(self, value: bool) -> None:
         self.setTagData('value', value and '1' or '0')
 
     @value.deleter
-    def value(self):
+    def value(self) -> None:
         value = self.getTag('value')
         if value is not None:
             self.delChild(value)
@@ -334,26 +350,26 @@ class StringField(DataField):
     """
 
     @property
-    def value(self):
+    def value(self) -> str:
         """
         Value of field. May be any string
         """
         return self.getTagData('value') or ''
 
     @value.setter
-    def value(self, value):
+    def value(self, value: str) -> None:
         if value is None:
             value = ''
         self.setTagData('value', value)
 
     @value.deleter
-    def value(self):
+    def value(self) -> None:
         try:
             self.delChild(self.getTag('value'))
         except ValueError:  # if there already were no value tag
             pass
 
-    def is_valid(self):
+    def is_valid(self) -> tuple[bool, str]:
         if not self.required:
             return True, ''
         if not self.value:
@@ -367,11 +383,11 @@ class ListField(DataField):
     """
 
     @property
-    def options(self):
+    def options(self) -> list[tuple[str,str]]:
         """
         Options
         """
-        options = []
+        options: list[tuple[str,str]] = []
         for element in self.getTags('option'):
             value = element.getTagData('value')
             if value is None:
@@ -383,18 +399,18 @@ class ListField(DataField):
         return options
 
     @options.setter
-    def options(self, values):
+    def options(self, values: list[tuple[str,str]]) -> None:
         del self.options
         for value, label in values:
             self.addChild('option',
                           {'label': label}).setTagData('value', value)
 
     @options.deleter
-    def options(self):
+    def options(self) -> None:
         for element in self.getTags('option'):
             self.delChild(element)
 
-    def iter_options(self):
+    def iter_options(self) -> Iterator[tuple[str, str]]:
         for element in self.iterTags('option'):
             value = element.getTagData('value')
             if value is None:
@@ -409,7 +425,7 @@ class ListSingleField(ListField, StringField):
     """
     Covers list-single field
     """
-    def is_valid(self):
+    def is_valid(self) -> tuple[bool, str]:
         if not self.required:
             return True, ''
         if not self.value:
@@ -421,13 +437,13 @@ class JidSingleField(ListSingleField):
     """
     Covers jid-single fields
     """
-    def is_valid(self):
+    def is_valid(self) -> tuple[bool, str]:
         if self.value:
             try:
                 JID.from_string(self.value)
                 return True, ''
             except Exception as error:
-                return False, error
+                return False, str(error)
         if self.required:
             return False, ''
         return True, ''
@@ -439,31 +455,31 @@ class ListMultiField(ListField):
     """
 
     @property
-    def values(self):
+    def values(self) -> list[str]:
         """
         Values held in field
         """
-        values = []
+        values: list[str] = []
         for element in self.getTags('value'):
             values.append(element.getData())
         return values
 
     @values.setter
-    def values(self, values):
+    def values(self, values: list[str]) -> None:
         del self.values
         for value in values:
             self.addChild('value').setData(value)
 
     @values.deleter
-    def values(self):
+    def values(self) -> None:
         for element in self.getTags('value'):
             self.delChild(element)
 
-    def iter_values(self):
+    def iter_values(self) -> Iterator[str]:
         for element in self.getTags('value'):
             yield element.getData()
 
-    def is_valid(self):
+    def is_valid(self) -> tuple[bool, str]:
         if not self.required:
             return True, ''
         if not self.values:
@@ -475,13 +491,13 @@ class JidMultiField(ListMultiField):
     """
     Covers jid-multi fields
     """
-    def is_valid(self):
+    def is_valid(self) -> tuple[bool, str]:
         if self.values:
             for value in self.values:
                 try:
                     JID.from_string(value)
                 except Exception as error:
-                    return False, error
+                    return False, str(error)
             return True, ''
         if self.required:
             return False, ''
@@ -490,7 +506,7 @@ class JidMultiField(ListMultiField):
 
 class TextMultiField(DataField):
     @property
-    def value(self):
+    def value(self) -> str:
         """
         Value held in field
         """
@@ -500,7 +516,7 @@ class TextMultiField(DataField):
         return value[1:]
 
     @value.setter
-    def value(self, value):
+    def value(self, value: str) -> None:
         del self.value
         if value == '':
             return
@@ -508,11 +524,11 @@ class TextMultiField(DataField):
             self.addChild('value').setData(line)
 
     @value.deleter
-    def value(self):
+    def value(self) -> None:
         for element in self.getTags('value'):
             self.delChild(element)
 
-    def is_valid(self):
+    def is_valid(self) -> tuple[bool, str]:
         if not self.required:
             return True, ''
         if not self.value:
@@ -527,7 +543,7 @@ class DataRecord(ExtendedNode):
     """
     def __init__(self, fields=None, associated=None, extend=None):
         self.associated = associated
-        self.vars = {}
+        self.vars: dict[str, Node] = {}
         if extend is None:
             # we have to build this object from scratch
             Node.__init__(self)
@@ -546,14 +562,14 @@ class DataRecord(ExtendedNode):
                 self.fields = fields
 
     @property
-    def fields(self):
+    def fields(self) -> list[Node]:
         """
         List of fields in this record
         """
         return self.getTags('field')
 
     @fields.setter
-    def fields(self, fields):
+    def fields(self, fields: list[Node]):
         del self.fields
         for field in fields:
             if not isinstance(field, DataField):
@@ -562,18 +578,18 @@ class DataRecord(ExtendedNode):
             self.vars[field.var] = field
 
     @fields.deleter
-    def fields(self):
+    def fields(self) -> None:
         for element in self.getTags('field'):
             self.delChild(element)
             self.vars.clear()
 
-    def iter_fields(self):
+    def iter_fields(self) -> Iterator[Node]:
         """
         Iterate over fields in this record. Do not take associated into account
         """
         yield from self.iterTags('field')
 
-    def iter_with_associated(self):
+    def iter_with_associated(self) -> Iterator[tuple[Node, Node]]:
         """
         Iterate over associated, yielding both our field and associated one
         together
@@ -581,13 +597,13 @@ class DataRecord(ExtendedNode):
         for field in self.associated.iter_fields():
             yield self[field.var], field
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> Node:
         return self.vars[item]
 
-    def is_valid(self):
+    def is_valid(self) -> bool:
         return all(field.is_valid()[0] for field in self.iter_fields())
 
-    def is_fake_form(self):
+    def is_fake_form(self) -> bool:
         return bool(self.vars.get('fakeform', False))
 
 
@@ -605,7 +621,7 @@ class DataForm(ExtendedNode):
             self.instructions = instructions
 
     @property
-    def type_(self):
+    def type_(self) -> str | None:
         """
         Type of the form. Must be one of: 'form', 'submit', 'cancel', 'result'.
         'form' - this form is to be filled in; you will be able soon to do:
@@ -614,12 +630,12 @@ class DataForm(ExtendedNode):
         return self.getAttr('type')
 
     @type_.setter
-    def type_(self, type_):
+    def type_(self, type_: str) -> None:
         assert type_ in ('form', 'submit', 'cancel', 'result')
         self.setAttr('type', type_)
 
     @property
-    def title(self):
+    def title(self) -> str | None:
         """
         Title of the form
 
@@ -628,18 +644,18 @@ class DataForm(ExtendedNode):
         return self.getTagData('title')
 
     @title.setter
-    def title(self, title):
+    def title(self, title: str) -> None:
         self.setTagData('title', title)
 
     @title.deleter
-    def title(self):
+    def title(self) -> None:
         try:
             self.delChild('title')
         except ValueError:
             pass
 
     @property
-    def instructions(self):
+    def instructions(self) -> str:
         """
         Instructions for this form
 
@@ -652,7 +668,7 @@ class DataForm(ExtendedNode):
         return value[1:]
 
     @instructions.setter
-    def instructions(self, value):
+    def instructions(self, value: str) -> None:
         del self.instructions
         if value == '':
             return
@@ -660,18 +676,24 @@ class DataForm(ExtendedNode):
             self.addChild('instructions').setData(line)
 
     @instructions.deleter
-    def instructions(self):
+    def instructions(self) -> None:
         for value in self.getTags('instructions'):
             self.delChild(value)
 
     @property
-    def is_reported(self):
+    def is_reported(self) -> bool:
         return self.getTag('reported') is not None
 
 
 class SimpleDataForm(DataForm, DataRecord):
-    def __init__(self, type_=None, title=None, instructions=None, fields=None,
-                 extend=None):
+    def __init__(
+        self,
+        type_: str | None = None,
+        title: str | None = None,
+        instructions: str | None = None,
+        fields=None,
+        extend=None
+    ):
         DataForm.__init__(self, type_=type_, title=title,
                           instructions=instructions, extend=extend)
         DataRecord.__init__(self, fields=fields, extend=self, associated=self)
