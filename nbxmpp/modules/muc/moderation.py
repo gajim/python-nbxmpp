@@ -88,7 +88,7 @@ class Moderation(BaseModule):
 
         stamp = _parse_moderation_timestamp(retract, is_tombstone, properties)
 
-        moderated = stanza.getTag(
+        moderated = retract.getTag(
             'moderated', namespace=Namespace.MESSAGE_MODERATE_1)
         if moderated is None:
             return
