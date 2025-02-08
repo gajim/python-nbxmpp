@@ -169,7 +169,7 @@ class StanzaIDData(NamedTuple):
 
 
 class PubSubEventData(NamedTuple):
-    node: Node
+    node: str
     id: Optional[str] = None
     item: Optional[Node] = None
     data: Optional[Any] = None
@@ -224,14 +224,14 @@ class LocationData(NamedTuple):
 
 class PGPPublicKey(NamedTuple):
     jid: JID
-    key: str
-    date: datetime
+    key: bytes
+    date: float
 
 
 class PGPKeyMetadata(NamedTuple):
     jid: JID
     fingerprint: str
-    date: int
+    date: float
 
 
 class OMEMOMessage(NamedTuple):
@@ -1079,7 +1079,7 @@ class MessageProperties:
     mam: Optional[MAMData] = None
     pubsub: bool = False
     pubsub_event: Optional[PubSubEventData] = None
-    openpgp = None
+    openpgp: Optional[bytes] = None
     omemo = None
     encrypted: EncryptionData | None = None
     pgp_legacy: Optional[str] = None
