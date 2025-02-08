@@ -231,7 +231,7 @@ class PGPPublicKey(NamedTuple):
 class PGPKeyMetadata(NamedTuple):
     jid: JID
     fingerprint: str
-    date: datetime
+    date: int
 
 
 class OMEMOMessage(NamedTuple):
@@ -1082,7 +1082,7 @@ class MessageProperties:
     openpgp = None
     omemo = None
     encrypted: EncryptionData | None = None
-    pgp_legacy = None
+    pgp_legacy: Optional[str] = None
     marker: Optional[ChatMarker] = None
     receipt: Optional[ReceiptData] = None
     oob: Optional[OOBData] = None
