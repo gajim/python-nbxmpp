@@ -8,6 +8,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from collections.abc import Generator
+
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
@@ -42,7 +44,7 @@ class Blocking(BaseModule):
         ]
 
     @iq_request_task
-    def request_blocking_list(self):
+    def request_blocking_list(self) -> Generator[set[JID] | Iq | None, Iq]:
         _task = yield
 
         result = yield _make_blocking_list_request()

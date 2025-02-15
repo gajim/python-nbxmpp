@@ -24,7 +24,6 @@ from nbxmpp.modules.activity import Activity
 from nbxmpp.modules.adhoc import AdHoc
 from nbxmpp.modules.annotations import Annotations
 from nbxmpp.modules.attention import Attention
-from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.blocking import Blocking
 from nbxmpp.modules.bookmarks.native_bookmarks import NativeBookmarks
 from nbxmpp.modules.bookmarks.pep_bookmarks import PEPBookmarks
@@ -104,6 +103,120 @@ if TYPE_CHECKING:
 
 log = logging.getLogger("nbxmpp.dispatcher")
 
+NBXMPPModuleNameT = Literal[
+    "Activity",
+    "Activity",
+    "AdHoc",
+    "Annotations",
+    "Attention",
+    "BasePresence",
+    "BaseMessage",
+    "BaseIq",
+    "Blocking",
+    "Captcha",
+    "ChatMarkers",
+    "Chatstates",
+    "Correction",
+    "Delay",
+    "Delimiter",
+    "Discovery",
+    "EME",
+    "EntityCaps",
+    "EntityTime",
+    "Hats",
+    "HTTPAuth",
+    "HTTPUpload",
+    "IBB",
+    "Idle",
+    "LastActivity",
+    "Location",
+    "MAM",
+    "MDS",
+    "Moderation",
+    "Mood",
+    "MUC",
+    "Muclumbus",
+    "NativeBookmarks",
+    "Nickname",
+    "OMEMO",
+    "OOB",
+    "OpenPGP",
+    "PEPBookmarks",
+    "PGPLegacy",
+    "Ping",
+    "PrivateBookmarks",
+    "PubSub",
+    "Reactions",
+    "Receipts",
+    "Register",
+    "Replies",
+    "Retraction",
+    "Roster",
+    "SecurityLabels",
+    "SoftwareVersion",
+    "Tune",
+    "UserAvatar",
+    "VCardAvatar",
+    "VCardTemp",
+    "VCard4",
+]
+NBXMPPModuleT = (
+    Activity
+    | AdHoc
+    | Annotations
+    | Attention
+    | BasePresence
+    | BaseMessage
+    | BaseIq
+    | Blocking
+    | Captcha
+    | ChatMarkers
+    | Chatstates
+    | Correction
+    | Delay
+    | Delimiter
+    | Discovery
+    | EME
+    | EntityCaps
+    | EntityTime
+    | Hats
+    | HTTPAuth
+    | HTTPUpload
+    | IBB
+    | Idle
+    | LastActivity
+    | Location
+    | MAM
+    | MDS
+    | Moderation
+    | Mood
+    | MUC
+    | Muclumbus
+    | NativeBookmarks
+    | Nickname
+    | OMEMO
+    | OOB
+    | OpenPGP
+    | PEPBookmarks
+    | PGPLegacy
+    | Ping
+    | PrivateBookmarks
+    | PubSub
+    | Reactions
+    | Receipts
+    | Register
+    | Replies
+    | Retraction
+    | Roster
+    | SecurityLabels
+    | SoftwareVersion
+    | Tune
+    | UserAvatar
+    | VCardAvatar
+    | VCardTemp
+    | VCard4
+)
+
 
 class StanzaDispatcher(Observable):
     """
@@ -119,7 +232,7 @@ class StanzaDispatcher(Observable):
     def __init__(self, client: Client) -> None:
         Observable.__init__(self, log)
         self._client = client
-        self._modules: dict[str, BaseModule] = {}
+        self._modules: dict[str, NBXMPPModuleT] = {}
         self._parser: NodeBuilder | None = None
         self._websocket_stream_error: str | None = None
 
@@ -154,18 +267,115 @@ class StanzaDispatcher(Observable):
         self._dispatch_callback = callback
 
     @overload
+    def get_module(self, name: Literal["Activity"]) -> Activity: ...
+    @overload
+    def get_module(self, name: Literal["AdHoc"]) -> AdHoc: ...
+    @overload
+    def get_module(self, name: Literal["Annotations"]) -> Annotations: ...
+    @overload
+    def get_module(self, name: Literal["Attention"]) -> Attention: ...
+    @overload
+    def get_module(self, name: Literal["Blocking"]) -> Blocking: ...
+    @overload
+    def get_module(self, name: Literal["NativeBookmarks"]) -> NativeBookmarks: ...
+    @overload
+    def get_module(self, name: Literal["PEPBookmarks"]) -> PEPBookmarks: ...
+    @overload
+    def get_module(self, name: Literal["PrivateBookmarks"]) -> PrivateBookmarks: ...
+    @overload
+    def get_module(self, name: Literal["Captcha"]) -> Captcha: ...
+    @overload
+    def get_module(self, name: Literal["ChatMarkers"]) -> ChatMarkers: ...
+    @overload
+    def get_module(self, name: Literal["Chatstates"]) -> Chatstates: ...
+    @overload
+    def get_module(self, name: Literal["Correction"]) -> Correction: ...
+    @overload
+    def get_module(self, name: Literal["Delay"]) -> Delay: ...
+    @overload
+    def get_module(self, name: Literal["Delimiter"]) -> Delimiter: ...
+    @overload
+    def get_module(self, name: Literal["Discovery"]) -> Discovery: ...
+    @overload
+    def get_module(self, name: Literal["EME"]) -> EME: ...
+    @overload
+    def get_module(self, name: Literal["EntityCaps"]) -> EntityCaps: ...
+    @overload
+    def get_module(self, name: Literal["EntityTime"]) -> EntityTime: ...
+    @overload
+    def get_module(self, name: Literal["Hats"]) -> Hats: ...
+    @overload
+    def get_module(self, name: Literal["HTTPAuth"]) -> HTTPAuth: ...
+    @overload
+    def get_module(self, name: Literal["HTTPUpload"]) -> HTTPUpload: ...
+    @overload
+    def get_module(self, name: Literal["IBB"]) -> IBB: ...
+    @overload
+    def get_module(self, name: Literal["Idle"]) -> Idle: ...
+    @overload
+    def get_module(self, name: Literal["BaseIq"]) -> BaseIq: ...
+    @overload
+    def get_module(self, name: Literal["LastActivity"]) -> LastActivity: ...
+    @overload
+    def get_module(self, name: Literal["Location"]) -> Location: ...
+    @overload
+    def get_module(self, name: Literal["MAM"]) -> MAM: ...
+    @overload
+    def get_module(self, name: Literal["MDS"]) -> MDS: ...
+    @overload
+    def get_module(self, name: Literal["BaseMessage"]) -> BaseMessage: ...
+    @overload
+    def get_module(self, name: Literal["Mood"]) -> Mood: ...
+    @overload
+    def get_module(self, name: Literal["MUC"]) -> MUC: ...
+    @overload
+    def get_module(self, name: Literal["Moderation"]) -> Moderation: ...
+    @overload
     def get_module(self, name: Literal["Muclumbus"]) -> Muclumbus: ...
-
+    @overload
+    def get_module(self, name: Literal["Nickname"]) -> Nickname: ...
+    @overload
+    def get_module(self, name: Literal["OMEMO"]) -> OMEMO: ...
+    @overload
+    def get_module(self, name: Literal["OOB"]) -> OOB: ...
+    @overload
+    def get_module(self, name: Literal["OpenPGP"]) -> OpenPGP: ...
+    @overload
+    def get_module(self, name: Literal["PGPLegacy"]) -> PGPLegacy: ...
     @overload
     def get_module(self, name: Literal["Ping"]) -> Ping: ...
-
+    @overload
+    def get_module(self, name: Literal["BasePresence"]) -> BasePresence: ...
     @overload
     def get_module(self, name: Literal["PubSub"]) -> PubSub: ...
-
+    @overload
+    def get_module(self, name: Literal["Reactions"]) -> Reactions: ...
+    @overload
+    def get_module(self, name: Literal["Receipts"]) -> Receipts: ...
     @overload
     def get_module(self, name: Literal["Register"]) -> Register: ...
+    @overload
+    def get_module(self, name: Literal["Replies"]) -> Replies: ...
+    @overload
+    def get_module(self, name: Literal["Retraction"]) -> Retraction: ...
+    @overload
+    def get_module(self, name: Literal["Roster"]) -> Roster: ...
+    @overload
+    def get_module(self, name: Literal["SecurityLabels"]) -> SecurityLabels: ...
+    @overload
+    def get_module(self, name: Literal["SoftwareVersion"]) -> SoftwareVersion: ...
+    @overload
+    def get_module(self, name: Literal["Tune"]) -> Tune: ...
+    @overload
+    def get_module(self, name: Literal["UserAvatar"]) -> UserAvatar: ...
+    @overload
+    def get_module(self, name: Literal["VCard4"]) -> VCard4: ...
+    @overload
+    def get_module(self, name: Literal["VCardAvatar"]) -> VCardAvatar: ...
+    @overload
+    def get_module(self, name: Literal["VCardTemp"]) -> VCardTemp: ...
 
-    def get_module(self, name: str) -> BaseModule:
+    def get_module(self, name: NBXMPPModuleNameT) -> NBXMPPModuleT:
         return self._modules[name]
 
     def _register_modules(self):

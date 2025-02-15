@@ -7,7 +7,9 @@
 from __future__ import annotations
 
 from typing import Any
+from typing import ParamSpec
 from typing import TYPE_CHECKING
+from typing import TypeVar
 
 import functools
 import inspect
@@ -23,7 +25,11 @@ from nbxmpp.simplexml import Node
 from nbxmpp.structs import CommonResult
 
 if TYPE_CHECKING:
+    from nbxmpp.dispatcher import NBXMPPModuleT
     from nbxmpp.task import Task
+
+T = TypeVar("T")
+P = ParamSpec("P")
 
 
 def process_response(response: Iq) -> CommonResult:
@@ -80,11 +86,11 @@ def make_func_arguments_string(
     return f"{func.__name__}({arg_string})"
 
 
-def log_calls(func: Callable[..., Any]) -> Callable[..., Any]:
+def log_calls(func: Callable[P, T]) -> Callable[P, T]:
     @functools.wraps(func)
-    def func_wrapper(self: Any, *args: Any, **kwargs: Any):
-        if self._log.isEnabledFor(logging.INFO):
-            self._log.info(make_func_arguments_string(func, self, args, kwargs))
+    def func_wrapper(self: NBXMPPModuleT, *args: Any, **kwargs: Any) -> T:
+        if self._log.isEnabledFor(logging.INFO):  # type: ignore
+            self._log.info(make_func_arguments_string(func, self, args, kwargs))  # type: ignore
         return func(self, *args, **kwargs)
 
     return func_wrapper

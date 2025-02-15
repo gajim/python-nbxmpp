@@ -58,11 +58,63 @@ from nbxmpp.websocket import WebsocketConnection
 
 if TYPE_CHECKING:
     from nbxmpp.connection import Connection
-    from nbxmpp.modules.base import BaseModule
+    from nbxmpp.dispatcher import NBXMPPModuleNameT
+    from nbxmpp.dispatcher import NBXMPPModuleT
+    from nbxmpp.modules.activity import Activity
+    from nbxmpp.modules.adhoc import AdHoc
+    from nbxmpp.modules.annotations import Annotations
+    from nbxmpp.modules.attention import Attention
+    from nbxmpp.modules.blocking import Blocking
+    from nbxmpp.modules.bookmarks.native_bookmarks import NativeBookmarks
+    from nbxmpp.modules.bookmarks.pep_bookmarks import PEPBookmarks
+    from nbxmpp.modules.bookmarks.private_bookmarks import PrivateBookmarks
+    from nbxmpp.modules.captcha import Captcha
+    from nbxmpp.modules.chat_markers import ChatMarkers
+    from nbxmpp.modules.chatstates import Chatstates
+    from nbxmpp.modules.correction import Correction
+    from nbxmpp.modules.delay import Delay
+    from nbxmpp.modules.delimiter import Delimiter
+    from nbxmpp.modules.discovery import Discovery
+    from nbxmpp.modules.eme import EME
+    from nbxmpp.modules.entity_caps import EntityCaps
+    from nbxmpp.modules.entity_time import EntityTime
+    from nbxmpp.modules.http_auth import HTTPAuth
+    from nbxmpp.modules.http_upload import HTTPUpload
+    from nbxmpp.modules.ibb import IBB
+    from nbxmpp.modules.idle import Idle
+    from nbxmpp.modules.iq import BaseIq
+    from nbxmpp.modules.last_activity import LastActivity
+    from nbxmpp.modules.location import Location
+    from nbxmpp.modules.mam import MAM
+    from nbxmpp.modules.mds import MDS
+    from nbxmpp.modules.message import BaseMessage
+    from nbxmpp.modules.mood import Mood
+    from nbxmpp.modules.muc import MUC
+    from nbxmpp.modules.muc.hats import Hats
+    from nbxmpp.modules.muc.moderation import Moderation
     from nbxmpp.modules.muclumbus import Muclumbus
+    from nbxmpp.modules.nickname import Nickname
+    from nbxmpp.modules.omemo import OMEMO
+    from nbxmpp.modules.oob import OOB
+    from nbxmpp.modules.openpgp import OpenPGP
+    from nbxmpp.modules.pgplegacy import PGPLegacy
     from nbxmpp.modules.ping import Ping
+    from nbxmpp.modules.presence import BasePresence
     from nbxmpp.modules.pubsub import PubSub
-    from nbxmpp.modules.register.register import Register
+    from nbxmpp.modules.reactions import Reactions
+    from nbxmpp.modules.receipts import Receipts
+    from nbxmpp.modules.register import Register
+    from nbxmpp.modules.replies import Replies
+    from nbxmpp.modules.retraction import Retraction
+    from nbxmpp.modules.roster import Roster
+    from nbxmpp.modules.security_labels import SecurityLabels
+    from nbxmpp.modules.software_version import SoftwareVersion
+    from nbxmpp.modules.tune import Tune
+    from nbxmpp.modules.user_avatar import UserAvatar
+    from nbxmpp.modules.vcard4 import VCard4
+    from nbxmpp.modules.vcard_avatar import VCardAvatar
+    from nbxmpp.modules.vcard_temp import VCardTemp
+
 
 log = logging.getLogger("nbxmpp.stream")
 
@@ -610,18 +662,116 @@ class Client(Observable):
         self.send_nonza(nonza)
 
     @overload
+    def get_module(self, name: Literal["Activity"]) -> Activity: ...
+    @overload
+    def get_module(self, name: Literal["AdHoc"]) -> AdHoc: ...
+    @overload
+    def get_module(self, name: Literal["Annotations"]) -> Annotations: ...
+    @overload
+    def get_module(self, name: Literal["Attention"]) -> Attention: ...
+    @overload
+    def get_module(self, name: Literal["Blocking"]) -> Blocking: ...
+    @overload
+    def get_module(self, name: Literal["NativeBookmarks"]) -> NativeBookmarks: ...
+    @overload
+    def get_module(self, name: Literal["PEPBookmarks"]) -> PEPBookmarks: ...
+    @overload
+    def get_module(self, name: Literal["PrivateBookmarks"]) -> PrivateBookmarks: ...
+    @overload
+    def get_module(self, name: Literal["Captcha"]) -> Captcha: ...
+    @overload
+    def get_module(self, name: Literal["ChatMarkers"]) -> ChatMarkers: ...
+    @overload
+    def get_module(self, name: Literal["Chatstates"]) -> Chatstates: ...
+    @overload
+    def get_module(self, name: Literal["Correction"]) -> Correction: ...
+    @overload
+    def get_module(self, name: Literal["Delay"]) -> Delay: ...
+    @overload
+    def get_module(self, name: Literal["Delimiter"]) -> Delimiter: ...
+    @overload
+    def get_module(self, name: Literal["Discovery"]) -> Discovery: ...
+    @overload
+    def get_module(self, name: Literal["EME"]) -> EME: ...
+    @overload
+    def get_module(self, name: Literal["EntityCaps"]) -> EntityCaps: ...
+    @overload
+    def get_module(self, name: Literal["EntityTime"]) -> EntityTime: ...
+    @overload
+    def get_module(self, name: Literal["Hats"]) -> Hats: ...
+    @overload
+    def get_module(self, name: Literal["HTTPAuth"]) -> HTTPAuth: ...
+    @overload
+    def get_module(self, name: Literal["HTTPUpload"]) -> HTTPUpload: ...
+    @overload
+    def get_module(self, name: Literal["IBB"]) -> IBB: ...
+    @overload
+    def get_module(self, name: Literal["Idle"]) -> Idle: ...
+    @overload
+    def get_module(self, name: Literal["BaseIq"]) -> BaseIq: ...
+    @overload
+    def get_module(self, name: Literal["LastActivity"]) -> LastActivity: ...
+    @overload
+    def get_module(self, name: Literal["Location"]) -> Location: ...
+    @overload
+    def get_module(self, name: Literal["MAM"]) -> MAM: ...
+    @overload
+    def get_module(self, name: Literal["MDS"]) -> MDS: ...
+    @overload
+    def get_module(self, name: Literal["BaseMessage"]) -> BaseMessage: ...
+    @overload
+    def get_module(self, name: Literal["Mood"]) -> Mood: ...
+    @overload
+    def get_module(self, name: Literal["MUC"]) -> MUC: ...
+    @overload
+    def get_module(self, name: Literal["Moderation"]) -> Moderation: ...
+    @overload
     def get_module(self, name: Literal["Muclumbus"]) -> Muclumbus: ...
-
+    @overload
+    def get_module(self, name: Literal["Nickname"]) -> Nickname: ...
+    @overload
+    def get_module(self, name: Literal["OMEMO"]) -> OMEMO: ...
+    @overload
+    def get_module(self, name: Literal["OOB"]) -> OOB: ...
+    @overload
+    def get_module(self, name: Literal["OpenPGP"]) -> OpenPGP: ...
+    @overload
+    def get_module(self, name: Literal["PGPLegacy"]) -> PGPLegacy: ...
     @overload
     def get_module(self, name: Literal["Ping"]) -> Ping: ...
-
+    @overload
+    def get_module(self, name: Literal["BasePresence"]) -> BasePresence: ...
     @overload
     def get_module(self, name: Literal["PubSub"]) -> PubSub: ...
-
+    @overload
+    def get_module(self, name: Literal["Reactions"]) -> Reactions: ...
+    @overload
+    def get_module(self, name: Literal["Receipts"]) -> Receipts: ...
     @overload
     def get_module(self, name: Literal["Register"]) -> Register: ...
+    @overload
+    def get_module(self, name: Literal["Replies"]) -> Replies: ...
+    @overload
+    def get_module(self, name: Literal["Retraction"]) -> Retraction: ...
+    @overload
+    def get_module(self, name: Literal["Roster"]) -> Roster: ...
+    @overload
+    def get_module(self, name: Literal["SecurityLabels"]) -> SecurityLabels: ...
+    @overload
+    def get_module(self, name: Literal["SoftwareVersion"]) -> SoftwareVersion: ...
+    @overload
+    def get_module(self, name: Literal["Tune"]) -> Tune: ...
+    @overload
+    def get_module(self, name: Literal["UserAvatar"]) -> UserAvatar: ...
+    @overload
+    def get_module(self, name: Literal["VCard4"]) -> VCard4: ...
+    @overload
+    def get_module(self, name: Literal["VCardAvatar"]) -> VCardAvatar: ...
+    @overload
+    def get_module(self, name: Literal["VCardTemp"]) -> VCardTemp: ...
 
-    def get_module(self, name: str) -> BaseModule:
+    def get_module(self, name: NBXMPPModuleNameT) -> NBXMPPModuleT:
+        assert self._dispatcher is not None
         return self._dispatcher.get_module(name)
 
     def _on_bad_certificate(self, connection: Connection, _signal_name: str) -> None:

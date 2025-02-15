@@ -8,7 +8,9 @@ from __future__ import annotations
 
 from typing import Any
 from typing import Optional
+from typing import ParamSpec
 from typing import TYPE_CHECKING
+from typing import TypeVar
 
 import inspect
 import logging
@@ -27,12 +29,12 @@ from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.errors import TimeoutStanzaError
 from nbxmpp.http import HTTPRequest
-from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import make_func_arguments_string
 from nbxmpp.simplexml import Node
 
 if TYPE_CHECKING:
     from nbxmpp.client import Client
+    from nbxmpp.dispatcher import NBXMPPModuleT
 
 log = logging.getLogger("nbxmpp.task")
 
@@ -42,6 +44,9 @@ class _ResultSet:
 
 
 ResultSet = _ResultSet()
+
+T = TypeVar("T")
+P = ParamSpec("P")
 
 
 class NoType:
@@ -83,38 +88,38 @@ def _setup_task(
     return task
 
 
-def iq_request_task(func: Callable[..., Any]):
+def iq_request_task(func: Callable[P, T]) -> Callable[P, T]:
     @wraps(func)
     def func_wrapper(
-        self: BaseModule,
+        self: NBXMPPModuleT,
         *args: Any,
         timeout: int | None = None,
         callback: Callable[..., Any] | None = None,
         user_data: Any = None,
         **kwargs: Any,
-    ):
+    ) -> T:
         if self._log.isEnabledFor(logging.INFO):  # type: ignore
             self._log.info(make_func_arguments_string(func, self, args, kwargs))  # type: ignore
         task = IqRequestTask(
             func(self, *args, **kwargs), self._log, self._client  # type: ignore
         )
         task.set_timeout(timeout)
-        return _setup_task(task, self._client, callback, user_data)
+        return _setup_task(task, self._client, callback, user_data)  # type: ignore
 
     return func_wrapper
 
 
-def http_request_task(func: Callable[..., Any]):
+def http_request_task(func: Callable[P, T]) -> Callable[P, T]:
     @wraps(func)
     def func_wrapper(
-        self: Any,
+        self: NBXMPPModuleT,
         *args: Any,
         callback: Callable[..., Any] | None = None,
         user_data: Any = None,
         **kwargs: Any,
-    ):
-        task = HTTPRequestTask(func(self, *args, **kwargs), self._log)
-        return _setup_task(task, self._client, callback, user_data)
+    ) -> T:
+        task = HTTPRequestTask(func(self, *args, **kwargs), self._log)  # type: ignore
+        return _setup_task(task, self._client, callback, user_data)  # type: ignore
 
     return func_wrapper
 
@@ -264,7 +269,7 @@ class Task:
     def _invoke_callbacks(self) -> None:
         for callback in self._done_callbacks:
             if isinstance(callback, weakref.WeakMethod | weakref.ref):
-                callback = callback()
+                callback = callback()  # type: ignore
                 if callback is None:
                     return
 
@@ -358,6 +363,7 @@ class IqRequestTask(Task):
         self._iq_id: str | None = None
 
     def _run_async(self, data: Node) -> None:
+        assert self._client is not None
         self._iq_id = self._client.send_stanza(
             data, callback=self._async_finished, timeout=self._timeout
         )
@@ -377,7 +383,7 @@ class IqRequestTask(Task):
 
     def _finalize(self) -> None:
         if self._iq_id is not None:
-            self._client._dispatcher.remove_iq_callback(self._iq_id)
+            self._client._dispatcher.remove_iq_callback(self._iq_id)  # type: ignore
         self._client = None
         super()._finalize()
 
