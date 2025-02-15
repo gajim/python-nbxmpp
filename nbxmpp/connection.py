@@ -15,13 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from typing import Any
 
 import logging
 
 from gi.repository import Gio
 
+from nbxmpp.const import ConnectionType
 from nbxmpp.const import TCPState
+from nbxmpp.structs import ServerAddress
 from nbxmpp.util import LogAdapter
 from nbxmpp.util import min_version
 from nbxmpp.util import Observable
@@ -42,12 +44,13 @@ class Connection(Observable):
         disconnected
     '''
     def __init__(self,
-                 log_context,
-                 address,
-                 accepted_certificates,
-                 ignore_tls_errors,
-                 ignored_tls_errors,
-                 client_cert):
+                 log_context: str | None,
+                 address: ServerAddress,
+                 accepted_certificates: list[Gio.TlsCertificate],
+                 ignore_tls_errors: bool,
+                 ignored_tls_errors: set[Gio.TlsCertificateFlags],
+                 client_cert: Any
+        ) -> None:
 
         self._log = LogAdapter(log, {'context': log_context})
 
@@ -55,21 +58,20 @@ class Connection(Observable):
 
         self._client_cert = client_cert
         self._address = address
-        self._local_address = None
-        self._remote_address = None
-        self._state = None
+        self._local_address: Gio.SocketAddress | None = None
+        self._remote_address: str | None = None
 
         self._state = TCPState.DISCONNECTED
-        self._tls_con: Optional[Gio.TlsConnection] = None
+        self._tls_con: Gio.TlsConnection | None = None
 
-        self._peer_certificate = None
-        self._peer_certificate_errors = None
+        self._peer_certificate: Gio.TlsCertificate | None = None
+        self._peer_certificate_errors: set[Gio.TlsCertificateFlags] | None = None
         self._accepted_certificates = accepted_certificates
         self._ignore_tls_errors = ignore_tls_errors
         self._ignored_tls_errors = ignored_tls_errors
 
     @property
-    def tls_version(self) -> Optional[int]:
+    def tls_version(self) -> int | None:
         if self._tls_con is None:
             return None
 
@@ -79,7 +81,7 @@ class Connection(Observable):
         return self._tls_con.get_protocol_version()
 
     @property
-    def ciphersuite(self) -> Optional[str]:
+    def ciphersuite(self) -> str | None:
         if self._tls_con is None:
             return None
 
@@ -91,7 +93,7 @@ class Connection(Observable):
     def get_channel_binding_data(
         self,
         type_: Gio.TlsChannelBindingType
-    ) -> Optional[bytes]:
+    ) -> bytes | None:
         assert self._tls_con is not None
 
         try:
@@ -105,31 +107,32 @@ class Connection(Observable):
         return data
 
     @property
-    def local_address(self):
+    def local_address(self) -> Gio.SocketAddress | None:
         return self._local_address
 
     @property
-    def remote_address(self):
+    def remote_address(self) -> str | None:
         return self._remote_address
 
     @property
-    def peer_certificate(self):
+    def peer_certificate(self) -> tuple[Gio.TlsCertificate | None, set[Gio.TlsCertificateFlags] | None]:
         return (self._peer_certificate, self._peer_certificate_errors)
 
     @property
-    def connection_type(self):
+    def connection_type(self) -> ConnectionType:
+        assert self._address is not None
         return self._address.type
 
     @property
-    def state(self):
+    def state(self) -> TCPState:
         return self._state
 
     @state.setter
-    def state(self, value):
+    def state(self, value: TCPState) -> None:
         self._log.info('Set Connection State: %s', value)
         self._state = value
 
-    def _accept_certificate(self):
+    def _accept_certificate(self) -> bool:
         if not self._peer_certificate_errors:
             return True
 
@@ -147,39 +150,38 @@ class Connection(Observable):
 
         if Gio.TlsCertificateFlags.UNKNOWN_CA in self._peer_certificate_errors:
             for accepted_certificate in self._accepted_certificates:
+                assert self._peer_certificate is not None
                 if self._peer_certificate.is_same(accepted_certificate):
                     self._peer_certificate_errors.discard(
                         Gio.TlsCertificateFlags.UNKNOWN_CA)
                     break
 
-        if not self._peer_certificate_errors:
-            return True
-        return False
+        return bool(not self._peer_certificate_errors)
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         raise NotImplementedError
 
-    def connect(self):
+    def connect(self) -> None:
         raise NotImplementedError
 
-    def send(self, stanza, now=False):
+    def send(self, stanza: Any, now: bool = False) -> None:
         raise NotImplementedError
 
-    def _log_stanza(self, data, received=True):
+    def _log_stanza(self, data: str, received: bool = True) -> None:
         direction = 'RECEIVED' if received else 'SENT'
         message = ('::::: DATA %s ::::\n\n%s\n')
         self._log.info(message, direction, data)
 
-    def start_tls_negotiation(self):
+    def start_tls_negotiation(self) -> None:
         raise NotImplementedError
 
-    def shutdown_output(self):
+    def shutdown_output(self) -> None:
         raise NotImplementedError
 
-    def shutdown_input(self):
+    def shutdown_input(self) -> None:
         raise NotImplementedError
 
-    def destroy(self):
+    def destroy(self) -> None:
         self.remove_subscriptions()
         self._peer_certificate = None
         self._client_cert = None

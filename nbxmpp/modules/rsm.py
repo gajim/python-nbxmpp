@@ -16,10 +16,11 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Node
 from nbxmpp.structs import RSMData
 
 
-def parse_rsm(stanza):
+def parse_rsm(stanza: Node) -> RSMData | None:
     stanza = stanza.getTag('set', namespace=Namespace.RSM)
     if stanza is None:
         return None

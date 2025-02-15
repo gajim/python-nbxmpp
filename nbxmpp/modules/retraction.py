@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp import Namespace
 from nbxmpp import Node
 from nbxmpp.modules.base import BaseModule
@@ -6,9 +10,12 @@ from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import RetractionData
 from nbxmpp.structs import StanzaHandler
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class Retraction(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -28,7 +35,7 @@ class Retraction(BaseModule):
         ]
 
     def _process_message(
-        self, _client, stanza: Node, properties: MessageProperties
+        self, _client: Client, stanza: Node, properties: MessageProperties
     ) -> None:
         retraction = stanza.getTag(
             'retract', namespace=Namespace.MESSAGE_RETRACT_1
@@ -48,7 +55,7 @@ class Retraction(BaseModule):
         )
 
     def _process_message_retracted_tombstone(
-        self, _client, stanza: Node, properties: MessageProperties
+        self, _client: Client, stanza: Node, properties: MessageProperties
     ) -> None:
         if not properties.is_mam_message:
             return

@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from enum import Enum
 from enum import IntEnum
 from functools import total_ordering
@@ -35,19 +37,19 @@ class IqType(Enum):
     ERROR = 'error'
 
     @property
-    def is_get(self):
+    def is_get(self) -> bool:
         return self == IqType.GET
 
     @property
-    def is_set(self):
+    def is_set(self) -> bool:
         return self == IqType.SET
 
     @property
-    def is_result(self):
+    def is_result(self) -> bool:
         return self == IqType.RESULT
 
     @property
-    def is_error(self):
+    def is_error(self) -> bool:
         return self == IqType.ERROR
 
 
@@ -59,23 +61,23 @@ class MessageType(Enum):
     ERROR = 'error'
 
     @property
-    def is_normal(self):
+    def is_normal(self) -> bool:
         return self == MessageType.NORMAL
 
     @property
-    def is_chat(self):
+    def is_chat(self) -> bool:
         return self == MessageType.CHAT
 
     @property
-    def is_groupchat(self):
+    def is_groupchat(self) -> bool:
         return self == MessageType.GROUPCHAT
 
     @property
-    def is_headline(self):
+    def is_headline(self) -> bool:
         return self == MessageType.HEADLINE
 
     @property
-    def is_error(self):
+    def is_error(self) -> bool:
         return self == MessageType.ERROR
 
 
@@ -90,35 +92,35 @@ class PresenceType(Enum):
     ERROR = 'error'
 
     @property
-    def is_available(self):
+    def is_available(self) -> bool:
         return self == PresenceType.AVAILABLE
 
     @property
-    def is_unavailable(self):
+    def is_unavailable(self) -> bool:
         return self == PresenceType.UNAVAILABLE
 
     @property
-    def is_error(self):
+    def is_error(self) -> bool:
         return self == PresenceType.ERROR
 
     @property
-    def is_probe(self):
+    def is_probe(self) -> bool:
         return self == PresenceType.PROBE
 
     @property
-    def is_unsubscribe(self):
+    def is_unsubscribe(self) -> bool:
         return self == PresenceType.UNSUBSCRIBE
 
     @property
-    def is_unsubscribed(self):
+    def is_unsubscribed(self) -> bool:
         return self == PresenceType.UNSUBSCRIBED
 
     @property
-    def is_subscribe(self):
+    def is_subscribe(self) -> bool:
         return self == PresenceType.SUBSCRIBE
 
     @property
-    def is_subscribed(self):
+    def is_subscribed(self) -> bool:
         return self == PresenceType.SUBSCRIBED
 
 
@@ -131,26 +133,26 @@ class PresenceShow(Enum):
     DND = 'dnd'
 
     @property
-    def is_online(self):
+    def is_online(self) -> bool:
         return self == PresenceShow.ONLINE
 
     @property
-    def is_chat(self):
+    def is_chat(self) -> bool:
         return self == PresenceShow.CHAT
 
     @property
-    def is_away(self):
+    def is_away(self) -> bool:
         return self == PresenceShow.AWAY
 
     @property
-    def is_xa(self):
+    def is_xa(self) -> bool:
         return self == PresenceShow.XA
 
     @property
-    def is_dnd(self):
+    def is_dnd(self) -> bool:
         return self == PresenceShow.DND
 
-    def __lt__(self, other):
+    def __lt__(self, other: PresenceShow) -> bool:
         try:
             w1 = self._WEIGHTS[self]
             w2 = self._WEIGHTS[other]
@@ -177,26 +179,26 @@ class Chatstate(Enum):
     GONE = 'gone'
 
     @property
-    def is_composing(self):
+    def is_composing(self) -> bool:
         return self == Chatstate.COMPOSING
 
     @property
-    def is_paused(self):
+    def is_paused(self) -> bool:
         return self == Chatstate.PAUSED
 
     @property
-    def is_active(self):
+    def is_active(self) -> bool:
         return self == Chatstate.ACTIVE
 
     @property
-    def is_inactive(self):
+    def is_inactive(self) -> bool:
         return self == Chatstate.INACTIVE
 
     @property
-    def is_gone(self):
+    def is_gone(self) -> bool:
         return self == Chatstate.GONE
 
-    def __lt__(self, other):
+    def __lt__(self, other: Chatstate) -> bool:
         try:
             w1 = self._WEIGHTS[self]
             w2 = self._WEIGHTS[other]
@@ -258,26 +260,26 @@ class Affiliation(Enum):
     NONE = 'none'
 
     @property
-    def is_owner(self):
+    def is_owner(self) -> bool:
         return self == Affiliation.OWNER
 
     @property
-    def is_admin(self):
+    def is_admin(self) -> bool:
         return self == Affiliation.ADMIN
 
     @property
-    def is_member(self):
+    def is_member(self) -> bool:
         return self == Affiliation.MEMBER
 
     @property
-    def is_outcast(self):
+    def is_outcast(self) -> bool:
         return self == Affiliation.OUTCAST
 
     @property
-    def is_none(self):
+    def is_none(self) -> bool:
         return self == Affiliation.NONE
 
-    def __lt__(self, other):
+    def __lt__(self, other: Affiliation) -> bool:
         try:
             w1 = self._WEIGHTS[self]
             w2 = self._WEIGHTS[other]
@@ -303,22 +305,22 @@ class Role(Enum):
     NONE = 'none'
 
     @property
-    def is_moderator(self):
+    def is_moderator(self) -> bool:
         return self == Role.MODERATOR
 
     @property
-    def is_participant(self):
+    def is_participant(self) -> bool:
         return self == Role.PARTICIPANT
 
     @property
-    def is_visitor(self):
+    def is_visitor(self) -> bool:
         return self == Role.VISITOR
 
     @property
-    def is_none(self):
+    def is_none(self) -> bool:
         return self == Role.NONE
 
-    def __lt__(self, other):
+    def __lt__(self, other: Role) -> bool:
         try:
             w1 = self._WEIGHTS[self]
             w2 = self._WEIGHTS[other]
@@ -367,15 +369,15 @@ class ConnectionType(Enum):
     PLAIN = 'PLAIN'
 
     @property
-    def is_direct_tls(self):
+    def is_direct_tls(self) -> bool:
         return self == ConnectionType.DIRECT_TLS
 
     @property
-    def is_start_tls(self):
+    def is_start_tls(self) -> bool:
         return self == ConnectionType.START_TLS
 
     @property
-    def is_plain(self):
+    def is_plain(self) -> bool:
         return self == ConnectionType.PLAIN
 
 
@@ -436,19 +438,19 @@ class Mode(IntEnum):
     ANONYMOUS_TEST = 3
 
     @property
-    def is_client(self):
+    def is_client(self) -> bool:
         return self == Mode.CLIENT
 
     @property
-    def is_register(self):
+    def is_register(self) -> bool:
         return self == Mode.REGISTER
 
     @property
-    def is_login_test(self):
+    def is_login_test(self) -> bool:
         return self == Mode.LOGIN_TEST
 
     @property
-    def is_anonymous_test(self):
+    def is_anonymous_test(self) -> bool:
         return self == Mode.ANONYMOUS_TEST
 
 

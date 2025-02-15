@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from collections.abc import Callable
+
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
@@ -24,13 +30,17 @@ from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
 from nbxmpp.protocol import Error
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import IqProperties
 from nbxmpp.structs import LastActivityData
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class LastActivity(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -42,20 +52,20 @@ class LastActivity(BaseModule):
                           ns=Namespace.LAST),
         ]
 
-        self._idle_func = None
-        self._allow_reply_func = None
+        self._idle_func: Callable[..., int] | None = None
+        self._allow_reply_func: Callable[..., bool] | None = None
 
-    def disable(self):
+    def disable(self) -> None:
         self._idle_func = None
 
-    def set_idle_func(self, func):
+    def set_idle_func(self, func: Callable[..., int]) -> None:
         self._idle_func = func
 
-    def set_allow_reply_func(self, func):
+    def set_allow_reply_func(self, func: Callable[..., bool]) -> None:
         self._allow_reply_func = func
 
     @iq_request_task
-    def request_last_activity(self, jid):
+    def request_last_activity(self, jid: str):
         _task = yield
 
         response = yield _make_request(jid)
@@ -64,7 +74,7 @@ class LastActivity(BaseModule):
 
         yield _parse_response(response)
 
-    def _answer_request(self, _client, stanza, _properties):
+    def _answer_request(self, _client: Client, stanza: Iq, _properties: IqProperties) -> None:
         self._log.info('Request received from %s', stanza.getFrom())
         if self._idle_func is None:
             self._client.send_stanza(Error(stanza, ERR_SERVICE_UNAVAILABLE))
@@ -84,11 +94,11 @@ class LastActivity(BaseModule):
         raise NodeProcessed
 
 
-def _make_request(jid):
+def _make_request(jid: str) -> Iq:
     return Iq('get', queryNS=Namespace.LAST, to=jid)
 
 
-def _parse_response(response):
+def _parse_response(response: Iq) -> LastActivityData:
     query = response.getQuery()
     seconds = query.getAttr('seconds')
 

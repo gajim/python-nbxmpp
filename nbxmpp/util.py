@@ -15,10 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from typing import Any
 from typing import Literal
-from typing import Optional
-from typing import Union
+from typing import TYPE_CHECKING
 
 import base64
 import binascii
@@ -40,14 +41,18 @@ from packaging.version import Version
 from nbxmpp.const import GIO_TLS_ERRORS
 from nbxmpp.const import GLIB_VERSION
 from nbxmpp.const import SOUP_ENCODING
+from nbxmpp.modules.dataforms import DataForm
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import DiscoInfoMalformed
+from nbxmpp.protocol import JID
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.protocol import StreamHeader
 from nbxmpp.protocol import WebsocketOpenHeader
 from nbxmpp.simplexml import Node
 from nbxmpp.structs import CommonError
+from nbxmpp.structs import DiscoIdentity
+from nbxmpp.structs import DiscoInfo
 from nbxmpp.structs import HTTPUploadError
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
@@ -56,10 +61,13 @@ from nbxmpp.structs import Properties
 from nbxmpp.structs import StanzaMalformedError
 from nbxmpp.third_party import hsluv
 
+if TYPE_CHECKING:
+    from nbxmpp.protocol import Protocol
+
 log = logging.getLogger('nbxmpp.util')
 
 
-def b64decode(data: Union[str, bytes]) -> bytes:
+def b64decode(data: str | bytes) -> bytes:
     if not data:
         raise ValueError('No data to decode')
 
@@ -69,7 +77,7 @@ def b64decode(data: Union[str, bytes]) -> bytes:
     return base64.b64decode(data)
 
 
-def b64encode(data: Union[str, bytes]) -> str:
+def b64encode(data: str | bytes) -> str:
     if not data:
         raise ValueError('No data to encode')
 
@@ -80,7 +88,7 @@ def b64encode(data: Union[str, bytes]) -> str:
     return result.decode()
 
 
-def get_properties_struct(name, own_jid):
+def get_properties_struct(name: str, own_jid: JID) -> MessageProperties | IqProperties | PresenceProperties | Properties:
     if name == 'message':
         return MessageProperties(own_jid)
     if name == 'iq':
@@ -100,7 +108,7 @@ def from_xs_boolean(value: str) -> bool:
     raise ValueError('Cant convert %s to python boolean' % value)
 
 
-def to_xs_boolean(value: bool) -> Literal['true', 'false']:
+def to_xs_boolean(value: bool | None) -> Literal['true', 'false']:
     # Convert to xs:boolean ('true', 'false')
     # from a python boolean (True, False) or None
     if value is True:
@@ -120,16 +128,16 @@ error_classes = {
     Namespace.HTTPUPLOAD_0: HTTPUploadError
 }
 
-def error_factory(stanza: Node,
-                  condition: Optional[str] = None,
-                  text: Optional[str] = None) -> Any:
+def error_factory(stanza: Protocol,
+                  condition: str | None = None,
+                  text: str | None = None) -> Any:
     if condition == 'stanza-malformed':
         return StanzaMalformedError(stanza, text)
     app_namespace = stanza.getAppErrorNamespace()
     return error_classes.get(app_namespace, CommonError)(stanza)
 
 
-def clip_rgb(red, green, blue):
+def clip_rgb(red: float, green: float, blue: float) -> tuple[float, float, float]:
     return (
         min(max(red, 0), 1),
         min(max(green, 0), 1),
@@ -147,7 +155,7 @@ def hsluv_to_rgb(hue: float,
                  saturation: float,
                  lightness: float,
                  ) -> tuple[float, float, float]:
-    return clip_rgb(*hsluv.hsluv_to_rgb((hue, saturation, lightness)))
+    return clip_rgb(*hsluv.hsluv_to_rgb((hue, saturation, lightness)))  # type: ignore
 
 
 @lru_cache(maxsize=1024)
@@ -171,7 +179,7 @@ def text_to_color(text: str,
     return hsluv_to_rgb(text_to_hue(text), saturation, lightness)
 
 
-def compute_caps_hash(info, compare=True):
+def compute_caps_hash(info: DiscoInfo, compare: bool = True) -> str:
     """
     Compute caps hash according to XEP-0115, V1.5
     https://xmpp.org/extensions/xep-0115.html#ver-proc
@@ -192,7 +200,7 @@ def compute_caps_hash(info, compare=True):
     # the '<' character.
     # Sort the supported service discovery features.
 
-    def sort_identities_key(i):
+    def sort_identities_key(i: DiscoIdentity) -> tuple[str, str, str]:
         return (i.category, i.type, i.lang or '')
 
     identities = sorted(info.identities, key=sort_identities_key)
@@ -225,8 +233,8 @@ def compute_caps_hash(info, compare=True):
     # where the FORM_TYPE field is not of type "hidden" or the form does not
     # include a FORM_TYPE field, ignore the form but continue processing.
 
-    dataforms = []
-    form_type_values = []
+    dataforms: list[DataForm] = []
+    form_type_values: list[Any] = []
     for dataform in info.dataforms:
         form_type = dataform.vars.get('FORM_TYPE')
         if form_type is None:
@@ -263,7 +271,7 @@ def compute_caps_hash(info, compare=True):
     #       - For each <value/> element, append the XML character data,
     #         followed by the '<' character.
 
-    def sort_dataforms_key(dataform):
+    def sort_dataforms_key(dataform: DataForm):
         return dataform['FORM_TYPE'].getTagData('value')
 
     dataforms = sorted(dataforms, key=sort_dataforms_key)
@@ -362,7 +370,7 @@ def get_rand_number() -> int:
     return int(binascii.hexlify(os.urandom(6)), 16)
 
 
-def get_invalid_xml_regex():
+def get_invalid_xml_regex() -> re.Pattern[str]:
     # \ufddo -> \ufdef range
     c = '\ufdd0'
     r = c
@@ -382,14 +390,14 @@ def get_invalid_xml_regex():
     return re.compile(r)
 
 
-def get_tls_error_phrase(tls_error: Gio.TlsCertificateFlags) -> str:
+def get_tls_error_phrase(tls_error: Gio.TlsCertificateFlags) -> str | None:
     phrase = GIO_TLS_ERRORS.get(tls_error)
     if phrase is None:
         return GIO_TLS_ERRORS.get(Gio.TlsCertificateFlags.GENERIC_ERROR)
     return phrase
 
 
-def convert_tls_error_flags(flags):
+def convert_tls_error_flags(flags: Gio.TlsCertificateFlags | None) -> set[Gio.TlsCertificateFlags]:
     if not flags:
         return set()
 
@@ -405,7 +413,7 @@ def convert_soup_encoding(flags: int) -> set[Soup.Encoding]:
     return set(filter(lambda enc: enc & flags, SOUP_ENCODING))
 
 
-def get_websocket_close_string(websocket: Any) -> str:
+def get_websocket_close_string(websocket: Soup.WebsocketConnection) -> str:
     data = websocket.get_close_data()
     code = websocket.get_close_code()
 
@@ -431,18 +439,18 @@ def min_version(name: str, min_version: str) -> bool:
 
 
 class Observable:
-    def __init__(self, log_: logging.Logger):
+    def __init__(self, log_: logging.Logger | LogAdapter) -> None:
         self._log = log_
         self._frozen = False
         self._callbacks: defaultdict[str, list[Callable[..., Any]]] = defaultdict(list)
 
-    def remove_subscriptions(self):
+    def remove_subscriptions(self) -> None:
         self._callbacks = defaultdict(list)
 
-    def subscribe(self, signal_name: str, func: Callable[..., Any]):
+    def subscribe(self, signal_name: str, func: Callable[..., Any]) -> None:
         self._callbacks[signal_name].append(func)
 
-    def notify(self, signal_name: str, *args: Any, **kwargs: dict[str, Any]):
+    def notify(self, signal_name: str, *args: Any, **kwargs: dict[str, Any]) -> None:
         if self._frozen:
             self._frozen = False
             return
@@ -455,10 +463,10 @@ class Observable:
 
 class LogAdapter(LoggerAdapter):
 
-    def set_context(self, context):
+    def set_context(self, context: str) -> None:
         self.extra['context'] = context
 
-    def process(self, msg, kwargs):
+    def process(self, msg: str, kwargs: Any) -> str:
         return '(%s) %s' % (self.extra['context'], msg), kwargs
 
 

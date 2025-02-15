@@ -15,13 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+import datetime as dt
 import logging
 import re
 import time
-from datetime import datetime
-from datetime import timedelta
-from datetime import timezone
-from datetime import tzinfo
 
 log = logging.getLogger('nbxmpp.m.date_and_time')
 
@@ -35,51 +32,52 @@ PATTERN_DATETIME = re.compile(r'''
     $                               # End of String
 ''', re.VERBOSE)
 
-ZERO = timedelta(0)
-HOUR = timedelta(hours=1)
-SECOND = timedelta(seconds=1)
+ZERO = dt.timedelta(0)
+HOUR = dt.timedelta(hours=1)
+SECOND = dt.timedelta(seconds=1)
 
-STDOFFSET = timedelta(seconds=-time.timezone)
+STDOFFSET = dt.timedelta(seconds=-time.timezone)
 if time.daylight:
-    DSTOFFSET = timedelta(seconds=-time.altzone)
+    dstoffset = dt.timedelta(seconds=-time.altzone)
 else:
-    DSTOFFSET = STDOFFSET
+    dstoffset = STDOFFSET
 
+DSTOFFSET = dstoffset
 DSTDIFF = DSTOFFSET - STDOFFSET
 
 
-class LocalTimezone(tzinfo):
+class LocalTimezone(dt.tzinfo):
     '''
     A class capturing the platform's idea of local time.
     May result in wrong values on historical times in
     timezones where UTC offset and/or the DST rules had
     changed in the past.
     '''
-    def fromutc(self, dt):
+    def fromutc(self, dt_input: dt.datetime) -> dt.datetime:
         assert dt.tzinfo is self
-        stamp = (dt - datetime(1970, 1, 1, tzinfo=self)) // SECOND
+        stamp = (dt_input - dt.datetime(1970, 1, 1, tzinfo=self)) // SECOND
         args = time.localtime(stamp)[:6]
         dst_diff = DSTDIFF // SECOND
         # Detect fold
         fold = (args == time.localtime(stamp - dst_diff))
-        return datetime(*args, microsecond=dt.microsecond,
+        return dt.datetime(*args, microsecond=dt_input.microsecond,
                         tzinfo=self, fold=fold)
 
-    def utcoffset(self, dt):
+    def utcoffset(self, dt: dt.datetime) -> dt.timedelta:  # type: ignore
         if self._isdst(dt):
             return DSTOFFSET
         return STDOFFSET
 
-    def dst(self, dt):
+    def dst(self, dt: dt.datetime) -> dt.timedelta:  # type: ignore
         if self._isdst(dt):
             return DSTDIFF
         return ZERO
 
-    def tzname(self, dt):
+    def tzname(self, dt: dt.datetime) -> str:  # type: ignore
         return 'local'
 
     @staticmethod
-    def _isdst(dt):
+    def _isdst(dt: dt.datetime) -> bool:
         tt = (dt.year, dt.month, dt.day,
               dt.hour, dt.minute, dt.second,
               dt.weekday(), 0, 0)
@@ -88,12 +86,12 @@ class LocalTimezone(tzinfo):
         return tt.tm_isdst > 0
 
 
-def create_tzinfo(hours=0, minutes=0, tz_string=None):
+def create_tzinfo(hours: int = 0, minutes: int = 0, tz_string: str | None = None) -> dt.timezone | None:
     if tz_string is None:
-        return timezone(timedelta(hours=hours, minutes=minutes))
+        return dt.timezone(dt.timedelta(hours=hours, minutes=minutes))
 
     if tz_string.lower() == 'z':
-        return timezone.utc
+        return dt.timezone.utc
 
     try:
         hours, minutes = map(int, tz_string.split(':'))
@@ -112,7 +110,7 @@ def create_tzinfo(hours=0, minutes=0, tz_string=None):
     if hours in (24, -24) and minutes != 0:
         log.warning('Wrong tz string: %s', tz_string)
         return None
-    return timezone(timedelta(hours=hours, minutes=minutes))
+    return dt.timezone(dt.timedelta(hours=hours, minutes=minutes))
 
 
 def parse_datetime(
@@ -120,7 +118,7 @@ def parse_datetime(
     check_utc: bool = False,
     convert: str | None = 'utc',
     epoch: bool = False
-) -> datetime | float | None:
+) -> dt.datetime | float | None:
     '''
     Parse a XEP-0082 DateTime Profile String
 
@@ -156,7 +154,7 @@ def parse_datetime(
         strformat = '%Y-%m-%d%H:%M:%S.%f%z'
 
     try:
-        date_time = datetime.strptime(timestring, strformat)
+        date_time = dt.datetime.strptime(timestring, strformat)
     except ValueError:
         return None
 
@@ -170,7 +168,7 @@ def parse_datetime(
             raise ValueError(
                 'check_utc can only be used with convert="utc"')
 
-        if date_time.tzinfo != timezone.utc:
+        if date_time.tzinfo != dt.timezone.utc:
             return None
 
         if epoch:
@@ -178,7 +176,7 @@ def parse_datetime(
         return date_time
 
     if convert == 'utc':
-        date_time = date_time.astimezone(timezone.utc)
+        date_time = date_time.astimezone(dt.timezone.utc)
         if epoch:
             return date_time.timestamp()
         return date_time
@@ -196,7 +194,7 @@ def parse_datetime(
     return date_time
 
 
-def get_local_time():
+def get_local_time() -> tuple[str, str]:
     formated_time = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())
     isdst = time.localtime().tm_isdst
     zone = -(time.timezone, time.altzone)[isdst] / 60.0

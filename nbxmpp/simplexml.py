@@ -21,7 +21,6 @@ projects. It is designed to be as standalone as possible
 from __future__ import annotations
 
 from typing import Any
-from typing import Optional
 from typing import Union
 
 import logging
@@ -37,6 +36,7 @@ Attrs = dict[str, str]
 
 log = logging.getLogger('nbxmpp.simplexml')
 
+
 def XMLescape(text: str) -> str:
     """
     Return escaped text
@@ -45,6 +45,7 @@ def XMLescape(text: str) -> str:
     for key, value in NOT_ALLOWED_XML_CHARS.items():
         text = text.replace(key, value)
     return text
+
 
 class Node:
     """
@@ -71,8 +72,8 @@ class Node:
     namespace: str
     attrs: Attrs
     data: list[str]
-    kids: list[Union[Node, str]]
-    parent: Optional[Node]
+    kids: list[Node | str]
+    parent: Node | None
     nsd: dict[str, str]
     nsp_cache: dict[Any, Any]
 
@@ -80,13 +81,13 @@ class Node:
 
     def __init__(
             self,
-            tag: Optional[str] = None,
-            attrs: Optional[Attrs] = None,
-            payload: Optional[Union[Node, str, list[Union[Node, str]]]] = None,
-            parent: Optional[Node] = None,
-            nsp: Optional[dict[Any, Any]] = None,
+            tag: str | None = None,
+            attrs: Attrs | None = None,
+            payload: Node | str | list[Node | str] | None = None,
+            parent: Node | None = None,
+            nsp: dict[Any, Any] | None = None,
             node_built: bool = False,
-            node: Optional[Union[Node, Any]] = None) -> None:
+            node: Node | Any | None = None) -> None:
         """
         Takes "tag" argument as the name of node (prepended by namespace, if
         needed and separated from it by a space), attrs dictionary as the set of
@@ -109,7 +110,7 @@ class Node:
                 self.name = node.name
                 self.namespace = node.namespace
                 self.attrs = {}
-                self.data = []
+                self.data: list[str] = []
                 self.kids = []
                 self.parent = node.parent
                 self.nsd = {}
@@ -220,11 +221,11 @@ class Node:
         return s
 
     def addChild(self,
-                 name: Optional[str] = None,
-                 attrs: Optional[Attrs] = None,
-                 payload: Optional[list[Any]] = None,
-                 namespace: Optional[str] = None,
-                 node: Optional[Node] = None) -> Node:
+                 name: str | None = None,
+                 attrs: Attrs | None = None,
+                 payload: list[Any] | None = None,
+                 namespace: str | None = None,
+                 node: Node | None = None) -> Node:
         """
         If "node" argument is provided, adds it as child node. Else creates new
         node from the other arguments' values and adds it as well
@@ -265,8 +266,8 @@ class Node:
         del self.attrs[key]
 
     def delChild(self,
-                 node: Union[Node, str],
-                 attrs: Optional[Attrs] = None) -> Optional[Node]:
+                 node: Node | str,
+                 attrs: Attrs | None = None) -> Node | None:
         """
         Delete the "node" from the node's childs list, if "node" is an instance.
         Else delete the first node that have specified name and (optionally)
@@ -286,13 +287,13 @@ class Node:
             return deepcopy(self.attrs)
         return self.attrs
 
-    def getAttr(self, key: str) -> Optional[str]:
+    def getAttr(self, key: str) -> str | None:
         """
         Return value of specified attribute
         """
         return self.attrs.get(key)
 
-    def getChildren(self) -> list[Union[Node, str]]:
+    def getChildren(self) -> list[Node | str]:
         """
         Return all node's child nodes as list
         """
@@ -316,7 +317,7 @@ class Node:
         """
         return self.namespace
 
-    def getParent(self) -> Optional[Node]:
+    def getParent(self) -> Node | None:
         """
         Returns the parent of node (if present)
         """
@@ -324,8 +325,8 @@ class Node:
 
     def getTag(self,
                name: str,
-               attrs: Optional[Attrs] = None,
-               namespace: Optional[str] = None) -> Optional[Node]:
+               attrs: Attrs | None = None,
+               namespace: str | None = None) -> Node | None:
         """
         Filter all child nodes using specified arguments as filter. Return the
         first found or None if not found
@@ -338,7 +339,7 @@ class Node:
     def getTagAttr(self,
                    tag: str,
                    attr: str,
-                   namespace: Optional[str] = None) -> Optional[str]:
+                   namespace: str | None = None) -> str | None:
         """
         Return attribute value of the child with specified name (or None if no
         such attribute)
@@ -348,9 +349,9 @@ class Node:
             return None
         return node.getAttr(attr)
 
-    def getTagData(self, tag: str) -> Optional[str]:
+    def getTagData(self, tag: str) -> str | None:
         """
-        Return cocatenated CDATA of the child with specified name
+        Return concatenated CDATA of the child with specified name
         """
         node = self.getTag(tag)
         if node is None:
@@ -359,8 +360,8 @@ class Node:
 
     def getTags(self,
                 name: str,
-                attrs: Optional[Attrs] = None,
-                namespace: Optional[str] = None) -> list[Node]:
+                attrs: Attrs | None = None,
+                namespace: str | None = None) -> list[Node]:
         """
         Filter all child nodes using specified arguments as filter. Returns the
         list of nodes found
@@ -381,8 +382,8 @@ class Node:
 
     def iterTags(self,
                  name: str,
-                 attrs: Optional[Attrs] = None,
-                 namespace: Optional[str] = None) -> Iterator[Node]:
+                 attrs: Attrs | None = None,
+                 namespace: str | None = None) -> Iterator[Node]:
         """
         Iterate over all children using specified arguments as filter
         """
@@ -432,7 +433,7 @@ class Node:
         self.parent = node
 
     def setPayload(self,
-                   payload: Union[list[Union[Node, str]], Node, str],
+                   payload: list[Node | str] | Node | str,
                    add: bool = False) -> None:
         """
         Set node payload according to the list specified. WARNING: completely
@@ -448,8 +449,8 @@ class Node:
 
     def setTag(self,
                name: str,
-               attrs: Optional[Attrs] = None,
-               namespace: Optional[str] = None) -> Node:
+               attrs: Attrs | None = None,
+               namespace: str | None = None) -> Node:
         """
         Same as getTag but if the node with specified namespace/attributes not
         found, creates such node and returns it
@@ -463,7 +464,7 @@ class Node:
                    tag: str,
                    attr: str,
                    val: str,
-                   namespace: Optional[str] = None) -> None:
+                   namespace: str | None = None) -> None:
         """
         Create new node (if not already present) with name "tag" and set it's
         attribute "attr" to value "val"
@@ -475,8 +476,8 @@ class Node:
 
     def setTagData(self,
                    tag: str,
-                   val: str,
-                   attrs: Optional[Attrs] = None) -> None:
+                   val: Any,
+                   attrs: Attrs | None = None) -> None:
         """
         Creates new node (if not already present) with name "tag" and
         (optionally) attributes "attrs" and sets it's CDATA to string "val"
@@ -486,7 +487,7 @@ class Node:
         except Exception:
             self.addChild(tag, attrs, payload = [str(val)])
 
-    def getXmlLang(self) -> Optional[str]:
+    def getXmlLang(self) -> str | None:
         lang = self.attrs.get('xml:lang')
         if lang is not None:
             return lang
@@ -501,7 +502,7 @@ class Node:
         """
         return key in self.attrs
 
-    def __getitem__(self, item: str) -> Optional[str]:
+    def __getitem__(self, item: str) -> str | None:
         """
         Return node's attribute "item" value
         """
@@ -525,7 +526,7 @@ class Node:
         """
         return self.has_attr(item)
 
-    def __getattr__(self, attr: str) -> Union['T', 'NT']:
+    def __getattr__(self, attr: str) -> Union['T' |'NT']:
         """
         Reduce memory usage caused by T/NT classes - use memory only when needed
         """
@@ -592,18 +593,18 @@ class NodeBuilder:
     __depth: int
     __max_depth: int
     _dispatch_depth: int
-    _document_attrs: Optional[Attrs]
-    _document_nsp: Optional[dict[str, str]]
-    _mini_dom: Optional[Node]
+    _document_attrs: Attrs | None
+    _document_nsp: dict[str, str] | None
+    _mini_dom: Node | None
     last_is_data: bool
-    _ptr: Optional[Node]
-    data_buffer: Optional[list[str]]
+    _ptr: Node | None
+    data_buffer: list[str] | None
     stream_error: str
     _is_stream: bool
 
     def __init__(self,
-                 data: Optional[str] = None,
-                 initial_node: Optional[Node] = None,
+                 data: str | None = None,
+                 initial_node: Node | None = None,
                  dispatch_depth: int = 1,
                  finished: bool = True) -> None:
         """
@@ -762,7 +763,7 @@ class NodeBuilder:
         """
         self.check_data_buffer()
 
-    def getDom(self) -> Optional[Node]:
+    def getDom(self) -> Node | None:
         """
         Return just built Node
         """
@@ -801,7 +802,7 @@ class NodeBuilder:
     def _dec_depth(self) -> None:
         self.__depth -= 1
 
-def XML2Node(xml_str: str) -> Optional[Node]:
+def XML2Node(xml_str: str) -> Node | None:
     """
     Convert supplied textual string into XML node. Handy f.e. for reading
     configuration file. Raises xml.parser.expat.parsererror if provided string
@@ -809,7 +810,7 @@ def XML2Node(xml_str: str) -> Optional[Node]:
     """
     return NodeBuilder(xml_str).getDom()
 
-def BadXML2Node(xml_str: str) -> Optional[Node]:
+def BadXML2Node(xml_str: str) -> Node | None:
     """
     Convert supplied textual string into XML node. Survives if xml data is
     cutted half way round. I.e. "<html>some text <br>some more text". Will raise

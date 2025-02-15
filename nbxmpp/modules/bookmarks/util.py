@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
-
 import logging
 
 from nbxmpp.errors import MalformedStanzaError
@@ -30,7 +28,7 @@ from nbxmpp.util import from_xs_boolean
 from nbxmpp.util import to_xs_boolean
 
 
-def parse_nickname(nick: Optional[str]) -> Optional[str]:
+def parse_nickname(nick: str | None) -> str | None:
     if nick is None:
         return None
 
@@ -40,7 +38,7 @@ def parse_nickname(nick: Optional[str]) -> Optional[str]:
         return None
 
 
-def parse_autojoin(autojoin: Optional[str]) -> bool:
+def parse_autojoin(autojoin: str | None) -> bool:
     if autojoin is None:
         return False
 
@@ -156,7 +154,7 @@ def build_storage_node(bookmarks: list[BookmarkData]):
     return storage_node
 
 
-def get_private_request():
+def get_private_request() -> Iq:
     iq = Iq(typ='get')
     query = iq.addChild(name='query', namespace=Namespace.PRIVATE)
     query.addChild(name='storage', namespace=Namespace.BOOKMARKS)

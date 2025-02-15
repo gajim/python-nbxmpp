@@ -15,21 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.const import MessageType
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.fallback import parse_fallback_indication
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import BodyData
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import StanzaIDData
 from nbxmpp.structs import XHTMLData
 from nbxmpp.util import error_factory
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class BaseMessage(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -42,7 +51,7 @@ class BaseMessage(BaseModule):
                           priority=10),
         ]
 
-    def _process_message_base(self, _client, stanza, properties):
+    def _process_message_base(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         properties.type = self._parse_type(stanza)
 
         if properties.is_carbon_message and properties.carbon.is_sent:
@@ -72,12 +81,12 @@ class BaseMessage(BaseModule):
         if properties.type.is_error:
             properties.error = error_factory(stanza)
 
-    def _determine_remote_jid(self, properties):
+    def _determine_remote_jid(self, properties: MessageProperties) -> JID | None:
         if properties.is_muc_pm:
             return properties.jid
         return properties.jid.new_as_bare()
 
-    def _parse_if_private_message(self, stanza, properties) -> None:
+    def _parse_if_private_message(self, stanza: Message, properties: MessageProperties) -> None:
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
@@ -86,11 +95,11 @@ class BaseMessage(BaseModule):
             return
 
         if (properties.type.is_chat or
-                properties.type.is_error and
-                not muc_user.getChildren()):
+                (properties.type.is_error and
+                not muc_user.getChildren())):
             properties.muc_private_message = True
 
-    def _process_message_after_base(self, _client, stanza: Message, properties):
+    def _process_message_after_base(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         # This handler runs after decryption handlers had the chance
         # to decrypt the body
 
@@ -116,7 +125,7 @@ class BaseMessage(BaseModule):
 
         properties.xhtml = XHTMLData(xhtml)
 
-    def _parse_type(self, stanza):
+    def _parse_type(self, stanza: Message) -> MessageType:
         type_ = stanza.getType()
         if type_ is None:
             return MessageType.NORMAL
@@ -129,13 +138,13 @@ class BaseMessage(BaseModule):
             raise NodeProcessed
 
     @staticmethod
-    def _parse_self_message(stanza, properties):
+    def _parse_self_message(stanza: Message, properties: MessageProperties) -> bool:
         if properties.type.is_groupchat:
             return False
         return stanza.getFrom().bare_match(stanza.getTo())
 
-    def _parse_stanza_ids(self, stanza):
-        stanza_ids = []
+    def _parse_stanza_ids(self, stanza: Message) -> list[StanzaIDData]:
+        stanza_ids: list[StanzaIDData] = []
         for stanza_id in stanza.getTags('stanza-id', namespace=Namespace.SID):
             id_ = stanza_id.getAttr('id')
             by = stanza_id.getAttr('by')

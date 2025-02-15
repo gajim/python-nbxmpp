@@ -15,30 +15,40 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.const import AdHocAction
 from nbxmpp.const import AdHocNoteType
 from nbxmpp.const import AdHocStatus
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
+from nbxmpp.modules.dataforms import MultipleDataForm
+from nbxmpp.modules.dataforms import SimpleDataForm
 from nbxmpp.modules.discovery import get_disco_request
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
 from nbxmpp.protocol import Node
+from nbxmpp.protocol import Protocol
 from nbxmpp.structs import AdHocCommand
 from nbxmpp.structs import AdHocCommandNote
 from nbxmpp.task import iq_request_task
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class AdHoc(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = []
 
     @iq_request_task
-    def request_command_list(self, jid=None):
+    def request_command_list(self, jid: str | None = None):
         _task = yield
 
         if jid is None:
@@ -51,7 +61,7 @@ class AdHoc(BaseModule):
 
         children = response.getQueryChildren()
 
-        command_list = []
+        command_list: list[AdHocCommand] = []
         for item in children:
             if item.getName() != 'item':
                 continue
@@ -64,7 +74,7 @@ class AdHoc(BaseModule):
         yield command_list
 
     @iq_request_task
-    def execute_command(self, cmd, action=None, dataform=None):
+    def execute_command(self, cmd: AdHocCommand, action: AdHocAction | None = None, dataform: SimpleDataForm | MultipleDataForm | None = None):
         _task = yield
 
         if action is None:
@@ -123,7 +133,7 @@ class AdHoc(BaseModule):
             notes=notes)
 
 
-def _make_command(command, attrs, dataform):
+def _make_command(command: AdHocCommand, attrs: dict[str, Node | str], dataform: SimpleDataForm | MultipleDataForm | None) -> Iq:
     command_node = Node('command', attrs=attrs)
     if dataform is not None:
         command_node.addChild(node=dataform)
@@ -132,8 +142,8 @@ def _make_command(command, attrs, dataform):
     return iq
 
 
-def _parse_notes(command):
-    notes = []
+def _parse_notes(command: Protocol) -> list[AdHocCommandNote]:
+    notes: list[AdHocCommandNote] = []
     for note in command.getTags('note'):
         type_ = note.getAttr('type')
         if type_ is None:
@@ -147,7 +157,7 @@ def _parse_notes(command):
     return notes
 
 
-def _parse_actions(command):
+def _parse_actions(command: Protocol) -> tuple[set[AdHocAction], AdHocAction | None]:
     if command.getAttr('status') != 'executing':
         return set(), None
 
@@ -169,7 +179,7 @@ def _parse_actions(command):
     default = AdHocAction(default)
 
     # We use a set because it cannot contain duplicates
-    actions = set()
+    actions: set[AdHocAction] = set()
     for action in actions_node.getChildren():
         name = action.getName()
         if name == 'execute':
@@ -197,7 +207,7 @@ def _parse_actions(command):
     return actions, default
 
 
-def _expect_sessionid(status, sent_sessionid):
+def _expect_sessionid(status: AdHocStatus, sent_sessionid: str | None) -> bool:
     # Session id should only be expected for multiple stage commands
     # or when we initialize the session (set the session attribute)
     return status != status.COMPLETED or sent_sessionid is not None

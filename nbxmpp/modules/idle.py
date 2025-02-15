@@ -15,14 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Presence
+from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import StanzaHandler
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 
 class Idle(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -33,7 +42,7 @@ class Idle(BaseModule):
                           priority=15)
         ]
 
-    def _process_idle(self, _client, stanza, properties):
+    def _process_idle(self, _client: Client, stanza: Presence, properties: PresenceProperties) -> None:
         idle_tag = stanza.getTag('idle', namespace=Namespace.IDLE)
         if idle_tag is None:
             return

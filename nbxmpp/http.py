@@ -17,7 +17,6 @@ from __future__ import annotations
 
 from typing import Any
 from typing import Literal
-from typing import Optional
 
 import logging
 from collections.abc import Callable
@@ -29,8 +28,7 @@ from gi.repository import GObject
 from gi.repository import Soup
 
 import nbxmpp
-
-from .const import HTTPRequestError
+from nbxmpp.const import HTTPRequestError
 
 log = logging.getLogger('nbxmpp.http')
 
@@ -68,7 +66,7 @@ class HTTPSession:
         return self._session
 
     def set_proxy_resolver(self,
-                           resolver: Optional[Gio.SimpleProxyResolver]
+                           resolver: Gio.SimpleProxyResolver | None
                            ) -> None:
 
         self._session.set_proxy_resolver(resolver)
@@ -104,21 +102,21 @@ class HTTPRequest(GObject.GObject):
         self._sent_size = 0
 
         self._cancellable = Gio.Cancellable()
-        self._input_stream: Optional[Gio.InputStream] = None
-        self._output_stream: Optional[Gio.OutputStream] = None
+        self._input_stream: Gio.InputStream | None = None
+        self._output_stream: Gio.OutputStream | None = None
         self._is_finished = False
-        self._error: Optional[HTTPRequestError] = None
+        self._error: HTTPRequestError | None = None
         self._is_complete = False
         self._timeout_reached = False
-        self._timeout_id = None
+        self._timeout_id: int | None = None
         self._accept_certificate_func = None
 
-        self._response_body_file: Optional[Gio.File] = None
+        self._response_body_file: Gio.File | None = None
         self._response_body_data = b''
         self._body_received = False
 
-        self._request_body_file: Optional[Gio.File] = None
-        self._request_body_data: Optional[bytes] = None
+        self._request_body_file: Gio.File | None = None
+        self._request_body_data: bytes | None = None
 
         self._request_content_type = ''
         self._request_content_length = 0
@@ -131,7 +129,7 @@ class HTTPRequest(GObject.GObject):
 
         self._message = Soup.Message()
         if MIN_SOUP_3_3_0:
-            self._message.set_force_http1(force_http1)
+            self._message.set_force_http1(force_http1)  # type: ignore
         self._user_data = None
 
         self._log.info('Created')
@@ -142,7 +140,7 @@ class HTTPRequest(GObject.GObject):
     def is_complete(self) -> bool:
         return self._is_complete
 
-    def get_error(self) -> Optional[HTTPRequestError]:
+    def get_error(self) -> HTTPRequestError | None:
         return self._error
 
     def get_error_string(self) -> str:
@@ -161,7 +159,7 @@ class HTTPRequest(GObject.GObject):
             raise ValueError('Process not finished, data not available')
         return self._response_body_data
 
-    def get_uri(self) -> Optional[GLib.Uri]:
+    def get_uri(self) -> GLib.Uri | None:
         return self._message.get_uri()
 
     def get_status(self) -> Soup.Status:
@@ -235,8 +233,8 @@ class HTTPRequest(GObject.GObject):
     def send(self,
              method: HTTP_METHODS_T,
              uri_string: str,
-             timeout: Optional[int] = None,
-             callback: Optional[Callable[[HTTPRequest], Any]] = None
+             timeout: int | None = None,
+             callback: Callable[[HTTPRequest], Any] | None = None
              ) -> None:
 
         if callback:
@@ -246,7 +244,7 @@ class HTTPRequest(GObject.GObject):
     def _send(self,
               method: HTTP_METHODS_T,
               uri_string: str,
-              timeout: Optional[int] = None
+              timeout: int | None = None
               ) -> None:
 
         if self._is_finished:
@@ -399,7 +397,7 @@ class HTTPRequest(GObject.GObject):
         self._read_async()
         self._emit_progress()
 
-    def _finish_read(self, error: Optional[HTTPRequestError] = None) -> None:
+    def _finish_read(self, error: HTTPRequestError | None = None) -> None:
         self._log.info('Finished reading')
         if error is None:
             self._close_all_streams()
@@ -409,7 +407,7 @@ class HTTPRequest(GObject.GObject):
 
     def _on_content_sniffed(self,
                             message: Soup.Message,
-                            content_type: Optional[str],
+                            content_type: str | None,
                             _params: GLib.HashTable,
                             ) -> None:
 

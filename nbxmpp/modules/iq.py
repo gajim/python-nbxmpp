@@ -15,17 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.const import IqType
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.protocol import ERR_BAD_REQUEST
 from nbxmpp.protocol import Error as ErrorStanza
+from nbxmpp.protocol import Iq
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import IqProperties
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import error_factory
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class BaseIq(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -35,7 +44,7 @@ class BaseIq(BaseModule):
                           priority=10),
         ]
 
-    def _process_iq_base(self, _client, stanza, properties):
+    def _process_iq_base(self, _client: Client, stanza: Iq, properties: IqProperties) -> None:
         try:
             properties.type = IqType(stanza.getType())
         except ValueError:

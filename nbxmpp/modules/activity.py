@@ -15,15 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.const import ACTIVITIES
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Message
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import ActivityData
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 
 class Activity(BaseModule):
@@ -32,7 +41,7 @@ class Activity(BaseModule):
         'publish': 'PubSub'
     }
 
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -43,7 +52,7 @@ class Activity(BaseModule):
                           priority=16),
         ]
 
-    def _process_pubsub_activity(self, _client, stanza, properties):
+    def _process_pubsub_activity(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -82,7 +91,7 @@ class Activity(BaseModule):
         properties.pubsub_event = pubsub_event
 
     @staticmethod
-    def _parse_sub_activity(activity):
+    def _parse_sub_activity(activity: Node) -> str | None:
         sub_activities = ACTIVITIES[activity.getName()]
         for sub in activity.getChildren():
             if sub.getName() in sub_activities:
@@ -90,7 +99,7 @@ class Activity(BaseModule):
         return None
 
     @iq_request_task
-    def set_activity(self, data):
+    def set_activity(self, data: ActivityData):
         task = yield
 
         item = Node('activity', {'xmlns': Namespace.ACTIVITY})

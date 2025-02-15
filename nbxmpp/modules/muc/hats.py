@@ -1,20 +1,22 @@
-import typing
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import Presence
 from nbxmpp.structs import Hat
 from nbxmpp.structs import HatData
 from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import StanzaHandler
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from nbxmpp.client import Client
-    from nbxmpp.protocol import Presence
 
 
 class Hats(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
         self._client = client
         self.handlers = [
@@ -34,10 +36,10 @@ class Hats(BaseModule):
 
     def _process_hats(
         self,
-        _client: "Client",
-        stanza: "Presence",
+        _client: Client,
+        stanza: Presence,
         properties: PresenceProperties,
-    ):
+    ) -> None:
         hats = stanza.getTag("hats", namespace=Namespace.HATS)
         if hats is None:
             hats = stanza.getTag("hats", namespace=Namespace.HATS_LEGACY)

@@ -22,8 +22,8 @@ from __future__ import annotations
 
 from typing import Any
 from typing import cast
-from typing import Optional
-from typing import Union
+from typing import Literal
+from typing import TYPE_CHECKING
 
 import functools
 import hashlib
@@ -54,8 +54,11 @@ from nbxmpp.xmppiri import escape_ivalue
 from nbxmpp.xmppiri import validate_ikey
 from nbxmpp.xmppiri import validate_querytype
 
+if TYPE_CHECKING:
+    from nbxmpp.structs import MucSubject
 
-def ascii_upper(s):
+
+def ascii_upper(s: str) -> str:
     return s.upper()
 
 
@@ -306,19 +309,19 @@ STREAM_UNSUPPORTED_STANZA_TYPE = 'urn:ietf:params:xml:ns:xmpp-streams unsupporte
 ERR_FORBIDDEN = 'urn:ietf:params:xml:ns:xmpp-stanzas forbidden'
 
 
-def isResultNode(node):
+def isResultNode(node: Protocol) -> bool:
     """
     Return true if the node is a positive reply
     """
     return node and node.getType() == 'result'
 
-def isErrorNode(node):
+def isErrorNode(node: Protocol) -> bool:
     """
     Return true if the node is a negative reply
     """
     return node and node.getType() == 'error'
 
-def isMucPM(message):
+def isMucPM(message: Message) -> bool:
     muc_user = message.getTag('x', namespace=Namespace.MUC_USER)
     return (message.getType() in ('chat', 'error') and
             muc_user is not None and
@@ -470,7 +473,7 @@ stream_exceptions = {'bad-format': BadFormat,
                      'xml-not-well-formed': XMLNotWellFormed}
 
 
-def deprecation_warning(message):
+def deprecation_warning(message: str) -> None:
     warnings.warn(message, DeprecationWarning, stacklevel=1)
 
 
@@ -620,14 +623,14 @@ def unescape_localpart(localpart: str) -> str:
 
 @dataclass(frozen=True)
 class JID:
-    localpart: Optional[str] = None
-    domain: Optional[str] = None
-    resource: Optional[str] = None
+    localpart: str | None = None
+    domain: str | None = None
+    resource: str | None = None
 
     def __init__(self,
-                 localpart: Optional[str] = None,
-                 domain: Optional[str] = None,
-                 resource: Optional[str] = None):
+                 localpart: str | None = None,
+                 domain: str | None = None,
+                 resource: str | None = None):
 
         if localpart is not None:
             localpart = validate_localpart(localpart)
@@ -723,12 +726,12 @@ class JID:
             return f'{jid}/{self.resource}'
         return jid
 
-    def __conform__(self, protocol: sqlite3.PrepareProtocol):
+    def __conform__(self, protocol: sqlite3.PrepareProtocol | Any) -> str:
         if protocol is sqlite3.PrepareProtocol:
             return str(self)
         raise ValueError
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(str(self))
 
     def __eq__(self, other: object) -> bool:
@@ -766,7 +769,7 @@ class JID:
             return self
         return JID.from_string(self.bare)
 
-    def bare_match(self, other: Union[str, JID]) -> bool:
+    def bare_match(self, other: str | JID) -> bool:
         if isinstance(other, str):
             other = JID.from_string(other)
         return self.bare == other.bare
@@ -803,8 +806,8 @@ class JID:
         return f'{localpart}@{self.domain}/{self.resource}{domain_encoded}'
 
     def to_iri(self,
-               query: Optional[str | tuple[str, list[tuple[str, str]]]] = None,
-               fragment: Optional[str] = None
+               query: str | tuple[str, list[tuple[str, str]]] | None = None,
+               fragment: str | None = None
                ) -> str:
 
         if self.localpart:
@@ -847,10 +850,10 @@ class JID:
 
 
 class StreamErrorNode(Node):
-    def __init__(self, node):
+    def __init__(self, node: Protocol) -> None:
         Node.__init__(self, node=node)
 
-        self._text: dict[Optional[str], str] = {}
+        self._text: dict[str | None, str] = {}
 
         text_elements = self.getTags('text', namespace=Namespace.XMPP_STREAMS)
         for element in text_elements:
@@ -858,14 +861,14 @@ class StreamErrorNode(Node):
             text = element.getData()
             self._text[lang] = text
 
-    def get_condition(self) -> Optional[str]:
+    def get_condition(self) -> str | None:
         for tag in self.getChildren():
             if (tag.getName() != 'text' and
                     tag.getNamespace() == Namespace.XMPP_STREAMS):
                 return tag.getName()
         return None
 
-    def get_text(self, pref_lang: Optional[str] = None) -> str:
+    def get_text(self, pref_lang: str | None = None) -> str:
         if pref_lang is not None:
             text = self._text.get(pref_lang)
             if text is not None:
@@ -890,15 +893,16 @@ class Protocol(Node):
     """
 
     def __init__(self,
-                 name=None,
-                 to=None,
-                 typ=None,
-                 frm=None,
-                 attrs=None,
-                 payload=None,
-                 timestamp=None,
-                 xmlns=None,
-                 node=None):
+                 name: str | None = None,
+                 to: JID | str | None = None,
+                 typ: str | None = None,
+                 frm: JID | str | None = None,
+                 attrs: dict[str, Any] | None = None,
+                 payload: list[Node | str] | None = None,
+                 timestamp: str | None = None,
+                 xmlns: str | None = None,
+                 node: Node | bytes | str | None = None
+                 ) -> None:
         """
         Constructor, name is the name of the stanza
         i.e. 'message' or 'presence'or 'iq'
@@ -930,7 +934,7 @@ class Protocol(Node):
                 self.__class__ == node.__class__
                 and 'id' in self.attrs):
             del self.attrs['id']
-        self.timestamp = None
+        self.timestamp: str | None = None
         for d in self.getTags('delay', namespace=Namespace.DELAY2):
             try:
                 if d.getAttr('stamp') < self.getTimestamp2():
@@ -947,10 +951,10 @@ class Protocol(Node):
         if timestamp is not None:
             self.setTimestamp(timestamp)
 
-    def isError(self):
+    def isError(self) -> bool:
         return self.getAttr('type') == 'error'
 
-    def isResult(self):
+    def isResult(self) -> bool:
         return self.getAttr('type') == 'result'
 
     def getTo(self):
@@ -973,7 +977,7 @@ class Protocol(Node):
             pass
         return None
 
-    def getTimestamp(self):
+    def getTimestamp(self) -> str:
         """
         Return the timestamp in the 'yyyymmddThhmmss' format
         """
@@ -981,7 +985,7 @@ class Protocol(Node):
             return self.timestamp
         return time.strftime('%Y%m%dT%H:%M:%S', time.gmtime())
 
-    def getTimestamp2(self):
+    def getTimestamp2(self) -> str:
         """
         Return the timestamp in the 'yyyymmddThhmmss' format
         """
@@ -998,13 +1002,13 @@ class Protocol(Node):
             return JID.from_string(attr)
         return attr
 
-    def getID(self) -> Optional[str]:
+    def getID(self) -> str | None:
         """
         Return the value of the 'id' attribute
         """
         return self.getAttr('id')
 
-    def setTo(self, val: Union[str, JID]):
+    def setTo(self, val: str | JID):
         """
         Set the value of the 'to' attribute
         """
@@ -1012,13 +1016,13 @@ class Protocol(Node):
             val = JID.from_string(val)
         self.setAttr('to', val)
 
-    def getType(self) -> Optional[str]:
+    def getType(self) -> str | None:
         """
         Return the value of the 'type' attribute
         """
         return self.getAttr('type')
 
-    def setFrom(self, val: Union[str, JID]):
+    def setFrom(self, val: str | JID) -> None:
         """
         Set the value of the 'from' attribute
         """
@@ -1026,19 +1030,19 @@ class Protocol(Node):
             val = JID.from_string(val)
         self.setAttr('from', val)
 
-    def setType(self, val: str):
+    def setType(self, val: str) -> None:
         """
         Set the value of the 'type' attribute
         """
         self.setAttr('type', val)
 
-    def setID(self, val: str):
+    def setID(self, val: str) -> None:
         """
         Set the value of the 'id' attribute
         """
         self.setAttr('id', val)
 
-    def getError(self) -> Optional[str]:
+    def getError(self) -> str | None:
         """
         Return the error-condition (if present) or the textual description
         of the error (otherwise)
@@ -1052,7 +1056,7 @@ class Protocol(Node):
                 return tag.getName()
         return None
 
-    def getAppError(self):
+    def getAppError(self) -> str | None:
         errtag = self.getTag('error')
         if errtag is None:
             return None
@@ -1062,7 +1066,7 @@ class Protocol(Node):
                 return tag.getName()
         return None
 
-    def getAppErrorNamespace(self):
+    def getAppErrorNamespace(self) -> str | None:
         errtag = self.getTag('error')
         if errtag is None:
             return None
@@ -1072,7 +1076,7 @@ class Protocol(Node):
                 return tag.getNamespace()
         return None
 
-    def getErrorMsg(self):
+    def getErrorMsg(self) -> str | None:
         """
         Return the textual description of the error (if present)
         or the error condition
@@ -1085,17 +1089,17 @@ class Protocol(Node):
             return self.getError()
         return None
 
-    def getErrorType(self):
+    def getErrorType(self) -> str | None:
         """
         Return the error type.
         """
         return self.getTagAttr('error', 'type')
 
-    def getStatusConditions(self, as_code=False):
+    def getStatusConditions(self, as_code: bool = False) -> list[str]:
         """
         Return the status conditions list as defined in XEP-0306.
         """
-        result = set()
+        result: set[str] = set()
         status_tags = self.getTags('status')
         for status in status_tags:
             if as_code:
@@ -1107,7 +1111,7 @@ class Protocol(Node):
                     result.add(condition.getName())
         return list(result)
 
-    def setError(self, error):
+    def setError(self, error: ErrorNode | str) -> None:
         """
         Set the error-conditions
         """
@@ -1116,7 +1120,7 @@ class Protocol(Node):
         self.setType('error')
         self.addChild(node=error)
 
-    def setTimestamp(self, val=None):
+    def setTimestamp(self, val: str | None = None) -> None:
         """
         Set the timestamp. timestamp should be the yyyymmddThhmmss string
         """
@@ -1125,12 +1129,12 @@ class Protocol(Node):
         self.timestamp=val
         self.setTag('x', {'stamp': self.timestamp}, namespace=Namespace.DELAY)
 
-    def getProperties(self):
+    def getProperties(self) -> list[str]:
         """
         Return the list of namespaces to which belongs the
         direct childs of element
         """
-        props = []
+        props: list[str] = []
         for child in self.getChildren():
             prop = child.getNamespace()
             if prop not in props:
@@ -1139,9 +1143,9 @@ class Protocol(Node):
 
     def getTag(self,
                name: str,
-               attrs: Optional[dict[str, Any]] = None,
-               namespace: Optional[str] = None,
-               protocol: bool = False) -> Optional[Node]:
+               attrs: dict[str, Any] | None = None,
+               namespace: str | None = None,
+               protocol: bool = False) -> Node | None:
         """
         Return the Node instance for the tag.
         If protocol is True convert to a new Protocol/Message instance.
@@ -1153,7 +1157,7 @@ class Protocol(Node):
             return Protocol(node=tag)
         return tag
 
-    def __setitem__(self, item: str, val: Union[str, JID]):
+    def __setitem__(self, item: str, val: str | JID) -> None:
         """
         Set the item 'item' to the value 'val'
         """
@@ -1169,17 +1173,18 @@ class Message(Protocol):
     """
 
     def __init__(self,
-                 to=None,
-                 body=None,
-                 xhtml=None,
-                 typ=None,
-                 subject=None,
-                 attrs=None,
-                 frm=None,
-                 payload=None,
-                 timestamp=None,
-                 xmlns=Namespace.CLIENT,
-                 node=None):
+                 to: str | None = None,
+                 body: str | None = None,
+                 xhtml: str | None = None,
+                 typ: Literal['chat'] | Literal['groupchat'] | Literal['error'] | None = None,
+                 subject: MucSubject | None = None,
+                 attrs: dict[str, Any] | None = None,
+                 frm: JID | str | None = None,
+                 payload: list[Node | str] | None = None,
+                 timestamp: str | None = None,
+                 xmlns: str = Namespace.CLIENT,
+                 node: Node | str | None = None
+                 ) -> None:
         """
         You can specify recipient, text of message, type of message any
         additional attributes, sender of the message, any additional payload
@@ -1264,7 +1269,7 @@ class Message(Protocol):
                 self.delChild(xhtml)
             self.addChild('html', namespace=Namespace.XHTML_IM, payload=body)
 
-    def setSubject(self, val: str) -> None:
+    def setSubject(self, val: MucSubject | None) -> None:
         """
         Set the subject of the message
         """
@@ -1365,7 +1370,7 @@ class Message(Protocol):
             reactions.addChild(
                 'reaction', namespace=Namespace.REACTIONS, payload=[e])
 
-    def getReactions(self) -> Optional[tuple[str, set[str]]]:
+    def getReactions(self) -> tuple[str, set[str]] | None:
         reactions = self.getTag('reactions', namespace=Namespace.REACTIONS)
         if not reactions:
             return None
@@ -1379,7 +1384,7 @@ class Message(Protocol):
         # strip() in case clients surround emojis with whitespace
         return react_to, {t.getData().strip() for t in tags}
 
-    def setRetracted(self, target_id: str, fallback_text: Optional[str] = None) -> None:
+    def setRetracted(self, target_id: str, fallback_text: str | None = None) -> None:
         retract = self.addChild('retract',
                                 namespace=Namespace.MESSAGE_RETRACT_1)
         retract.setAttr('id', target_id)
@@ -1399,17 +1404,18 @@ class Message(Protocol):
 class Presence(Protocol):
 
     def __init__(self,
-                 to=None,
-                 typ=None,
-                 priority=None,
-                 show=None,
-                 status=None,
-                 attrs=None,
-                 frm=None,
-                 timestamp=None,
-                 payload=None,
-                 xmlns=Namespace.CLIENT,
-                 node=None):
+                 to: JID | str | None = None,
+                 typ: Literal['probe', 'unavailable'] | None = None,
+                 priority: int | None = None,
+                 show: Literal['chat', 'away', 'xa', 'dnd'] | None = None,
+                 status: str | None = None,
+                 attrs: dict[str, Any] | None = None,
+                 frm: JID | None = None,
+                 timestamp: str | None = None,
+                 payload: list[Node | str] | None = None,
+                 xmlns: str = Namespace.CLIENT,
+                 node: Node | str | None = None
+                 ) -> None:
         """
         You can specify recipient, type of message, priority, show and status
         values any additional attributes, sender of the presence, timestamp, any
@@ -1434,31 +1440,31 @@ class Presence(Protocol):
         if status:
             self.setStatus(status)
 
-    def getPriority(self):
+    def getPriority(self) -> int:
         """
         Return the priority of the message
         """
         return self.getTagData('priority')
 
-    def getShow(self):
+    def getShow(self) -> str:
         """
         Return the show value of the message
         """
         return self.getTagData('show')
 
-    def getStatus(self):
+    def getStatus(self) -> str:
         """
         Return the status string of the message
         """
         return self.getTagData('status') or ''
 
-    def setPriority(self, val):
+    def setPriority(self, val: int | None) -> None:
         """
         Set the priority of the message
         """
         self.setTagData('priority', val)
 
-    def setShow(self, val):
+    def setShow(self, val: str) -> None:
         """
         Set the show value of the message
         """
@@ -1466,13 +1472,13 @@ class Presence(Protocol):
             raise ValueError('Invalid show value: %s' % val)
         self.setTagData('show', val)
 
-    def setStatus(self, val):
+    def setStatus(self, val: str) -> None:
         """
         Set the status string of the message
         """
         self.setTagData('status', val)
 
-    def _muc_getItemAttr(self, tag, attr):
+    def _muc_getItemAttr(self, tag: str, attr: str):
         for xtag in self.getTags('x'):
             if xtag.getNamespace() not in (Namespace.MUC_USER,
                                            Namespace.MUC_ADMIN):
@@ -1480,7 +1486,7 @@ class Presence(Protocol):
             for child in xtag.getTags(tag):
                 return child.getAttr(attr)
 
-    def _muc_getSubTagDataAttr(self, tag, attr):
+    def _muc_getSubTagDataAttr(self, tag: str, attr: str):
         for xtag in self.getTags('x'):
             if xtag.getNamespace() not in (Namespace.MUC_USER,
                                            Namespace.MUC_ADMIN):
@@ -1536,20 +1542,22 @@ class Presence(Protocol):
                 attrs.append(child.getAttr('code'))
         return attrs
 
+
 class Iq(Protocol):
     """
     XMPP Iq object - get/set dialog mechanism
     """
 
     def __init__(self,
-                 typ: Optional[str] = None,
-                 queryNS: Optional[str] = None,  # noqa: N803
-                 attrs: Optional[dict[str, str]] = None,
-                 to: Optional[Union[JID, str]] = None,
-                 frm: Optional[Union[JID, str]] = None,
-                 payload: Optional[list[Union[Node, str]]] = None,
+                 typ: str | None = None,
+                 queryNS: str | None = None,  # noqa: N803
+                 attrs: dict[str, str] | None = None,
+                 to: JID | str | None = None,
+                 frm: JID | str | None = None,
+                 payload: list[Node | str] | Node | None = None,
                  xmlns: str = Namespace.CLIENT,
-                 node: Optional[Node] = None):
+                 node: Node | None = None
+                 ) -> None:
         """
         You can specify type, query namespace any additional attributes,
         recipient of the iq, sender of the iq, any additional payload (f.e.
@@ -1571,7 +1579,7 @@ class Iq(Protocol):
         if queryNS:
             self.setQueryNS(queryNS)
 
-    def getQuery(self) -> Optional[Node]:
+    def getQuery(self) -> Node | None:
         """
         Return the IQ's child element if it exists, None otherwise.
         """
@@ -1581,7 +1589,7 @@ class Iq(Protocol):
             return children[0]
         return None
 
-    def getQueryNS(self) -> Optional[str]:
+    def getQueryNS(self) -> str | None:
         """
         Return the namespace of the 'query' child element
         """
@@ -1590,7 +1598,7 @@ class Iq(Protocol):
             return tag.getNamespace()
         return None
 
-    def getQuerynode(self) -> Optional[str]:
+    def getQuerynode(self) -> str | None:
         """
         Return the 'node' attribute value of the 'query' child element
         """
@@ -1599,7 +1607,7 @@ class Iq(Protocol):
             return tag.getAttr('node')
         return None
 
-    def getQueryChildren(self) -> Optional[list[Node]]:
+    def getQueryChildren(self) -> list[Node] | None:
         """
         Return the 'query' child element child nodes
         """
@@ -1608,7 +1616,7 @@ class Iq(Protocol):
             return tag.getChildren()
         return None
 
-    def getQueryChild(self, name: Optional[str] = None) -> Optional[Node]:
+    def getQueryChild(self, name: str | None = None) -> Node | None:
         """
         Return the 'query' child element with name, or the first element
         which is not an error element
@@ -1625,7 +1633,7 @@ class Iq(Protocol):
                     return node
         return None
 
-    def setQuery(self, name: Optional[str] = None) -> Node:
+    def setQuery(self, name: str | None = None) -> Node:
         """
         Change the name of the query node, creating it if needed. Keep the
         existing name if none is given (use 'query' if it's a creation).
@@ -1644,7 +1652,7 @@ class Iq(Protocol):
         """
         self.setQuery().setNamespace(namespace)
 
-    def setQueryPayload(self, payload: list[Union[Node, str]]):
+    def setQueryPayload(self, payload: list[Node | str]):
         """
         Set the 'query' child element payload
         """
@@ -1690,12 +1698,12 @@ class Hashes(Node):
 
     supported = ('md5', 'sha-1', 'sha-256', 'sha-512')
 
-    def __init__(self, nsp=Namespace.HASHES):
+    def __init__(self, nsp: str = Namespace.HASHES) -> None:
         Node.__init__(self, None, {}, [], None, None, False, None)
         self.setNamespace(nsp)
         self.setName('hash')
 
-    def calculateHash(self, algo, file_string):
+    def calculateHash(self, algo: str, file_string: str | bytes) -> str | None:
         """
         Calculate the hash and add it. It is preferable doing it here
         instead of doing it all over the place in Gajim.
@@ -1730,7 +1738,7 @@ class Hashes(Node):
                 hash_ = hl.hexdigest()
         return hash_
 
-    def addHash(self, hash_, algo):
+    def addHash(self, hash_: str, algo: str) -> None:
         self.setAttr('algo', algo)
         self.setData(hash_)
 
@@ -1755,12 +1763,12 @@ class Hashes2(Node):
     supported = ('sha-256', 'sha-512', 'sha3-256',
                  'sha3-512', 'blake2b-256', 'blake2b-512')
 
-    def __init__(self, nsp=Namespace.HASHES_2):
+    def __init__(self, nsp: str = Namespace.HASHES_2) -> None:
         Node.__init__(self, None, {}, [], None, None, False, None)
         self.setNamespace(nsp)
         self.setName('hash')
 
-    def calculateHash(self, algo, file_string):
+    def calculateHash(self, algo: str, file_string: str | bytes) -> str | None:
         """
         Calculate the hash and add it. It is preferable doing it here
         instead of doing it all over the place in Gajim.
@@ -1789,13 +1797,13 @@ class Hashes2(Node):
             hash_ = b64encode(hl.digest()).decode('ascii')
         return hash_
 
-    def addHash(self, hash_, algo):
+    def addHash(self, hash_: str, algo: str) -> None:
         self.setAttr('algo', algo)
         self.setData(hash_)
 
 
 class BindRequest(Iq):
-    def __init__(self, resource: Optional[str]):
+    def __init__(self, resource: str | None) -> None:
         if resource is None:
             res = resource
         else:
@@ -1807,18 +1815,18 @@ class BindRequest(Iq):
 
 
 class TLSRequest(Node):
-    def __init__(self):
+    def __init__(self) -> None:
         Node.__init__(self, tag='starttls', attrs={'xmlns': Namespace.TLS})
 
 
 class SessionRequest(Iq):
-    def __init__(self):
+    def __init__(self) -> None:
         Iq.__init__(self, typ='set')
         self.addChild(node=Node('session', attrs={'xmlns': Namespace.SESSION}))
 
 
 class StreamHeader(Node):
-    def __init__(self, domain: str, lang: Optional[str] = None):
+    def __init__(self, domain: str, lang: str | None = None) -> None:
         if lang is None:
             lang = 'en'
         Node.__init__(self,
@@ -1831,7 +1839,7 @@ class StreamHeader(Node):
 
 
 class WebsocketOpenHeader(Node):
-    def __init__(self, domain: str, lang: Optional[str] = None):
+    def __init__(self, domain: str, lang: str | None = None) -> None:
         if lang is None:
             lang = 'en'
         Node.__init__(self,
@@ -1842,25 +1850,25 @@ class WebsocketOpenHeader(Node):
                              'xml:lang': lang})
 
 class WebsocketCloseHeader(Node):
-    def __init__(self):
+    def __init__(self) -> None:
         Node.__init__(self, tag='close', attrs={'xmlns': Namespace.FRAMING})
 
 
 class Features(Node):
-    def __init__(self, node: Node):
+    def __init__(self, node: Node) -> None:
         Node.__init__(self, node=node)
 
-    def has_starttls(self):
+    def has_starttls(self) -> tuple[bool, bool]:
         tls = self.getTag('starttls', namespace=Namespace.TLS)
         if tls is not None:
             required = tls.getTag('required') is not None
             return True, required
         return False, False
 
-    def has_sasl(self):
+    def has_sasl(self) -> bool:
         return self.getTag('mechanisms', namespace=Namespace.SASL) is not None
 
-    def has_sasl_2(self):
+    def has_sasl_2(self) -> bool:
         return self.getTag('authentication', namespace=Namespace.SASL2) is not None
 
     def get_mechs(self) -> set[str]:
@@ -1873,37 +1881,37 @@ class Features(Node):
         mechanisms = mechanisms.getTags('mechanism')
         return {mech.getData() for mech in mechanisms}
 
-    def get_domain_based_name(self):
+    def get_domain_based_name(self) -> str | None:
         hostname = self.getTag('hostname',
                                namespace=Namespace.DOMAIN_BASED_NAME)
         if hostname is not None:
             return hostname.getData()
         return None
 
-    def has_bind(self):
+    def has_bind(self) -> bool:
         return self.getTag('bind', namespace=Namespace.BIND) is not None
 
-    def session_required(self):
+    def session_required(self) -> bool:
         session = self.getTag('session', namespace=Namespace.SESSION)
         if session is not None:
             optional = session.getTag('optional') is not None
             return not optional
         return False
 
-    def has_sm(self):
+    def has_sm(self) -> bool:
         return self.getTag('sm', namespace=Namespace.STREAM_MGMT) is not None
 
-    def has_roster_version(self):
+    def has_roster_version(self) -> bool:
         return self.getTag('ver', namespace=Namespace.ROSTER_VER) is not None
 
-    def has_register(self):
+    def has_register(self) -> bool:
         return self.getTag(
             'register', namespace=Namespace.REGISTER_FEATURE) is not None
 
-    def has_anonymous(self):
+    def has_anonymous(self) -> bool:
         return 'ANONYMOUS' in self.get_mechs()
 
-    def get_channel_binding_type(self) -> Optional[Gio.TlsChannelBindingType]:
+    def get_channel_binding_type(self) -> Gio.TlsChannelBindingType | None:
         sasl_cb = self.getTag('sasl-channel-binding',
                               namespace=Namespace.CHANNEL_BINDING)
         if sasl_cb is None:
@@ -1929,7 +1937,7 @@ class ErrorNode(Node):
     In the case of stream-level errors should be used separately.
     """
 
-    def __init__(self, name, typ=None, text=None):
+    def __init__(self, name: str, typ: str | None = None, text: str | None = None) -> None:
         """
         Mandatory parameter: name - name of error condition.
         Optional parameters: typ, text.
@@ -1957,7 +1965,7 @@ class Error(Protocol):
     Used to quickly transform received stanza into error reply
     """
 
-    def __init__(self, node, error, reply=1):
+    def __init__(self, node: Protocol, error: ErrorNode | str, reply: int = 1) -> None:
         """
         Create error reply basing on the received 'node' stanza and the 'error'
         error condition
@@ -1987,13 +1995,14 @@ class DataField(Node):
     """
 
     def __init__(self,
-                 name=None,
+                 name: str | None = None,
                  value=None,
-                 typ=None,
-                 required=0,
-                 desc=None,
+                 typ: str | None = None,
+                 required: int = 0,
+                 desc: str | None = None,
                  options=None,
-                 node=None):
+                 node=None
+                 ) -> None:
         """
         Create new data field of specified name,value and type
 
@@ -2019,7 +2028,7 @@ class DataField(Node):
         if options:
             self.setOptions(options)
 
-    def setRequired(self, req=1):
+    def setRequired(self, req: int = 1) -> None:
         """
         Change the state of the 'required' flag
         """
@@ -2031,25 +2040,25 @@ class DataField(Node):
             except ValueError:
                 return
 
-    def isRequired(self):
+    def isRequired(self) -> bool:
         """
         Return in this field a required one
         """
         return self.getTag('required')
 
-    def setDesc(self, desc):
+    def setDesc(self, desc: str | None) -> None:
         """
         Set the description of this field
         """
         self.setTagData('desc', desc)
 
-    def getDesc(self):
+    def getDesc(self) -> str | None:
         """
         Return the description of this field
         """
         return self.getTagData('desc')
 
-    def setValue(self, val):
+    def setValue(self, val) -> None:
         """
         Set the value of this field
         """
@@ -2058,7 +2067,7 @@ class DataField(Node):
     def getValue(self):
         return self.getTagData('value')
 
-    def setValues(self, lst):
+    def setValues(self, lst) -> None:
         """
         Set the values of this field as values-list. Replaces all previous filed
         values! If you need to just add a value - use addValue method
@@ -2068,17 +2077,17 @@ class DataField(Node):
         for val in lst:
             self.addValue(val)
 
-    def addValue(self, val):
+    def addValue(self, val) -> None:
         """
         Add one more value to this field. Used in 'get' iq's or such
         """
         self.addChild('value', {}, [val])
 
-    def getValues(self):
+    def getValues(self) -> list[str]:
         """
         Return the list of values associated with this field
         """
-        ret = []
+        ret: list[str] = []
         for tag in self.getTags('value'):
             ret.append(tag.getData())
         return ret
@@ -2092,7 +2101,7 @@ class DataField(Node):
             ret.append([tag.getAttr('label'), tag.getTagData('value')])
         return ret
 
-    def setOptions(self, lst):
+    def setOptions(self, lst: list[str]) -> None:
         """
         Set label-option pairs list associated with this field
         """
@@ -2101,7 +2110,7 @@ class DataField(Node):
         for opt in lst:
             self.addOption(opt)
 
-    def addOption(self, opt):
+    def addOption(self, opt: list[str] | str) -> None:
         """
         Add one more label-option pair to this field
         """
@@ -2117,7 +2126,7 @@ class DataField(Node):
         """
         return self.getAttr('type')
 
-    def setType(self, val):
+    def setType(self, val: str) -> None:
         """
         Set type of this field
         """
@@ -2129,7 +2138,7 @@ class DataField(Node):
         """
         return self.getAttr('var')
 
-    def setVar(self, val):
+    def setVar(self, val: str) -> None:
         """
         Set 'var' attribute value of this field
         """
@@ -2142,7 +2151,7 @@ class DataForm(Node):
     Relevant XEPs: 0004, 0068, 0122. Can be used in disco, pub-sub and many
     other applications.
     """
-    def __init__(self, typ=None, data=None, title=None, node=None):
+    def __init__(self, typ: str | None = None, data=None, title: str | None = None, node: Node | None = None) -> None:
         """
         Create new dataform of type 'typ'. 'data' is the list of DataField
         instances that this dataform contains, 'title' - the title string.  You
@@ -2192,7 +2201,7 @@ class DataForm(Node):
         """
         return self.getAttr('type')
 
-    def setType(self, typ):
+    def setType(self, typ) -> None:
         """
         Set the type of dataform
         """
@@ -2204,7 +2213,7 @@ class DataForm(Node):
         """
         return self.getTagData('title')
 
-    def setTitle(self, text):
+    def setTitle(self, text: str) -> None:
         """
         Set the title of dataform
         """
@@ -2216,25 +2225,25 @@ class DataForm(Node):
         """
         return self.getTagData('instructions')
 
-    def setInstructions(self, text):
+    def setInstructions(self, text: str) -> None:
         """
         Set the instructions of dataform
         """
         self.setTagData('instructions', text)
 
-    def addInstructions(self, text):
+    def addInstructions(self, text: str) -> None:
         """
         Add one more instruction to the dataform
         """
         self.addChild('instructions', {}, [text])
 
-    def getField(self, name):
+    def getField(self, name: str) -> Node | None:
         """
         Return the datafield object with name 'name' (if exists)
         """
         return self.getTag('field', attrs={'var': name})
 
-    def setField(self, name):
+    def setField(self, name: str):
         """
         Create if nessessary or get the existing datafield object with name
         'name' and return it
@@ -2264,7 +2273,7 @@ class DataForm(Node):
             ret['instructions'] = self.getInstructions()
         return ret
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str):
         """
         Simple dictionary interface for getting datafields values by their names
         """
@@ -2273,7 +2282,7 @@ class DataForm(Node):
             return item.getValue()
         raise IndexError('No such field')
 
-    def __setitem__(self, name, val):
+    def __setitem__(self, name: str, val):
         """
         Simple dictionary interface for setting datafields values by their names
         """

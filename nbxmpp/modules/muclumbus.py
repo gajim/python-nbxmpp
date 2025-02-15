@@ -15,11 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import json
+from collections.abc import Generator
 
 from nbxmpp.const import AnonymityMode
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
+from nbxmpp.http import HTTPRequest
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.modules.util import finalize
@@ -31,18 +37,21 @@ from nbxmpp.structs import MuclumbusResult
 from nbxmpp.task import http_request_task
 from nbxmpp.task import iq_request_task
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 # API Documentation
 # https://search.jabber.network/docs/api
 
 class Muclumbus(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = []
 
     @iq_request_task
-    def request_parameters(self, jid):
+    def request_parameters(self, jid: str):
         task = yield
 
         response = yield _make_parameter_request(jid)
@@ -61,7 +70,7 @@ class Muclumbus(BaseModule):
         yield finalize(task, extend_form(node=dataform))
 
     @iq_request_task
-    def set_search(self, jid, dataform, items_per_page=50, after=None):
+    def set_search(self, jid: str, dataform, items_per_page: int = 50, after: str | None = None):
         _task = yield
 
         response = yield _make_search_query(jid,
@@ -94,7 +103,7 @@ class Muclumbus(BaseModule):
         except Exception:
             raise MalformedStanzaError('invalid max value', response)
 
-        results = []
+        results: list[MuclumbusItem] = []
         for item in items:
             jid = item.getAttr('address')
             name = item.getTagData('name')
@@ -122,7 +131,12 @@ class Muclumbus(BaseModule):
                               items=results)
 
     @http_request_task
-    def set_http_search(self, uri, keywords, after=None):
+    def set_http_search(
+        self,
+        uri: str,
+        keywords: list[str],
+        after: str | None = None
+    ) -> Generator[MuclumbusResult, HTTPRequest, None]:
         _task = yield
 
         search = {'keywords': keywords}
@@ -158,7 +172,7 @@ class Muclumbus(BaseModule):
                                   end=True,
                                   items=[])
 
-        results = []
+        results: list[MuclumbusItem] = []
         for item in items:
             try:
                 anonymity_mode = AnonymityMode(item['anonymity_mode'])
@@ -181,14 +195,14 @@ class Muclumbus(BaseModule):
                               items=results)
 
 
-def _make_parameter_request(jid):
+def _make_parameter_request(jid: str) -> Iq:
     query = Iq(to=jid, typ='get')
     query.addChild(node=Node('search',
                              attrs={'xmlns': Namespace.MUCLUMBUS}))
     return query
 
 
-def _make_search_query(jid, dataform, items_per_page=50, after=None):
+def _make_search_query(jid: str, dataform, items_per_page: int = 50, after: str | None = None) -> Iq:
     search = Node('search', attrs={'xmlns': Namespace.MUCLUMBUS})
     search.addChild(node=dataform)
     rsm = search.addChild('set', namespace=Namespace.RSM)

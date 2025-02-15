@@ -19,23 +19,31 @@ from __future__ import annotations
 
 from typing import Any
 from typing import Optional
+from typing import TYPE_CHECKING
 
 import inspect
 import logging
 import weakref
 from collections.abc import Callable
+from collections.abc import Generator
 from enum import IntEnum
 from functools import wraps
 
 from gi.repository import GLib
 
+from nbxmpp.errors import BaseError
 from nbxmpp.errors import CancelledError
 from nbxmpp.errors import is_error
+from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.errors import StanzaError
 from nbxmpp.errors import TimeoutStanzaError
 from nbxmpp.http import HTTPRequest
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import make_func_arguments_string
 from nbxmpp.simplexml import Node
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 log = logging.getLogger('nbxmpp.task')
 
@@ -74,9 +82,10 @@ class TaskState(IntEnum):
 
 
 def _setup_task(task: Task,
-                client: Any,
-                callback: Optional[Callable[..., Any]],
-                user_data: Any):
+                client: Client,
+                callback: Callable[..., Any] | None,
+                user_data: Any
+                ) -> Task:
     client.add_task(task)
     task.set_finalize_func(client.remove_task)
     task.set_user_data(user_data)
@@ -86,35 +95,37 @@ def _setup_task(task: Task,
     return task
 
 
-def iq_request_task(func):
+def iq_request_task(func: Callable[..., Any]):
     @wraps(func)
     def func_wrapper(self: BaseModule,
-                     *args,
-                     timeout: Optional[int] = None,
-                     callback: Optional[Callable[..., Any]] = None,
+                     *args: Any,
+                     timeout: int | None = None,
+                     callback: Callable[..., Any] | None = None,
                      user_data: Any = None,
-                     **kwargs):
-        if self._log.isEnabledFor(logging.INFO):
-            self._log.info(make_func_arguments_string(func, self, args, kwargs))
+                     **kwargs: Any
+                     ):
+        if self._log.isEnabledFor(logging.INFO):  # type: ignore
+            self._log.info(make_func_arguments_string(func, self, args, kwargs))  # type: ignore
         task = IqRequestTask(func(self, *args, **kwargs),
-                             self._log,
+                             self._log,  # type: ignore
                              self._client)
         task.set_timeout(timeout)
         return _setup_task(task, self._client, callback, user_data)
     return func_wrapper
 
 
-def http_request_task(func):
+def http_request_task(func: Callable[..., Any]):
     @wraps(func)
-    def func_wrapper(self, *args, callback=None, user_data=None, **kwargs):
+    def func_wrapper(self: Any, *args: Any, callback: Callable[..., Any] | None = None, user_data: Any = None, **kwargs: Any):
         task = HTTPRequestTask(func(self, *args, **kwargs),
                                self._log)
         return _setup_task(task, self._client, callback, user_data)
     return func_wrapper
 
 
-def is_fatal_error(error):
+def is_fatal_error(error: BaseError | Exception | Any) -> bool:
     if is_error(error):
+        assert isinstance(error, BaseError)
         return error.is_fatal
     return isinstance(error, Exception)
 
@@ -136,18 +147,18 @@ class Task:
 
     _process_types = (NoType,)
 
-    def __init__(self, gen, logger: logging.Logger = log):
+    def __init__(self, gen: Generator[Any, Any, Any], logger: logging.Logger = log) -> None:
         self._logger = logger
         self._gen = gen
         self._done_callbacks: list[Callable[..., Any]] = []
-        self._sub_task = None
+        self._sub_task: Task | None = None
         self._result = None
         self._error = None
         self._user_data: Optional[Any] = None
-        self._timeout: Optional[int] = None
-        self._timeout_id: Optional[int] = None
-        self._finalize_func = None
-        self._finalize_context = None
+        self._timeout: int | None = None
+        self._timeout_id: int | None = None
+        self._finalize_func: Callable[..., Any] | None = None
+        self._finalize_context: Any = None
         self._state = TaskState.INIT
 
     @property
@@ -156,7 +167,8 @@ class Task:
 
     def add_done_callback(self,
                           callback: Callable[..., Any],
-                          weak: bool = True):
+                          weak: bool = True
+                          ) -> None:
         if self._state.is_finished or self._state.is_cancelled:
             raise RuntimeError('Task is finished')
 
@@ -170,10 +182,10 @@ class Task:
 
         self._done_callbacks.append(callback)
 
-    def set_timeout(self, timeout: Optional[int]):
+    def set_timeout(self, timeout: int | None) -> None:
         self._timeout = timeout
 
-    def start(self):
+    def start(self) -> None:
         if not self._state.is_init:
             raise RuntimeError('Task already started')
 
@@ -187,13 +199,13 @@ class Task:
         next(self._gen)
         self._next_step(self)
 
-    def _run_async(self, data):
+    def _run_async(self, data: Any) -> None:
         raise NotImplementedError
 
-    def _async_finished(self, *args, **kwargs):
+    def _async_finished(self, *args: Any, **kwargs: Any) -> Any:
         raise NotImplementedError
 
-    def _sub_task_completed(self, task: Task):
+    def _sub_task_completed(self, task: Task) -> None:
         self._sub_task = None
         if not self._state.is_running:
             return
@@ -205,7 +217,7 @@ class Task:
         else:
             self._next_step(result)
 
-    def _next_step(self, result):
+    def _next_step(self, result: Any) -> None:
         try:
             res = self._gen.send(result)
         except StopIteration:
@@ -234,20 +246,21 @@ class Task:
                 self._result = res
             self._set_finished()
 
-    def _set_finished(self):
+    def _set_finished(self) -> None:
         self._state = TaskState.FINISHED
         self._invoke_callbacks()
         self._finalize()
 
-    def _log_if_fatal(self, error):
+    def _log_if_fatal(self, error: BaseError | Exception | Any) -> None:
         if is_error(error):
+            assert isinstance(error, StanzaError | MalformedStanzaError | TimeoutStanzaError | CancelledError)
             if error.is_fatal:
                 self._logger.log(error.log_level, error)
 
         elif isinstance(error, Exception):
             self._logger.exception('Fatal Exception')
 
-    def _invoke_callbacks(self):
+    def _invoke_callbacks(self) -> None:
         for callback in self._done_callbacks:
             if isinstance(callback, weakref.WeakMethod | weakref.ref):
                 callback = callback()
@@ -262,11 +275,11 @@ class Task:
             except CancelledError:
                 pass
 
-    def set_result(self, result):
+    def set_result(self, result: Any):
         self._result = result
         return ResultSet
 
-    def get_result(self):
+    def get_result(self) -> Any:
         # if self._error is None, there was no error
         # but None is a valid value for self._result
         if self._error is not None:
@@ -278,7 +291,7 @@ class Task:
             raise self._error
         return self._result
 
-    def set_user_data(self, user_data: Any):
+    def set_user_data(self, user_data: Any) -> None:
         self._user_data = user_data
 
     def get_user_data(self) -> Any:
@@ -286,7 +299,8 @@ class Task:
 
     def set_finalize_func(self,
                           func: Callable[..., Any],
-                          context: Optional[Any] = None):
+                          context: Any = None
+                          ) -> None:
         self._finalize_func = func
         self._finalize_context = context
 
@@ -316,7 +330,7 @@ class Task:
             self._invoke_callbacks()
         self._finalize()
 
-    def _finalize(self):
+    def _finalize(self) -> None:
         if self._timeout_id is not None:
             GLib.source_remove(self._timeout_id)
             self._timeout_id = None
@@ -339,17 +353,17 @@ class IqRequestTask(Task):
 
     _process_types = (Node,)
 
-    def __init__(self, gen, logger, client):
+    def __init__(self, gen: Generator[Any, Any, Any], logger: logging.Logger, client: Client) -> None:
         super().__init__(gen, logger)
         self._client = client
-        self._iq_id = None
+        self._iq_id: str | None = None
 
-    def _run_async(self, stanza: Node):
-        self._iq_id = self._client.send_stanza(stanza,
+    def _run_async(self, data: Node) -> None:
+        self._iq_id = self._client.send_stanza(data,
                                                callback=self._async_finished,
                                                timeout=self._timeout)
 
-    def _async_finished(self, _client, result, *args, **kwargs):
+    def _async_finished(self, _client: Client, result: Any, *args: Any, **kwargs: Any) -> None:
         if self._state == TaskState.CANCELLED:
             return
 
@@ -360,7 +374,7 @@ class IqRequestTask(Task):
 
         self._next_step(result)
 
-    def _finalize(self):
+    def _finalize(self) -> None:
         if self._iq_id is not None:
             self._client._dispatcher.remove_iq_callback(self._iq_id)
         self._client = None
@@ -376,19 +390,18 @@ class HTTPRequestTask(Task):
 
     _process_types = (HTTPRequest,)
 
-    def __init__(self, gen, logger):
+    def __init__(self, gen: Generator[Any, Any, Any], logger: logging.Logger) -> None:
         super().__init__(gen, logger)
 
-    def _run_async(self, request: HTTPRequest):
-        request.connect('finished', self._async_finished)
+    def _run_async(self, data: HTTPRequest) -> None:
+        data.connect('finished', self._async_finished)
 
-    def _async_finished(self, request: HTTPRequest):
-
+    def _async_finished(self, request: HTTPRequest) -> None:
         if self._state == TaskState.CANCELLED:
             return
 
         self._next_step(request)
 
-    def _finalize(self):
+    def _finalize(self) -> None:
         self._session = None
         super()._finalize()

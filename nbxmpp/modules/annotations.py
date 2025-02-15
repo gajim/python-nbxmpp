@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
@@ -27,16 +31,19 @@ from nbxmpp.protocol import Node
 from nbxmpp.structs import AnnotationNote
 from nbxmpp.task import iq_request_task
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class Annotations(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = []
 
     @property
-    def domain(self):
+    def domain(self) -> str | None:
         return self._client.get_bound_jid().domain
 
     @iq_request_task
@@ -52,7 +59,7 @@ class Annotations(BaseModule):
         if storage is None:
             raise MalformedStanzaError('storage node missing', response)
 
-        notes = []
+        notes: list[AnnotationNote] = []
         for note in storage.getTags('note'):
             try:
                 jid = JID.from_string(note.getAttr('jid'))
@@ -79,7 +86,7 @@ class Annotations(BaseModule):
         yield notes
 
     @iq_request_task
-    def set_annotations(self, notes):
+    def set_annotations(self, notes: list[AnnotationNote]):
         _task = yield
 
         for note in notes:
@@ -89,11 +96,11 @@ class Annotations(BaseModule):
         yield process_response(response)
 
 
-def _make_request():
+def _make_request() -> Iq:
     payload = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
     return Iq(typ='get', queryNS=Namespace.PRIVATE, payload=payload)
 
-def _make_set_request(notes):
+def _make_set_request(notes: list[AnnotationNote]) -> Iq:
     storage = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
     for note in notes:
         node = Node('note', attrs={'jid': note.jid})

@@ -21,15 +21,17 @@ from nbxmpp.modules.delay import parse_delay
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import InvalidFrom
 from nbxmpp.protocol import InvalidStanza
+from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import Protocol
 from nbxmpp.structs import CarbonData
 from nbxmpp.structs import MAMData
 
 log = logging.getLogger('nbxmpp.m.misc')
 
 
-def unwrap_carbon(stanza, own_jid):
+def unwrap_carbon(stanza: Protocol, own_jid: JID) -> tuple[Message | Protocol, CarbonData | None]:
     carbon = stanza.getTag('received', namespace=Namespace.CARBONS)
     if carbon is None:
         carbon = stanza.getTag('sent', namespace=Namespace.CARBONS)
@@ -69,7 +71,7 @@ def unwrap_carbon(stanza, own_jid):
     return message, CarbonData(type=type_)
 
 
-def unwrap_mam(stanza, own_jid):
+def unwrap_mam(stanza: Protocol, own_jid: JID) -> tuple[Message | Protocol, MAMData | None]:
     result = stanza.getTag('result', namespace=Namespace.MAM_2)
     if result is None:
         result = stanza.getTag('result', namespace=Namespace.MAM_1)
@@ -115,7 +117,7 @@ def unwrap_mam(stanza, own_jid):
                             timestamp=delay_timestamp)
 
 
-def build_xhtml_body(xhtml, xmllang=None):
+def build_xhtml_body(xhtml: str, xmllang: str | None = None) -> str | None:
     try:
         if xmllang is not None:
             body = '<body xmlns="%s" xml:lang="%s">%s</body>' % (

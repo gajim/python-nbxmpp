@@ -21,7 +21,7 @@ import typing
 from typing import Any
 from typing import NamedTuple
 from typing import Optional
-from typing import Union
+from typing import TYPE_CHECKING
 
 import logging
 import random
@@ -41,6 +41,9 @@ from nbxmpp.const import AdHocStatus
 from nbxmpp.const import Affiliation
 from nbxmpp.const import AnonymityMode
 from nbxmpp.const import AvatarState
+from nbxmpp.const import Chatstate
+from nbxmpp.const import ConnectionProtocol
+from nbxmpp.const import ConnectionType
 from nbxmpp.const import InviteType
 from nbxmpp.const import IqType
 from nbxmpp.const import MessageType
@@ -51,12 +54,17 @@ from nbxmpp.const import StatusCode
 from nbxmpp.language import LanguageMap
 from nbxmpp.language import LanguageRange
 from nbxmpp.language import LanguageTag
+from nbxmpp.modules.dataforms import DataForm
 from nbxmpp.modules.fallback import FallbacksForT
 from nbxmpp.modules.fallback import strip_fallback
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Iq
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import Protocol
 from nbxmpp.simplexml import Node
+
+if TYPE_CHECKING:
+    from nbxmpp.modules.security_labels import SecurityLabel
 
 log = logging.getLogger('nbxmpp.structs')
 
@@ -66,28 +74,28 @@ class StanzaHandler(NamedTuple):
     callback: Any
     typ: str = ''
     ns: str = ''
-    xmlns: Optional[str] = None
+    xmlns: str | None = None
     priority: int = 50
 
 
 class CommonResult(NamedTuple):
-    jid: Optional[JID] = None
+    jid: JID | None = None
 
 
 class InviteData(NamedTuple):
     muc: JID
     from_: JID
-    reason: Optional[str]
-    password: Optional[str]
+    reason: str | None
+    password: str | None
     type: InviteType
     continued: bool
-    thread: Optional[str]
+    thread: str | None
 
 
 class DeclineData(NamedTuple):
     muc: JID
     from_: JID
-    reason: Optional[str]
+    reason: str | None
 
 
 class CaptchaData(NamedTuple):
@@ -98,19 +106,19 @@ class CaptchaData(NamedTuple):
 class BobData(NamedTuple):
     algo: str
     hash_: str
-    max_age: str
-    data: str
+    max_age: int
+    data: bytes
     cid: str
     type: str
 
 
 class BookmarkData(NamedTuple):
     jid: JID
-    name: Optional[str] = None
-    nick: Optional[str] = None
+    name: str | None = None
+    nick: str | None = None
     autojoin: bool = False
-    password: Optional[str] = None
-    extensions: Optional[Node] = None
+    password: str | None = None
+    extensions: Node | None = None
 
 
 class VoiceRequest(NamedTuple):
@@ -120,18 +128,18 @@ class VoiceRequest(NamedTuple):
 
 
 class MucUserData(NamedTuple):
-    jid: Optional[JID]
-    affiliation: Optional[Affiliation]
-    nick: Optional[str]
-    role: Optional[Role]
-    actor: Optional[str]
-    reason: Optional[str]
+    jid: JID | None
+    affiliation: Affiliation | None
+    nick: str | None
+    role: Role | None
+    actor: str | None
+    reason: str | None
 
 
 class MucDestroyed(NamedTuple):
-    alternate: Optional[JID]
-    reason: Optional[str]
-    password: Optional[str]
+    alternate: JID | None
+    reason: str | None
+    password: str | None
 
 
 class MucConfigResult(NamedTuple):
@@ -141,8 +149,8 @@ class MucConfigResult(NamedTuple):
 
 class MucSubject(NamedTuple):
     text: str
-    author: Optional[str]
-    timestamp: Optional[float]
+    author: str | None
+    timestamp: float | None
 
 
 class AffiliationResult(NamedTuple):
@@ -157,10 +165,10 @@ class EntityCapsData(NamedTuple):
 
 
 class HTTPAuthData(NamedTuple):
-    id: Optional[str]
-    method: Optional[str]
-    url: Optional[str]
-    body: Optional[str]
+    id: str | None
+    method: str | None
+    url: str | None
+    body: str | None
 
 
 class StanzaIDData(NamedTuple):
@@ -170,8 +178,8 @@ class StanzaIDData(NamedTuple):
 
 class PubSubEventData(NamedTuple):
     node: str
-    id: Optional[str] = None
-    item: Optional[Node] = None
+    id: str | None = None
+    item: Node | None = None
     data: Optional[Any] = None
     deleted: bool = False
     retracted: bool = False
@@ -196,30 +204,30 @@ class ActivityData(NamedTuple):
 
 
 class LocationData(NamedTuple):
-    accuracy: Optional[str] = None
-    alt: Optional[str] = None
-    altaccuracy: Optional[str] = None
-    area: Optional[str] = None
-    bearing: Optional[str] = None
-    building: Optional[str] = None
-    country: Optional[str] = None
-    countrycode: Optional[str] = None
-    datum: Optional[str] = None
-    description: Optional[str] = None
-    error: Optional[str] = None
-    floor: Optional[str] = None
-    lat: Optional[str] = None
-    locality: Optional[str] = None
-    lon: Optional[str] = None
-    postalcode: Optional[str] = None
-    region: Optional[str] = None
-    room: Optional[str] = None
-    speed: Optional[str] = None
-    street: Optional[str] = None
-    text: Optional[str] = None
-    timestamp: Optional[str] = None
-    tzo: Optional[str] = None
-    uri: Optional[str] = None
+    accuracy: str | None = None
+    alt: str | None = None
+    altaccuracy: str | None = None
+    area: str | None = None
+    bearing: str | None = None
+    building: str | None = None
+    country: str | None = None
+    countrycode: str | None = None
+    datum: str | None = None
+    description: str | None = None
+    error: str | None = None
+    floor: str | None = None
+    lat: str | None = None
+    locality: str | None = None
+    lon: str | None = None
+    postalcode: str | None = None
+    region: str | None = None
+    room: str | None = None
+    speed: str | None = None
+    street: str | None = None
+    text: str | None = None
+    timestamp: str | None = None
+    tzo: str | None = None
+    uri: str | None = None
 
 
 class PGPPublicKey(NamedTuple):
@@ -244,8 +252,8 @@ class OMEMOMessage(NamedTuple):
 class AnnotationNote(NamedTuple):
     jid: JID
     data: str
-    cdate: Optional[datetime] = None
-    mdate: Optional[datetime] = None
+    cdate: datetime | None = None
+    mdate: datetime | None = None
 
 
 class EMEData(NamedTuple):
@@ -254,9 +262,9 @@ class EMEData(NamedTuple):
 
 
 class MuclumbusResult(NamedTuple):
-    first: Optional[str]
-    last: Optional[str]
-    max: Optional[int]
+    first: str | None
+    last: str | None
+    max: int | None
     end: bool
     items: list[MuclumbusItem]
 
@@ -274,7 +282,7 @@ class MuclumbusItem(NamedTuple):
 class SoftwareVersionResult(NamedTuple):
     name: str
     version: str
-    os: Optional[str]
+    os: str | None
 
 
 class AdHocCommandNote(NamedTuple):
@@ -285,9 +293,9 @@ class AdHocCommandNote(NamedTuple):
 class IBBData(NamedTuple):
     type: str
     sid: str
-    block_size: Optional[int] = None
-    seq: Optional[int] = None
-    data: Optional[str] = None
+    block_size: int | None = None
+    seq: int | None = None
+    data: bytes | None = None
 
 
 class OOBData(NamedTuple):
@@ -306,17 +314,17 @@ class ReplyData(NamedTuple):
 
 class ModerationData(NamedTuple):
     stanza_id: str
-    by: Optional[JID]
-    reason: Optional[str]
+    by: JID | None
+    reason: str | None
     stamp: datetime
     is_tombstone: bool
-    occupant_id: Optional[str]
+    occupant_id: str | None
 
 
 class RetractionData(NamedTuple):
-    id: Optional[str]
+    id: str | None
     is_tombstone: bool
-    timestamp: Optional[float]
+    timestamp: float | None
 
 
 class DiscoItems(NamedTuple):
@@ -327,16 +335,16 @@ class DiscoItems(NamedTuple):
 
 class DiscoItem(NamedTuple):
     jid: JID
-    name: Optional[str]
-    node: Optional[str]
+    name: str | None
+    node: str | None
 
 
 class RegisterData(NamedTuple):
-    instructions: Optional[str]
+    instructions: str | None
     form: Optional[Any]
     fields_form: Optional[Any]
-    oob_url: Optional[str]
-    bob_data: Optional[BobData]
+    oob_url: str | None
+    bob_data: BobData | None
 
 
 class HTTPUploadData(NamedTuple):
@@ -346,14 +354,14 @@ class HTTPUploadData(NamedTuple):
 
 
 class RSMData(NamedTuple):
-    after: Optional[str]
-    before: Optional[str]
-    last: Optional[str]
-    first: Optional[str]
-    first_index: Optional[int]
-    count: Optional[int]
-    max: Optional[int]
-    index: Optional[int]
+    after: str | None
+    before: str | None
+    last: str | None
+    first: str | None
+    first_index: int | None
+    count: int | None
+    max: int | None
+    index: int | None
 
 
 class MAMQueryData(NamedTuple):
@@ -374,8 +382,8 @@ class LastActivityData(NamedTuple):
 
 
 class RosterData(NamedTuple):
-    items: Optional[list[RosterItem]]
-    version: str
+    items: list[RosterItem] | None
+    version: str | None
 
 
 class RosterPush(NamedTuple):
@@ -383,13 +391,38 @@ class RosterPush(NamedTuple):
     version: str
 
 
+class ServerAddress(NamedTuple):
+    domain: str | None
+    service: str | None
+    host: str | None
+    uri: str | None
+    protocol: ConnectionProtocol
+    type: ConnectionType
+    proxy: ProxyData | None
+
+    @property
+    def is_service(self) -> bool:
+        return self.service is not None
+
+    @property
+    def is_host(self) -> bool:
+        return self.host is not None
+
+    @property
+    def is_uri(self) -> bool:
+        return self.uri is not None
+
+    def has_proxy(self) -> bool:
+        return self.proxy is not None
+
+
 @dataclass
 class RosterItem:
     jid: JID
-    name: Optional[str] = None
-    ask: Optional[str] = None
-    subscription: Optional[str] = None
-    approved: Optional[str] = None
+    name: str | None = None
+    ask: str | None = None
+    subscription: str | None = None
+    approved: str | None = None
     groups: set[str] = field(default_factory=set)
 
     @classmethod
@@ -422,13 +455,13 @@ class RosterItem:
 
 
 class DiscoInfo(NamedTuple):
-    stanza: Optional[Node]
+    stanza: Iq | None
     identities: list[DiscoIdentity]
     features: list[str]
-    dataforms: list[Any]
-    timestamp: Optional[float] = None
+    dataforms: list[DataForm]
+    timestamp: float | None = None
 
-    def get_caps_hash(self) -> Optional[str]:
+    def get_caps_hash(self) -> str | None:
         try:
             return self.node.split('#')[1]
         except Exception:
@@ -470,7 +503,7 @@ class DiscoInfo(NamedTuple):
         return str(self.stanza)
 
     @property
-    def node(self) -> Optional[str]:
+    def node(self) -> str | None:
         try:
             query = self.stanza.getQuery()
         except Exception:
@@ -481,14 +514,14 @@ class DiscoInfo(NamedTuple):
         return None
 
     @property
-    def jid(self) -> Optional[JID]:
+    def jid(self) -> JID | None:
         try:
             return self.stanza.getFrom()
         except Exception:
             return None
 
     @property
-    def mam_namespace(self) -> Optional[str]:
+    def mam_namespace(self) -> str | None:
         if Namespace.MAM_2 in self.features:
             return Namespace.MAM_2
         if Namespace.MAM_1 in self.features:
@@ -519,7 +552,7 @@ class DiscoInfo(NamedTuple):
         )
 
     @property
-    def moderation_namespace(self) -> Optional[str]:
+    def moderation_namespace(self) -> str | None:
         if Namespace.MESSAGE_MODERATE_1 in self.features:
             return Namespace.MESSAGE_MODERATE_1
         if Namespace.MESSAGE_MODERATE in self.features:
@@ -542,7 +575,7 @@ class DiscoInfo(NamedTuple):
         return False
 
     @property
-    def muc_name(self) -> Optional[str]:
+    def muc_name(self) -> str | None:
         if self.muc_room_name:
             return self.muc_room_name
 
@@ -554,7 +587,7 @@ class DiscoInfo(NamedTuple):
         return None
 
     @property
-    def muc_identity_name(self) -> Optional[str]:
+    def muc_identity_name(self) -> str | None:
         for identity in self.identities:
             if identity.category == 'conference':
                 return identity.name
@@ -650,14 +683,14 @@ class DiscoInfo(NamedTuple):
         return any(identity.category == 'gateway' for identity in self.identities)
 
     @property
-    def gateway_name(self) -> Optional[str]:
+    def gateway_name(self) -> str | None:
         for identity in self.identities:
             if identity.category == 'gateway':
                 return identity.name
         return None
 
     @property
-    def gateway_type(self) -> Optional[str]:
+    def gateway_type(self) -> str | None:
         for identity in self.identities:
             if identity.category == 'gateway':
                 return identity.type
@@ -674,7 +707,7 @@ class DiscoInfo(NamedTuple):
         return False
 
     @property
-    def httpupload_max_file_size(self) -> Optional[float]:
+    def httpupload_max_file_size(self) -> float | None:
         size = self.get_field_value(Namespace.HTTPUPLOAD_0, 'max-file-size')
         try:
             return float(size)
@@ -686,8 +719,8 @@ class DiscoIdentity(NamedTuple):
 
     category: str
     type: str
-    name: Optional[str] = None
-    lang: Optional[str] = None
+    name: str | None = None
+    lang: str | None = None
 
     def get_node(self) -> Node:
         identity = Node('identity',
@@ -700,10 +733,10 @@ class DiscoIdentity(NamedTuple):
             identity.setAttr('xml:lang', self.lang)
         return identity
 
-    def __eq__(self, other: DiscoIdentity):
+    def __eq__(self, other: object) -> bool:
         return str(self) == str(other)
 
-    def __ne__(self, other: DiscoIdentity):
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
     def __str__(self) -> str:
@@ -719,13 +752,13 @@ class DiscoIdentity(NamedTuple):
 class AdHocCommand(NamedTuple):
     jid: JID
     node: Node
-    name: Optional[str]
-    sessionid: Optional[str] = None
-    status: Optional[AdHocStatus] = None
-    data: Optional[Node] = None
-    actions: Optional[set[AdHocAction]] = None
-    default: Optional[AdHocAction] = None
-    notes: Optional[list[AdHocCommandNote]] = None
+    name: str | None
+    sessionid: str | None = None
+    status: AdHocStatus | None = None
+    data: Node | None = None
+    actions: set[AdHocAction] | None = None
+    default: AdHocAction | None = None
+    notes: list[AdHocCommandNote] | None = None
 
     @property
     def is_completed(self) -> bool:
@@ -739,8 +772,8 @@ class AdHocCommand(NamedTuple):
 class ProxyData(NamedTuple):
     type: str
     host: str
-    username: Optional[str]
-    password: Optional[str]
+    username: str | None
+    password: str | None
 
     def get_uri(self) -> str:
         if self.username is not None:
@@ -757,7 +790,7 @@ class ProxyData(NamedTuple):
 
 
 class OMEMOBundle(NamedTuple):
-    spk: dict[str, Union[int, bytes]]
+    spk: dict[str, int | bytes]
     spk_signature: bytes
     ik: bytes
     otpks: list[dict[str, str]]
@@ -791,7 +824,7 @@ class Reactions(NamedTuple):
 
 
 class CommonError:
-    def __init__(self, stanza):
+    def __init__(self, stanza: Protocol) -> None:
         self._stanza_name = stanza.getName()
         self._error_node = stanza.getTag('error')
         self.condition = stanza.getError()
@@ -801,7 +834,7 @@ class CommonError:
         self.by = None
         self.jid = stanza.getFrom()
         self.id = stanza.getID()
-        self._text = {}
+        self._text: dict[str, str] = {}
 
         by = self._error_node.getAttr('by')
         if by is not None:
@@ -817,10 +850,10 @@ class CommonError:
             self._text[lang] = text
 
     @classmethod
-    def from_string(cls, node_string: Union[bytes, str]) -> CommonError:
+    def from_string(cls, node_string: bytes | str) -> CommonError:
         return cls(Protocol(node=node_string))
 
-    def get_text(self, pref_lang=None):
+    def get_text(self, pref_lang: str | None = None) -> str:
         if pref_lang is not None:
             text = self._text.get(pref_lang)
             if text is not None:
@@ -837,10 +870,10 @@ class CommonError:
             return self._text.popitem()[1]
         return ''
 
-    def set_text(self, lang, text):
+    def set_text(self, lang: str, text: str) -> None:
         self._text[lang] = text
 
-    def __str__(self):
+    def __str__(self) -> str:
         condition = self.condition
         if self.app_condition is not None:
             condition = '%s (%s)' % (self.condition, self.app_condition)
@@ -858,10 +891,10 @@ class CommonError:
 
 
 class HTTPUploadError(CommonError):
-    def __init__(self, stanza):
+    def __init__(self, stanza: Protocol) -> None:
         CommonError.__init__(self, stanza)
 
-    def get_max_file_size(self):
+    def get_max_file_size(self) -> float | None:
         if not self.app_condition == 'file-too-large':
             return None
         node = self._error_node.getTag(self.app_condition)
@@ -877,7 +910,7 @@ class HTTPUploadError(CommonError):
 
 
 class StanzaMalformedError(CommonError):
-    def __init__(self, stanza, text):
+    def __init__(self, stanza: Protocol, text: str | None) -> None:
         self._error_node = None
         self.condition = 'stanza-malformed'
         self.condition_data = None
@@ -885,33 +918,33 @@ class StanzaMalformedError(CommonError):
         self.type = None
         self.jid = stanza.getFrom()
         self.id = stanza.getID()
-        self._text = {}
+        self._text: dict[str, str] = {}
         if text:
             self._text['en'] = text
 
     @classmethod
-    def from_string(cls, node_string):
+    def from_string(cls, node_string: str) -> Any:
         raise NotImplementedError
 
-    def __str__(self):
+    def __str__(self) -> str:
         text = self.get_text('en')
         if text:
             text = ': %s' % text
         return 'Received malformed stanza from %s%s' % (self.jid, text)
 
-    def serialize(self):
+    def serialize(self) -> str:
         raise NotImplementedError
 
 
 class StreamError(CommonError):
-    def __init__(self, stanza):
+    def __init__(self, stanza: Protocol) -> None:
         self.condition = stanza.getError()
         self.condition_data = self._error_node.getTagData(self.condition)
         self.app_condition = stanza.getAppError()
         self.type = stanza.getErrorType()
         self.jid = stanza.getFrom()
         self.id = stanza.getID()
-        self._text = {}
+        self._text: dict[str, str] = {}
 
         text_elements = self._error_node.getTags('text', namespace=Namespace.STREAMS)
         for element in text_elements:
@@ -920,27 +953,27 @@ class StreamError(CommonError):
             self._text[lang] = text
 
     @classmethod
-    def from_string(cls, node_string):
+    def from_string(cls, node_string: str) -> Any:
         raise NotImplementedError
 
-    def __str__(self):
+    def __str__(self) -> str:
         text = self.get_text('en') or ''
         if text:
             text = ' - %s' % text
         return 'Error from %s: %s%s' % (self.jid, self.condition, text)
 
-    def serialize(self):
+    def serialize(self) -> str:
         raise NotImplementedError
 
 
 class TuneData(NamedTuple):
-    artist: Optional[str] = None
-    length: Optional[str] = None
-    rating: Optional[str] = None
-    source: Optional[str] = None
-    title: Optional[str] = None
-    track: Optional[str] = None
-    uri: Optional[str] = None
+    artist: str | None = None
+    length: str | None = None
+    rating: str | None = None
+    source: str | None = None
+    title: str | None = None
+    track: str | None = None
+    uri: str | None = None
 
     @property
     def was_removed(self) -> bool:
@@ -979,7 +1012,7 @@ class CarbonData(NamedTuple):
 
 class ReceiptData(NamedTuple):
     type: str
-    id: Optional[str] = None
+    id: str | None = None
 
     @property
     def is_request(self) -> bool:
@@ -1019,12 +1052,12 @@ class HatData:
         except KeyError:
             return self._hat_map.any()
 
-    def __eq__(self, other: Any):
+    def __eq__(self, other: object) -> bool:
         if not isinstance(other, HatData):
             return False
         return self._hat_map == other._hat_map
 
-    def __ne__(self, other: Any):
+    def __ne__(self, other: object) -> bool:
         return not self.__eq__(other)
 
 
@@ -1042,62 +1075,62 @@ class Properties:
 @dataclass
 class MessageProperties:
     own_jid: JID
-    carbon: Optional[CarbonData] = None
+    carbon: CarbonData | None = None
     type: MessageType = MessageType.NORMAL
-    id: Optional[str] = None
+    id: str | None = None
     stanza_ids: list[StanzaIDData] = field(default_factory=list)
-    origin_id: Optional[str] = None
-    from_: Optional[JID] = None
-    to: Optional[JID] = None
-    jid: Optional[JID] = None
-    remote_jid: Optional[JID] = None
-    subject = None
-    body: Optional[str] = None
-    bodies: Optional[BodyData] = None
-    thread: Optional[str] = None
-    user_timestamp = None
+    origin_id: str | None = None
+    from_: JID | None = None
+    to: JID | None = None
+    jid: JID | None = None
+    remote_jid: JID | None = None
+    subject: str | None = None
+    body: str | None = None
+    bodies: BodyData | None = None
+    thread: str | None = None
+    user_timestamp: float | None = None
     timestamp: float = field(default_factory=time.time)
     has_server_delay: bool = False
     error = None
-    eme: Optional[EMEData] = None
-    http_auth: Optional[HTTPAuthData] = None
-    nickname: Optional[str] = None
+    eme: EMEData | None = None
+    http_auth: HTTPAuthData | None = None
+    nickname: str | None = None
     from_muc: bool = False
-    occupant_id: Optional[str] = None
-    muc_jid: Optional[JID] = None
-    muc_nickname: Optional[str] = None
-    muc_status_codes: Optional[set[StatusCode]] = None
+    occupant_id: str | None = None
+    muc_jid: JID | None = None
+    muc_nickname: str | None = None
+    muc_status_codes: set[StatusCode] | None = None
     muc_private_message: bool = False
-    muc_invite = None
-    muc_decline = None
-    muc_user = None
-    muc_ofrom = None
-    muc_subject: Optional[MucSubject] = None
-    captcha: Optional[CaptchaData] = None
-    voice_request: Optional[VoiceRequest] = None
+    muc_invite: InviteData | None = None
+    muc_decline: DeclineData | None = None
+    muc_user: MucUserData | None = None
+    muc_ofrom: JID | None = None
+    muc_subject: MucSubject | None = None
+    captcha: CaptchaData | None = None
+    voice_request: VoiceRequest | None = None
     self_message: bool = False
-    mam: Optional[MAMData] = None
+    mam: MAMData | None = None
     pubsub: bool = False
-    pubsub_event: Optional[PubSubEventData] = None
-    openpgp: Optional[bytes] = None
-    omemo = None
+    pubsub_event: PubSubEventData | None = None
+    openpgp: bytes | None = None
+    omemo: OMEMOMessage | None = None
     encrypted: EncryptionData | None = None
-    pgp_legacy: Optional[str] = None
-    marker: Optional[ChatMarker] = None
-    receipt: Optional[ReceiptData] = None
-    oob: Optional[OOBData] = None
-    correction: Optional[CorrectionData] = None
-    reply_data: Optional[ReplyData] = None
-    moderation: Optional[ModerationData] = None
-    retraction: Optional[RetractionData] = None
+    pgp_legacy: str | None = None
+    marker: ChatMarker | None = None
+    receipt: ReceiptData | None = None
+    oob: OOBData | None = None
+    correction: CorrectionData | None = None
+    reply_data: ReplyData | None = None
+    moderation: ModerationData | None = None
+    retraction: RetractionData | None = None
     attention: bool = False
     forms = None
-    xhtml: Optional[str] = None
-    security_label = None
-    chatstate = None
-    reactions: Optional[Reactions] = None
+    xhtml: XHTMLData | None = None
+    security_label: SecurityLabel | None = None
+    chatstate: Chatstate | None = None
+    reactions: Reactions | None = None
 
-    def is_from_us(self, bare_match: bool = True):
+    def is_from_us(self, bare_match: bool = True) -> bool:
         if self.from_ is None:
             raise ValueError('from attribute missing')
 
@@ -1232,16 +1265,16 @@ class MessageProperties:
 @dataclass
 class IqProperties:
     own_jid: JID
-    type: Optional[IqType] = None
-    jid: Optional[JID] = None
-    id: Optional[str] = None
+    type: IqType | None = None
+    jid: JID | None = None
+    id: str | None = None
     error: Optional[Any] = None
-    query: Optional[Node] = None
-    payload: Optional[Node] = None
-    http_auth: Optional[HTTPAuthData] = None
-    ibb: Optional[IBBData] = None
-    blocking: Optional[BlockingPush] = None
-    roster: Optional[RosterPush] = None
+    query: Node | None = None
+    payload: Node | None = None
+    http_auth: HTTPAuthData | None = None
+    ibb: IBBData | None = None
+    blocking: BlockingPush | None = None
+    roster: RosterPush | None = None
 
     @property
     def is_http_auth(self) -> bool:
@@ -1266,8 +1299,8 @@ class IqPropertiesBase(typing.Protocol):
     jid: JID
     id: str
     error: Optional[Any]
-    query: Optional[Node]
-    payload: Optional[Node]
+    query: Node | None
+    payload: Node | None
 
 
 class BlockingProperties(IqPropertiesBase):
@@ -1281,32 +1314,32 @@ class BlockingProperties(IqPropertiesBase):
 @dataclass
 class PresenceProperties:
     own_jid: JID
-    type: Optional[PresenceType] = None
-    priority: Optional[int] = None
-    show: Optional[PresenceShow] = None
-    jid: Optional[JID] = None
-    resource: Optional[str] = None
-    id: Optional[str] = None
-    nickname: Optional[str] = None
+    type: PresenceType | None = None
+    priority: int | None = None
+    show: PresenceShow | None = None
+    jid: JID | None = None
+    resource: str | None = None
+    id: str | None = None
+    nickname: str | None = None
     self_presence: bool = False
     self_bare: bool = False
     from_muc: bool = False
-    occupant_id: Optional[str] = None
+    occupant_id: str | None = None
     status: str = ''
     timestamp: float = field(default_factory=time.time)
-    user_timestamp: Optional[float] = None
-    idle_timestamp: Optional[float] = None
+    user_timestamp: float | None = None
+    idle_timestamp: float | None = None
     signed: Optional[Any] = None
     error: Optional[Any] = None
-    avatar_sha: Optional[str] = None
+    avatar_sha: str | None = None
     avatar_state: AvatarState = AvatarState.IGNORE
-    muc_jid: Optional[JID] = None
-    muc_status_codes: Optional[set[StatusCode]] = None
-    muc_user: Optional[MucUserData] = None
-    muc_nickname: Optional[str] = None
-    muc_destroyed: Optional[MucDestroyed] = None
-    entity_caps: Optional[EntityCapsData] = None
-    hats: Optional[HatData] = None
+    muc_jid: JID | None = None
+    muc_status_codes: set[StatusCode] | None = None
+    muc_user: MucUserData | None = None
+    muc_nickname: str | None = None
+    muc_destroyed: MucDestroyed | None = None
+    entity_caps: EntityCapsData | None = None
+    hats: HatData | None = None
 
     @property
     def is_self_presence(self) -> bool:
@@ -1379,14 +1412,14 @@ class PresenceProperties:
                 status_codes.issubset(self.muc_status_codes))
 
     @property
-    def affiliation(self) -> Optional[Affiliation]:
+    def affiliation(self) -> Affiliation | None:
         try:
             return self.muc_user.affiliation
         except Exception:
             return None
 
     @property
-    def role(self) -> Optional[Role]:
+    def role(self) -> Role | None:
         try:
             return self.muc_user.role
         except Exception:
@@ -1394,13 +1427,13 @@ class PresenceProperties:
 
 
 class XHTMLData:
-    def __init__(self, xhtml: Node):
-        self._bodys: dict[Optional[str], Node] = {}
+    def __init__(self, xhtml: Node) -> None:
+        self._bodys: dict[str | None, Node] = {}
         for body in xhtml.getTags('body', namespace=Namespace.XHTML):
             lang = body.getXmlLang()
             self._bodys[lang] = body
 
-    def get_body(self, pref_lang: Optional[str] = None) -> str:
+    def get_body(self, pref_lang: str | None = None) -> str:
         if pref_lang is not None:
             body = self._bodys.get(pref_lang)
             if body is not None:
@@ -1418,7 +1451,7 @@ class XHTMLData:
 
 @dataclass
 class ChannelBindingData:
-    type: str
+    type: Gio.TlsChannelBindingType
     data: bytes
 
 

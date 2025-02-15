@@ -15,11 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from typing import Any
+from typing import Literal
+from typing import overload
+from typing import TYPE_CHECKING
 
 import logging
 import re
 import time
+from collections.abc import Callable
 from xml.parsers.expat import ExpatError
 
 from gi.repository import GLib
@@ -29,6 +35,7 @@ from nbxmpp.modules.activity import Activity
 from nbxmpp.modules.adhoc import AdHoc
 from nbxmpp.modules.annotations import Annotations
 from nbxmpp.modules.attention import Attention
+from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.blocking import Blocking
 from nbxmpp.modules.bookmarks.native_bookmarks import NativeBookmarks
 from nbxmpp.modules.bookmarks.pep_bookmarks import PEPBookmarks
@@ -103,6 +110,9 @@ from nbxmpp.util import is_websocket_stream_error
 from nbxmpp.util import LogAdapter
 from nbxmpp.util import Observable
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 log = logging.getLogger('nbxmpp.dispatcher')
 
 
@@ -117,20 +127,20 @@ class StanzaDispatcher(Observable):
 
     """
 
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         Observable.__init__(self, log)
         self._client = client
-        self._modules = {}
-        self._parser = None
-        self._websocket_stream_error = None
+        self._modules: dict[str, BaseModule] = {}
+        self._parser: NodeBuilder | None = None
+        self._websocket_stream_error: str | None = None
 
         self._log = LogAdapter(log, {'context': client.log_context})
 
         self._handlers: dict[str, dict[str, dict[str, Any]]] = {}
 
-        self._id_callbacks = {}
-        self._dispatch_callback = None
-        self._timeout_id = None
+        self._id_callbacks: dict[str, tuple[Callable[..., Any], float | None, Any]] = {}
+        self._dispatch_callback: Callable[..., Any] | None = None
+        self._timeout_id: int | None = None
 
         self._stanza_types = {
             'iq': Iq,
@@ -150,74 +160,87 @@ class StanzaDispatcher(Observable):
 
         self._register_modules()
 
-    def set_dispatch_callback(self, callback):
+    def set_dispatch_callback(self, callback: Callable[..., Any]) -> None:
         self._log.info('Set dispatch callback: %s', callback)
         self._dispatch_callback = callback
 
-    def get_module(self, name):
+    @overload
+    def get_module(self, name: Literal['Muclumbus']) -> Muclumbus: ...
+
+    @overload
+    def get_module(self, name: Literal['Ping']) -> Ping: ...
+
+    @overload
+    def get_module(self, name: Literal['PubSub']) -> PubSub: ...
+
+    @overload
+    def get_module(self, name: Literal['Register']) -> Register: ...
+
+    def get_module(self, name: str) -> BaseModule:
         return self._modules[name]
 
     def _register_modules(self):
+        assert self._client is not None
+        self._modules['Activity'] = Activity(self._client)
+        self._modules['AdHoc'] = AdHoc(self._client)
+        self._modules['Annotations'] = Annotations(self._client)
+        self._modules['Attention'] = Attention(self._client)
         self._modules['BasePresence'] = BasePresence(self._client)
         self._modules['BaseMessage'] = BaseMessage(self._client)
         self._modules['BaseIq'] = BaseIq(self._client)
-        self._modules['EME'] = EME(self._client)
-        self._modules['HTTPAuth'] = HTTPAuth(self._client)
-        self._modules['Nickname'] = Nickname(self._client)
-        self._modules['MUC'] = MUC(self._client)
-        self._modules['Moderation'] = Moderation(self._client)
-        self._modules['Retraction'] = Retraction(self._client)
-        self._modules['Delay'] = Delay(self._client)
-        self._modules['Captcha'] = Captcha(self._client)
-        self._modules['Idle'] = Idle(self._client)
-        self._modules['PGPLegacy'] = PGPLegacy(self._client)
-        self._modules['VCardAvatar'] = VCardAvatar(self._client)
-        self._modules['EntityCaps'] = EntityCaps(self._client)
         self._modules['Blocking'] = Blocking(self._client)
-        self._modules['PubSub'] = PubSub(self._client)
-        self._modules['Mood'] = Mood(self._client)
-        self._modules['Activity'] = Activity(self._client)
-        self._modules['Tune'] = Tune(self._client)
-        self._modules['Location'] = Location(self._client)
-        self._modules['UserAvatar'] = UserAvatar(self._client)
-        self._modules['PrivateBookmarks'] = PrivateBookmarks(self._client)
-        self._modules['PEPBookmarks'] = PEPBookmarks(self._client)
-        self._modules['NativeBookmarks'] = NativeBookmarks(self._client)
-        self._modules['OpenPGP'] = OpenPGP(self._client)
-        self._modules['OMEMO'] = OMEMO(self._client)
-        self._modules['Annotations'] = Annotations(self._client)
-        self._modules['Muclumbus'] = Muclumbus(self._client)
-        self._modules['SoftwareVersion'] = SoftwareVersion(self._client)
-        self._modules['AdHoc'] = AdHoc(self._client)
-        self._modules['IBB'] = IBB(self._client)
-        self._modules['Discovery'] = Discovery(self._client)
+        self._modules['Captcha'] = Captcha(self._client)
         self._modules['ChatMarkers'] = ChatMarkers(self._client)
-        self._modules['Receipts'] = Receipts(self._client)
-        self._modules['Replies'] = Replies(self._client)
-        self._modules['OOB'] = OOB(self._client)
-        self._modules['Correction'] = Correction(self._client)
-        self._modules['Attention'] = Attention(self._client)
-        self._modules['SecurityLabels'] = SecurityLabels(self._client)
         self._modules['Chatstates'] = Chatstates(self._client)
-        self._modules['Register'] = Register(self._client)
+        self._modules['Correction'] = Correction(self._client)
+        self._modules['Delay'] = Delay(self._client)
+        self._modules['Delimiter'] = Delimiter(self._client)
+        self._modules['Discovery'] = Discovery(self._client)
+        self._modules['EME'] = EME(self._client)
+        self._modules['EntityCaps'] = EntityCaps(self._client)
+        self._modules['EntityTime'] = EntityTime(self._client)
+        self._modules['Hats'] = Hats(self._client)
+        self._modules['HTTPAuth'] = HTTPAuth(self._client)
         self._modules['HTTPUpload'] = HTTPUpload(self._client)
+        self._modules['IBB'] = IBB(self._client)
+        self._modules['Idle'] = Idle(self._client)
+        self._modules['LastActivity'] = LastActivity(self._client)
+        self._modules['Location'] = Location(self._client)
         self._modules['MAM'] = MAM(self._client)
+        self._modules['MDS'] = MDS(self._client)
+        self._modules['Moderation'] = Moderation(self._client)
+        self._modules['Mood'] = Mood(self._client)
+        self._modules['MUC'] = MUC(self._client)
+        self._modules['Muclumbus'] = Muclumbus(self._client)
+        self._modules['NativeBookmarks'] = NativeBookmarks(self._client)
+        self._modules['Nickname'] = Nickname(self._client)
+        self._modules['OMEMO'] = OMEMO(self._client)
+        self._modules['OOB'] = OOB(self._client)
+        self._modules['OpenPGP'] = OpenPGP(self._client)
+        self._modules['PEPBookmarks'] = PEPBookmarks(self._client)
+        self._modules['PGPLegacy'] = PGPLegacy(self._client)
+        self._modules['Ping'] = Ping(self._client)
+        self._modules['PrivateBookmarks'] = PrivateBookmarks(self._client)
+        self._modules['PubSub'] = PubSub(self._client)
+        self._modules['Reactions'] = Reactions(self._client)
+        self._modules['Receipts'] = Receipts(self._client)
+        self._modules['Register'] = Register(self._client)
+        self._modules['Replies'] = Replies(self._client)
+        self._modules['Retraction'] = Retraction(self._client)
+        self._modules['Roster'] = Roster(self._client)
+        self._modules['SecurityLabels'] = SecurityLabels(self._client)
+        self._modules['SoftwareVersion'] = SoftwareVersion(self._client)
+        self._modules['Tune'] = Tune(self._client)
+        self._modules['UserAvatar'] = UserAvatar(self._client)
+        self._modules['VCardAvatar'] = VCardAvatar(self._client)
         self._modules['VCardTemp'] = VCardTemp(self._client)
         self._modules['VCard4'] = VCard4(self._client)
-        self._modules['Ping'] = Ping(self._client)
-        self._modules['Delimiter'] = Delimiter(self._client)
-        self._modules['Roster'] = Roster(self._client)
-        self._modules['LastActivity'] = LastActivity(self._client)
-        self._modules['EntityTime'] = EntityTime(self._client)
-        self._modules['Reactions'] = Reactions(self._client)
-        self._modules['Hats'] = Hats(self._client)
-        self._modules['MDS'] = MDS(self._client)
 
         for instance in self._modules.values():
             for handler in instance.handlers:
                 self.register_handler(handler)
 
-    def reset_parser(self):
+    def reset_parser(self) -> None:
         if self._parser is not None:
             self._parser.dispatch = None
             self._parser.destroy()
@@ -227,10 +250,10 @@ class StanzaDispatcher(Observable):
                                    finished=False)
         self._parser.dispatch = self.dispatch
 
-    def replace_non_character(self, data):
+    def replace_non_character(self, data: str) -> str:
         return re.sub(self.invalid_chars_re, '\ufffd', data)
 
-    def process_data(self, data):
+    def process_data(self, data: str) -> None:
         # Parse incoming data
 
         data = self.replace_non_character(data)
@@ -534,7 +557,7 @@ class StanzaDispatcher(Observable):
         # Stanza was not processed call default handler
         self._default_handler(stanza)
 
-    def add_callback_for_id(self, id_, func, timeout, user_data):
+    def add_callback_for_id(self, id_: str, func: Callable[..., Any], timeout: float | None, user_data: Any) -> None:
         if timeout is not None and self._timeout_id is None:
             self._log.info('Add timeout check')
             self._timeout_id = GLib.timeout_add_seconds(
@@ -542,9 +565,9 @@ class StanzaDispatcher(Observable):
             timeout = time.monotonic() + timeout
         self._id_callbacks[id_] = (func, timeout, user_data)
 
-    def _timeout_check(self):
+    def _timeout_check(self) -> bool:
         self._log.info('Run timeout check')
-        timeouts = {}
+        timeouts: dict[str, tuple[Callable[..., Any], float | None, Any]] = {}
         for id_, data in self._id_callbacks.items():
             if data[1] is not None:
                 timeouts[id_] = data
@@ -565,19 +588,19 @@ class StanzaDispatcher(Observable):
                 func(self._client, None, **user_data)
         return True
 
-    def _remove_timeout_source(self):
+    def _remove_timeout_source(self) -> None:
         if self._timeout_id is not None:
             GLib.source_remove(self._timeout_id)
             self._timeout_id = None
 
-    def remove_iq_callback(self, id_):
+    def remove_iq_callback(self, id_: str) -> None:
         self._id_callbacks.pop(id_, None)
 
-    def clear_iq_callbacks(self):
+    def clear_iq_callbacks(self) -> None:
         self._log.info('Clear IQ callbacks')
         self._id_callbacks.clear()
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         self._client = None
         self._modules = {}
         self._parser = None

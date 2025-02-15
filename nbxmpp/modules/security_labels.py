@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import hashlib
 from dataclasses import dataclass
 
@@ -22,14 +26,19 @@ from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import Message
 from nbxmpp.simplexml import Node
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 from nbxmpp.util import from_xs_boolean
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class SecurityLabels(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -40,7 +49,7 @@ class SecurityLabels(BaseModule):
                           priority=15),
         ]
 
-    def _process_message_security_label(self, _client, stanza, properties):
+    def _process_message_security_label(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         security = stanza.getTag('securitylabel', namespace=Namespace.SECLABEL)
         if security is None:
             return
@@ -54,7 +63,7 @@ class SecurityLabels(BaseModule):
         properties.security_label = security_label
 
     @iq_request_task
-    def request_catalog(self, jid):
+    def request_catalog(self, jid: str):
         _task = yield
 
         response = yield _make_catalog_request(self._client.domain, jid)
@@ -71,8 +80,8 @@ class SecurityLabels(BaseModule):
 
         items = catalog_node.getTags('item')
 
-        labels = {}
-        default = None
+        labels: dict[str, SecurityLabel | None] = {}
+        default: str | None = None
         for item in items:
             selector = item.getAttr('selector')
             if selector is None:
@@ -97,7 +106,7 @@ class SecurityLabels(BaseModule):
         yield Catalog(labels=labels, default=default, restrict=restrict)
 
 
-def _make_catalog_request(domain, jid):
+def _make_catalog_request(domain: str | None, jid: str) -> Iq:
     iq = Iq(typ='get', to=domain)
     iq.addChild(name='catalog',
                 namespace=Namespace.SECLABEL_CATALOG,
@@ -111,7 +120,7 @@ class Displaymarking:
     fgcolor: str
     bgcolor: str
 
-    def to_node(self):
+    def to_node(self) -> Node:
         displaymarking = Node(tag='displaymarking')
         if self.fgcolor and self.fgcolor != '#000':
             displaymarking.setAttr('fgcolor', self.fgcolor)
@@ -125,7 +134,7 @@ class Displaymarking:
         return displaymarking
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> Displaymarking:
         return cls(name=node.getData(),
                    fgcolor=node.getAttr('fgcolor') or '#000',
                    bgcolor=node.getAttr('bgcolor') or '#FFF')
@@ -133,10 +142,10 @@ class Displaymarking:
 
 @dataclass
 class SecurityLabel:
-    displaymarking: Displaymarking
+    displaymarking: Displaymarking | None
     label: Node
 
-    def to_node(self):
+    def to_node(self) -> Node:
         security = Node(tag='securitylabel',
                         attrs={'xmlns': Namespace.SECLABEL})
         if self.displaymarking is not None:
@@ -145,7 +154,7 @@ class SecurityLabel:
         return security
 
     @classmethod
-    def from_node(cls, security):
+    def from_node(cls, security: Node) -> SecurityLabel:
         displaymarking = security.getTag('displaymarking')
         if displaymarking is not None:
             displaymarking = Displaymarking.from_node(displaymarking)
@@ -160,6 +169,7 @@ class SecurityLabel:
         sha = hashlib.sha512()
         sha.update(str(self.label).encode())
         return sha.hexdigest()
+
 
 @dataclass
 class Catalog:

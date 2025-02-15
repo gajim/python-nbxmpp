@@ -17,7 +17,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
 from typing import TYPE_CHECKING
 
 from nbxmpp.errors import MalformedStanzaError
@@ -64,7 +63,7 @@ class Blocking(BaseModule):
         if blocklist is None:
             raise MalformedStanzaError('blocklist node missing', result)
 
-        blocked = set()
+        blocked: set[JID] = set()
         for item in blocklist.getTags('item'):
             try:
                 jid = JID.from_string(item.getAttr('jid'))
@@ -80,7 +79,7 @@ class Blocking(BaseModule):
     @iq_request_task
     def block(self,
               jids: list[JID],
-              report: Optional[BlockingReportValues] = None):
+              report: BlockingReportValues | None = None):
 
         _task = yield
 
@@ -97,7 +96,7 @@ class Blocking(BaseModule):
     @staticmethod
     def _process_blocking_push(client: Client,
                                stanza: Iq,
-                               properties: BlockingProperties):
+                               properties: BlockingProperties) -> None:
 
         unblock = stanza.getTag('unblock', namespace=Namespace.BLOCKING)
         if unblock is not None:
@@ -118,7 +117,7 @@ def _make_blocking_list_request() -> Iq:
 
 
 def _make_block_request(jids: list[JID],
-                        report: Optional[BlockingReportValues]) -> Iq:
+                        report: BlockingReportValues | None) -> Iq:
 
     iq = Iq('set', Namespace.BLOCKING)
     query = iq.setQuery(name='block')

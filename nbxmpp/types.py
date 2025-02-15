@@ -1,5 +1,8 @@
 
 from typing import Literal
-from typing import Union
 
-BlockingReportValues = Union[Literal['spam'], Literal['abuse']]
+from nbxmpp.const import ConnectionProtocol
+from nbxmpp.const import ConnectionType
+
+BlockingReportValues = Literal['spam', 'abuse']
+CustomHostT = tuple[str, ConnectionProtocol, ConnectionType]

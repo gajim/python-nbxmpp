@@ -17,8 +17,7 @@
 
 from __future__ import annotations
 
-from typing import Any
-from typing import Optional
+from typing import TYPE_CHECKING
 
 import logging
 import time
@@ -31,19 +30,24 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import ERR_ITEM_NOT_FOUND
 from nbxmpp.protocol import ErrorNode
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import DiscoIdentity
 from nbxmpp.structs import DiscoInfo
 from nbxmpp.structs import DiscoItem
 from nbxmpp.structs import DiscoItems
+from nbxmpp.structs import IqProperties
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 log = logging.getLogger('nbxmpp.m.discovery')
 
 
 class Discovery(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -56,14 +60,14 @@ class Discovery(BaseModule):
         ]
 
     @staticmethod
-    def _process_disco_info(client, stanza, _properties):
+    def _process_disco_info(client: Client, stanza: Iq, _properties: IqProperties) -> None:
         iq = stanza.buildReply('error')
         iq.addChild(node=ErrorNode(ERR_ITEM_NOT_FOUND))
         client.send_stanza(iq)
         raise NodeProcessed
 
     @iq_request_task
-    def disco_info(self, jid, node=None):
+    def disco_info(self, jid: JID | str, node: str | None = None):
         _task = yield
 
         response = yield get_disco_request(Namespace.DISCO_INFO, jid, node)
@@ -72,7 +76,7 @@ class Discovery(BaseModule):
         yield parse_disco_info(response)
 
     @iq_request_task
-    def disco_items(self, jid, node=None):
+    def disco_items(self, jid: JID | str, node: str | None = None):
         _task = yield
 
         response = yield get_disco_request(Namespace.DISCO_ITEMS, jid, node)
@@ -82,10 +86,10 @@ class Discovery(BaseModule):
 
 
 
-def parse_disco_info(stanza: Any,
-                     timestamp: Optional[float] = None) -> DiscoInfo:
-    idenities = []
-    features = []
+def parse_disco_info(stanza: Iq,
+                     timestamp: float | None = None) -> DiscoInfo:
+    identities: list[DiscoIdentity] = []
+    features: list[str] = []
     dataforms = []
 
     if timestamp is None:
@@ -95,7 +99,7 @@ def parse_disco_info(stanza: Any,
     for node in query.getTags('identity'):
         attrs = node.getAttrs()
         try:
-            idenities.append(
+            identities.append(
                 DiscoIdentity(category=attrs['category'],
                               type=attrs['type'],
                               name=attrs.get('name'),
@@ -113,14 +117,14 @@ def parse_disco_info(stanza: Any,
         dataforms.append(extend_form(node))
 
     return DiscoInfo(stanza=stanza,
-                     identities=idenities,
+                     identities=identities,
                      features=features,
                      dataforms=dataforms,
                      timestamp=timestamp)
 
 
-def parse_disco_items(stanza):
-    items = []
+def parse_disco_items(stanza: Iq) -> DiscoItems:
+    items: list[DiscoItem] = []
 
     query = stanza.getQuery()
     for node in query.getTags('item'):
@@ -138,7 +142,7 @@ def parse_disco_items(stanza):
                       items=items)
 
 
-def get_disco_request(namespace, jid, node=None):
+def get_disco_request(namespace: str, jid: str, node: str | None = None) -> Iq:
     iq = Iq('get', to=jid, queryNS=namespace)
     if node:
         iq.getQuery().setAttr('node', node)

@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
-
 import hashlib
 import logging
 
@@ -28,7 +26,7 @@ from nbxmpp.util import b64decode
 log = logging.getLogger('nbxmpp.m.bob')
 
 
-def parse_bob_data(stanza: Node) -> Optional[BobData]:
+def parse_bob_data(stanza: Node) -> BobData | None:
     data_node = stanza.getTag('data', namespace=Namespace.BOB)
     if data_node is None:
         return None
@@ -42,6 +40,8 @@ def parse_bob_data(stanza: Node) -> Optional[BobData]:
         except Exception:
             log.exception(stanza)
             return None
+
+    assert max_age is not None
 
     if cid is None or type_ is None:
         log.warning('Invalid data node (no cid or type attr): %s', stanza)

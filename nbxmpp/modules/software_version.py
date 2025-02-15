@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from collections.abc import Callable
+
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
@@ -23,14 +29,19 @@ from nbxmpp.protocol import ERR_FORBIDDEN
 from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
 from nbxmpp.protocol import Error
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import IqProperties
 from nbxmpp.structs import SoftwareVersionResult
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class SoftwareVersion(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -42,21 +53,21 @@ class SoftwareVersion(BaseModule):
                           ns=Namespace.VERSION),
         ]
 
-        self._name = None
-        self._version = None
-        self._os = None
+        self._name: str | None = None
+        self._version: str | None = None
+        self._os: str | None = None
 
         self._enabled = False
-        self._allow_reply_func = None
+        self._allow_reply_func: Callable[..., bool] | None = None
 
-    def disable(self):
+    def disable(self) -> None:
         self._enabled = False
 
-    def set_allow_reply_func(self, func):
+    def set_allow_reply_func(self, func: Callable[..., bool]) -> None:
         self._allow_reply_func = func
 
     @iq_request_task
-    def request_software_version(self, jid):
+    def request_software_version(self, jid: JID):
         _task = yield
 
         response = yield Iq(typ='get', to=jid, queryNS=Namespace.VERSION)
@@ -65,11 +76,11 @@ class SoftwareVersion(BaseModule):
 
         yield _parse_info(response)
 
-    def set_software_version(self, name, version, os=None):
+    def set_software_version(self, name: str, version: str, os: str | None = None) -> None:
         self._name, self._version, self._os = name, version, os
         self._enabled = True
 
-    def _answer_request(self, _con, stanza, _properties):
+    def _answer_request(self, _client: Client, stanza: Iq, _properties: IqProperties) -> None:
         self._log.info('Request received from %s', stanza.getFrom())
         if (not self._enabled or
                 self._name is None or
@@ -95,7 +106,7 @@ class SoftwareVersion(BaseModule):
         raise NodeProcessed
 
 
-def _parse_info(stanza):
+def _parse_info(stanza: Iq) -> SoftwareVersionResult:
     try:
         name = stanza.getQueryChild('name').getData()
     except Exception:

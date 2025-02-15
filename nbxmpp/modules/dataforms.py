@@ -22,6 +22,7 @@
 from __future__ import annotations
 
 from typing import Any
+from typing import Literal
 from typing import Union
 
 from collections.abc import Iterator
@@ -59,7 +60,7 @@ class WrongFieldValue(Error):
 # helper class to change class of already existing object
 class ExtendedNode(Node):
     @classmethod
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: Any, **kwargs: Any):
         if 'extend' not in kwargs or not kwargs['extend']:
             return object.__new__(cls)
 
@@ -112,7 +113,7 @@ def extend_field(node: Node) -> FieldT:
     return field[typ](extend=node)
 
 
-def extend_form(node):
+def extend_form(node: Node) -> SimpleDataForm | MultipleDataForm:
     """
     Helper function to extend a node to form of appropriate type
     """
@@ -128,8 +129,8 @@ class DataField(ExtendedNode):
     construct one of these
     """
 
-    def __init__(self, typ=None, var=None, value=None, label=None, desc=None,
-                 required=False, options=None, extend=None):
+    def __init__(self, typ: str | None = None, var: str | None = None, value: str | None = None, label: str | None = None, desc: str | None = None,
+                 required: bool = False, options: list[tuple[str,str]] | None = None, extend: Node | None = None) -> None:
 
         if extend is None:
             ExtendedNode.__init__(self, 'field')
@@ -296,7 +297,7 @@ class Uri(Node):
 
 
 class Media(Node):
-    def __init__(self, media_tag: Node):
+    def __init__(self, media_tag: Node) -> None:
         Node.__init__(self, node=media_tag)
 
     @property
@@ -335,7 +336,7 @@ class BooleanField(DataField):
 
     @value.setter
     def value(self, value: bool) -> None:
-        self.setTagData('value', value and '1' or '0')
+        self.setTagData('value', (value and '1') or '0')
 
     @value.deleter
     def value(self) -> None:
@@ -358,14 +359,14 @@ class StringField(DataField):
 
     @value.setter
     def value(self, value: str) -> None:
-        if value is None:
+        if value is None:  # type: ignore
             value = ''
         self.setTagData('value', value)
 
     @value.deleter
     def value(self) -> None:
         try:
-            self.delChild(self.getTag('value'))
+            self.delChild(self.getTag('value'))  # type: ignore
         except ValueError:  # if there already were no value tag
             pass
 
@@ -383,11 +384,11 @@ class ListField(DataField):
     """
 
     @property
-    def options(self) -> list[tuple[str,str]]:
+    def options(self) -> list[tuple[str, Any]]:
         """
         Options
         """
-        options: list[tuple[str,str]] = []
+        options: list[tuple[str, Any]] = []
         for element in self.getTags('option'):
             value = element.getTagData('value')
             if value is None:
@@ -399,7 +400,7 @@ class ListField(DataField):
         return options
 
     @options.setter
-    def options(self, values: list[tuple[str,str]]) -> None:
+    def options(self, values: list[tuple[Any, str]]) -> None:
         del self.options
         for value, label in values:
             self.addChild('option',
@@ -410,7 +411,7 @@ class ListField(DataField):
         for element in self.getTags('option'):
             self.delChild(element)
 
-    def iter_options(self) -> Iterator[tuple[str, str]]:
+    def iter_options(self) -> Iterator[tuple[Any, str]]:
         for element in self.iterTags('option'):
             value = element.getTagData('value')
             if value is None:
@@ -465,7 +466,7 @@ class ListMultiField(ListField):
         return values
 
     @values.setter
-    def values(self, values: list[str]) -> None:
+    def values(self, values: list[Any]) -> None:
         del self.values
         for value in values:
             self.addChild('value').setData(value)
@@ -541,9 +542,9 @@ class DataRecord(ExtendedNode):
     The container for data fields - an xml element which has DataField elements
     as children
     """
-    def __init__(self, fields=None, associated=None, extend=None):
+    def __init__(self, fields: list[FieldT] | None = None, associated: SimpleDataForm | None = None, extend: Node | None = None) -> None:
         self.associated = associated
-        self.vars: dict[str, Node] = {}
+        self.vars: dict[str, FieldT] = {}
         if extend is None:
             # we have to build this object from scratch
             Node.__init__(self)
@@ -562,14 +563,14 @@ class DataRecord(ExtendedNode):
                 self.fields = fields
 
     @property
-    def fields(self) -> list[Node]:
+    def fields(self) -> list[FieldT]:
         """
         List of fields in this record
         """
         return self.getTags('field')
 
     @fields.setter
-    def fields(self, fields: list[Node]):
+    def fields(self, fields: list[FieldT]) -> None:
         del self.fields
         for field in fields:
             if not isinstance(field, DataField):
@@ -583,13 +584,13 @@ class DataRecord(ExtendedNode):
             self.delChild(element)
             self.vars.clear()
 
-    def iter_fields(self) -> Iterator[Node]:
+    def iter_fields(self) -> Iterator[FieldT]:
         """
         Iterate over fields in this record. Do not take associated into account
         """
         yield from self.iterTags('field')
 
-    def iter_with_associated(self) -> Iterator[tuple[Node, Node]]:
+    def iter_with_associated(self) -> Iterator[tuple[Node, FieldT]]:
         """
         Iterate over associated, yielding both our field and associated one
         together
@@ -597,7 +598,7 @@ class DataRecord(ExtendedNode):
         for field in self.associated.iter_fields():
             yield self[field.var], field
 
-    def __getitem__(self, item: str) -> Node:
+    def __getitem__(self, item: str) -> FieldT:
         return self.vars[item]
 
     def is_valid(self) -> bool:
@@ -608,7 +609,7 @@ class DataRecord(ExtendedNode):
 
 
 class DataForm(ExtendedNode):
-    def __init__(self, type_=None, title=None, instructions=None, extend=None):
+    def __init__(self, type_: str | None = None, title: str | None = None, instructions: str | None = None, extend: Node | None = None) -> None:
         if extend is None:
             # we have to build form from scratch
             Node.__init__(self, 'x', attrs={'xmlns': Namespace.DATA})
@@ -630,7 +631,7 @@ class DataForm(ExtendedNode):
         return self.getAttr('type')
 
     @type_.setter
-    def type_(self, type_: str) -> None:
+    def type_(self, type_: Literal['form', 'submit', 'cancel', 'result']) -> None:
         assert type_ in ('form', 'submit', 'cancel', 'result')
         self.setAttr('type', type_)
 
@@ -691,18 +692,18 @@ class SimpleDataForm(DataForm, DataRecord):
         type_: str | None = None,
         title: str | None = None,
         instructions: str | None = None,
-        fields=None,
-        extend=None
-    ):
+        fields: list[FieldT] | None = None,
+        extend: SimpleDataForm | Node | None = None
+    ) -> None:
         DataForm.__init__(self, type_=type_, title=title,
                           instructions=instructions, extend=extend)
         DataRecord.__init__(self, fields=fields, extend=self, associated=self)
 
-    def get_purged(self):
+    def get_purged(self) -> SimpleDataForm:
         simple_form = SimpleDataForm(extend=self)
         del simple_form.title
         simple_form.instructions = ''
-        to_be_removed = []
+        to_be_removed: list[FieldT] = []
         for field in simple_form.iter_fields():
             if field.required:
                 # add <value> if there is not
@@ -725,8 +726,8 @@ class SimpleDataForm(DataForm, DataRecord):
 
 
 class MultipleDataForm(DataForm):
-    def __init__(self, type_=None, title=None, instructions=None, items=None,
-                 extend=None):
+    def __init__(self, type_: str | None = None, title: str | None = None, instructions: str | None = None, items: list[Node] | None = None,
+                 extend: Node | None = None) -> None:
         DataForm.__init__(self, type_=type_, title=title,
                           instructions=instructions, extend=extend)
         # all records, recorded into DataRecords
@@ -746,14 +747,14 @@ class MultipleDataForm(DataForm):
         self.reported = DataRecord(extend=reported_tag)
 
     @property
-    def items(self):
+    def items(self) -> list[Node]:
         """
         A list of all records
         """
         return list(self.iter_records())
 
     @items.setter
-    def items(self, records):
+    def items(self, records: list[DataRecord | Node]) -> None:
         del self.items
         for record in records:
             if not isinstance(record, DataRecord):
@@ -761,9 +762,9 @@ class MultipleDataForm(DataForm):
             self.addChild(node=record)
 
     @items.deleter
-    def items(self):
+    def items(self) -> None:
         for record in self.getTags('item'):
             self.delChild(record)
 
-    def iter_records(self):
+    def iter_records(self) -> Iterator[DataRecord | Node]:
         yield from self.getTags('item')

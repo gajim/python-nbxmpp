@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import datetime as dt
 
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
@@ -31,9 +36,12 @@ from nbxmpp.structs import MAMPreferencesData
 from nbxmpp.structs import MAMQueryData
 from nbxmpp.task import iq_request_task
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class MAM(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -41,13 +49,13 @@ class MAM(BaseModule):
 
     @iq_request_task
     def make_query(self,
-                   jid,
-                   queryid=None,
-                   start=None,
-                   end=None,
-                   with_=None,
-                   after=None,
-                   max_=70):
+                   jid: JID,
+                   queryid: str | None = None,
+                   start: dt.datetime | None = None,
+                   end: dt.datetime | None = None,
+                   with_: str | None = None,
+                   after: str | None = None,
+                   max_: int = 70):
 
         _task = yield
 
@@ -110,7 +118,7 @@ class MAM(BaseModule):
                                  never=never)
 
     @iq_request_task
-    def set_preferences(self, default, always, never):
+    def set_preferences(self, default: str | None, always: list[str], never: list[str]):
         _task = yield
 
         if default not in ('always', 'never', 'roster'):
@@ -120,7 +128,7 @@ class MAM(BaseModule):
         yield process_response(response)
 
 
-def _make_query_form(start, end, with_):
+def _make_query_form(start: dt.datetime | None, end: dt.datetime | None, with_: str | None) -> SimpleDataForm:
     fields = [
         create_field(typ='hidden', var='FORM_TYPE', value=Namespace.MAM_2)
     ]
@@ -146,7 +154,7 @@ def _make_query_form(start, end, with_):
     return SimpleDataForm(type_='submit', fields=fields)
 
 
-def _make_rsm_query(max_, after):
+def _make_rsm_query(max_: int | None, after: str | None) -> Node:
     rsm_set = Node('set', attrs={'xmlns': Namespace.RSM})
     if max_ is not None:
         rsm_set.setTagData('max', max_)
@@ -155,7 +163,7 @@ def _make_rsm_query(max_, after):
     return rsm_set
 
 
-def _make_request(jid, queryid, start, end, with_, after, max_):
+def _make_request(jid: JID, queryid: str | None, start: dt.datetime | None, end: dt.datetime | None, with_: str | None, after: str | None, max_: int | None) -> Iq:
     iq = Iq(typ='set', to=jid, queryNS=Namespace.MAM_2)
     if queryid is not None:
         iq.getQuery().setAttr('queryid', queryid)
@@ -169,14 +177,14 @@ def _make_request(jid, queryid, start, end, with_, after, max_):
     return iq
 
 
-def _make_pref_request():
+def _make_pref_request() -> Iq:
     iq = Iq('get', queryNS=Namespace.MAM_2)
     iq.setQuery('prefs')
     return iq
 
 
-def _get_preference_jids(node):
-    jids = []
+def _get_preference_jids(node: Iq) -> list[JID]:
+    jids: list[JID] = []
     for item in node.getTags('jid'):
         jid = item.getData()
         if not jid:
@@ -191,7 +199,7 @@ def _get_preference_jids(node):
     return jids
 
 
-def _make_set_pref_request(default, always, never):
+def _make_set_pref_request(default: str, always: list[str], never: list[str]) -> Iq:
     iq = Iq(typ='set')
     prefs = iq.addChild(name='prefs',
                         namespace=Namespace.MAM_2,

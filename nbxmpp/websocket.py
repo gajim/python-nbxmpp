@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from typing import Any
+
 import logging
 
 from gi.repository import Gio
@@ -24,6 +26,7 @@ from gi.repository import Soup
 from nbxmpp.connection import Connection
 from nbxmpp.const import TCPState
 from nbxmpp.http import DEFAULT_USER_AGENT
+from nbxmpp.protocol import Protocol
 from nbxmpp.util import convert_tls_error_flags
 from nbxmpp.util import get_websocket_close_string
 
@@ -31,7 +34,7 @@ log = logging.getLogger('nbxmpp.websocket')
 
 
 class WebsocketConnection(Connection):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         Connection.__init__(self, *args, **kwargs)
 
         self._session = Soup.Session()
@@ -41,13 +44,14 @@ class WebsocketConnection(Connection):
             self._session.add_feature(
                 Soup.Logger.new(Soup.LoggerLogLevel.BODY))
 
-        self._websocket = None
+        self._websocket: Soup.WebsocketConnection | None = None
         self._cancellable = Gio.Cancellable()
 
         self._input_closed = False
         self._output_closed = False
 
-    def connect(self):
+    def connect(self) -> None:
+        assert self._address is not None
         self._log.info('Try to connect to %s', self._address.uri)
 
         self.state = TCPState.CONNECTING
@@ -59,6 +63,7 @@ class WebsocketConnection(Connection):
                         self._on_certificate_set)
         message.connect('network-event', self._on_network_event)
         message.set_flags(Soup.MessageFlags.NO_REDIRECT)
+        assert self._session is not None
         self._session.websocket_connect_async(message,
                                               None,
                                               ['xmpp'],
@@ -67,7 +72,7 @@ class WebsocketConnection(Connection):
                                               self._on_connect,
                                               None)
 
-    def _on_connect(self, session, result, _user_data):
+    def _on_connect(self, session: Soup.Session, result: Gio.AsyncResult, _user_data: None) -> None:
         # TODO: check if protocol 'xmpp' is set
         try:
             self._websocket = session.websocket_connect_finish(result)
@@ -92,14 +97,14 @@ class WebsocketConnection(Connection):
         self.state = TCPState.CONNECTED
         self.notify('connected')
 
-    def start_tls_negotiation(self):
+    def start_tls_negotiation(self) -> None:
         # Soup.Session does this automatically
         raise NotImplementedError
 
     def _check_certificate(self,
-                           _message,
-                           certificate,
-                           errors):
+                           _message: Soup.Message,
+                           certificate: Gio.TlsCertificate,
+                           errors: Gio.TlsCertificateFlags) -> bool:
 
         self._peer_certificate = certificate
         self._peer_certificate_errors = convert_tls_error_flags(errors)
@@ -121,7 +126,7 @@ class WebsocketConnection(Connection):
         if event == Gio.SocketClientEvent.TLS_HANDSHAKED:
             self._tls_con = connection
 
-    def _on_certificate_set(self, message, _param):
+    def _on_certificate_set(self, message: Soup.Message, _param: Any) -> None:
         if self._peer_certificate is not None:
             return
 
@@ -130,7 +135,7 @@ class WebsocketConnection(Connection):
         self._peer_certificate_errors = convert_tls_error_flags(
             message.props.tls_peer_certificate_errors)
 
-    def _on_websocket_message(self, _websocket, _type, message):
+    def _on_websocket_message(self, _websocket: Soup.WebsocketConnection, _type: int, message: GLib.Bytes) -> None:
         data = message.get_data().decode()
         self._log_stanza(data)
 
@@ -140,22 +145,22 @@ class WebsocketConnection(Connection):
 
         self.notify('data-received', data)
 
-    def _on_websocket_pong(self, _websocket, _message):
+    def _on_websocket_pong(self, _websocket: Soup.WebsocketConnection, _message: GLib.Bytes) -> None:
         self._log.info('Pong received')
 
-    def _on_websocket_closed(self, websocket):
+    def _on_websocket_closed(self, websocket: Soup.WebsocketConnection) -> None:
         self._log.info('Closed %s', get_websocket_close_string(websocket))
         self._finalize('disconnected')
 
-    def _on_websocket_closing(self, _websocket):
+    def _on_websocket_closing(self, _websocket: Soup.WebsocketConnection) -> None:
         self._log.info('Closing')
 
-    def _on_websocket_error(self, _websocket, error):
+    def _on_websocket_error(self, _websocket: Soup.WebsocketConnection, error: GLib.Error) -> None:
         self._log.error(error)
         if self._state not in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
             self._finalize('disconnected')
 
-    def send(self, stanza, now=False):
+    def send(self, stanza: Protocol, now: bool = False) -> None:
         if self._state in (TCPState.DISCONNECTED, TCPState.DISCONNECTING):
             self._log.warning('send() not possible in state: %s', self._state)
             return
@@ -165,7 +170,7 @@ class WebsocketConnection(Connection):
         self._log_stanza(data, received=False)
         self.notify('data-sent', stanza)
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         if self._state == TCPState.CONNECTING:
             self.state = TCPState.DISCONNECTING
             self._cancellable.cancel()
@@ -178,28 +183,28 @@ class WebsocketConnection(Connection):
         self._websocket.close(Soup.WebsocketCloseCode.NORMAL, None)
         self.state = TCPState.DISCONNECTING
 
-    def _check_for_shutdown(self):
+    def _check_for_shutdown(self) -> None:
         if self._input_closed and self._output_closed:
             self._websocket.close(Soup.WebsocketCloseCode.NORMAL, None)
 
-    def shutdown_input(self):
+    def shutdown_input(self) -> None:
         self._log.info('Shutdown input')
         self._input_closed = True
         self._check_for_shutdown()
 
-    def shutdown_output(self):
+    def shutdown_output(self) -> None:
         self.state = TCPState.DISCONNECTING
         self._log.info('Shutdown output')
         self._output_closed = True
 
-    def _finalize(self, signal_name):
+    def _finalize(self, signal_name: str) -> None:
         self._input_closed = True
         self._output_closed = True
         self.state = TCPState.DISCONNECTED
         self.notify(signal_name)
         self.destroy()
 
-    def destroy(self):
+    def destroy(self) -> None:
         super().destroy()
         self._session.abort()
         self._session = None

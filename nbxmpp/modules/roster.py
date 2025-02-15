@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
@@ -22,17 +25,22 @@ from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import process_response
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.simplexml import Node
+from nbxmpp.structs import IqProperties
 from nbxmpp.structs import RosterData
 from nbxmpp.structs import RosterItem
 from nbxmpp.structs import RosterPush
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class Roster(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -45,7 +53,7 @@ class Roster(BaseModule):
         ]
 
     @iq_request_task
-    def request_roster(self, version=None):
+    def request_roster(self, version: str | None = None):
         _task = yield
 
         ver_support = self._client.features.has_roster_version()
@@ -70,7 +78,7 @@ class Roster(BaseModule):
         pushed_items, version = self._parse_push(response, ver_support)
         yield RosterData(pushed_items, version)
 
-    def _process_roster_push(self, _client, stanza, properties):
+    def _process_roster_push(self, _client: Client, stanza: Iq, properties: IqProperties) -> None:
         from_ = stanza.getFrom()
         if from_ is not None:
             if not self._client.get_bound_jid().bare == from_:
@@ -92,7 +100,7 @@ class Roster(BaseModule):
 
         self._ack_roster_push(stanza)
 
-    def _ack_roster_push(self, stanza):
+    def _ack_roster_push(self, stanza: Iq) -> None:
         iq = Iq('result',
                 to=stanza.getFrom(),
                 frm=stanza.getTo(),
@@ -100,20 +108,20 @@ class Roster(BaseModule):
         self._client.send_stanza(iq)
 
     @iq_request_task
-    def delete_item(self, jid):
+    def delete_item(self, jid: JID | str):
         _task = yield
 
         response = yield _make_delete(jid)
         yield process_response(response)
 
     @iq_request_task
-    def set_item(self, jid, name, groups=None):
+    def set_item(self, jid: JID, name: str | None, groups: set[str] | None = None):
         _task = yield
 
         response = yield _make_set(jid, name, groups)
         yield process_response(response)
 
-    def _parse_push(self, stanza, ver_support):
+    def _parse_push(self, stanza: Iq, ver_support: bool) -> tuple[list[RosterItem], str | None]:
         query = stanza.getTag('query', namespace=Namespace.ROSTER)
 
         version = None
@@ -125,7 +133,7 @@ class Roster(BaseModule):
                 # community modules
                 self._log.warning('no version attribute found')
 
-        pushed_items = []
+        pushed_items: list[RosterItem] = []
         for item in query.getTags('item'):
             try:
                 roster_item = RosterItem.from_node(item)
@@ -139,17 +147,17 @@ class Roster(BaseModule):
         return pushed_items, version
 
 
-def _make_delete(jid):
+def _make_delete(jid: JID | str) -> Iq:
     return Iq('set',
               Namespace.ROSTER,
               payload=[Node('item', {'jid': jid, 'subscription': 'remove'})])
 
 
-def _make_set(jid, name, groups=None):
+def _make_set(jid: JID, name: str | None, groups: set[str] | None = None) -> Iq:
     if groups is None:
-        groups = []
+        groups = set()
 
-    infos = {'jid': jid}
+    infos: dict[str, JID | str] = {'jid': jid}
     if name:
         infos['name'] = name
     iq = Iq('set', Namespace.ROSTER)
@@ -160,7 +168,7 @@ def _make_set(jid, name, groups=None):
     return iq
 
 
-def _make_request(version, roster_ver_support):
+def _make_request(version: str | None, roster_ver_support: bool) -> Iq:
     iq = Iq('get', Namespace.ROSTER)
     if version is None:
         version = ''

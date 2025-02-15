@@ -15,14 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Message
 from nbxmpp.structs import EMEData
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import StanzaHandler
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 
 class EME(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -33,7 +42,7 @@ class EME(BaseModule):
                           priority=40)
         ]
 
-    def _process_eme(self, _client, stanza, properties):
+    def _process_eme(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         encryption = stanza.getTag('encryption', namespace=Namespace.EME)
         if encryption is None:
             return

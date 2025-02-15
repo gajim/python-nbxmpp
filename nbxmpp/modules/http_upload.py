@@ -15,26 +15,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.errors import HTTPUploadStanzaError
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
 from nbxmpp.structs import HTTPUploadData
 from nbxmpp.task import iq_request_task
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 ALLOWED_HEADERS = ['Authorization', 'Cookie', 'Expires']
 
 
 class HTTPUpload(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = []
 
     @iq_request_task
-    def request_slot(self, jid, filename, size, content_type):
+    def request_slot(self, jid: JID, filename: str, size: int, content_type: str):
         _task = yield
 
         response = yield _make_request(jid, filename, size, content_type)
@@ -53,7 +61,7 @@ class HTTPUpload(BaseModule):
         if get_uri is None:
             raise MalformedStanzaError('get uri missing', response)
 
-        headers = {}
+        headers: dict[str, str] = {}
         for header in slot.getTag('put').getTags('header'):
             name = header.getAttr('name')
             if name not in ALLOWED_HEADERS:
@@ -72,7 +80,7 @@ class HTTPUpload(BaseModule):
                              headers=headers)
 
 
-def _make_request(jid, filename, size, content_type):
+def _make_request(jid: JID, filename: str, size: int, content_type: str) -> Iq:
     iq = Iq(typ='get', to=jid)
     attr = {'filename': filename,
             'size': size,

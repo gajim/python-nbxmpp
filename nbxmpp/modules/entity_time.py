@@ -15,6 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from collections.abc import Callable
+
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
@@ -26,13 +32,18 @@ from nbxmpp.protocol import ERR_FORBIDDEN
 from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
 from nbxmpp.protocol import Error
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import IqProperties
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class EntityTime(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -45,19 +56,19 @@ class EntityTime(BaseModule):
         ]
 
         self._enabled = False
-        self._allow_reply_func = None
+        self._allow_reply_func: Callable[..., bool] | None = None
 
-    def disable(self):
+    def disable(self) -> None:
         self._enabled = False
 
-    def enable(self):
+    def enable(self) -> None:
         self._enabled = True
 
-    def set_allow_reply_func(self, func):
+    def set_allow_reply_func(self, func: Callable[..., bool]) -> None:
         self._allow_reply_func = func
 
     @iq_request_task
-    def request_entity_time(self, jid):
+    def request_entity_time(self, jid: JID):
         _task = yield
 
         response = yield _make_request(jid)
@@ -66,7 +77,7 @@ class EntityTime(BaseModule):
 
         yield _parse_response(response)
 
-    def _answer_request(self, _con, stanza, _properties):
+    def _answer_request(self, _client: Client, stanza: Iq, _properties: IqProperties) -> None:
         self._log.info('Request received from %s', stanza.getFrom())
         if not self._enabled:
             self._client.send_stanza(Error(stanza, ERR_SERVICE_UNAVAILABLE))
@@ -87,13 +98,13 @@ class EntityTime(BaseModule):
         raise NodeProcessed
 
 
-def _make_request(jid):
+def _make_request(jid: JID) -> Iq:
     iq = Iq('get', to=jid)
     iq.addChild('time', namespace=Namespace.TIME)
     return iq
 
 
-def _parse_response(response):
+def _parse_response(response: Iq) -> str:
     time_ = response.getTag('time')
     if not time_:
         raise MalformedStanzaError('time node missing', response)

@@ -18,8 +18,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 import stringprep
 from collections.abc import Callable
 from unicodedata import ucd_3_2_0
@@ -40,8 +38,8 @@ def check_nodeprep_prohibited(char: str) -> bool:
 
 
 def _check_against_tables(chars: list[str],
-                          tables: tuple[Callable[[str], bool]]
-                          ) -> Optional[str]:
+                          tables: tuple[Callable[[str], bool], ...]
+                          ) -> str | None:
     '''
     Perform a check against the table predicates in `tables`. `tables` must be
     a reusable iterable containing characteristic functions of character sets,

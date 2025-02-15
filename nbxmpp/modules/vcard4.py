@@ -15,9 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
+
+from typing import Any
+from typing import Literal
+from typing import TYPE_CHECKING
 
 import logging
+from collections.abc import ValuesView
 from dataclasses import dataclass
 from dataclasses import field
 
@@ -26,8 +31,12 @@ from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import JID
 from nbxmpp.simplexml import Node
 from nbxmpp.task import iq_request_task
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 log = logging.getLogger('nbxmpp.m.vcard4')
 
@@ -41,7 +50,7 @@ ALLOWED_KIND_VALUES = ['individual', 'group', 'org', 'location']
 # 1*    One or more instances per vCard MUST be present.
 # *     One or more instances per vCard MAY be present.
 
-PROPERTY_DEFINITION = {
+PROPERTY_DEFINITION: dict[str, tuple[list[str], Literal['*', '*1', '1*', '1']]] = {
     'source': (['altid', 'pid', 'pref', 'mediatype'], '*'),
     'kind': ([], '*1'),
     'fn': (['language', 'altid', 'pid', 'pref', 'type'], '1*'),
@@ -89,8 +98,8 @@ PROPERTY_VALUE_TYPES = {
 }
 
 
-def get_data_from_children(node, child_name):
-    values = []
+def get_data_from_children(node: Node, child_name: str) -> list[str]:
+    values: list[str] = []
     child_nodes = node.getTags(child_name)
     for child_node in child_nodes:
         child_value = child_node.getData()
@@ -99,12 +108,12 @@ def get_data_from_children(node, child_name):
     return values
 
 
-def add_children(node, child_name, values):
+def add_children(node: Node, child_name: str, values: list[str]) -> None:
     for value in values:
         node.addChild(child_name, payload=value)
 
 
-def get_multiple_type_value(node, types):
+def get_multiple_type_value(node: Node, types: list[str]) -> tuple[str, str]:
     for type_ in types:
         value = node.getTagData(type_)
         if value:
@@ -113,14 +122,14 @@ def get_multiple_type_value(node, types):
     raise ValueError('no value found')
 
 
-def make_parameters(parameters):
+def make_parameters(parameters: Parameters) -> Node:
     parameters_node = Node('parameters')
     for parameter in parameters.values():
         parameters_node.addChild(node=parameter.to_node())
     return parameters_node
 
 
-def get_parameters(node):
+def get_parameters(node: Node) -> Parameters:
     name = node.getName()
     definition = PROPERTY_DEFINITION[name]
     allowed_parameters = definition[0]
@@ -128,7 +137,7 @@ def get_parameters(node):
     if parameters_node is None:
         return Parameters()
 
-    parameters = {}
+    parameters: dict[str, Any] = {}
     for parameter in allowed_parameters:
         parameter_node = parameters_node.getTag(parameter)
         if parameter_node is None:
@@ -152,7 +161,7 @@ class Parameter:
     value: str
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> Parameter:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid parameter name: {name}')
@@ -161,15 +170,15 @@ class Parameter:
         if not value:
             raise ValueError('no parameter value found')
 
-        return cls(value)
+        return cls(value)  # type: ignore
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         node.addChild(self.type, payload=self.value)
         return node
 
-    def copy(self):
-        return self.__class__(value=self.value)
+    def copy(self) -> Parameter:
+        return self.__class__(value=self.value)  # type: ignore
 
 
 @dataclass
@@ -180,7 +189,7 @@ class MultiParameter:
     values: set[str]
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> MultiParameter:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid parameter name: {name}')
@@ -189,7 +198,7 @@ class MultiParameter:
         if not value_nodes:
             raise ValueError('no parameter value found')
 
-        values = set()
+        values: set[str] = set()
         for value_node in value_nodes:
             value = value_node.getData()
             if value:
@@ -198,16 +207,16 @@ class MultiParameter:
         if not values:
             raise ValueError('no parameter value found')
 
-        return cls(values)
+        return cls(values)  # type: ignore
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         for value in self.values:
             node.addChild(self.type, payload=value)
         return node
 
-    def copy(self):
-        return self.__class__(values=set(self.values))
+    def copy(self) -> MultiParameter:
+        return self.__class__(values=set(self.values))  # type: ignore
 
 
 @dataclass
@@ -281,7 +290,7 @@ class TzParameter:
     value: str
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> TzParameter:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -289,54 +298,57 @@ class TzParameter:
         value_type, value = get_multiple_type_value(node, ['text', 'uri'])
         return cls(value_type, value)
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         node.addChild(self.value_type, payload=self.value)
         return node
 
-    def copy(self):
+    def copy(self) -> TzParameter:
         return self.__class__(value_type=self.value_type,
                               value=self.value)
 
 
 class Parameters:
-    def __init__(self, parameters=None):
+    def __init__(self, parameters: dict[str, Parameter | MultiParameter | TzParameter] | None = None) -> None:
         if parameters is None:
             parameters = {}
         self._parameters = parameters
 
-    def values(self):
+    def values(self) -> ValuesView[Parameter | MultiParameter | TzParameter]:
         return self._parameters.values()
 
-    def get_types(self):
+    def get_types(self) -> set[str]:
         parameter = self._parameters.get('type')
         if parameter is None:
             return set()
 
+        assert isinstance(parameter, TypeParameter)
         return parameter.values
 
-    def remove_types(self, types):
+    def remove_types(self, types: list[str]) -> None:
         parameter = self._parameters.get('type')
         if parameter is None:
             raise ValueError('no type parameter')
 
+        assert isinstance(parameter, TypeParameter)
         for type_ in types:
             parameter.values.discard(type_)
 
         if not parameter.values:
             self._parameters.pop('type')
 
-    def add_types(self, types):
+    def add_types(self, types: list[str]) -> None:
         parameter = self._parameters.get('type')
         if parameter is None:
             parameter = TypeParameter(set(types))
             self._parameters['type'] = parameter
             return
 
+        assert isinstance(parameter, TypeParameter)
         parameter.values.update(types)
 
-    def copy(self):
-        parameters = {}
+    def copy(self) -> Parameters:
+        parameters: dict[str, Parameter | MultiParameter | TzParameter] = {}
         for name, parameter in self._parameters.items():
             parameters[name] = parameter.copy()
         return self.__class__(parameters=parameters)
@@ -364,7 +376,7 @@ class UriProperty:
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> UriProperty:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -375,22 +387,22 @@ class UriProperty:
 
         parameters = get_parameters(node)
 
-        return cls(value, parameters)
+        return cls(value, parameters)  # type: ignore
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         if self.parameters:
             node.addChild(node=make_parameters(self.parameters))
-        node.addChild('uri', payload=self.value)
+        node.addChild('uri', payload=self.value)  # type: ignore
         return node
 
     @property
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return not self.value
 
-    def copy(self):
+    def copy(self) -> UriProperty:
         return self.__class__(value=self.value,
-                              parameters=self.parameters.copy())
+                              parameters=self.parameters.copy())  # type: ignore
 
 
 @dataclass
@@ -401,7 +413,7 @@ class TextProperty:
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> TelProperty:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -412,9 +424,9 @@ class TextProperty:
 
         parameters = get_parameters(node)
 
-        return cls(text, parameters)
+        return cls(text, parameters)  # type: ignore
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         if self.parameters:
             node.addChild(node=make_parameters(self.parameters))
@@ -422,12 +434,12 @@ class TextProperty:
         return node
 
     @property
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return not self.value
 
-    def copy(self):
+    def copy(self) -> TextProperty:
         return self.__class__(value=self.value,
-                              parameters=self.parameters.copy())
+                              parameters=self.parameters.copy())  # type: ignore
 
 
 @dataclass
@@ -438,7 +450,7 @@ class TextListProperty:
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> TextListProperty:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -453,9 +465,9 @@ class TextListProperty:
 
         parameters = get_parameters(node)
 
-        return cls(values, parameters)
+        return cls(values, parameters)  # type: ignore
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         if self.parameters:
             node.addChild(node=make_parameters(self.parameters))
@@ -463,12 +475,12 @@ class TextListProperty:
         return node
 
     @property
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return not self.values
 
-    def copy(self):
+    def copy(self) -> TextListProperty:
         return self.__class__(values=list(self.values),
-                              parameters=self.parameters.copy())
+                              parameters=self.parameters.copy())  # type: ignore
 
 
 @dataclass
@@ -480,7 +492,7 @@ class MultipleValueProperty:
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> MultipleValueProperty:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -490,9 +502,9 @@ class MultipleValueProperty:
 
         parameters = get_parameters(node)
 
-        return cls(value_type, value, parameters)
+        return cls(value_type, value, parameters)  # type: ignore
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         if self.parameters:
             node.addChild(node=make_parameters(self.parameters))
@@ -500,13 +512,13 @@ class MultipleValueProperty:
         return node
 
     @property
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return not self.value
 
-    def copy(self):
+    def copy(self) -> MultipleValueProperty:
         return self.__class__(value_type=self.value_type,
                               value=self.value,
-                              parameters=self.parameters.copy())
+                              parameters=self.parameters.copy())  # type: ignore
 
 
 @dataclass
@@ -521,7 +533,7 @@ class KindProperty(TextProperty):
     name: str = field(default='kind', init=False)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> KindProperty:  # type: ignore
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -556,7 +568,7 @@ class NProperty:
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> NProperty:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -571,7 +583,7 @@ class NProperty:
 
         return cls(surname, given, additional, prefix, suffix, parameters)
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         if self.parameters:
             node.addChild(node=make_parameters(self.parameters))
@@ -583,16 +595,10 @@ class NProperty:
         return node
 
     @property
-    def is_empty(self):
-        if (self.surname or
-                self.given or
-                self.additional or
-                self.suffix or
-                self.prefix):
-            return False
-        return True
+    def is_empty(self) -> bool:
+        return not (self.surname or self.given or self.additional or self.suffix or self.prefix)
 
-    def copy(self):
+    def copy(self) -> NProperty:
         return self.__class__(surname=list(self.surname),
                               given=list(self.given),
                               additional=list(self.additional),
@@ -628,12 +634,12 @@ class AnniversaryProperty(MultipleValueProperty):
 class GenderProperty:
 
     name: str = field(default='gender', init=False)
-    sex: Optional[str] = None
-    identity: Optional[str] = None
+    sex: str | None = None
+    identity: str | None = None
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> GenderProperty:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -650,7 +656,7 @@ class GenderProperty:
 
         return cls(sex, identity, parameters)
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         if self.parameters:
             node.addChild(node=make_parameters(self.parameters))
@@ -661,12 +667,10 @@ class GenderProperty:
         return node
 
     @property
-    def is_empty(self):
-        if self.sex or self.identity:
-            return False
-        return True
+    def is_empty(self) -> bool:
+        return not (self.sex or self.identity)
 
-    def copy(self):
+    def copy(self) -> GenderProperty:
         return self.__class__(sex=self.sex,
                               identity=self.identity,
                               parameters=self.parameters.copy())
@@ -686,7 +690,7 @@ class AdrProperty:
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> AdrProperty:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -704,7 +708,7 @@ class AdrProperty:
         return cls(pobox, ext, street, locality,
                    region, code, country, parameters)
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         if self.parameters:
             node.addChild(node=make_parameters(self.parameters))
@@ -718,18 +722,10 @@ class AdrProperty:
         return node
 
     @property
-    def is_empty(self):
-        if (self.pobox or
-                self.ext or
-                self.street or
-                self.locality or
-                self.region or
-                self.code or
-                self.country):
-            return False
-        return True
+    def is_empty(self) -> bool:
+        return not (self.pobox or self.ext or self.street or self.locality or self.region or self.code or self.country)
 
-    def copy(self):
+    def copy(self) -> AdrProperty:
         return self.__class__(pobox=list(self.pobox),
                               ext=list(self.ext),
                               street=list(self.street),
@@ -766,7 +762,7 @@ class LangProperty:
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> LangProperty:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -779,7 +775,7 @@ class LangProperty:
 
         return cls(value, parameters)
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         if self.parameters:
             node.addChild(node=make_parameters(self.parameters))
@@ -787,10 +783,10 @@ class LangProperty:
         return node
 
     @property
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return not self.value
 
-    def copy(self):
+    def copy(self) -> LangProperty:
         return self.__class__(value=self.value,
                               parameters=self.parameters.copy())
 
@@ -867,7 +863,7 @@ class RevProperty(TextProperty):
     name: str = field(default='rev', init=False)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> RevProperty:  # type: ignore
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -880,7 +876,7 @@ class RevProperty(TextProperty):
 
         return cls(timestamp, parameters)
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         if self.parameters:
             node.addChild(node=make_parameters(self.parameters))
@@ -909,7 +905,7 @@ class ClientpidmapProperty:
     parameters: Parameters = field(default_factory=Parameters)
 
     @classmethod
-    def from_node(cls, node):
+    def from_node(cls, node: Node) -> ClientpidmapProperty:
         name = node.getName()
         if name != cls.name:
             raise ValueError(f'invalid property name: {name}')
@@ -926,7 +922,7 @@ class ClientpidmapProperty:
 
         return cls(sourceid, uri, parameters)
 
-    def to_node(self):
+    def to_node(self) -> Node:
         node = Node(self.name)
         if self.parameters:
             node.addChild(node=make_parameters(self.parameters))
@@ -935,10 +931,10 @@ class ClientpidmapProperty:
         return node
 
     @property
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return not self.uri
 
-    def copy(self):
+    def copy(self) -> ClientpidmapProperty:
         return self.__class__(sourceid=self.sourceid,
                               uri=self.uri,
                               parameters=self.parameters.copy())
@@ -1011,8 +1007,10 @@ PROPERTY_CLASSES = {
     'caluri': CaluriProperty,
 }
 
+PropertyT = SourceProperty | KindProperty | FnProperty | NProperty | NicknameProperty | PhotoProperty | BDayProperty | AnniversaryProperty | GenderProperty | AdrProperty | TelProperty | EmailProperty | ImppProperty | LangProperty | TzProperty | GeoProperty | TitleProperty | RoleProperty | LogoProperty | OrgProperty | MemberProperty | RelatedProperty | CategoriesProperty | NoteProperty | ProdidProperty | RevProperty | SoundProperty | UidProperty | ClientpidmapProperty | UrlProperty | KeyProperty | FBurlProperty | CaladruriProperty | CaluriProperty
 
-def get_property_from_name(name, node):
+
+def get_property_from_name(name: str, node: Node) -> PropertyT | None:
     property_class = PROPERTY_CLASSES.get(name)
     if property_class is None:
         return None
@@ -1024,15 +1022,18 @@ def get_property_from_name(name, node):
         return None
 
 
+VCardPropertiesT = list[tuple[str | None, PropertyT | list[PropertyT]]]
+
+
 class VCard:
-    def __init__(self, properties=None):
+    def __init__(self, properties: VCardPropertiesT | None = None) -> None:
         if properties is None:
             properties = []
         self._properties = properties
 
     @classmethod
-    def from_node(cls, node):
-        properties = []
+    def from_node(cls, node: Node) -> VCard:
+        properties: VCardPropertiesT = []
         for child in node.getChildren():
             child_name = child.getName()
 
@@ -1041,7 +1042,7 @@ class VCard:
                 if not group_name:
                     continue
 
-                group_properties = []
+                group_properties: list[PropertyT] = []
                 for group_child in child.getChildren():
                     group_child_name = group_child.getName()
                     property_ = get_property_from_name(group_child_name,
@@ -1061,33 +1062,37 @@ class VCard:
 
         return cls(properties)
 
-    def to_node(self):
+    def to_node(self) -> Node:
         vcard = Node(f'{Namespace.VCARD4} vcard')
         for group, props in self._properties:
             if group is None:
+                assert not isinstance(props, list)
                 vcard.addChild(node=props.to_node())
             else:
                 group = Node(group)
+                assert isinstance(props, list)
                 for prop in props:
                     group.addChild(node=prop.to_node())
                 vcard.addChild(node=group)
         return vcard
 
-    def get_properties(self):
-        properties = []
+    def get_properties(self) -> list[PropertyT]:
+        properties: list[PropertyT] = []
         for group, props in self._properties:
             if group is None:
+                assert not isinstance(props, list)
                 properties.append(props)
             else:
+                assert isinstance(props, list)
                 properties.extend(props)
         return properties
 
-    def add_property(self, name, *args, **kwargs):
+    def add_property(self, name: str, *args: Any, **kwargs: Any):
         prop = PROPERTY_CLASSES.get(name)(*args, **kwargs)
         self._properties.append((None, prop))
         return prop
 
-    def remove_property(self, prop):
+    def remove_property(self, prop: PropertyT) -> None:
         for _group, props in list(self._properties):
             if isinstance(props, list):
                 if prop in props:
@@ -1100,12 +1105,14 @@ class VCard:
 
         raise ValueError('prop not found in vcard')
 
-    def copy(self):
-        properties = []
+    def copy(self) -> VCard:
+        properties: VCardPropertiesT = []
         for group_name, props in self._properties:
             if group_name is None:
+                assert not isinstance(props, list)
                 properties.append((None, props.copy()))
             else:
+                assert isinstance(props, list)
                 group_properties = [prop.copy() for prop in props]
                 properties.append((group_name, group_properties))
         return self.__class__(properties=properties)
@@ -1118,14 +1125,14 @@ class VCard4(BaseModule):
         'request_items': 'PubSub',
     }
 
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = []
 
     @iq_request_task
-    def request_vcard(self, jid=None):
+    def request_vcard(self, jid: JID | None = None):
         task = yield
 
         items = yield self.request_items(Namespace.VCARD4_PUBSUB,
@@ -1140,7 +1147,7 @@ class VCard4(BaseModule):
         yield _get_vcard(items[0])
 
     @iq_request_task
-    def set_vcard(self, vcard, public=False):
+    def set_vcard(self, vcard: VCard, public: bool = False):
         task = yield
 
         access_model = 'open' if public else 'presence'
@@ -1159,7 +1166,7 @@ class VCard4(BaseModule):
         yield finalize(task, result)
 
 
-def _get_vcard(item):
+def _get_vcard(item: Node) -> VCard:
     vcard = item.getTag('vcard', namespace=Namespace.VCARD4)
     if vcard is None:
         raise MalformedStanzaError('vcard node missing', item)

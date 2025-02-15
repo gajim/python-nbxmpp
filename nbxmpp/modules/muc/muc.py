@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from typing import Optional
+from __future__ import annotations
+
+from typing import Literal
+from typing import TYPE_CHECKING
 
 from nbxmpp.const import InviteType
 from nbxmpp.const import MessageType
@@ -46,16 +49,25 @@ from nbxmpp.protocol import ERR_NOT_ACCEPTABLE
 from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import Presence
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.structs import AffiliationResult
 from nbxmpp.structs import DeclineData
 from nbxmpp.structs import InviteData
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import MucConfigResult
 from nbxmpp.structs import MucDestroyed
 from nbxmpp.structs import MucSubject
+from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import VoiceRequest
 from nbxmpp.task import iq_request_task
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
+AffiliationT = Literal['owner', 'admin', 'member', 'outcast', 'none']
+RoleT = Literal['moderator', 'participant', 'visitor', 'none']
 
 
 class MUC(BaseModule):
@@ -66,7 +78,7 @@ class MUC(BaseModule):
         'send_moderation_request': 'Moderation',
     }
 
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -112,7 +124,7 @@ class MUC(BaseModule):
         ]
 
     @staticmethod
-    def _process_muc_presence(_client, stanza, properties):
+    def _process_muc_presence(_client: Client, stanza: Presence, properties: PresenceProperties) -> None:
         muc = stanza.getTag('x', namespace=Namespace.MUC)
         if muc is None:
             return
@@ -126,7 +138,7 @@ class MUC(BaseModule):
 
         properties.occupant_id = occupant_id
 
-    def _process_muc_user_presence(self, _client, stanza, properties):
+    def _process_muc_user_presence(self, _client: Client, stanza: Presence, properties: PresenceProperties) -> None:
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
@@ -175,7 +187,7 @@ class MUC(BaseModule):
             StatusCode.REMOVED_ERROR,
         ]
 
-        codes = set()
+        codes: set[StatusCode] = set()
         for status in muc_user.getTags('status'):
             try:
                 code = StatusCode(status.getAttr('code'))
@@ -204,7 +216,7 @@ class MUC(BaseModule):
             self._log.warning(stanza)
             raise NodeProcessed
 
-    def _process_message_before_decryption(self, _client, stanza, properties):
+    def _process_message_before_decryption(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         properties.from_muc = True
         properties.muc_jid = properties.jid.new_as_bare()
         properties.muc_nickname = properties.jid.resource
@@ -221,7 +233,7 @@ class MUC(BaseModule):
             if address is not None:
                 properties.muc_ofrom = JID.from_string(address.getAttr('jid'))
 
-    def _process_message_after_decryption(self, _client, _stanza, properties):
+    def _process_message_after_decryption(self, _client: Client, _stanza: Message, properties: MessageProperties) -> None:
         if properties.subject is None:
             return
 
@@ -234,7 +246,7 @@ class MUC(BaseModule):
             author=properties.muc_nickname,
             timestamp=properties.user_timestamp)
 
-    def _process_message_base(self, _client, stanza, properties):
+    def _process_message_base(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
@@ -247,7 +259,7 @@ class MUC(BaseModule):
             self._log.warning(stanza)
             raise NodeProcessed
 
-    def _process_message(self, _client, stanza, properties):
+    def _process_message(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
@@ -280,7 +292,7 @@ class MUC(BaseModule):
             StatusCode.CONFIG_FULL_ANONYMOUS
         ]
 
-        codes = set()
+        codes: set[StatusCode] = set()
         for status in muc_user.getTags('status'):
             try:
                 code = StatusCode(status.getAttr('code'))
@@ -296,7 +308,7 @@ class MUC(BaseModule):
             properties.muc_status_codes = codes
 
     @staticmethod
-    def _process_direct_invite(_client, stanza, properties):
+    def _process_direct_invite(_client: Client, stanza: Message, properties: MessageProperties) -> None:
         direct = stanza.getTag('x', namespace=Namespace.CONFERENCE)
         if direct is None:
             return
@@ -318,7 +330,7 @@ class MUC(BaseModule):
         properties.muc_invite = InviteData(**data)
 
     @staticmethod
-    def _process_mediated_invite(_client, stanza, properties):
+    def _process_mediated_invite(_client: Client, stanza: Message, properties: MessageProperties) -> None:
         muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
@@ -356,7 +368,7 @@ class MUC(BaseModule):
             properties.muc_decline = DeclineData(**data)
             return
 
-    def _process_voice_request(self, _client, stanza, properties):
+    def _process_voice_request(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         data_form = stanza.getTag('x', namespace=Namespace.DATA)
         if data_form is None:
             return
@@ -383,14 +395,14 @@ class MUC(BaseModule):
         properties.from_muc = True
         properties.muc_jid = properties.jid.new_as_bare()
 
-    def approve_voice_request(self, muc_jid, voice_request):
+    def approve_voice_request(self, muc_jid: JID, voice_request: VoiceRequest) -> None:
         form = voice_request.form
         form.type_ = 'submit'
         form['muc#request_allow'].value = True
         self._client.send_stanza(Message(to=muc_jid, payload=form))
 
     @iq_request_task
-    def get_affiliation(self, jid, affiliation):
+    def get_affiliation(self, jid: JID | str, affiliation: AffiliationT):
         _task = yield
 
         response = yield make_affiliation_request(jid, affiliation)
@@ -424,14 +436,14 @@ class MUC(BaseModule):
         yield AffiliationResult(jid=room_jid, users=users_dict)
 
     @iq_request_task
-    def destroy(self, room_jid, reason=None, jid=None):
+    def destroy(self, room_jid: JID, reason: str | None = None, jid: str | None = None):
         _task = yield
 
         response = yield make_destroy_request(room_jid, reason, jid)
         yield process_response(response)
 
     @iq_request_task
-    def request_info(self, jid, request_vcard=True, allow_redirect=False):
+    def request_info(self, jid: JID | str, request_vcard: bool = True, allow_redirect: bool = False):
         _task = yield
 
         redirected = False
@@ -467,14 +479,14 @@ class MUC(BaseModule):
                             redirected=redirected)
 
     @iq_request_task
-    def set_config(self, room_jid, form):
+    def set_config(self, room_jid: JID, form):
         _task = yield
 
         response = yield make_set_config_request(room_jid, form)
         yield process_response(response)
 
     @iq_request_task
-    def request_config(self, room_jid):
+    def request_config(self, room_jid: JID):
         _task = yield
 
         response = yield make_config_request(room_jid)
@@ -493,21 +505,21 @@ class MUC(BaseModule):
         yield MucConfigResult(jid=jid)
 
     @iq_request_task
-    def cancel_config(self, room_jid):
+    def cancel_config(self, room_jid: JID):
         _task = yield
 
         response = yield make_cancel_config_request(room_jid)
         yield process_response(response)
 
     @iq_request_task
-    def set_affiliation(self, room_jid, users_dict):
+    def set_affiliation(self, room_jid: JID, users_dict: dict[JID, dict[str, str]]):
         _task = yield
 
         response = yield make_set_affiliation_request(room_jid, users_dict)
         yield process_response(response)
 
     @iq_request_task
-    def set_role(self, room_jid, nick, role, reason=None):
+    def set_role(self, room_jid: JID, nick: str, role: RoleT, reason: str | None = None):
         _task = yield
 
         response = yield make_set_role_request(room_jid, nick, role, reason)
@@ -518,16 +530,16 @@ class MUC(BaseModule):
         namespace: str,
         room_jid: JID,
         stanza_id: str,
-        reason: Optional[str] = None
+        reason: str | None = None
     ) -> None:
         self.send_moderation_request(namespace, room_jid, stanza_id, reason)
 
-    def set_subject(self, room_jid, subject):
+    def set_subject(self, room_jid: JID, subject: MucSubject | None) -> None:
         message = Message(room_jid, typ='groupchat', subject=subject)
         self._log.info('Set subject for %s', room_jid)
         self._client.send_stanza(message)
 
-    def decline(self, room, to, reason=None):
+    def decline(self, room: JID | str, to: JID | str, reason: str | None = None) -> None:
         message = Message(to=room)
         muc_user = message.addChild('x', namespace=Namespace.MUC_USER)
         decline = muc_user.addChild('decline', attrs={'to': to})
@@ -535,7 +547,7 @@ class MUC(BaseModule):
             decline.setTagData('reason', reason)
         self._client.send_stanza(message)
 
-    def request_voice(self, room):
+    def request_voice(self, room: JID) -> None:
         message = Message(to=room)
         xdata = DataForm(typ='submit')
         xdata.addChild(node=DataField(name='FORM_TYPE',
@@ -546,8 +558,8 @@ class MUC(BaseModule):
         message.addChild(node=xdata)
         self._client.send_stanza(message)
 
-    def invite(self, room, to, password, reason=None, continue_=False,
-               type_=InviteType.MEDIATED):
+    def invite(self, room: JID, to: JID, password: str | None, reason: str | None = None, continue_: bool = False,
+               type_: InviteType = InviteType.MEDIATED) -> str:
         if type_ == InviteType.DIRECT:
             invite = build_direct_invite(
                 room, to, reason, password, continue_)
@@ -557,13 +569,13 @@ class MUC(BaseModule):
         return self._client.send_stanza(invite)
 
     @iq_request_task
-    def send_captcha(self, room_jid, form_node):
+    def send_captcha(self, room_jid: JID, form_node):
         _task = yield
 
         response = yield make_captcha_request(room_jid, form_node)
         yield process_response(response)
 
-    def cancel_captcha(self, room_jid, message_id):
+    def cancel_captcha(self, room_jid: JID, message_id: str) -> None:
         message = Message(typ='error', to=room_jid)
         message.setID(message_id)
         message.setError(ERR_NOT_ACCEPTABLE)

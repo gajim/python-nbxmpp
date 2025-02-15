@@ -14,7 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
-import typing
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
@@ -22,13 +24,13 @@ from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import Reactions as ReactionStruct
 from nbxmpp.structs import StanzaHandler
 
-if typing.TYPE_CHECKING:
+if TYPE_CHECKING:
     from nbxmpp.client import Client
     from nbxmpp.protocol import Message
 
 
 class Reactions(BaseModule):
-    def __init__(self, client: 'Client'):
+    def __init__(self, client: Client):
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -43,8 +45,8 @@ class Reactions(BaseModule):
 
     def _process_message_reaction(
         self,
-        _client: 'Client',
-        stanza: 'Message',
+        _client: Client,
+        stanza: Message,
         properties: MessageProperties
     ) -> None:
         reactions = stanza.getTag('reactions', namespace=Namespace.REACTIONS)

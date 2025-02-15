@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.errors import ChangePasswordStanzaError
 from nbxmpp.errors import RegisterStanzaError
 from nbxmpp.errors import StanzaError
@@ -27,26 +31,30 @@ from nbxmpp.modules.register.util import _parse_register_data
 from nbxmpp.modules.util import process_response
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
 from nbxmpp.task import iq_request_task
 from nbxmpp.util import get_form
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class Register(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = []
 
     @iq_request_task
-    def unregister(self, jid=None):
+    def unregister(self, jid: JID | None = None):
         _task = yield
 
         response = yield _make_unregister_request(jid)
         yield process_response(response)
 
     @iq_request_task
-    def request_register_form(self, jid=None):
+    def request_register_form(self, jid: JID | None = None):
         _task = yield
 
         if jid is None:
@@ -59,7 +67,7 @@ class Register(BaseModule):
         yield _parse_register_data(response)
 
     @iq_request_task
-    def submit_register_form(self, form, jid=None):
+    def submit_register_form(self, form, jid: JID | None = None):
         _task = yield
 
         if jid is None:
@@ -74,7 +82,7 @@ class Register(BaseModule):
             raise RegisterStanzaError(response, data)
 
     @iq_request_task
-    def change_password(self, password):
+    def change_password(self, password: str):
         _task = yield
 
         response = yield _make_password_change_request(

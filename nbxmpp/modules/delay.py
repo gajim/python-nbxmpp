@@ -15,18 +15,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import datetime as dt
 import logging
 
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Message
+from nbxmpp.protocol import Presence
+from nbxmpp.structs import MessageProperties
+from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import StanzaHandler
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 log = logging.getLogger('nbxmpp.m.delay')
 
 
 class Delay(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -41,7 +53,7 @@ class Delay(BaseModule):
                           priority=15)
         ]
 
-    def _process_message_delay(self, _client, stanza, properties):
+    def _process_message_delay(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         # Determine if delay is from the server
         # Some servers use the bare jid, others the domain
         our_jid = self._client.get_bound_jid()
@@ -67,11 +79,11 @@ class Delay(BaseModule):
             properties.user_timestamp = parse_delay(stanza, not_from=jids)
 
     @staticmethod
-    def _process_presence_delay(_client, stanza, properties):
+    def _process_presence_delay(_client: Client, stanza: Presence, properties: PresenceProperties) -> None:
         properties.user_timestamp = parse_delay(stanza)
 
 
-def parse_delay(stanza, epoch=True, convert='utc', from_=None, not_from=None):
+def parse_delay(stanza: Message | Presence, epoch: bool = True, convert: str = 'utc', from_: list[str] | None = None, not_from: list[str] | None = None) -> dt.datetime | float | None:
     '''
     Returns the first valid delay timestamp that matches
 

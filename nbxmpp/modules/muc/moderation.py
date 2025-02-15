@@ -14,12 +14,11 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 # XEP-0425: Message Moderation
+from __future__ import annotations
 
-from typing import Any
-from typing import Optional
+from typing import TYPE_CHECKING
 
-from datetime import datetime
-from datetime import timezone
+import datetime as dt
 
 from nbxmpp import JID
 from nbxmpp.modules.base import BaseModule
@@ -27,6 +26,7 @@ from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.modules.util import process_response
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import Message
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.simplexml import Node
 from nbxmpp.structs import MessageProperties
@@ -34,9 +34,12 @@ from nbxmpp.structs import ModerationData
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class Moderation(BaseModule):
-    def __init__(self, client: Any):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -64,7 +67,7 @@ class Moderation(BaseModule):
         namespace: str,
         muc_jid: JID,
         stanza_id: str,
-        reason: Optional[str] = None,
+        reason: str | None = None,
     ):
         _task = yield
 
@@ -77,8 +80,8 @@ class Moderation(BaseModule):
 
     def _process_moderation_1_message(
         self,
-        _client: Any,
-        stanza: Node,
+        _client: Client,
+        stanza: Message,
         properties: MessageProperties
     ) -> None:
 
@@ -124,8 +127,8 @@ class Moderation(BaseModule):
 
     def _process_moderation_0_tombstone_message(
         self,
-        _client: Any,
-        stanza: Node,
+        _client: Client,
+        stanza: Message,
         properties: MessageProperties
     ) -> None:
 
@@ -142,8 +145,8 @@ class Moderation(BaseModule):
 
     def _process_moderation_0_message(
         self,
-        _client: Any,
-        stanza: Node,
+        _client: Client,
+        stanza: Message,
         properties: MessageProperties
     ) -> None:
 
@@ -252,14 +255,14 @@ def _parse_moderation_timestamp(
     retract: Node,
     is_tombstone: bool,
     properties: MessageProperties
-) -> datetime:
+) -> dt.datetime:
 
     if is_tombstone:
         stamp_attr = retract.getAttr('stamp')
         stamp = parse_datetime(
             stamp_attr, check_utc=True, convert='utc')
         if stamp is not None:
-            assert isinstance(stamp, datetime)
+            assert isinstance(stamp, dt.datetime)
             return stamp
 
     if properties.is_mam_message:
@@ -267,13 +270,13 @@ def _parse_moderation_timestamp(
     else:
         stamp = properties.timestamp
 
-    return datetime.fromtimestamp(stamp, timezone.utc)
+    return dt.datetime.fromtimestamp(stamp, dt.timezone.utc)
 
 
 def _make_moderation_request_0(
     muc_jid: JID,
     stanza_id: str,
-    reason: Optional[str]
+    reason: str | None
 ) -> Iq:
     iq = Iq('set', Namespace.FASTEN, to=muc_jid)
     query = iq.setQuery(name='apply-to')
@@ -289,7 +292,7 @@ def _make_moderation_request_0(
 def _make_moderation_request_1(
     muc_jid: JID,
     stanza_id: str,
-    reason: Optional[str]
+    reason: str | None
 ) -> Iq:
     iq = Iq('set', Namespace.MESSAGE_MODERATE_1, to=muc_jid)
     query = iq.setQuery(name='moderate')

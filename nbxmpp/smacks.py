@@ -15,15 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import TYPE_CHECKING
+
 import logging
 import time
 
 from nbxmpp.const import StreamState
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Error
+from nbxmpp.protocol import Protocol
 from nbxmpp.simplexml import Node
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import LogAdapter
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 log = logging.getLogger('nbxmpp.smacks')
 
@@ -37,14 +46,14 @@ class Smacks:
     number of handled stanzas
     """
 
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         self._client = client
         self._out_h = 0  # Outgoing stanzas handled
         self._in_h = 0  # Incoming stanzas handled
         self._acked_h = 0  # Last acked stanza
 
-        self._uqueue = []  # Unhandled stanzas queue
-        self._old_uqueue = []  # Unhandled stanzas queue of the last session
+        self._uqueue: list[Protocol] = []  # Unhandled stanzas queue
+        self._old_uqueue: list[Protocol] = []  # Unhandled stanzas queue of the last session
 
         # Max number of stanzas in queue before making a request
         self.max_queue = 0
@@ -56,27 +65,27 @@ class Smacks:
         self.resume_in_progress = False
         self.resume_supported = False  # Does the session support resume
 
-        self._session_id = None
-        self._location = None
+        self._session_id: str | None = None
+        self._location: str | None = None
 
         self._log = LogAdapter(log, {'context': client.log_context})
 
         self.register_handlers()
 
     @property
-    def sm_supported(self):
+    def sm_supported(self) -> bool:
         return self._sm_supported
 
     @sm_supported.setter
-    def sm_supported(self, value):
+    def sm_supported(self, value: bool) -> None:
         self._log.info('Server supports detected: %s', value)
         self._sm_supported = value
 
     @property
-    def resumeable(self):
+    def resumeable(self) -> bool:
         return self._session_id is not None and self.resume_supported
 
-    def delegate(self, stanza):
+    def delegate(self, stanza: Protocol) -> None:
         if stanza.getNamespace() != Namespace.STREAM_MGMT:
             return
         if stanza.getName() == 'resumed':
@@ -84,7 +93,7 @@ class Smacks:
         elif stanza.getName() == 'failed':
             self._on_failed(None, stanza, None)
 
-    def register_handlers(self):
+    def register_handlers(self) -> None:
         handlers = [
             StanzaHandler(name='enabled',
                           callback=self._on_enabled,
@@ -103,7 +112,7 @@ class Smacks:
         for handler in handlers:
             self._client.register_handler(handler)
 
-    def send_enable(self):
+    def send_enable(self) -> None:
         if not self.sm_supported:
             return
 
@@ -115,7 +124,7 @@ class Smacks:
         self._log.debug('Send enable')
         self._enable_sent = True
 
-    def _on_enabled(self, _con, stanza, _properties):
+    def _on_enabled(self, _con: Any, stanza: Protocol, _properties: Any) -> None:
         if self.enabled:
             self._log.error('Received "enabled", but SM is already enabled')
             return
@@ -130,7 +139,7 @@ class Smacks:
             'Received enabled, location: %s, resume supported: %s, '
             'session-id: %s', self._location, resume, self._session_id)
 
-    def count_incoming(self, name):
+    def count_incoming(self, name: str) -> None:
         if not self.enabled:
             # Dont count while we didnt receive 'enabled'
             return
@@ -139,7 +148,7 @@ class Smacks:
         self._log.debug('IN, %s', name)
         self._in_h += 1
 
-    def save_in_queue(self, stanza):
+    def save_in_queue(self, stanza: Protocol) -> None:
         if not self._enable_sent and not self.resumed:
             # We did not yet sent 'enable' so the server
             # will not count our stanzas
@@ -163,7 +172,7 @@ class Smacks:
         if (self._in_h - self._acked_h) > 100:
             self._send_ack()
 
-    def _add_delay(self, stanza):
+    def _add_delay(self, stanza: Protocol) -> None:
         if stanza.getName() != 'message':
             return
 
@@ -179,7 +188,7 @@ class Smacks:
 
         stanza.addChild('delay', namespace=Namespace.DELAY2, attrs=attrs)
 
-    def _resend_queue(self):
+    def _resend_queue(self) -> None:
         """
         Resends unsent stanzas when a new session is established.
         This way there won't be any lost outgoing messages even on failed
@@ -193,7 +202,7 @@ class Smacks:
             self._client.send_stanza(stanza)
         self._old_uqueue = []
 
-    def resume_request(self):
+    def resume_request(self) -> None:
         if self._session_id is None:
             self._log.error('Attempted to resume without a valid session id')
             return
@@ -213,7 +222,7 @@ class Smacks:
         self.resume_in_progress = True
         self._client.send_nonza(resume, now=False)
 
-    def _on_resumed(self, stanza):
+    def _on_resumed(self, stanza: Protocol) -> None:
         """
         Checks if the number of stanzas sent are the same as the
         number of stanzas received by the server. Resends stanzas not received
@@ -230,30 +239,30 @@ class Smacks:
         self._client.set_state(StreamState.RESUME_SUCCESSFUL)
         self._resend_queue()
 
-    def _send_ack(self, *args):
+    def _send_ack(self, *args: Any) -> None:
         ack = Node(Namespace.STREAM_MGMT + ' a', attrs={'h': self._in_h})
         self._acked_h = self._in_h
         self._log.debug('Send ack, h: %s', self._in_h)
         self._client.send_nonza(ack, now=False)
 
-    def close_session(self):
+    def close_session(self) -> None:
         # We end the connection deliberately
         # Reset the state -> no resume
         self._log.info('Close session')
         self._reset_state()
 
-    def _request_ack(self):
+    def _request_ack(self) -> None:
         request = Node(Namespace.STREAM_MGMT + ' r')
         self._log.debug('Request ack')
         self._client.send_nonza(request, now=False)
 
-    def _on_ack(self, _stream, stanza, _properties):
+    def _on_ack(self, _stream: Any, stanza: Protocol, _properties: Any) -> None:
         if not self.enabled:
             return
         self._log.debug('Ack received, h: %s', stanza.getAttr('h'))
         self._validate_ack(stanza, self._uqueue)
 
-    def _validate_ack(self, stanza, queue):
+    def _validate_ack(self, stanza: Protocol, queue: list[Protocol]) -> None:
         """
         Checks if the number of stanzas sent are the same as the
         number of stanzas received by the server. Pops stanzas that were
@@ -287,7 +296,7 @@ class Smacks:
             while len(queue) > diff:
                 queue.pop(0)
 
-    def _on_failed(self, _stream, stanza, _properties):
+    def _on_failed(self, _stream: Any, stanza: Protocol, _properties: Any) -> None:
         '''
         This can be called after 'enable' and 'resume'
         '''
@@ -315,7 +324,7 @@ class Smacks:
 
         self._reset_state()
 
-    def _reset_state(self):
+    def _reset_state(self) -> None:
         # Reset all values to default
         self._out_h = 0
         self._in_h = 0

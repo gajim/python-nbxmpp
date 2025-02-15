@@ -16,37 +16,19 @@
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-from collections import namedtuple
+from collections.abc import Iterator
 
 from nbxmpp.const import ConnectionProtocol
 from nbxmpp.const import ConnectionType
 from nbxmpp.http import HTTPRequest
 from nbxmpp.http import HTTPSession
+from nbxmpp.structs import ProxyData
+from nbxmpp.structs import ServerAddress
+from nbxmpp.types import CustomHostT
 from nbxmpp.util import Observable
 from nbxmpp.util import parse_websocket_uri
 
 log = logging.getLogger('nbxmpp.addresses')
-
-
-class ServerAddress(namedtuple('ServerAddress', 'domain service host uri '
-                                                'protocol type proxy')):
-
-    __slots__ = []
-
-    @property
-    def is_service(self):
-        return self.service is not None
-
-    @property
-    def is_host(self):
-        return self.host is not None
-
-    @property
-    def is_uri(self):
-        return self.uri is not None
-
-    def has_proxy(self):
-        return self.proxy is not None
 
 
 class ServerAddresses(Observable):
@@ -57,16 +39,16 @@ class ServerAddresses(Observable):
 
     '''
 
-    def __init__(self, domain):
+    def __init__(self, domain: str | None) -> None:
         Observable.__init__(self, log)
 
         self._domain = domain
-        self._http_session = None
-        self._custom_host = None
-        self._proxy = None
+        self._http_session: HTTPSession | None = None
+        self._custom_host: CustomHostT | None = None
+        self._proxy: ProxyData | None = None
         self._is_resolved = False
 
-        self._addresses = [
+        self._addresses: list[ServerAddress] = [
             ServerAddress(domain=self._domain,
                           service='xmpps-client',
                           host=None,
@@ -92,7 +74,7 @@ class ServerAddresses(Observable):
                           proxy=None)
         ]
 
-        self._fallback_addresses = [
+        self._fallback_addresses: list[ServerAddress] = [
             ServerAddress(domain=self._domain,
                           service=None,
                           host='%s:%s' % (self._domain, 5222),
@@ -111,14 +93,14 @@ class ServerAddresses(Observable):
         ]
 
     @property
-    def domain(self):
+    def domain(self) -> str | None:
         return self._domain
 
     @property
-    def is_resolved(self):
+    def is_resolved(self) -> bool:
         return self._is_resolved
 
-    def resolve(self):
+    def resolve(self) -> None:
         if self._is_resolved:
             self._on_request_resolved()
             return
@@ -145,7 +127,6 @@ class ServerAddresses(Observable):
                      callback=self._on_alternatives_result)
 
     def _on_alternatives_result(self, request: HTTPRequest) -> None:
-
         if not request.is_complete():
             log.info('Failed to retrieve host-meta file: %s',
                      request.get_error_string())
@@ -185,10 +166,10 @@ class ServerAddresses(Observable):
 
         self._on_request_resolved()
 
-    def cancel_resolve(self):
+    def cancel_resolve(self) -> None:
         self.remove_subscriptions()
 
-    def set_custom_host(self, address):
+    def set_custom_host(self, address: CustomHostT | None) -> None:
         # Set a custom host, overwrites all other addresses
         self._custom_host = address
         if address is None:
@@ -210,20 +191,20 @@ class ServerAddresses(Observable):
                           type=type_,
                           proxy=None)]
 
-    def set_proxy(self, proxy):
+    def set_proxy(self, proxy: ProxyData | None) -> None:
         self._proxy = proxy
 
     def set_http_session(self, session: HTTPSession) -> None:
         self._http_session = session
 
-    def _on_request_resolved(self):
+    def _on_request_resolved(self) -> None:
         self._is_resolved = True
         self.notify('resolved')
         self.remove_subscriptions()
 
     def get_next_address(self,
-                         allowed_types,
-                         allowed_protocols):
+                         allowed_types: list[ConnectionType],
+                         allowed_protocols: list[ConnectionProtocol]) -> Iterator[ServerAddress]:
         '''
         Selects next address
         '''
@@ -240,7 +221,7 @@ class ServerAddresses(Observable):
 
         raise NoMoreAddresses
 
-    def _assure_proxy(self, addr):
+    def _assure_proxy(self, addr: ServerAddress) -> ServerAddress:
         if self._proxy is None:
             return addr
 
@@ -249,7 +230,7 @@ class ServerAddresses(Observable):
 
         return addr
 
-    def _filter_allowed(self, addresses, allowed_types, allowed_protocols):
+    def _filter_allowed(self, addresses: list[ServerAddress], allowed_types: list[ConnectionType], allowed_protocols: list[ConnectionProtocol]) -> Iterator[ServerAddress]:
         if self._proxy is not None:
             addresses = filter(lambda addr: addr.host is not None, addresses)
 
@@ -259,7 +240,7 @@ class ServerAddresses(Observable):
                            addresses)
         return addresses
 
-    def __str__(self):
+    def __str__(self) -> str:
         addresses = self._addresses + self._fallback_addresses
         return '\n'.join([str(addr) for addr in addresses])
 

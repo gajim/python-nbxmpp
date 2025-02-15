@@ -15,17 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import TYPE_CHECKING
+
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import isMucPM
 from nbxmpp.protocol import Message
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import ReceiptData
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import generate_id
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class Receipts(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -36,7 +45,7 @@ class Receipts(BaseModule):
                           priority=15),
         ]
 
-    def _process_message_receipt(self, _client, stanza, properties):
+    def _process_message_receipt(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         request = stanza.getTag('request', namespace=Namespace.RECEIPTS)
         if request is not None:
             properties.receipt = ReceiptData(request.getName())
@@ -53,7 +62,7 @@ class Receipts(BaseModule):
             properties.receipt = ReceiptData(received.getName(), id_)
 
 
-def build_receipt(stanza):
+def build_receipt(stanza: Message | Any) -> Message:
     if not isinstance(stanza, Message):
         raise ValueError('Stanza type must be protocol.Message')
 

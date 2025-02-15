@@ -17,15 +17,18 @@
 
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any
 
 import logging
 
+from nbxmpp.modules.dataforms import MultipleDataForm
+from nbxmpp.modules.dataforms import SimpleDataForm
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Protocol
+from nbxmpp.structs import RegisterData
 
 
-def is_error(error):
+def is_error(error: Any) -> bool:
     return isinstance(error, BaseError)
 
 
@@ -37,7 +40,7 @@ class BaseError(Exception):
     def __str__(self) -> str:
         return self.text
 
-    def get_text(self, _pref_lang: Optional[str] = None) -> str:
+    def get_text(self, _pref_lang: str | None = None) -> str:
         return self.text
 
 
@@ -46,12 +49,12 @@ class StanzaError(BaseError):
     log_level = logging.INFO
     app_namespace = None
 
-    def __init__(self, stanza: Protocol):
+    def __init__(self, stanza: Protocol) -> None:
         BaseError.__init__(self)
         self.stanza = stanza
         self._stanza_name = stanza.getName()
         self._error_node = stanza.getTag('error')
-        self.condition: Optional[str] = stanza.getError()
+        self.condition: str | None = stanza.getError()
         self.condition_data = self._error_node.getTagData(self.condition)
         self.app_condition = self._get_app_condition()
         self.type = stanza.getErrorType()
@@ -66,7 +69,7 @@ class StanzaError(BaseError):
             text = element.getData()
             self._text[lang] = text
 
-    def _get_app_condition(self) -> Optional[str]:
+    def _get_app_condition(self) -> str | None:
         if self.app_namespace is None:
             return None
 
@@ -75,7 +78,7 @@ class StanzaError(BaseError):
                 return node.getName()
         return None
 
-    def get_text(self, pref_lang: Optional[str] = None) -> str:
+    def get_text(self, pref_lang: str | None = None) -> str:
         if pref_lang is not None:
             text = self._text.get(pref_lang)
             if text is not None:
@@ -114,7 +117,7 @@ class HTTPUploadStanzaError(StanzaError):
 
     app_namespace = Namespace.HTTPUPLOAD_0
 
-    def get_max_file_size(self):
+    def get_max_file_size(self) -> float | None:
         if self.app_condition != 'file-too-large':
             return None
 
@@ -124,7 +127,7 @@ class HTTPUploadStanzaError(StanzaError):
         except Exception:
             return None
 
-    def get_retry_date(self):
+    def get_retry_date(self) -> str | None:
         if self.app_condition != 'retry':
             return None
         return self._error_node.getTagAttr('stamp')
@@ -134,7 +137,7 @@ class MalformedStanzaError(BaseError):
 
     log_level = logging.WARNING
 
-    def __init__(self, text, stanza, is_fatal=True):
+    def __init__(self, text: str, stanza: Protocol, is_fatal: bool = True) -> None:
         BaseError.__init__(self, is_fatal=is_fatal)
         self.stanza = stanza
         self.text = str(text)
@@ -144,7 +147,7 @@ class CancelledError(BaseError):
 
     log_level = logging.INFO
 
-    def __init__(self):
+    def __init__(self) -> None:
         BaseError.__init__(self, is_fatal=True)
         self.text = 'Task has been cancelled'
 
@@ -153,24 +156,24 @@ class TimeoutStanzaError(BaseError):
 
     log_level = logging.INFO
 
-    def __init__(self):
+    def __init__(self) -> None:
         BaseError.__init__(self)
         self.text = 'Timeout reached'
 
 
 class RegisterStanzaError(StanzaError):
-    def __init__(self, stanza, data):
+    def __init__(self, stanza: Protocol, data: RegisterData) -> None:
         StanzaError.__init__(self, stanza)
         self._data = data
 
-    def get_data(self):
+    def get_data(self) -> RegisterData:
         return self._data
 
 
 class ChangePasswordStanzaError(StanzaError):
-    def __init__(self, stanza, form):
+    def __init__(self, stanza: Protocol, form: SimpleDataForm | MultipleDataForm) -> None:
         StanzaError.__init__(self, stanza)
         self._form = form
 
-    def get_form(self):
+    def get_form(self) -> SimpleDataForm | MultipleDataForm:
         return self._form

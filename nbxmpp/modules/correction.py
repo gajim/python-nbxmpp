@@ -15,14 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Message
 from nbxmpp.structs import CorrectionData
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import StanzaHandler
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 
 class Correction(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -33,7 +42,7 @@ class Correction(BaseModule):
                           priority=15),
         ]
 
-    def _process_message_correction(self, _client, stanza, properties):
+    def _process_message_correction(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         replace = stanza.getTag('replace', namespace=Namespace.CORRECT)
         if replace is None:
             return

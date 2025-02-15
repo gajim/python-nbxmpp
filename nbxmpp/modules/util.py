@@ -15,31 +15,41 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Any
+from typing import TYPE_CHECKING
+
 import functools
 import inspect
 import logging
+from collections.abc import Callable
 from urllib.parse import unquote
 from urllib.parse import urlparse
 
 from nbxmpp.errors import is_error
 from nbxmpp.errors import StanzaError
+from nbxmpp.protocol import Iq
 from nbxmpp.simplexml import Node
 from nbxmpp.structs import CommonResult
 
+if TYPE_CHECKING:
+    from nbxmpp.task import Task
 
-def process_response(response):
+
+def process_response(response: Iq) -> CommonResult:
     if response.isError():
         raise StanzaError(response)
 
     return CommonResult(jid=response.getFrom())
 
 
-def raise_if_error(result):
+def raise_if_error(result: Any) -> None:
     if is_error(result):
         raise result
 
 
-def finalize(task, result):
+def finalize(task: Task, result: Any) -> Any:
     if is_error(result):
         raise result
     if isinstance(result, Node):
@@ -47,7 +57,7 @@ def finalize(task, result):
     return result
 
 
-def parse_xmpp_uri(uri):
+def parse_xmpp_uri(uri: str) -> tuple[str, str, dict[str, str]]:
     url = urlparse(uri)
     if url.scheme != 'xmpp':
         raise ValueError('not a xmpp uri')
@@ -58,7 +68,7 @@ def parse_xmpp_uri(uri):
     action, query = url.query.split(';', 1)
     key_value_pairs = query.split(';')
 
-    dict_ = {}
+    dict_: dict[str, str] = {}
     for key_value in key_value_pairs:
         key, value = key_value.split('=')
         dict_[key] = unquote(value)
@@ -66,7 +76,7 @@ def parse_xmpp_uri(uri):
     return (url.path, action, dict_)
 
 
-def make_func_arguments_string(func, self, args, kwargs):
+def make_func_arguments_string(func: Callable[..., Any], self: Any, args: Any, kwargs: Any) -> str:
     signature = inspect.signature(func)
     bound_arguments = signature.bind(self, *args, **kwargs)
     bound_arguments.apply_defaults()
@@ -79,9 +89,9 @@ def make_func_arguments_string(func, self, args, kwargs):
     return f'{func.__name__}({arg_string})'
 
 
-def log_calls(func):
+def log_calls(func: Callable[..., Any]) -> Callable[..., Any]:
     @functools.wraps(func)
-    def func_wrapper(self, *args, **kwargs):
+    def func_wrapper(self: Any, *args: Any, **kwargs: Any):
         if self._log.isEnabledFor(logging.INFO):
             self._log.info(make_func_arguments_string(func, self, args, kwargs))
         return func(self, *args, **kwargs)

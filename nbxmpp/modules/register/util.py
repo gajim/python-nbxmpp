@@ -21,13 +21,16 @@ from nbxmpp.errors import StanzaError
 from nbxmpp.modules.bits_of_binary import parse_bob_data
 from nbxmpp.modules.dataforms import create_field
 from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.modules.dataforms import FieldT
 from nbxmpp.modules.dataforms import SimpleDataForm
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
+from nbxmpp.protocol import Protocol
 from nbxmpp.structs import RegisterData
 
 
-def _make_password_change_request(domain, username, password):
+def _make_password_change_request(domain: str, username: str, password: str) -> Iq:
     iq = Iq('set', Namespace.REGISTER, to=domain)
     query = iq.getQuery()
     query.setTagData('username', username)
@@ -35,13 +38,13 @@ def _make_password_change_request(domain, username, password):
     return iq
 
 
-def _make_password_change_with_form(domain, form):
+def _make_password_change_with_form(domain: str, form) -> Iq:
     iq = Iq('set', Namespace.REGISTER, to=domain)
     iq.setQueryPayload(form)
     return iq
 
 
-def _make_register_form(jid, form):
+def _make_register_form(jid: JID, form) -> Iq:
     iq = Iq('set', Namespace.REGISTER, to=jid)
     if form.is_fake_form():
         query = iq.getTag('query')
@@ -55,7 +58,7 @@ def _make_register_form(jid, form):
     return iq
 
 
-def _make_unregister_request(jid):
+def _make_unregister_request(jid: JID) -> Iq:
     iq = Iq('set', to=jid)
     query = iq.setQuery()
     query.setNamespace(Namespace.REGISTER)
@@ -63,7 +66,7 @@ def _make_unregister_request(jid):
     return iq
 
 
-def _parse_oob_url(query):
+def _parse_oob_url(query: Iq) -> str | None:
     oob = query.getTag('x', namespace=Namespace.X_OOB)
     if oob is not None:
         return oob.getTagData('url') or None
@@ -88,8 +91,8 @@ def _parse_form(stanza):
     return None
 
 
-def _parse_fields_form(query):
-    fields = []
+def _parse_fields_form(query: Protocol) -> SimpleDataForm | None:
+    fields: list[FieldT] = []
     for field in query.getChildren():
         field_name = field.getName()
         if field_name not in REGISTER_FIELDS:
@@ -110,7 +113,7 @@ def _parse_fields_form(query):
                           fields=fields)
 
 
-def _parse_register_data(response):
+def _parse_register_data(response: Protocol) -> RegisterData:
     query = response.getTag('query', namespace=Namespace.REGISTER)
     if query is None:
         raise StanzaError(response)

@@ -15,13 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.bookmarks.util import build_storage_node
 from nbxmpp.modules.bookmarks.util import parse_bookmarks
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Message
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import BookmarkData
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
@@ -29,6 +36,9 @@ BOOKMARK_OPTIONS = {
     'pubsub#persist_items': 'true',
     'pubsub#access_model': 'whitelist',
 }
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 
 class PEPBookmarks(BaseModule):
@@ -38,7 +48,7 @@ class PEPBookmarks(BaseModule):
         'request_items': 'PubSub',
     }
 
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -49,7 +59,7 @@ class PEPBookmarks(BaseModule):
                           priority=16),
         ]
 
-    def _process_pubsub_bookmarks(self, _client, stanza, properties):
+    def _process_pubsub_bookmarks(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -96,7 +106,7 @@ class PEPBookmarks(BaseModule):
         yield bookmarks
 
     @iq_request_task
-    def store_bookmarks(self, bookmarks):
+    def store_bookmarks(self, bookmarks: list[BookmarkData]):
         _task = yield
 
         self._log.info('Store Bookmarks')

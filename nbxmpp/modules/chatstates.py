@@ -15,14 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.const import Chatstate
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Message
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import StanzaHandler
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 
 class Chatstates(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -33,7 +42,7 @@ class Chatstates(BaseModule):
                           priority=15),
         ]
 
-    def _process_message_chatstate(self, _client, stanza, properties):
+    def _process_message_chatstate(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         try:
             chatstate = parse_chatstate(stanza)
         except ValueError as error:
@@ -50,7 +59,7 @@ class Chatstates(BaseModule):
         properties.chatstate = chatstate
 
 
-def parse_chatstate(stanza):
+def parse_chatstate(stanza: Message) -> Chatstate | None:
     children = stanza.getChildren()
     for child in children:
         if child.getNamespace() == Namespace.CHATSTATES:

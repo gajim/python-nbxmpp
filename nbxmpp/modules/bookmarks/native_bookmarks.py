@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.bookmarks.util import build_conference_node
@@ -23,10 +27,15 @@ from nbxmpp.modules.util import finalize
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import JID
+from nbxmpp.protocol import Message
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import BookmarkData
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 BOOKMARK_OPTIONS = {
     'pubsub#notify_delete': 'true',
@@ -46,7 +55,7 @@ class NativeBookmarks(BaseModule):
         'request_items': 'PubSub',
     }
 
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -57,7 +66,7 @@ class NativeBookmarks(BaseModule):
                           priority=16),
         ]
 
-    def _process_pubsub_bookmarks(self, _client, _stanza, properties):
+    def _process_pubsub_bookmarks(self, _client: Client, _stanza: Message, properties: MessageProperties) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -89,7 +98,7 @@ class NativeBookmarks(BaseModule):
         items = yield self.request_items(Namespace.BOOKMARKS_1)
         raise_if_error(items)
 
-        bookmarks = []
+        bookmarks: list[BookmarkData] = []
         for item in items:
             try:
                 bookmark_item = parse_bookmark(item)

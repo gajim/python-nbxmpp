@@ -15,11 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Literal
 
 from dataclasses import dataclass
 
 from nbxmpp.const import Affiliation
 from nbxmpp.const import Role
+from nbxmpp.modules.vcard_temp import VCard
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import InvalidJid
 from nbxmpp.protocol import Iq
@@ -27,24 +31,28 @@ from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.simplexml import Node
+from nbxmpp.structs import DiscoInfo
 from nbxmpp.structs import MucUserData
+
+AffiliationT = Literal['owner', 'admin', 'member', 'outcast', 'none']
+RoleT = Literal['moderator', 'participant', 'visitor', 'none']
 
 
 @dataclass
 class MucInfoResult:
-    info: object
-    vcard: object = None
+    info: DiscoInfo
+    vcard: VCard | None = None
     redirected: bool = False
 
 
-def make_affiliation_request(jid, affiliation):
+def make_affiliation_request(jid: JID | str, affiliation: AffiliationT) -> Iq:
     iq = Iq(typ='get', to=jid, queryNS=Namespace.MUC_ADMIN)
     item = iq.setQuery().setTag('item')
     item.setAttr('affiliation', affiliation)
     return iq
 
 
-def make_set_affiliation_request(room_jid, users_dict):
+def make_set_affiliation_request(room_jid: JID, users_dict: dict[JID, dict[str, str]]) -> Iq:
     iq = Iq(typ='set', to=room_jid, queryNS=Namespace.MUC_ADMIN)
     item = iq.setQuery()
     for jid in users_dict:
@@ -62,7 +70,7 @@ def make_set_affiliation_request(room_jid, users_dict):
     return iq
 
 
-def make_destroy_request(room_jid, reason, jid):
+def make_destroy_request(room_jid: JID, reason: str | None, jid: str | None) -> Iq:
     iq = Iq(typ='set', queryNS=Namespace.MUC_OWNER, to=room_jid)
     destroy = iq.setQuery().setTag('destroy')
 
@@ -75,7 +83,7 @@ def make_destroy_request(room_jid, reason, jid):
     return iq
 
 
-def make_set_config_request(room_jid, form):
+def make_set_config_request(room_jid: JID, form) -> Iq:
     iq = Iq(typ='set', to=room_jid, queryNS=Namespace.MUC_OWNER)
     query = iq.setQuery()
     form.setAttr('type', 'submit')
@@ -83,14 +91,14 @@ def make_set_config_request(room_jid, form):
     return iq
 
 
-def make_config_request(room_jid):
+def make_config_request(room_jid: JID) -> Iq:
     iq = Iq(typ='get',
             queryNS=Namespace.MUC_OWNER,
             to=room_jid)
     return iq
 
 
-def make_cancel_config_request(room_jid):
+def make_cancel_config_request(room_jid: JID) -> Iq:
     cancel = Node(tag='x', attrs={'xmlns': Namespace.DATA,
                                   'type': 'cancel'})
     iq = Iq(typ='set',
@@ -100,7 +108,7 @@ def make_cancel_config_request(room_jid):
     return iq
 
 
-def make_set_role_request(room_jid, nick, role, reason):
+def make_set_role_request(room_jid: JID, nick: str, role: RoleT, reason: str | None) -> Iq:
     iq = Iq(typ='set', to=room_jid, queryNS=Namespace.MUC_ADMIN)
     item = iq.setQuery().setTag('item')
     item.setAttr('nick', nick)
@@ -111,14 +119,14 @@ def make_set_role_request(room_jid, nick, role, reason):
     return iq
 
 
-def make_captcha_request(room_jid, form_node):
+def make_captcha_request(room_jid: JID, form_node) -> Iq:
     iq = Iq(typ='set', to=room_jid)
     captcha = iq.addChild(name='captcha', namespace=Namespace.CAPTCHA)
     captcha.addChild(node=form_node)
     return iq
 
 
-def build_direct_invite(room, to, reason, password, continue_):
+def build_direct_invite(room: JID, to: JID, reason: str | None, password: str | None, continue_: bool | None) -> Message:
     message = Message(to=to)
     attrs = {'jid': room}
     if reason:
@@ -132,7 +140,7 @@ def build_direct_invite(room, to, reason, password, continue_):
     return message
 
 
-def build_mediated_invite(room, to, reason, password, continue_):
+def build_mediated_invite(room: JID, to: JID, reason: str | None, password: str | None, continue_: bool | None) -> Message:
     message = Message(to=room)
     muc_user = message.addChild('x', namespace=Namespace.MUC_USER)
     invite = muc_user.addChild('invite', attrs={'to': to})
@@ -145,7 +153,7 @@ def build_mediated_invite(room, to, reason, password, continue_):
     return message
 
 
-def parse_muc_user(muc_user, is_presence=True):
+def parse_muc_user(muc_user: Node, is_presence: bool = True) -> MucUserData | None:
     item = muc_user.getTag('item')
     if item is None:
         return None

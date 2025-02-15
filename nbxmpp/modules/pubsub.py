@@ -15,7 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
-from collections import namedtuple
+from __future__ import annotations
+
+from typing import Any
+from typing import Literal
+from typing import NamedTuple
+from typing import TYPE_CHECKING
 
 from nbxmpp.const import MessageType
 from nbxmpp.errors import is_error
@@ -28,6 +33,8 @@ from nbxmpp.modules.util import process_response
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
+from nbxmpp.protocol import JID
+from nbxmpp.protocol import Message
 from nbxmpp.protocol import Node
 from nbxmpp.structs import CommonResult
 from nbxmpp.structs import MessageProperties
@@ -35,9 +42,12 @@ from nbxmpp.structs import PubSubEventData
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class PubSub(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -50,10 +60,10 @@ class PubSub(BaseModule):
 
     def _process_pubsub_base(
         self,
-        _client,
-        stanza,
+        _client: Client,
+        stanza: Message,
         properties: MessageProperties
-    ):
+    ) -> None:
         if properties.type not in (MessageType.HEADLINE, MessageType.NORMAL):
             return
 
@@ -105,7 +115,7 @@ class PubSub(BaseModule):
             properties.pubsub_event = PubSubEventData(node, id_, item)
 
     @iq_request_task
-    def request_item(self, node, id_, jid=None):
+    def request_item(self, node: str, id_: str, jid: JID | None = None):
         task = yield
 
         response = yield _make_pubsub_request(node, id_=id_, jid=jid)
@@ -117,7 +127,7 @@ class PubSub(BaseModule):
         yield task.set_result(item)
 
     @iq_request_task
-    def request_items(self, node, max_items=None, jid=None):
+    def request_items(self, node: str, max_items: int | None = None, jid: JID | None = None):
         _task = yield
 
         response = yield _make_pubsub_request(node,
@@ -131,12 +141,12 @@ class PubSub(BaseModule):
 
     @iq_request_task
     def publish(self,
-                node,
-                item,
-                id_=None,
-                options=None,
-                jid=None,
-                force_node_options=False):
+                node: str,
+                item: Node,
+                id_: str | None = None,
+                options: dict[str, str] | None = None,
+                jid: JID | None = None,
+                force_node_options: bool = False):
 
         _task = yield
 
@@ -162,7 +172,7 @@ class PubSub(BaseModule):
         yield PubSubPublishResult(jid, node, item_id)
 
     @iq_request_task
-    def get_access_model(self, node):
+    def get_access_model(self, node: str):
         _task = yield
 
         result = yield self.get_node_configuration(node)
@@ -172,7 +182,7 @@ class PubSub(BaseModule):
         yield result.form['pubsub#access_model'].value
 
     @iq_request_task
-    def set_access_model(self, node, model):
+    def set_access_model(self, node: str, model: Literal['open', 'presence']):
         task = yield
 
         if model not in ('open', 'presence'):
@@ -199,28 +209,28 @@ class PubSub(BaseModule):
         yield finalize(task, result)
 
     @iq_request_task
-    def retract(self, node, id_, jid=None, notify=True):
+    def retract(self, node: str, id_: str, jid: JID | None = None, notify: bool = True):
         _task = yield
 
         response = yield _make_retract_request(node, id_, jid, notify)
         yield process_response(response)
 
     @iq_request_task
-    def purge(self, node, jid=None):
+    def purge(self, node: str, jid: JID | None = None):
         _task = yield
 
         response = yield _make_purge_request(node, jid)
         yield process_response(response)
 
     @iq_request_task
-    def delete(self, node, jid=None):
+    def delete(self, node: str, jid: JID | None = None):
         _task = yield
 
         response = yield _make_delete_request(node, jid)
         yield process_response(response)
 
     @iq_request_task
-    def reconfigure_node(self, node, options, jid=None):
+    def reconfigure_node(self, node: str, options: dict[str, str], jid=None):
         _task = yield
 
         result = yield self.get_node_configuration(node, jid)
@@ -232,14 +242,14 @@ class PubSub(BaseModule):
         yield result
 
     @iq_request_task
-    def set_node_configuration(self, node, form, jid=None):
+    def set_node_configuration(self, node: Node, form, jid: JID | None = None):
         _task = yield
 
         response = yield _make_node_configuration(node, form, jid)
         yield process_response(response)
 
     @iq_request_task
-    def get_node_configuration(self, node, jid=None):
+    def get_node_configuration(self, node: str, jid: JID | None = None):
         _task = yield
 
         response = yield _make_node_configuration_request(node, jid)
@@ -252,7 +262,7 @@ class PubSub(BaseModule):
         yield PubSubNodeConfigurationResult(jid=jid, node=node, form=form)
 
 
-def get_pubsub_request(jid, node, id_=None, max_items=None):
+def get_pubsub_request(jid: JID, node: str, id_: str | None = None, max_items: int | None = None) -> Iq:
     query = Iq('get', to=jid)
     pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
     items = pubsub.addChild('items', {'node': node})
@@ -263,13 +273,13 @@ def get_pubsub_request(jid, node, id_=None, max_items=None):
     return query
 
 
-def get_pubsub_item(stanza):
+def get_pubsub_item(stanza: Node) -> Node | None:
     pubsub_node = stanza.getTag('pubsub')
     items_node = pubsub_node.getTag('items')
     return items_node.getTag('item')
 
 
-def get_pubsub_items(stanza, node=None):
+def get_pubsub_items(stanza: Node, node: str | None = None) -> list[Node] | None:
     pubsub_node = stanza.getTag('pubsub')
     items_node = pubsub_node.getTag('items')
     if node is not None and items_node.getAttr('node') != node:
@@ -280,7 +290,7 @@ def get_pubsub_items(stanza, node=None):
     return None
 
 
-def get_publish_options(config):
+def get_publish_options(config: dict[str, str]) -> Node:
     options = Node(Namespace.DATA + ' x', attrs={'type': 'submit'})
     field = options.addChild('field',
                              attrs={'var': 'FORM_TYPE', 'type': 'hidden'})
@@ -292,7 +302,7 @@ def get_publish_options(config):
     return options
 
 
-def _get_pubsub_items(response, node):
+def _get_pubsub_items(response: Iq, node: str) -> list[Node]:
     pubsub_node = response.getTag('pubsub', namespace=Namespace.PUBSUB)
     if pubsub_node is None:
         raise MalformedStanzaError('pubsub node missing', response)
@@ -307,7 +317,7 @@ def _get_pubsub_items(response, node):
     return items_node.getTags('item')
 
 
-def _get_pubsub_item(response, node, id_):
+def _get_pubsub_item(response: Iq, node: str, id_: str) -> Node | None:
     items = _get_pubsub_items(response, node)
 
     if len(items) > 1:
@@ -323,7 +333,7 @@ def _get_pubsub_item(response, node, id_):
     return item
 
 
-def _make_pubsub_request(node, id_=None, max_items=None, jid=None):
+def _make_pubsub_request(node: str, id_: str | None = None, max_items: int | None = None, jid: JID | None = None) -> Iq:
     query = Iq('get', to=jid)
     pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
     items = pubsub.addChild('items', {'node': node})
@@ -334,7 +344,7 @@ def _make_pubsub_request(node, id_=None, max_items=None, jid=None):
     return query
 
 
-def _get_configure_form(response, node):
+def _get_configure_form(response: Iq, node: str):
     pubsub = response.getTag('pubsub', namespace=Namespace.PUBSUB_OWNER)
     if pubsub is None:
         raise MalformedStanzaError('pubsub node missing', response)
@@ -358,7 +368,7 @@ def _get_configure_form(response, node):
     raise MalformedStanzaError('no valid form type found', response)
 
 
-def _get_published_item_id(response, node, id_):
+def _get_published_item_id(response: Iq, node: str, id_: str | None) -> str | None:
     pubsub = response.getTag('pubsub', namespace=Namespace.PUBSUB)
     if pubsub is None:
         # https://xmpp.org/extensions/xep-0060.html#publisher-publish-success
@@ -388,7 +398,7 @@ def _get_published_item_id(response, node, id_):
     return item_id
 
 
-def _make_publish_request(node, item, id_, options, jid):
+def _make_publish_request(node: str, item: Node, id_: str | None, options: dict[str, str] | None, jid: JID | None) -> Iq:
     query = Iq('set', to=jid)
     pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
     publish = pubsub.addChild('publish', {'node': node})
@@ -402,7 +412,7 @@ def _make_publish_request(node, item, id_, options, jid):
     return query
 
 
-def _make_publish_options(options):
+def _make_publish_options(options: dict[str, str]) -> Node:
     data = Node(Namespace.DATA + ' x', attrs={'type': 'submit'})
     field = data.addChild('field', attrs={'var': 'FORM_TYPE', 'type': 'hidden'})
     field.setTagData('value', Namespace.PUBSUB_PUBLISH_OPTIONS)
@@ -413,7 +423,7 @@ def _make_publish_options(options):
     return data
 
 
-def _make_retract_request(node, id_, jid, notify):
+def _make_retract_request(node: str, id_: str, jid: JID | None, notify: bool) -> Iq:
     query = Iq('set', to=jid)
     pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB)
     attrs = {'node': node}
@@ -424,7 +434,7 @@ def _make_retract_request(node, id_, jid, notify):
     return query
 
 
-def _make_purge_request(node, jid):
+def _make_purge_request(node: str, jid: JID | None) -> Iq:
     query = Iq('set', to=jid)
     pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB_OWNER)
 
@@ -432,7 +442,7 @@ def _make_purge_request(node, jid):
     return query
 
 
-def _make_delete_request(node, jid):
+def _make_delete_request(node: str, jid: JID | None) -> Iq:
     query = Iq('set', to=jid)
     pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB_OWNER)
 
@@ -440,7 +450,7 @@ def _make_delete_request(node, jid):
     return query
 
 
-def _make_node_configuration(node, form, jid):
+def _make_node_configuration(node: Node, form, jid: JID | None) -> Iq:
     query = Iq('set', to=jid)
     pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB_OWNER)
     configure = pubsub.addChild('configure', {'node': node})
@@ -449,14 +459,14 @@ def _make_node_configuration(node, form, jid):
     return query
 
 
-def _make_node_configuration_request(node, jid):
+def _make_node_configuration_request(node: str, jid: JID | None) -> Iq:
     query = Iq('get', to=jid)
     pubsub = query.addChild('pubsub', namespace=Namespace.PUBSUB_OWNER)
     pubsub.addChild('configure', {'node': node})
     return query
 
 
-def _apply_options(form, options):
+def _apply_options(form, options: dict[str, str]) -> None:
     for var, value in options.items():
         try:
             field = form[var]
@@ -466,11 +476,13 @@ def _apply_options(form, options):
             field.value = value
 
 
-PubSubNodeConfigurationResult = namedtuple('PubSubConfigResult',
-                                           'jid node form')
+class PubSubNodeConfigurationResult(NamedTuple):
+    jid: JID
+    node: str
+    form: Any
 
-PubSubConfigResult = namedtuple('PubSubConfigResult',
-                                'jid node form')
 
-PubSubPublishResult = namedtuple('PubSubPublishResult',
-                                 'jid node id')
+class PubSubPublishResult(NamedTuple):
+    jid: JID
+    node: str
+    id: str

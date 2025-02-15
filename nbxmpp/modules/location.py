@@ -15,14 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.const import LOCATION_DATA
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Message
 from nbxmpp.protocol import Node
 from nbxmpp.structs import LocationData
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 
 class Location(BaseModule):
@@ -31,7 +40,7 @@ class Location(BaseModule):
         'publish': 'PubSub'
     }
 
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -42,7 +51,7 @@ class Location(BaseModule):
                           priority=16),
         ]
 
-    def _process_pubsub_location(self, _client, _stanza, properties):
+    def _process_pubsub_location(self, _client: Client, _stanza: Message, properties: MessageProperties) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -70,7 +79,7 @@ class Location(BaseModule):
         properties.pubsub_event = pubsub_event
 
     @iq_request_task
-    def set_location(self, data):
+    def set_location(self, data: LocationData):
         task = yield
 
         item = Node('geoloc', {'xmlns': Namespace.LOCATION})

@@ -15,8 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 from typing import Any
 from typing import Optional
+from typing import TYPE_CHECKING
 
 import binascii
 import hashlib
@@ -30,6 +33,7 @@ from gi.repository import Gio
 from nbxmpp.const import StreamState
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
+from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import SASL_AUTH_MECHS
 from nbxmpp.protocol import SASL_ERROR_CONDITIONS
 from nbxmpp.structs import ChannelBindingData
@@ -37,24 +41,30 @@ from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
 from nbxmpp.util import LogAdapter
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+    from nbxmpp.protocol import Features
+
 log = logging.getLogger('nbxmpp.sasl')
 
 try:
     gssapi = __import__('gssapi')
-    GSSAPI_AVAILABLE = True
+    gssapi_available = True
 except (ImportError, OSError) as error:
     log.info('GSSAPI not available: %s', error)
-    GSSAPI_AVAILABLE = False
+    gssapi_available = False
+
+GSSAPI_AVAILABLE = gssapi_available
 
 
 class SASL:
     """
     Implements SASL authentication.
     """
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         self._client = client
 
-        self._password = None
+        self._password: str | None = None
 
         self._mechanism_classes = {
             'ANONYMOUS': ANONYMOUS,
@@ -69,30 +79,30 @@ class SASL:
             'SCRAM-SHA-512-PLUS': SCRAM_SHA_512_PLUS
         }
 
-        self._allowed_mechs = None
-        self._enabled_mechs = None
-        self._sasl_ns = None
-        self._mechanism = None
-        self._error = None
+        self._allowed_mechs: set[str] | None = None
+        self._enabled_mechs: set[str] | None = None
+        self._sasl_ns: str | None = None
+        self._mechanism: BaseMechanism | None = None
+        self._error: tuple[str | None, str | None] | None = None
 
         self._log = LogAdapter(log, {'context': client.log_context})
 
     @property
-    def error(self):
+    def error(self) -> tuple[str | None, str | None] | None:
         return self._error
 
     def is_sasl2(self) -> bool:
         assert self._sasl_ns is not None
         return self._sasl_ns == Namespace.SASL2
 
-    def set_password(self, password):
+    def set_password(self, password: str | None):
         self._password = password
 
     @property
-    def password(self):
+    def password(self) -> str | None:
         return self._password
 
-    def delegate(self, stanza):
+    def delegate(self, stanza: Protocol) -> None:
         if stanza.getNamespace() != self._sasl_ns:
             return
 
@@ -103,7 +113,7 @@ class SASL:
         elif stanza.getName() == 'success':
             self._on_success(stanza)
 
-    def _get_channel_binding_data(self, features) -> Optional[ChannelBindingData]:
+    def _get_channel_binding_data(self, features: Features) -> Optional[ChannelBindingData]:
         if self._client.tls_version != Gio.TlsProtocolVersion.TLS_1_3:
             return None
 
@@ -117,7 +127,7 @@ class SASL:
 
         return ChannelBindingData(binding_type, channel_binding_data)
 
-    def start_auth(self, features):
+    def start_auth(self, features: Features) -> None:
         self._mechanism = None
         self._allowed_mechs = self._client.mechs
         self._enabled_mechs = self._allowed_mechs
@@ -194,7 +204,7 @@ class SASL:
         nonza = get_initiate_nonza(self._sasl_ns, self._mechanism.name, data)
         self._client.send_nonza(nonza)
 
-    def _on_challenge(self, stanza) -> None:
+    def _on_challenge(self, stanza: Protocol) -> None:
         assert self._mechanism is not None
         try:
             data = self._mechanism.get_response_data(stanza.getData())
@@ -211,7 +221,7 @@ class SASL:
         nonza = get_response_nonza(self._sasl_ns, data)
         self._client.send_nonza(nonza)
 
-    def _on_success(self, stanza):
+    def _on_success(self, stanza: Protocol) -> None:
         self._log.info('Successfully authenticated with remote server')
         data = get_success_data(stanza, self._sasl_ns)
         try:
@@ -225,7 +235,7 @@ class SASL:
 
         self._on_sasl_finished(True, None, None)
 
-    def _on_failure(self, stanza):
+    def _on_failure(self, stanza: Protocol) -> None:
         text = stanza.getTagData('text')
         reason = 'not-authorized'
         childs = stanza.getChildren()
@@ -240,12 +250,12 @@ class SASL:
         self._log.info('Failed SASL authentification: %s %s', reason, text)
         self._abort_auth(reason, text)
 
-    def _abort_auth(self, reason='malformed-request', text=None):
+    def _abort_auth(self, reason: str = 'malformed-request', text: str | None = None) -> None:
         node = Node('abort', attrs={'xmlns': self._sasl_ns})
         self._client.send_nonza(node)
         self._on_sasl_finished(False, reason, text)
 
-    def _on_sasl_finished(self, successful, reason, text=None):
+    def _on_sasl_finished(self, successful: bool, reason: str | None, text: str | None = None) -> None:
         if not successful:
             self._error = (reason, text)
             self._client.set_state(StreamState.AUTH_FAILED)
@@ -255,7 +265,7 @@ class SASL:
 
 def get_initiate_nonza(ns: str,
                        mechanism: str,
-                       data: Optional[str]) -> Any:
+                       data: str | None) -> Node:
 
     if ns == Namespace.SASL:
         node = Node('auth', attrs={'xmlns': ns, 'mechanism': mechanism})
@@ -270,11 +280,11 @@ def get_initiate_nonza(ns: str,
     return node
 
 
-def get_response_nonza(ns: str, data: str) -> Any:
+def get_response_nonza(ns: str, data: str) -> Node:
     return Node('response', attrs={'xmlns': ns}, payload=[data])
 
 
-def get_success_data(stanza: Any, ns: str) -> Optional[str]:
+def get_success_data(stanza: Protocol, ns: str) -> str | None:
     if ns == Namespace.SASL2:
         return stanza.getTagData('additional-data')
     return stanza.getData()
@@ -284,12 +294,12 @@ class BaseMechanism:
 
     name: str
 
-    def __init__(self, username: str, password: str, domain: str):
+    def __init__(self, username: str, password: str, domain: str) -> None:
         self._username = username
         self._password = password
         self._domain = domain
 
-    def get_initiate_data(self) -> Optional[str]:
+    def get_initiate_data(self) -> str | None:
         raise NotImplementedError
 
     def get_response_data(self, data: str) -> str:
@@ -343,7 +353,7 @@ class GSSAPI(BaseMechanism):
 
         return b64encode(token)
 
-    def get_response_data(self, data: str) -> str:
+    def get_response_data(self, data: str | bytes) -> str:
         byte_data = b64decode(data)
         try:
             if not self.ctx.complete:
@@ -364,7 +374,7 @@ class SCRAM(BaseMechanism):
     name = ''
     _hash_method = ''
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         BaseMechanism.__init__(self, *args, **kwargs)
         self._channel_binding_data: ChannelBindingData | None = None
         self._gs2_header = 'n,,'
@@ -401,7 +411,7 @@ class SCRAM(BaseMechanism):
 
         return b64encode(client_first_message)
 
-    def get_response_data(self, data) -> str:
+    def get_response_data(self, data: str | bytes) -> str:
         server_first_message = b64decode(data).decode()
         challenge = self._scram_parse(server_first_message)
 

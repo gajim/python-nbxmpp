@@ -60,10 +60,10 @@ class _Quoter(dict[str, str]):
     def __init__(self, safe: re.Pattern[str]) -> None:
         self._safe = safe
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Quoter {dict(self)!r}>"
 
-    def __missing__(self, b: str):
+    def __missing__(self, b: str) -> str:
         if len(b) != 1:
             raise ValueError("String must be exactly one character long")
 

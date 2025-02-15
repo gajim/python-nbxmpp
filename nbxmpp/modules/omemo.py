@@ -15,6 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import Literal
+from typing import TYPE_CHECKING
+
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
@@ -23,6 +28,7 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import OMEMOBundle
 from nbxmpp.structs import OMEMOMessage
 from nbxmpp.structs import StanzaHandler
@@ -30,6 +36,9 @@ from nbxmpp.task import iq_request_task
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
 from nbxmpp.util import from_xs_boolean
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 
 class OMEMO(BaseModule):
@@ -39,7 +48,7 @@ class OMEMO(BaseModule):
         'request_items': 'PubSub',
     }
 
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -54,7 +63,7 @@ class OMEMO(BaseModule):
                           priority=7),
         ]
 
-    def _process_omemo_message(self, _client, stanza, properties):
+    def _process_omemo_message(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         try:
             properties.omemo = _parse_omemo_message(stanza)
             self._log.info('Received message')
@@ -63,7 +72,7 @@ class OMEMO(BaseModule):
             self._log.warning(stanza)
             return
 
-    def _process_omemo_devicelist(self, _client, stanza, properties):
+    def _process_omemo_devicelist(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -94,7 +103,7 @@ class OMEMO(BaseModule):
         properties.pubsub_event = pubsub_event
 
     @iq_request_task
-    def set_devicelist(self, devicelist=None, public=True):
+    def set_devicelist(self, devicelist: set[int] | None = None, public: bool = True):
         task = yield
 
         access_model = 'open' if public else 'presence'
@@ -113,7 +122,7 @@ class OMEMO(BaseModule):
         yield finalize(task, result)
 
     @iq_request_task
-    def request_devicelist(self, jid=None):
+    def request_devicelist(self, jid: str | None = None):
         task = yield
 
         items = yield self.request_items(Namespace.OMEMO_TEMP_DL,
@@ -128,7 +137,7 @@ class OMEMO(BaseModule):
         yield _parse_devicelist(items[0])
 
     @iq_request_task
-    def set_bundle(self, bundle, device_id, public=True):
+    def set_bundle(self, bundle: OMEMOBundle, device_id: int, public: bool = True):
         task = yield
 
         access_model = 'open' if public else 'presence'
@@ -148,7 +157,7 @@ class OMEMO(BaseModule):
         yield finalize(task, result)
 
     @iq_request_task
-    def request_bundle(self, jid, device_id):
+    def request_bundle(self, jid: str, device_id: int):
         task = yield
 
         items = yield self.request_items(
@@ -164,7 +173,7 @@ class OMEMO(BaseModule):
         yield _parse_bundle(items[0], device_id)
 
 
-def _parse_omemo_message(stanza):
+def _parse_omemo_message(stanza: Message) -> OMEMOMessage:
     '''
     <message>
       <encrypted xmlns='eu.siacs.conversations.axolotl'>
@@ -211,7 +220,7 @@ def _parse_omemo_message(stanza):
     if not key_nodes:
         raise MalformedStanzaError('no keys found', stanza)
 
-    keys = {}
+    keys: dict[int,  tuple[bytes, bool]] = {}
     for kn in key_nodes:
         rid = kn.getAttr('rid')
         if rid is None:
@@ -235,7 +244,7 @@ def _parse_omemo_message(stanza):
     return OMEMOMessage(sid=sid, iv=iv, keys=keys, payload=payload)
 
 
-def _parse_bundle(item, device_id):
+def _parse_bundle(item: Node | None, device_id: int) -> OMEMOBundle:
     '''
     <item id='current'>
       <bundle xmlns='eu.siacs.conversations.axolotl'>
@@ -322,7 +331,7 @@ def _parse_bundle(item, device_id):
                        namespace=Namespace.OMEMO_TEMP)
 
 
-def _make_bundle(bundle):
+def _make_bundle(bundle: OMEMOBundle) -> Node:
     '''
     <publish node='eu.siacs.conversations.axolotl.bundles:31415'>
       <item id='current'>
@@ -372,9 +381,9 @@ def _make_bundle(bundle):
     return bundle_node
 
 
-def _make_devicelist(devicelist):
+def _make_devicelist(devicelist: set[int] | None) -> Node:
     if devicelist is None:
-        devicelist = []
+        devicelist = set()
 
     devicelist_node = Node('list', attrs={'xmlns': Namespace.OMEMO_TEMP})
     for device in devicelist:
@@ -383,7 +392,7 @@ def _make_devicelist(devicelist):
     return devicelist_node
 
 
-def _parse_devicelist(item):
+def _parse_devicelist(item: Node) -> list[int]:
     '''
     <items node='eu.siacs.conversations.axolotl.devicelist'>
       <item id='current'>
@@ -401,7 +410,7 @@ def _parse_devicelist(item):
     if not list_node.getChildren():
         return []
 
-    result = []
+    result: list[int] = []
     devices_nodes = list_node.getChildren()
     for dn in devices_nodes:
         _id = dn.getAttr('id')
@@ -411,8 +420,8 @@ def _parse_devicelist(item):
     return result
 
 
-def create_omemo_message(stanza, omemo_message, store_hint=True,
-                         node_whitelist=None):
+def create_omemo_message(stanza: Message, omemo_message: OMEMOMessage, store_hint: bool = True,
+                         node_whitelist: list[tuple[str, str]] | None = None) -> None:
     '''
     <message>
       <encrypted xmlns='eu.siacs.conversations.axolotl'>
@@ -460,7 +469,7 @@ def create_omemo_message(stanza, omemo_message, store_hint=True,
         stanza.addChild(node=Node('store', attrs={'xmlns': Namespace.HINTS}))
 
 
-def get_key_transport_message(typ, jid, omemo_message):
+def get_key_transport_message(typ: Literal['chat', 'groupchat'], jid: str, omemo_message: OMEMOMessage) -> Message:
     message = Message(typ=typ, to=jid)
 
     encrypted = Node('encrypted', attrs={'xmlns': Namespace.OMEMO_TEMP})
@@ -479,8 +488,8 @@ def get_key_transport_message(typ, jid, omemo_message):
     return message
 
 
-def cleanup_stanza(stanza, node_whitelist):
-    whitelisted_nodes = []
+def cleanup_stanza(stanza: Message, node_whitelist: list[tuple[str, str]]) -> None:
+    whitelisted_nodes: list[Node] = []
     for tag, ns in node_whitelist:
         node = stanza.getTag(tag, namespace=ns)
         if node is not None:

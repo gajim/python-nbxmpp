@@ -15,17 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Iq
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.protocol import Presence
+from nbxmpp.structs import DiscoIdentity
 from nbxmpp.structs import DiscoInfo
 from nbxmpp.structs import EntityCapsData
+from nbxmpp.structs import IqProperties
+from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import compute_caps_hash
 
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
+
 
 class EntityCaps(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -44,12 +56,12 @@ class EntityCaps(BaseModule):
         self._identities = []
         self._features = []
 
-        self._uri = None
-        self._node = None
-        self._caps = None
-        self._caps_hash = None
+        self._uri: str | None = None
+        self._node: str | None = None
+        self._caps: DiscoInfo | None = None
+        self._caps_hash: str | None = None
 
-    def _process_disco_info(self, client, stanza, _properties):
+    def _process_disco_info(self, client: Client, stanza: Iq, _properties: IqProperties) -> None:
         if self._caps is None:
             return
 
@@ -73,7 +85,7 @@ class EntityCaps(BaseModule):
         client.send_stanza(iq)
         raise NodeProcessed
 
-    def _process_entity_caps(self, _client, stanza, properties):
+    def _process_entity_caps(self, _client: Client, stanza: Presence, properties: PresenceProperties) -> None:
         caps = stanza.getTag('c', namespace=Namespace.CAPS)
         if caps is None:
             return
@@ -103,14 +115,17 @@ class EntityCaps(BaseModule):
             ver=ver)
 
     @property
-    def caps(self):
+    def caps(self) -> EntityCapsData | None:
         if self._caps is None:
             return None
+
+        assert self._uri is not None
+        assert self._caps_hash is not None
         return EntityCapsData(hash='sha-1',
                               node=self._uri,
                               ver=self._caps_hash)
 
-    def set_caps(self, identities, features, uri):
+    def set_caps(self, identities: list[DiscoIdentity], features: list[str], uri: str) -> None:
         self._uri = uri
         self._caps = DiscoInfo(None, identities, features, [])
         self._caps_hash = compute_caps_hash(self._caps, compare=False)

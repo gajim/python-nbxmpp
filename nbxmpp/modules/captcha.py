@@ -15,16 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.bits_of_binary import parse_bob_data
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.namespaces import Namespace
+from nbxmpp.protocol import Message
 from nbxmpp.structs import CaptchaData
+from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import StanzaHandler
+
+if TYPE_CHECKING:
+    from nbxmpp.client import Client
 
 
 class Captcha(BaseModule):
-    def __init__(self, client):
+    def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
@@ -35,7 +44,7 @@ class Captcha(BaseModule):
                           priority=40),
         ]
 
-    def _process_captcha(self, _client, stanza, properties):
+    def _process_captcha(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
         captcha = stanza.getTag('captcha', namespace=Namespace.CAPTCHA)
         if captcha is None:
             return
