@@ -54,7 +54,6 @@ class LocalTimezone(dt.tzinfo):
     changed in the past.
     '''
     def fromutc(self, dt_input: dt.datetime) -> dt.datetime:
-        assert dt.tzinfo is self
         stamp = (dt_input - dt.datetime(1970, 1, 1, tzinfo=self)) // SECOND
         args = time.localtime(stamp)[:6]
         dst_diff = DSTDIFF // SECOND
@@ -63,24 +62,24 @@ class LocalTimezone(dt.tzinfo):
         return dt.datetime(*args, microsecond=dt_input.microsecond,
                         tzinfo=self, fold=fold)
 
-    def utcoffset(self, dt: dt.datetime) -> dt.timedelta:  # type: ignore
-        if self._isdst(dt):
+    def utcoffset(self, dt_input: dt.datetime) -> dt.timedelta:  # type: ignore
+        if self._isdst(dt_input):
             return DSTOFFSET
         return STDOFFSET
 
-    def dst(self, dt: dt.datetime) -> dt.timedelta:  # type: ignore
-        if self._isdst(dt):
+    def dst(self, dt_input: dt.datetime) -> dt.timedelta:  # type: ignore
+        if self._isdst(dt_input):
             return DSTDIFF
         return ZERO
 
-    def tzname(self, dt: dt.datetime) -> str:  # type: ignore
+    def tzname(self, _dt_input: dt.datetime) -> str:  # type: ignore
         return 'local'
 
     @staticmethod
-    def _isdst(dt: dt.datetime) -> bool:
-        tt = (dt.year, dt.month, dt.day,
-              dt.hour, dt.minute, dt.second,
-              dt.weekday(), 0, 0)
+    def _isdst(dt_input: dt.datetime) -> bool:
+        tt = (dt_input.year, dt_input.month, dt_input.day,
+              dt_input.hour, dt_input.minute, dt_input.second,
+              dt_input.weekday(), 0, 0)
         stamp = time.mktime(tt)
         tt = time.localtime(stamp)
         return tt.tm_isdst > 0
