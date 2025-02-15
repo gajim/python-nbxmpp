@@ -28,6 +28,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 gssapi = ["gssapi"]
 dev = [
+  "black==24.10.0",
   "isort>=5.13.2",
   "ruff>=0.6.8",
   "PyGObject-stubs @ git+https://github.com/pygobject/pygobject-stubs.git",
@@ -53,6 +54,11 @@ typeCheckingMode = "strict"
 reportUnnecessaryTypeIgnoreComment = "error"
 reportPropertyTypeMismatch = "error"
 reportMissingModuleSource = "none"
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312"]
+required-version = "24.10.0"
 
 [tool.isort]
 force_alphabetical_sort_within_sections = true

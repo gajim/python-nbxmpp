@@ -16,6 +16,16 @@ test-isort:
     - isort --check .
   interruptible: true
 
+test-black:
+  stage: test
+  rules:
+    - changes:
+      - "**/*.py"
+  script:
+    - black --version
+    - black --check .
+  interruptible: true
+
 test-ruff:
   stage: test
   rules:
