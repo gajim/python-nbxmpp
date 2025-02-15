@@ -143,6 +143,7 @@ select = [
 
 ignore = [
   "A003",   # Class attribute is shadowing python builtin
+  "A005",   # Module shadows a Python standard-library module
   "B904",   # Within an except clause ..
   "BLE001", # Blind except Exception: statement
   "C901",   # too complex
