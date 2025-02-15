@@ -49,7 +49,7 @@ def parse_fallback_indication(
             start = body.getAttr("start") or None
             end = body.getAttr("end") or None
 
-            if type(start) != type(end):
+            if type(start) is not type(end):
                 log.warning("Incorrect range on fallback indication")
                 continue
 
