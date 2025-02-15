@@ -185,7 +185,7 @@ class Task:
             elif inspect.isfunction(callback):
                 callback = weakref.ref(callback)
             else:
-                ValueError("Unknown callback object")
+                raise ValueError("Unknown callback object")
 
         self._done_callbacks.append(callback)
 
@@ -242,7 +242,7 @@ class Task:
 
         elif isinstance(res, Task):
             if self._sub_task is not None:
-                RuntimeError("Only one sub task can be active")
+                raise RuntimeError("Only one sub task can be active")
 
             self._sub_task = res
             self._sub_task.add_done_callback(self._sub_task_completed, weak=False)
