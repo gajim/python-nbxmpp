@@ -80,7 +80,7 @@ class Location(BaseModule):
         properties.pubsub_event = pubsub_event
 
     @iq_request_task
-    def set_location(self, data: LocationData):
+    def set_location(self, data: LocationData | None):
         task = yield
 
         item = Node("geoloc", {"xmlns": Namespace.LOCATION})

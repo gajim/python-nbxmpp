@@ -85,7 +85,7 @@ class Tune(BaseModule):
         properties.pubsub_event = pubsub_event
 
     @iq_request_task
-    def set_tune(self, data: TuneData):
+    def set_tune(self, data: TuneData | None):
         task = yield
 
         item = Node("tune", {"xmlns": Namespace.TUNE})
