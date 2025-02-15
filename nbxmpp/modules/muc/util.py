@@ -53,14 +53,14 @@ def make_affiliation_request(jid: JID | str, affiliation: AffiliationT) -> Iq:
 
 
 def make_set_affiliation_request(
-    room_jid: JID, users_dict: dict[JID, dict[str, str]]
+    room_jid: JID, users_dict: dict[JID, dict[str, str | None]]
 ) -> Iq:
     iq = Iq(typ="set", to=room_jid, queryNS=Namespace.MUC_ADMIN)
     item = iq.setQuery()
-    for jid in users_dict:
-        affiliation = users_dict[jid].get("affiliation")
-        reason = users_dict[jid].get("reason")
-        nick = users_dict[jid].get("nick")
+    for jid, data in users_dict.items():
+        affiliation = data.get("affiliation")
+        reason = data.get("reason")
+        nick = data.get("nick")
         item_tag = item.addChild("item", {"jid": jid, "affiliation": affiliation})
         if reason is not None:
             item_tag.setTagData("reason", reason)
