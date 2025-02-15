@@ -44,7 +44,7 @@ class EntityCaps(unittest.TestCase):
 
         info = parse_disco_info(Iq(node=node))
         hash_ = compute_caps_hash(info)
-        self.assertEqual(hash_, 'q07IKJEyjvHSyhy//CH0CxmKi8w=')
+        self.assertEqual(hash_, "q07IKJEyjvHSyhy//CH0CxmKi8w=")
 
     def test_ignore_invalid_forms(self):
         node = """
@@ -97,7 +97,7 @@ class EntityCaps(unittest.TestCase):
 
         info = parse_disco_info(Iq(node=node))
         hash_ = compute_caps_hash(info)
-        self.assertEqual(hash_, 'q07IKJEyjvHSyhy//CH0CxmKi8w=')
+        self.assertEqual(hash_, "q07IKJEyjvHSyhy//CH0CxmKi8w=")
 
     def test_multiple_form_type_values(self):
         node = """

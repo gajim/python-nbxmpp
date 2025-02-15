@@ -36,26 +36,29 @@ class ChatMarkers(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_message_marker,
-                          ns=Namespace.CHATMARKERS,
-                          priority=15),
+            StanzaHandler(
+                name="message",
+                callback=self._process_message_marker,
+                ns=Namespace.CHATMARKERS,
+                priority=15,
+            ),
         ]
 
-    def _process_message_marker(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
-        type_ = stanza.getTag('received', namespace=Namespace.CHATMARKERS)
+    def _process_message_marker(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
+        type_ = stanza.getTag("received", namespace=Namespace.CHATMARKERS)
         if type_ is None:
-            type_ = stanza.getTag('displayed', namespace=Namespace.CHATMARKERS)
+            type_ = stanza.getTag("displayed", namespace=Namespace.CHATMARKERS)
             if type_ is None:
-                type_ = stanza.getTag('acknowledged',
-                                      namespace=Namespace.CHATMARKERS)
+                type_ = stanza.getTag("acknowledged", namespace=Namespace.CHATMARKERS)
                 if type_ is None:
                     return
 
         name = type_.getName()
-        id_ = type_.getAttr('id')
+        id_ = type_.getAttr("id")
         if id_ is None:
-            self._log.warning('Chatmarker without id')
+            self._log.warning("Chatmarker without id")
             self._log.warning(stanza)
             return
 

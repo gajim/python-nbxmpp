@@ -59,8 +59,8 @@ class PrivateBookmarks(BaseModule):
     def store_bookmarks(self, bookmarks: list[BookmarkData]):
         _task = yield
 
-        self._log.info('Store Bookmarks')
+        self._log.info("Store Bookmarks")
 
         storage_node = build_storage_node(bookmarks)
-        response = yield Iq('set', Namespace.PRIVATE, payload=storage_node)
+        response = yield Iq("set", Namespace.PRIVATE, payload=storage_node)
         yield process_response(response)

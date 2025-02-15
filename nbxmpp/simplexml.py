@@ -34,7 +34,7 @@ from nbxmpp.const import NOT_ALLOWED_XML_CHARS
 
 Attrs = dict[str, str]
 
-log = logging.getLogger('nbxmpp.simplexml')
+log = logging.getLogger("nbxmpp.simplexml")
 
 
 def XMLescape(text: str) -> str:
@@ -80,14 +80,15 @@ class Node:
     FORCE_NODE_RECREATION = False
 
     def __init__(
-            self,
-            tag: str | None = None,
-            attrs: Attrs | None = None,
-            payload: Node | str | list[Node | str] | None = None,
-            parent: Node | None = None,
-            nsp: dict[Any, Any] | None = None,
-            node_built: bool = False,
-            node: Node | Any | None = None) -> None:
+        self,
+        tag: str | None = None,
+        attrs: Attrs | None = None,
+        payload: Node | str | list[Node | str] | None = None,
+        parent: Node | None = None,
+        nsp: dict[Any, Any] | None = None,
+        node_built: bool = False,
+        node: Node | Any | None = None,
+    ) -> None:
         """
         Takes "tag" argument as the name of node (prepended by namespace, if
         needed and separated from it by a space), attrs dictionary as the set of
@@ -123,8 +124,8 @@ class Node:
                 for key, value in node.nsd.items():
                     self.nsd[key] = value
         else:
-            self.name = 'tag'
-            self.namespace = ''
+            self.name = "tag"
+            self.namespace = ""
             self.attrs = {}
             self.data = []
             self.kids = []
@@ -139,18 +140,18 @@ class Node:
 
         if attrs is not None:
             for attr, val in attrs.items():
-                if attr == 'xmlns':
-                    self.nsd[''] = val
-                elif attr.startswith('xmlns:'):
+                if attr == "xmlns":
+                    self.nsd[""] = val
+                elif attr.startswith("xmlns:"):
                     self.nsd[attr[6:]] = val
                 self.attrs[attr] = attrs[attr]
 
         if tag:
             if node_built:
-                pfx, self.name = (['']+tag.split(':'))[-2:]
+                pfx, self.name = ([""] + tag.split(":"))[-2:]
                 self.namespace = self.lookup_nsp(pfx)
             else:
-                if ' ' in tag:
+                if " " in tag:
                     self.namespace, self.name = tag.split()
                 else:
                     self.name = tag
@@ -163,7 +164,7 @@ class Node:
                 else:
                     self.data.append(str(i))
 
-    def lookup_nsp(self, pfx: str = '') -> str:
+    def lookup_nsp(self, pfx: str = "") -> str:
         ns = self.nsd.get(pfx, None)
         if ns is None:
             ns = self.nsp_cache.get(pfx, None)
@@ -172,7 +173,7 @@ class Node:
                 ns = self.parent.lookup_nsp(pfx)
                 self.nsp_cache[pfx] = ns
             else:
-                return 'http://www.gajim.org/xmlns/undeclared'
+                return "http://www.gajim.org/xmlns/undeclared"
         return ns
 
     def __str__(self, fancy: int = 0) -> str:
@@ -180,10 +181,10 @@ class Node:
         Method used to dump node into textual representation. If "fancy"
         argument is set to True produces indented output for readability
         """
-        s = (fancy-1) * 2 * ' ' + "<" + self.name
+        s = (fancy - 1) * 2 * " " + "<" + self.name
         if self.namespace:
-            if not self.parent or self.parent.namespace!=self.namespace:
-                if 'xmlns' not in self.attrs:
+            if not self.parent or self.parent.namespace != self.namespace:
+                if "xmlns" not in self.attrs:
                     s += ' xmlns="%s"' % self.namespace
         for key in self.attrs:
             val = str(self.attrs[key])
@@ -195,37 +196,39 @@ class Node:
             if fancy:
                 s += "\n"
             for a in self.kids:
-                if not fancy and (len(self.data)-1) >= cnt:
+                if not fancy and (len(self.data) - 1) >= cnt:
                     s += XMLescape(self.data[cnt])
-                elif (len(self.data)-1) >= cnt:
+                elif (len(self.data) - 1) >= cnt:
                     s += XMLescape(self.data[cnt].strip())
                 if isinstance(a, str):
                     s += a.__str__()
                 else:
-                    s += a.__str__(fancy and fancy+1)
+                    s += a.__str__(fancy and fancy + 1)
                 cnt += 1
-        if not fancy and (len(self.data)-1) >= cnt:
+        if not fancy and (len(self.data) - 1) >= cnt:
             s += XMLescape(self.data[cnt])
-        elif (len(self.data)-1) >= cnt:
+        elif (len(self.data) - 1) >= cnt:
             s += XMLescape(self.data[cnt].strip())
-        if not self.kids and s.endswith('>'):
-            s = s[:-1] + ' />'
+        if not self.kids and s.endswith(">"):
+            s = s[:-1] + " />"
             if fancy:
                 s += "\n"
         else:
             if fancy and not self.data:
-                s += (fancy-1) * 2 * ' '
+                s += (fancy - 1) * 2 * " "
             s += "</" + self.name + ">"
             if fancy:
                 s += "\n"
         return s
 
-    def addChild(self,
-                 name: str | None = None,
-                 attrs: Attrs | None = None,
-                 payload: list[Any] | None = None,
-                 namespace: str | None = None,
-                 node: Node | None = None) -> Node:
+    def addChild(
+        self,
+        name: str | None = None,
+        attrs: Attrs | None = None,
+        payload: list[Any] | None = None,
+        namespace: str | None = None,
+        node: Node | None = None,
+    ) -> Node:
         """
         If "node" argument is provided, adds it as child node. Else creates new
         node from the other arguments' values and adds it as well
@@ -235,13 +238,13 @@ class Node:
 
         if attrs is None:
             attrs = {}
-        elif 'xmlns' in attrs:
+        elif "xmlns" in attrs:
             raise AttributeError("Use namespace=x instead of attrs={'xmlns':x}")
         if node:
-            newnode=node
+            newnode = node
             node.parent = self
         else:
-            newnode=Node(tag=name, parent=self, attrs=attrs, payload=payload)
+            newnode = Node(tag=name, parent=self, attrs=attrs, payload=payload)
         if namespace:
             newnode.setNamespace(namespace)
         self.kids.append(newnode)
@@ -265,9 +268,7 @@ class Node:
         """
         del self.attrs[key]
 
-    def delChild(self,
-                 node: Node | str,
-                 attrs: Attrs | None = None) -> Node | None:
+    def delChild(self, node: Node | str, attrs: Attrs | None = None) -> Node | None:
         """
         Delete the "node" from the node's childs list, if "node" is an instance.
         Else delete the first node that have specified name and (optionally)
@@ -303,7 +304,7 @@ class Node:
         """
         Return all node CDATA as string (concatenated)
         """
-        return ''.join(self.data)
+        return "".join(self.data)
 
     def getName(self) -> str:
         """
@@ -323,10 +324,9 @@ class Node:
         """
         return self.parent
 
-    def getTag(self,
-               name: str,
-               attrs: Attrs | None = None,
-               namespace: str | None = None) -> Node | None:
+    def getTag(
+        self, name: str, attrs: Attrs | None = None, namespace: str | None = None
+    ) -> Node | None:
         """
         Filter all child nodes using specified arguments as filter. Return the
         first found or None if not found
@@ -336,10 +336,9 @@ class Node:
             return None
         return tags[0]
 
-    def getTagAttr(self,
-                   tag: str,
-                   attr: str,
-                   namespace: str | None = None) -> str | None:
+    def getTagAttr(
+        self, tag: str, attr: str, namespace: str | None = None
+    ) -> str | None:
         """
         Return attribute value of the child with specified name (or None if no
         such attribute)
@@ -358,10 +357,9 @@ class Node:
             return None
         return node.getData()
 
-    def getTags(self,
-                name: str,
-                attrs: Attrs | None = None,
-                namespace: str | None = None) -> list[Node]:
+    def getTags(
+        self, name: str, attrs: Attrs | None = None, namespace: str | None = None
+    ) -> list[Node]:
         """
         Filter all child nodes using specified arguments as filter. Returns the
         list of nodes found
@@ -380,10 +378,9 @@ class Node:
                     nodes.append(node)
         return nodes
 
-    def iterTags(self,
-                 name: str,
-                 attrs: Attrs | None = None,
-                 namespace: str | None = None) -> Iterator[Node]:
+    def iterTags(
+        self, name: str, attrs: Attrs | None = None, namespace: str | None = None
+    ) -> Iterator[Node]:
         """
         Iterate over all children using specified arguments as filter
         """
@@ -394,8 +391,7 @@ class Node:
                 if attrs is None:
                     attrs = {}
                 for key in attrs:
-                    if key not in node.attrs or \
-                            node.attrs[key]!=attrs[key]:
+                    if key not in node.attrs or node.attrs[key] != attrs[key]:
                         break
                 else:
                     yield node
@@ -432,9 +428,9 @@ class Node:
         """
         self.parent = node
 
-    def setPayload(self,
-                   payload: list[Node | str] | Node | str,
-                   add: bool = False) -> None:
+    def setPayload(
+        self, payload: list[Node | str] | Node | str, add: bool = False
+    ) -> None:
         """
         Set node payload according to the list specified. WARNING: completely
         replaces all node's previous content. If you wish just to add child or
@@ -447,10 +443,9 @@ class Node:
         else:
             self.kids = payload
 
-    def setTag(self,
-               name: str,
-               attrs: Attrs | None = None,
-               namespace: str | None = None) -> Node:
+    def setTag(
+        self, name: str, attrs: Attrs | None = None, namespace: str | None = None
+    ) -> Node:
         """
         Same as getTag but if the node with specified namespace/attributes not
         found, creates such node and returns it
@@ -460,11 +455,9 @@ class Node:
             return nodes[0]
         return self.addChild(name, attrs, namespace=namespace)
 
-    def setTagAttr(self,
-                   tag: str,
-                   attr: str,
-                   val: str,
-                   namespace: str | None = None) -> None:
+    def setTagAttr(
+        self, tag: str, attr: str, val: str, namespace: str | None = None
+    ) -> None:
         """
         Create new node (if not already present) with name "tag" and set it's
         attribute "attr" to value "val"
@@ -474,10 +467,7 @@ class Node:
         except Exception:
             self.addChild(tag, namespace=namespace, attrs={attr: val})
 
-    def setTagData(self,
-                   tag: str,
-                   val: Any,
-                   attrs: Attrs | None = None) -> None:
+    def setTagData(self, tag: str, val: Any, attrs: Attrs | None = None) -> None:
         """
         Creates new node (if not already present) with name "tag" and
         (optionally) attributes "attrs" and sets it's CDATA to string "val"
@@ -485,10 +475,10 @@ class Node:
         try:
             self.getTag(tag, attrs).setData(str(val))
         except Exception:
-            self.addChild(tag, attrs, payload = [str(val)])
+            self.addChild(tag, attrs, payload=[str(val)])
 
     def getXmlLang(self) -> str | None:
-        lang = self.attrs.get('xml:lang')
+        lang = self.attrs.get("xml:lang")
         if lang is not None:
             return lang
 
@@ -526,14 +516,14 @@ class Node:
         """
         return self.has_attr(item)
 
-    def __getattr__(self, attr: str) -> Union['T' |'NT']:
+    def __getattr__(self, attr: str) -> Union["T" | "NT"]:
         """
         Reduce memory usage caused by T/NT classes - use memory only when needed
         """
-        if attr == 'T':
+        if attr == "T":
             self.T = T(self)
             return self.T
-        if attr == 'NT':
+        if attr == "NT":
             self.NT = NT(self)
             return self.NT
         raise AttributeError
@@ -545,7 +535,7 @@ class T:
     """
 
     def __init__(self, node):
-        self.__dict__['node'] = node
+        self.__dict__["node"] = node
 
     def __getattr__(self, attr):
         return self.node.setTag(attr)
@@ -558,6 +548,7 @@ class T:
 
     def __delattr__(self, attr):
         return self.node.delChild(attr)
+
 
 class NT(T):
     """
@@ -602,11 +593,13 @@ class NodeBuilder:
     stream_error: str
     _is_stream: bool
 
-    def __init__(self,
-                 data: str | None = None,
-                 initial_node: Node | None = None,
-                 dispatch_depth: int = 1,
-                 finished: bool = True) -> None:
+    def __init__(
+        self,
+        data: str | None = None,
+        initial_node: Node | None = None,
+        dispatch_depth: int = 1,
+        finished: bool = True,
+    ) -> None:
         """
         Take two optional parameters: "data" and "initial_node"
 
@@ -626,8 +619,7 @@ class NodeBuilder:
         self._parser.CommentHandler = self.handle_invalid_xmpp_element
         self._parser.ExternalEntityRefHandler = self.handle_invalid_xmpp_element
         self._parser.AttlistDeclHandler = self.handle_invalid_xmpp_element
-        self._parser.ProcessingInstructionHandler = \
-            self.handle_invalid_xmpp_element
+        self._parser.ProcessingInstructionHandler = self.handle_invalid_xmpp_element
         self._parser.buffer_text = True
         self.Parse = self._parser.Parse
 
@@ -640,14 +632,14 @@ class NodeBuilder:
         self.last_is_data = True
         self._ptr = None
         self.data_buffer = None
-        self.stream_error = ''
+        self.stream_error = ""
         self._is_stream = not finished
         if data:
             self._parser.Parse(data, finished)
 
     def check_data_buffer(self) -> None:
         if self.data_buffer:
-            self._ptr.data.append(''.join(self.data_buffer))
+            self._ptr.data.append("".join(self.data_buffer))
             del self.data_buffer[:]
             self.data_buffer = None
 
@@ -667,58 +659,61 @@ class NodeBuilder:
         """
         self.check_data_buffer()
         self._inc_depth()
-        log.debug("STARTTAG.. DEPTH -> %i , tag -> %s, attrs -> %s",
-                  self.__depth, tag, attrs)
+        log.debug(
+            "STARTTAG.. DEPTH -> %i , tag -> %s, attrs -> %s", self.__depth, tag, attrs
+        )
         if self.__depth == self._dispatch_depth:
             if not self._mini_dom:
-                self._mini_dom = Node(tag=tag,
-                                      attrs=attrs,
-                                      nsp=self._document_nsp,
-                                      node_built=True)
+                self._mini_dom = Node(
+                    tag=tag, attrs=attrs, nsp=self._document_nsp, node_built=True
+                )
             else:
-                Node.__init__(self._mini_dom,
-                              tag=tag,
-                              attrs=attrs,
-                              nsp=self._document_nsp,
-                              node_built=True)
+                Node.__init__(
+                    self._mini_dom,
+                    tag=tag,
+                    attrs=attrs,
+                    nsp=self._document_nsp,
+                    node_built=True,
+                )
             self._ptr = self._mini_dom
         elif self.__depth > self._dispatch_depth:
-            self._ptr.kids.append(Node(tag=tag,
-                                       parent=self._ptr,
-                                       attrs=attrs,
-                                       node_built=True))
+            self._ptr.kids.append(
+                Node(tag=tag, parent=self._ptr, attrs=attrs, node_built=True)
+            )
             self._ptr = self._ptr.kids[-1]
         if self.__depth == 1:
             self._document_attrs = {}
             self._document_nsp = {}
-            nsp, name = (['']+tag.split(':'))[-2:]
+            nsp, name = ([""] + tag.split(":"))[-2:]
             for attr, val in attrs.items():
-                if attr == 'xmlns':
-                    self._document_nsp[''] = val
-                elif attr.startswith('xmlns:'):
+                if attr == "xmlns":
+                    self._document_nsp[""] = val
+                elif attr.startswith("xmlns:"):
                     self._document_nsp[attr[6:]] = val
                 else:
                     self._document_attrs[attr] = val
             ns = self._document_nsp.get(
-                nsp, 'http://www.gajim.org/xmlns/undeclared-root')
+                nsp, "http://www.gajim.org/xmlns/undeclared-root"
+            )
             try:
-                header = Node(tag=tag,
-                              attrs=attrs,
-                              nsp=self._document_nsp, node_built=True)
+                header = Node(
+                    tag=tag, attrs=attrs, nsp=self._document_nsp, node_built=True
+                )
                 self.dispatch(header)
                 self._check_stream_start(ns, name)
             except ValueError as error:
                 self._document_attrs = None
                 raise ValueError(str(error))
         if not self.last_is_data and self._ptr.parent:
-            self._ptr.parent.data.append('')
+            self._ptr.parent.data.append("")
         self.last_is_data = False
 
     def _check_stream_start(self, ns: str, tag: str) -> None:
         if self._is_stream:
-            if ns != 'http://etherx.jabber.org/streams' or tag != 'stream':
-                raise ValueError('Incorrect stream start: (%s,%s). Terminating.'
-                                 % (tag, ns))
+            if ns != "http://etherx.jabber.org/streams" or tag != "stream":
+                raise ValueError(
+                    "Incorrect stream start: (%s,%s). Terminating." % (tag, ns)
+                )
         else:
             self.stream_header_received()
 
@@ -729,7 +724,7 @@ class NodeBuilder:
         log.debug("DEPTH -> %i , tag -> %s", self.__depth, tag)
         self.check_data_buffer()
         if self.__depth == self._dispatch_depth:
-            if self._mini_dom.getName() == 'error':
+            if self._mini_dom.getName() == "error":
                 children = self._mini_dom.getChildren()
                 if children:
                     self.stream_error = children[0].getName()
@@ -755,7 +750,7 @@ class NodeBuilder:
 
     @staticmethod
     def handle_invalid_xmpp_element(*args: Any) -> None:
-        raise ExpatError('Found invalid xmpp stream element: %s' % str(args))
+        raise ExpatError("Found invalid xmpp stream element: %s" % str(args))
 
     def handle_namespace_start(self, _prefix: str, _uri: str) -> None:
         """
@@ -802,6 +797,7 @@ class NodeBuilder:
     def _dec_depth(self) -> None:
         self.__depth -= 1
 
+
 def XML2Node(xml_str: str) -> Node | None:
     """
     Convert supplied textual string into XML node. Handy f.e. for reading
@@ -809,6 +805,7 @@ def XML2Node(xml_str: str) -> Node | None:
     is not well-formed XML
     """
     return NodeBuilder(xml_str).getDom()
+
 
 def BadXML2Node(xml_str: str) -> Node | None:
     """

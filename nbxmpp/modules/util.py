@@ -59,34 +59,36 @@ def finalize(task: Task, result: Any) -> Any:
 
 def parse_xmpp_uri(uri: str) -> tuple[str, str, dict[str, str]]:
     url = urlparse(uri)
-    if url.scheme != 'xmpp':
-        raise ValueError('not a xmpp uri')
+    if url.scheme != "xmpp":
+        raise ValueError("not a xmpp uri")
 
-    if ';' not in url.query:
+    if ";" not in url.query:
         return (url.path, url.query, {})
 
-    action, query = url.query.split(';', 1)
-    key_value_pairs = query.split(';')
+    action, query = url.query.split(";", 1)
+    key_value_pairs = query.split(";")
 
     dict_: dict[str, str] = {}
     for key_value in key_value_pairs:
-        key, value = key_value.split('=')
+        key, value = key_value.split("=")
         dict_[key] = unquote(value)
 
     return (url.path, action, dict_)
 
 
-def make_func_arguments_string(func: Callable[..., Any], self: Any, args: Any, kwargs: Any) -> str:
+def make_func_arguments_string(
+    func: Callable[..., Any], self: Any, args: Any, kwargs: Any
+) -> str:
     signature = inspect.signature(func)
     bound_arguments = signature.bind(self, *args, **kwargs)
     bound_arguments.apply_defaults()
-    arg_string = ''
+    arg_string = ""
     for name, arg in bound_arguments.arguments.items():
-        if name == 'self':
+        if name == "self":
             continue
-        arg_string += f'{name}={arg}, '
+        arg_string += f"{name}={arg}, "
     arg_string = arg_string[:-2]
-    return f'{func.__name__}({arg_string})'
+    return f"{func.__name__}({arg_string})"
 
 
 def log_calls(func: Callable[..., Any]) -> Callable[..., Any]:
@@ -95,4 +97,5 @@ def log_calls(func: Callable[..., Any]) -> Callable[..., Any]:
         if self._log.isEnabledFor(logging.INFO):
             self._log.info(make_func_arguments_string(func, self, args, kwargs))
         return func(self, *args, **kwargs)
+
     return func_wrapper

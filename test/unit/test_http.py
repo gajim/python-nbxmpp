@@ -11,10 +11,10 @@ from gi.repository import Soup
 from nbxmpp.const import HTTPRequestError
 from nbxmpp.http import HTTPSession
 
-SMALL_FILE_URL = 'https://gajim.org/downloads/ci/unittest_small_file'  # 200 KB
-BIG_FILE_URL = 'https://gajim.org/downloads/ci/unittest_big_file'      # 7   MB
-LARGE_FILE_URL = 'https://gajim.org/downloads/ci/unittest_large_file'  # 80  MB
-NO_FILE_URL = 'https://gajim.org/downloads/ci/no-file'
+SMALL_FILE_URL = "https://gajim.org/downloads/ci/unittest_small_file"  # 200 KB
+BIG_FILE_URL = "https://gajim.org/downloads/ci/unittest_big_file"  # 7   MB
+LARGE_FILE_URL = "https://gajim.org/downloads/ci/unittest_large_file"  # 80  MB
+NO_FILE_URL = "https://gajim.org/downloads/ci/no-file"
 
 
 # import logging
@@ -24,8 +24,9 @@ NO_FILE_URL = 'https://gajim.org/downloads/ci/no-file'
 # log.addHandler(consoleloghandler)
 
 
-@unittest.skipUnless(os.environ.get('NBXMPP_EXTERNAL_UNIT_TESTS'),
-                     'ENV var for external tests not set')
+@unittest.skipUnless(
+    os.environ.get("NBXMPP_EXTERNAL_UNIT_TESTS"), "ENV var for external tests not set"
+)
 class HTTP(unittest.TestCase):
 
     @classmethod
@@ -46,13 +47,13 @@ class HTTP(unittest.TestCase):
         callback_mock = Mock()
 
         temp_dir = tempfile.gettempdir()
-        request.set_response_body_from_path(Path(temp_dir) / 'file')
-        request.connect('response-progress', callback_mock.progress)
-        request.connect('starting-response-body', callback_mock.starting)
-        request.connect('finished', callback_mock.finished)
-        request.connect('destroy', lambda *args: mainloop.quit())
+        request.set_response_body_from_path(Path(temp_dir) / "file")
+        request.connect("response-progress", callback_mock.progress)
+        request.connect("starting-response-body", callback_mock.starting)
+        request.connect("finished", callback_mock.finished)
+        request.connect("destroy", lambda *args: mainloop.quit())
 
-        request.send('GET', SMALL_FILE_URL, timeout=10)
+        request.send("GET", SMALL_FILE_URL, timeout=10)
 
         mainloop.run()
 
@@ -72,11 +73,11 @@ class HTTP(unittest.TestCase):
         request = session.create_request()
 
         callback_mock = Mock()
-        request.connect('response-progress', callback_mock.progress)
-        request.connect('starting-response-body', callback_mock.starting)
-        request.connect('finished', callback_mock.finished)
-        request.connect('destroy', lambda *args: mainloop.quit())
-        request.send('GET', SMALL_FILE_URL, timeout=10)
+        request.connect("response-progress", callback_mock.progress)
+        request.connect("starting-response-body", callback_mock.starting)
+        request.connect("finished", callback_mock.finished)
+        request.connect("destroy", lambda *args: mainloop.quit())
+        request.send("GET", SMALL_FILE_URL, timeout=10)
 
         mainloop.run()
 
@@ -96,11 +97,11 @@ class HTTP(unittest.TestCase):
         request = session.create_request()
 
         callback_mock = Mock()
-        request.connect('response-progress', callback_mock.progress)
-        request.connect('starting-response-body', callback_mock.starting)
-        request.connect('finished', callback_mock.finished)
-        request.connect('destroy', lambda *args: mainloop.quit())
-        request.send('GET', SMALL_FILE_URL, timeout=10)
+        request.connect("response-progress", callback_mock.progress)
+        request.connect("starting-response-body", callback_mock.starting)
+        request.connect("finished", callback_mock.finished)
+        request.connect("destroy", lambda *args: mainloop.quit())
+        request.send("GET", SMALL_FILE_URL, timeout=10)
 
         GLib.timeout_add(10, request.cancel)
 
@@ -125,10 +126,10 @@ class HTTP(unittest.TestCase):
             req.cancel()
 
         callback_mock = Mock()
-        request.connect('starting-response-body', _on_start)
-        request.connect('finished', callback_mock.finished)
-        request.connect('destroy', lambda *args: mainloop.quit())
-        request.send('GET', LARGE_FILE_URL, timeout=10)
+        request.connect("starting-response-body", _on_start)
+        request.connect("finished", callback_mock.finished)
+        request.connect("destroy", lambda *args: mainloop.quit())
+        request.send("GET", LARGE_FILE_URL, timeout=10)
 
         mainloop.run()
 
@@ -146,10 +147,10 @@ class HTTP(unittest.TestCase):
         request = session.create_request()
 
         callback_mock = Mock()
-        request.connect('finished', callback_mock.finished)
-        request.connect('response-progress', callback_mock.progress)
-        request.connect('destroy', lambda *args: mainloop.quit())
-        request.send('GET', NO_FILE_URL, timeout=5)
+        request.connect("finished", callback_mock.finished)
+        request.connect("response-progress", callback_mock.progress)
+        request.connect("destroy", lambda *args: mainloop.quit())
+        request.send("GET", NO_FILE_URL, timeout=5)
 
         mainloop.run()
 
@@ -169,10 +170,10 @@ class HTTP(unittest.TestCase):
         request = session.create_request()
 
         callback_mock = Mock()
-        request.connect('starting-response-body', callback_mock.starting)
-        request.connect('finished', callback_mock.finished)
-        request.connect('destroy', lambda *args: mainloop.quit())
-        request.send('GET', LARGE_FILE_URL, timeout=1)
+        request.connect("starting-response-body", callback_mock.starting)
+        request.connect("finished", callback_mock.finished)
+        request.connect("destroy", lambda *args: mainloop.quit())
+        request.send("GET", LARGE_FILE_URL, timeout=1)
 
         mainloop.run()
 
@@ -191,10 +192,10 @@ class HTTP(unittest.TestCase):
         request = session.create_request()
 
         callback_mock = Mock()
-        request.connect('starting', callback_mock.starting, 1, 2, 3)
-        request.connect('got-body', callback_mock.got_body)
-        request.connect('destroy', lambda *args: mainloop.quit())
-        request.send('GET', SMALL_FILE_URL, timeout=10)
+        request.connect("starting", callback_mock.starting, 1, 2, 3)
+        request.connect("got-body", callback_mock.got_body)
+        request.connect("destroy", lambda *args: mainloop.quit())
+        request.send("GET", SMALL_FILE_URL, timeout=10)
 
         mainloop.run()
 
@@ -209,16 +210,16 @@ class HTTP(unittest.TestCase):
         mainloop = GLib.MainLoop()
 
         request1 = HTTPSession().create_request()
-        request1.send('GET', SMALL_FILE_URL, timeout=5)
+        request1.send("GET", SMALL_FILE_URL, timeout=5)
 
         request2 = HTTPSession().create_request()
-        request2.send('GET', SMALL_FILE_URL, timeout=5)
+        request2.send("GET", SMALL_FILE_URL, timeout=5)
 
         request3 = HTTPSession().create_request()
-        request3.send('GET', SMALL_FILE_URL, timeout=5)
+        request3.send("GET", SMALL_FILE_URL, timeout=5)
 
         request4 = HTTPSession().create_request()
-        request4.send('GET', SMALL_FILE_URL, timeout=5)
+        request4.send("GET", SMALL_FILE_URL, timeout=5)
 
         GLib.timeout_add_seconds(5, mainloop.quit)
 
@@ -248,10 +249,10 @@ class HTTP(unittest.TestCase):
             req._received_size = 100000000000
 
         callback_mock = Mock()
-        request.connect('starting-response-body', _on_starting)
-        request.connect('finished', callback_mock.finished)
-        request.connect('destroy', lambda *args: mainloop.quit())
-        request.send('GET', SMALL_FILE_URL, timeout=10)
+        request.connect("starting-response-body", _on_starting)
+        request.connect("finished", callback_mock.finished)
+        request.connect("destroy", lambda *args: mainloop.quit())
+        request.send("GET", SMALL_FILE_URL, timeout=10)
 
         mainloop.run()
 
@@ -261,5 +262,6 @@ class HTTP(unittest.TestCase):
 
         callback_mock.finished.assert_called()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

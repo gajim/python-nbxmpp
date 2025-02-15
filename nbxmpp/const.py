@@ -27,14 +27,15 @@ from gi.repository import Soup
 from packaging.version import Version
 
 GLIB_VERSION = Version(
-    f'{GLib.MAJOR_VERSION}.{GLib.MINOR_VERSION}.{GLib.MICRO_VERSION}')
+    f"{GLib.MAJOR_VERSION}.{GLib.MINOR_VERSION}.{GLib.MICRO_VERSION}"
+)
 
 
 class IqType(Enum):
-    GET = 'get'
-    SET = 'set'
-    RESULT = 'result'
-    ERROR = 'error'
+    GET = "get"
+    SET = "set"
+    RESULT = "result"
+    ERROR = "error"
 
     @property
     def is_get(self) -> bool:
@@ -54,11 +55,11 @@ class IqType(Enum):
 
 
 class MessageType(Enum):
-    NORMAL = 'normal'
-    CHAT = 'chat'
-    GROUPCHAT = 'groupchat'
-    HEADLINE = 'headline'
-    ERROR = 'error'
+    NORMAL = "normal"
+    CHAT = "chat"
+    GROUPCHAT = "groupchat"
+    HEADLINE = "headline"
+    ERROR = "error"
 
     @property
     def is_normal(self) -> bool:
@@ -82,14 +83,14 @@ class MessageType(Enum):
 
 
 class PresenceType(Enum):
-    PROBE = 'probe'
-    SUBSCRIBE = 'subscribe'
-    SUBSCRIBED = 'subscribed'
+    PROBE = "probe"
+    SUBSCRIBE = "subscribe"
+    SUBSCRIBED = "subscribed"
     AVAILABLE = None
-    UNAVAILABLE = 'unavailable'
-    UNSUBSCRIBE = 'unsubscribe'
-    UNSUBSCRIBED = 'unsubscribed'
-    ERROR = 'error'
+    UNAVAILABLE = "unavailable"
+    UNSUBSCRIBE = "unsubscribe"
+    UNSUBSCRIBED = "unsubscribed"
+    ERROR = "error"
 
     @property
     def is_available(self) -> bool:
@@ -126,11 +127,11 @@ class PresenceType(Enum):
 
 @total_ordering
 class PresenceShow(Enum):
-    ONLINE = 'online'
-    CHAT = 'chat'
-    AWAY = 'away'
-    XA = 'xa'
-    DND = 'dnd'
+    ONLINE = "online"
+    CHAT = "chat"
+    AWAY = "away"
+    XA = "xa"
+    DND = "dnd"
 
     @property
     def is_online(self) -> bool:
@@ -172,11 +173,11 @@ PresenceShow._WEIGHTS = {
 
 @total_ordering
 class Chatstate(Enum):
-    COMPOSING = 'composing'
-    PAUSED = 'paused'
-    ACTIVE = 'active'
-    INACTIVE = 'inactive'
-    GONE = 'gone'
+    COMPOSING = "composing"
+    PAUSED = "paused"
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    GONE = "gone"
 
     @property
     def is_composing(self) -> bool:
@@ -217,47 +218,47 @@ Chatstate._WEIGHTS = {
 
 
 class StatusCode(Enum):
-    NON_ANONYMOUS = '100'
-    AFFILIATION_CHANGE = '101'
-    SHOWING_UNAVAILABLE = '102'
-    NOT_SHOWING_UNAVAILABLE = '103'
-    CONFIG_NON_PRIVACY_RELATED = '104'
-    SELF = '110'
-    CONFIG_ROOM_LOGGING = '170'
-    CONFIG_NO_ROOM_LOGGING = '171'
-    CONFIG_NON_ANONYMOUS = '172'
-    CONFIG_SEMI_ANONYMOUS = '173'
-    CONFIG_FULL_ANONYMOUS = '174'
-    CREATED = '201'
-    NICKNAME_MODIFIED = '210'
-    REMOVED_BANNED = '301'
-    NICKNAME_CHANGE = '303'
-    REMOVED_KICKED = '307'
-    REMOVED_AFFILIATION_CHANGE = '321'
-    REMOVED_NONMEMBER_IN_MEMBERS_ONLY = '322'
-    REMOVED_SERVICE_SHUTDOWN = '332'
-    REMOVED_ERROR = '333'
+    NON_ANONYMOUS = "100"
+    AFFILIATION_CHANGE = "101"
+    SHOWING_UNAVAILABLE = "102"
+    NOT_SHOWING_UNAVAILABLE = "103"
+    CONFIG_NON_PRIVACY_RELATED = "104"
+    SELF = "110"
+    CONFIG_ROOM_LOGGING = "170"
+    CONFIG_NO_ROOM_LOGGING = "171"
+    CONFIG_NON_ANONYMOUS = "172"
+    CONFIG_SEMI_ANONYMOUS = "173"
+    CONFIG_FULL_ANONYMOUS = "174"
+    CREATED = "201"
+    NICKNAME_MODIFIED = "210"
+    REMOVED_BANNED = "301"
+    NICKNAME_CHANGE = "303"
+    REMOVED_KICKED = "307"
+    REMOVED_AFFILIATION_CHANGE = "321"
+    REMOVED_NONMEMBER_IN_MEMBERS_ONLY = "322"
+    REMOVED_SERVICE_SHUTDOWN = "332"
+    REMOVED_ERROR = "333"
 
 
 class InviteType(Enum):
-    MEDIATED = 'mediated'
-    DIRECT = 'direct'
+    MEDIATED = "mediated"
+    DIRECT = "direct"
 
 
 class AvatarState(Enum):
-    IGNORE = 'ignore'
-    NOT_READY = 'not ready'
-    EMPTY = 'empty'
-    ADVERTISED = 'advertised'
+    IGNORE = "ignore"
+    NOT_READY = "not ready"
+    EMPTY = "empty"
+    ADVERTISED = "advertised"
 
 
 @total_ordering
 class Affiliation(Enum):
-    OWNER = 'owner'
-    ADMIN = 'admin'
-    MEMBER = 'member'
-    OUTCAST = 'outcast'
-    NONE = 'none'
+    OWNER = "owner"
+    ADMIN = "admin"
+    MEMBER = "member"
+    OUTCAST = "outcast"
+    NONE = "none"
 
     @property
     def is_owner(self) -> bool:
@@ -299,10 +300,10 @@ Affiliation._WEIGHTS = {
 
 @total_ordering
 class Role(Enum):
-    MODERATOR = 'moderator'
-    PARTICIPANT = 'participant'
-    VISITOR = 'visitor'
-    NONE = 'none'
+    MODERATOR = "moderator"
+    PARTICIPANT = "participant"
+    VISITOR = "visitor"
+    NONE = "none"
 
     @property
     def is_moderator(self) -> bool:
@@ -339,34 +340,34 @@ Role._WEIGHTS = {
 
 class AnonymityMode(Enum):
     UNKNOWN = None
-    SEMI = 'semi'
-    NONE = 'none'
+    SEMI = "semi"
+    NONE = "none"
 
 
 class AdHocStatus(Enum):
-    EXECUTING = 'executing'
-    COMPLETED = 'completed'
-    CANCELED = 'canceled'
+    EXECUTING = "executing"
+    COMPLETED = "completed"
+    CANCELED = "canceled"
 
 
 class AdHocAction(Enum):
-    EXECUTE = 'execute'
-    CANCEL = 'cancel'
-    PREV = 'prev'
-    NEXT = 'next'
-    COMPLETE = 'complete'
+    EXECUTE = "execute"
+    CANCEL = "cancel"
+    PREV = "prev"
+    NEXT = "next"
+    COMPLETE = "complete"
 
 
 class AdHocNoteType(Enum):
-    INFO = 'info'
-    WARN = 'warn'
-    ERROR = 'error'
+    INFO = "info"
+    WARN = "warn"
+    ERROR = "error"
 
 
 class ConnectionType(Enum):
-    DIRECT_TLS = 'DIRECT TLS'
-    START_TLS = 'START TLS'
-    PLAIN = 'PLAIN'
+    DIRECT_TLS = "DIRECT TLS"
+    START_TLS = "START TLS"
+    PLAIN = "PLAIN"
 
     @property
     def is_direct_tls(self) -> bool:
@@ -387,28 +388,28 @@ class ConnectionProtocol(IntEnum):
 
 
 class StreamState(Enum):
-    RESOLVE = 'resolve'
-    RESOLVED = 'resolved'
-    CONNECTING = 'connecting'
-    CONNECTED = 'connected'
-    DISCONNECTED = 'disconnected'
-    DISCONNECTING = 'disconnecting'
-    STREAM_START = 'stream start'
-    WAIT_FOR_STREAM_START = 'wait for stream start'
-    WAIT_FOR_FEATURES = 'wait for features'
-    WAIT_FOR_TLS_PROCEED = 'wait for tls proceed'
-    TLS_START_SUCCESSFUL = 'tls start successful'
-    PROCEED_WITH_AUTH = 'proceed with auth'
-    AUTH_SUCCESSFUL = 'auth successful'
-    AUTH_FAILED = 'auth failed'
-    WAIT_FOR_RESUMED = 'wait for resumed'
-    RESUME_FAILED = 'resume failed'
-    RESUME_SUCCESSFUL = 'resume successful'
-    PROCEED_WITH_BIND = 'proceed with bind'
-    BIND_SUCCESSFUL = 'bind successful'
-    WAIT_FOR_BIND = 'wait for bind'
-    WAIT_FOR_SESSION = 'wait for session'
-    ACTIVE = 'active'
+    RESOLVE = "resolve"
+    RESOLVED = "resolved"
+    CONNECTING = "connecting"
+    CONNECTED = "connected"
+    DISCONNECTED = "disconnected"
+    DISCONNECTING = "disconnecting"
+    STREAM_START = "stream start"
+    WAIT_FOR_STREAM_START = "wait for stream start"
+    WAIT_FOR_FEATURES = "wait for features"
+    WAIT_FOR_TLS_PROCEED = "wait for tls proceed"
+    TLS_START_SUCCESSFUL = "tls start successful"
+    PROCEED_WITH_AUTH = "proceed with auth"
+    AUTH_SUCCESSFUL = "auth successful"
+    AUTH_FAILED = "auth failed"
+    WAIT_FOR_RESUMED = "wait for resumed"
+    RESUME_FAILED = "resume failed"
+    RESUME_SUCCESSFUL = "resume successful"
+    PROCEED_WITH_BIND = "proceed with bind"
+    BIND_SUCCESSFUL = "bind successful"
+    WAIT_FOR_BIND = "wait for bind"
+    WAIT_FOR_SESSION = "wait for session"
+    ACTIVE = "active"
 
 
 class StreamError(Enum):
@@ -425,10 +426,10 @@ class StreamError(Enum):
 
 
 class TCPState(Enum):
-    DISCONNECTED = 'disconnected'
-    DISCONNECTING = 'disconnecting'
-    CONNECTING = 'connecting'
-    CONNECTED = 'connected'
+    DISCONNECTED = "disconnected"
+    DISCONNECTING = "disconnecting"
+    CONNECTING = "connecting"
+    CONNECTED = "connected"
 
 
 class Mode(IntEnum):
@@ -467,245 +468,232 @@ class HTTPRequestError(IntEnum):
 
 
 MOODS = [
-    'afraid',
-    'amazed',
-    'amorous',
-    'angry',
-    'annoyed',
-    'anxious',
-    'aroused',
-    'ashamed',
-    'bored',
-    'brave',
-    'calm',
-    'cautious',
-    'cold',
-    'confident',
-    'confused',
-    'contemplative',
-    'contented',
-    'cranky',
-    'crazy',
-    'creative',
-    'curious',
-    'dejected',
-    'depressed',
-    'disappointed',
-    'disgusted',
-    'dismayed',
-    'distracted',
-    'embarrassed',
-    'envious',
-    'excited',
-    'flirtatious',
-    'frustrated',
-    'grateful',
-    'grieving',
-    'grumpy',
-    'guilty',
-    'happy',
-    'hopeful',
-    'hot',
-    'humbled',
-    'humiliated',
-    'hungry',
-    'hurt',
-    'impressed',
-    'in_awe',
-    'in_love',
-    'indignant',
-    'interested',
-    'intoxicated',
-    'invincible',
-    'jealous',
-    'lonely',
-    'lost',
-    'lucky',
-    'mean',
-    'moody',
-    'nervous',
-    'neutral',
-    'offended',
-    'outraged',
-    'playful',
-    'proud',
-    'relaxed',
-    'relieved',
-    'remorseful',
-    'restless',
-    'sad',
-    'sarcastic',
-    'satisfied',
-    'serious',
-    'shocked',
-    'shy',
-    'sick',
-    'sleepy',
-    'spontaneous',
-    'stressed',
-    'strong',
-    'surprised',
-    'thankful',
-    'thirsty',
-    'tired',
-    'undefined',
-    'weak',
-    'worried']
+    "afraid",
+    "amazed",
+    "amorous",
+    "angry",
+    "annoyed",
+    "anxious",
+    "aroused",
+    "ashamed",
+    "bored",
+    "brave",
+    "calm",
+    "cautious",
+    "cold",
+    "confident",
+    "confused",
+    "contemplative",
+    "contented",
+    "cranky",
+    "crazy",
+    "creative",
+    "curious",
+    "dejected",
+    "depressed",
+    "disappointed",
+    "disgusted",
+    "dismayed",
+    "distracted",
+    "embarrassed",
+    "envious",
+    "excited",
+    "flirtatious",
+    "frustrated",
+    "grateful",
+    "grieving",
+    "grumpy",
+    "guilty",
+    "happy",
+    "hopeful",
+    "hot",
+    "humbled",
+    "humiliated",
+    "hungry",
+    "hurt",
+    "impressed",
+    "in_awe",
+    "in_love",
+    "indignant",
+    "interested",
+    "intoxicated",
+    "invincible",
+    "jealous",
+    "lonely",
+    "lost",
+    "lucky",
+    "mean",
+    "moody",
+    "nervous",
+    "neutral",
+    "offended",
+    "outraged",
+    "playful",
+    "proud",
+    "relaxed",
+    "relieved",
+    "remorseful",
+    "restless",
+    "sad",
+    "sarcastic",
+    "satisfied",
+    "serious",
+    "shocked",
+    "shy",
+    "sick",
+    "sleepy",
+    "spontaneous",
+    "stressed",
+    "strong",
+    "surprised",
+    "thankful",
+    "thirsty",
+    "tired",
+    "undefined",
+    "weak",
+    "worried",
+]
 
 
 ACTIVITIES = {
-    'doing_chores': [
-        'buying_groceries',
-        'cleaning',
-        'cooking',
-        'doing_maintenance',
-        'doing_the_dishes',
-        'doing_the_laundry',
-        'gardening',
-        'running_an_errand',
-        'walking_the_dog'],
-    'drinking': [
-        'having_a_beer',
-        'having_coffee',
-        'having_tea'],
-    'eating': [
-        'having_a_snack',
-        'having_breakfast',
-        'having_dinner',
-        'having_lunch'],
-    'exercising': [
-        'cycling',
-        'dancing',
-        'hiking',
-        'jogging',
-        'playing_sports',
-        'running',
-        'skiing',
-        'swimming',
-        'working_out'],
-    'grooming': [
-        'at_the_spa',
-        'brushing_teeth',
-        'getting_a_haircut',
-        'shaving',
-        'taking_a_bath',
-        'taking_a_shower'],
-    'having_appointment': [],
-    'inactive': [
-        'day_off',
-        'hanging_out',
-        'hiding',
-        'on_vacation',
-        'praying',
-        'scheduled_holiday',
-        'sleeping',
-        'thinking'],
-    'relaxing': [
-        'fishing',
-        'gaming',
-        'going_out',
-        'partying',
-        'reading',
-        'rehearsing',
-        'shopping',
-        'smoking',
-        'socializing',
-        'sunbathing',
-        'watching_tv',
-        'watching_a_movie'],
-    'talking': [
-        'in_real_life',
-        'on_the_phone',
-        'on_video_phone'],
-    'traveling': [
-        'commuting',
-        'cycling',
-        'driving',
-        'in_a_car',
-        'on_a_bus',
-        'on_a_plane',
-        'on_a_train',
-        'on_a_trip',
-        'walking'],
-    'working': [
-        'coding',
-        'in_a_meeting',
-        'studying',
-        'writing']
+    "doing_chores": [
+        "buying_groceries",
+        "cleaning",
+        "cooking",
+        "doing_maintenance",
+        "doing_the_dishes",
+        "doing_the_laundry",
+        "gardening",
+        "running_an_errand",
+        "walking_the_dog",
+    ],
+    "drinking": ["having_a_beer", "having_coffee", "having_tea"],
+    "eating": ["having_a_snack", "having_breakfast", "having_dinner", "having_lunch"],
+    "exercising": [
+        "cycling",
+        "dancing",
+        "hiking",
+        "jogging",
+        "playing_sports",
+        "running",
+        "skiing",
+        "swimming",
+        "working_out",
+    ],
+    "grooming": [
+        "at_the_spa",
+        "brushing_teeth",
+        "getting_a_haircut",
+        "shaving",
+        "taking_a_bath",
+        "taking_a_shower",
+    ],
+    "having_appointment": [],
+    "inactive": [
+        "day_off",
+        "hanging_out",
+        "hiding",
+        "on_vacation",
+        "praying",
+        "scheduled_holiday",
+        "sleeping",
+        "thinking",
+    ],
+    "relaxing": [
+        "fishing",
+        "gaming",
+        "going_out",
+        "partying",
+        "reading",
+        "rehearsing",
+        "shopping",
+        "smoking",
+        "socializing",
+        "sunbathing",
+        "watching_tv",
+        "watching_a_movie",
+    ],
+    "talking": ["in_real_life", "on_the_phone", "on_video_phone"],
+    "traveling": [
+        "commuting",
+        "cycling",
+        "driving",
+        "in_a_car",
+        "on_a_bus",
+        "on_a_plane",
+        "on_a_train",
+        "on_a_trip",
+        "walking",
+    ],
+    "working": ["coding", "in_a_meeting", "studying", "writing"],
 }
 
 
 LOCATION_DATA = [
-    'accuracy',
-    'alt',
-    'altaccuracy',
-    'area',
-    'bearing',
-    'building',
-    'country',
-    'countrycode',
-    'datum',
-    'description',
-    'error',
-    'floor',
-    'lat',
-    'locality',
-    'lon',
-    'postalcode',
-    'region',
-    'room',
-    'speed',
-    'street',
-    'text',
-    'timestamp',
-    'tzo',
-    'uri']
+    "accuracy",
+    "alt",
+    "altaccuracy",
+    "area",
+    "bearing",
+    "building",
+    "country",
+    "countrycode",
+    "datum",
+    "description",
+    "error",
+    "floor",
+    "lat",
+    "locality",
+    "lon",
+    "postalcode",
+    "region",
+    "room",
+    "speed",
+    "street",
+    "text",
+    "timestamp",
+    "tzo",
+    "uri",
+]
 
 
-TUNE_DATA = [
-    'artist',
-    'length',
-    'rating',
-    'source',
-    'title',
-    'track',
-    'uri']
+TUNE_DATA = ["artist", "length", "rating", "source", "title", "track", "uri"]
 
 
 REGISTER_FIELDS = [
-    'username',
-    'nick',
-    'password',
-    'name',
-    'first',
-    'last',
-    'email',
-    'address',
-    'city',
-    'state',
-    'zip',
-    'phone',
-    'url',
-    'date',
+    "username",
+    "nick",
+    "password",
+    "name",
+    "first",
+    "last",
+    "email",
+    "address",
+    "city",
+    "state",
+    "zip",
+    "phone",
+    "url",
+    "date",
 ]
 
 GIO_TLS_ERRORS = {
-    Gio.TlsCertificateFlags.UNKNOWN_CA: 'The signing certificate authority is not known',
-    Gio.TlsCertificateFlags.REVOKED: 'The certificate has been revoked',
-    Gio.TlsCertificateFlags.BAD_IDENTITY: 'The certificate does not match the expected identity of the site',
-    Gio.TlsCertificateFlags.INSECURE: 'The certificate’s algorithm is insecure',
-    Gio.TlsCertificateFlags.NOT_ACTIVATED: 'The certificate’s activation time is in the future',
-    Gio.TlsCertificateFlags.GENERIC_ERROR: 'Unknown validation error',
-    Gio.TlsCertificateFlags.EXPIRED: 'The certificate has expired',
+    Gio.TlsCertificateFlags.UNKNOWN_CA: "The signing certificate authority is not known",
+    Gio.TlsCertificateFlags.REVOKED: "The certificate has been revoked",
+    Gio.TlsCertificateFlags.BAD_IDENTITY: "The certificate does not match the expected identity of the site",
+    Gio.TlsCertificateFlags.INSECURE: "The certificate’s algorithm is insecure",
+    Gio.TlsCertificateFlags.NOT_ACTIVATED: "The certificate’s activation time is in the future",
+    Gio.TlsCertificateFlags.GENERIC_ERROR: "Unknown validation error",
+    Gio.TlsCertificateFlags.EXPIRED: "The certificate has expired",
 }
 
 NOT_ALLOWED_XML_CHARS = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    '\x0C': '',
-    '\x1B': ''
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "\x0C": "",
+    "\x1B": "",
 }
 
 

@@ -24,7 +24,7 @@ class ReactionsTest(StanzaHandlerTest):
         class P:
             reactions: ReactionStruct
 
-        xml = '''
+        xml = """
             <message to='romeo@capulet.net/orchard' id='96d73204-a57a-11e9-88b8-4889e7820c76' type='chat'>
               <reactions id='744f6e18-a57a-11e9-a656-4889e7820c76' xmlns='urn:xmpp:reactions:0'>
                 <reaction>👋  </reaction>
@@ -32,22 +32,22 @@ class ReactionsTest(StanzaHandlerTest):
               </reactions>
               <store xmlns='urn:xmpp:hints'/>
             </message>
-        '''
+        """
         msg = Message(node=xml)
         Reactions._process_message_reaction(MockModule, self, msg, P)
 
-        self.assertEqual(P.reactions.id, '744f6e18-a57a-11e9-a656-4889e7820c76')
-        self.assertEqual(P.reactions.emojis, {'👋', '🐢'})
+        self.assertEqual(P.reactions.id, "744f6e18-a57a-11e9-a656-4889e7820c76")
+        self.assertEqual(P.reactions.emojis, {"👋", "🐢"})
 
     def test_no_reactions(self):
         class P:
             reactions: ReactionStruct = None
 
-        xml = '''
+        xml = """
             <message to='romeo@capulet.net/orchard' id='96d73204-a57a-11e9-88b8-4889e7820c76' type='chat'>
               <store xmlns='urn:xmpp:hints'/>
             </message>
-        '''
+        """
         msg = Message(node=xml)
         Reactions._process_message_reaction(MockModule, self, msg, P)
 
@@ -57,12 +57,12 @@ class ReactionsTest(StanzaHandlerTest):
         class P:
             reactions: ReactionStruct
 
-        xml = '''
+        xml = """
             <message to='romeo@capulet.net/orchard' id='96d73204-a57a-11e9-88b8-4889e7820c76' type='chat'>
               <reactions id='744f6e18-a57a-11e9-a656-4889e7820c76' xmlns='urn:xmpp:reactions:0' />
               <store xmlns='urn:xmpp:hints'/>
             </message>
-        '''
+        """
         msg = Message(node=xml)
         Reactions._process_message_reaction(MockModule, self, msg, P)
 
@@ -72,7 +72,7 @@ class ReactionsTest(StanzaHandlerTest):
         class P:
             reactions: ReactionStruct
 
-        xml = '''
+        xml = """
             <message to='romeo@capulet.net/orchard' id='96d73204-a57a-11e9-88b8-4889e7820c76' type='chat'>
               <reactions xmlns='urn:xmpp:reactions:0'>
                 <reaction>👋</reaction>
@@ -80,16 +80,16 @@ class ReactionsTest(StanzaHandlerTest):
               </reactions>
               <store xmlns='urn:xmpp:hints'/>
             </message>
-        '''
+        """
         msg = Message(node=xml)
         Reactions._process_message_reaction(MockModule, self, msg, P)
-        self.assertFalse(hasattr(P, 'reactions'))
+        self.assertFalse(hasattr(P, "reactions"))
 
     def test_invalid_reactions_empty_id(self):
         class P:
             reactions: ReactionStruct
 
-        xml = '''
+        xml = """
             <message to='romeo@capulet.net/orchard' id='96d73204-a57a-11e9-88b8-4889e7820c76' type='chat'>
               <reactions id='' xmlns='urn:xmpp:reactions:0'>
                 <reaction>👋</reaction>
@@ -97,16 +97,16 @@ class ReactionsTest(StanzaHandlerTest):
               </reactions>
               <store xmlns='urn:xmpp:hints'/>
             </message>
-        '''
+        """
         msg = Message(node=xml)
         Reactions._process_message_reaction(MockModule, self, msg, P)
-        self.assertFalse(hasattr(P, 'reactions'))
+        self.assertFalse(hasattr(P, "reactions"))
 
     def test_invalid_reactions_empty_emoji(self):
         class P:
             reactions: ReactionStruct
 
-        xml = '''
+        xml = """
             <message to='romeo@capulet.net/orchard' id='96d73204-a57a-11e9-88b8-4889e7820c76' type='chat'>
               <reactions id='sadfsadf' xmlns='urn:xmpp:reactions:0'>
                 <reaction></reaction>
@@ -114,23 +114,23 @@ class ReactionsTest(StanzaHandlerTest):
               </reactions>
               <store xmlns='urn:xmpp:hints'/>
             </message>
-        '''
+        """
         msg = Message(node=xml)
         Reactions._process_message_reaction(MockModule, self, msg, P)
-        self.assertEqual(P.reactions.emojis, {'🐢'})
+        self.assertEqual(P.reactions.emojis, {"🐢"})
 
     def test_set_reactions(self):
         x = Message()
-        x.setReactions('id', '🐢')
-        self.assertEqual(x.getReactions(), ('id', {'🐢'}))
+        x.setReactions("id", "🐢")
+        self.assertEqual(x.getReactions(), ("id", {"🐢"}))
 
         x = Message()
-        x.setReactions('id', '🐢👋')
-        self.assertEqual(x.getReactions(), ('id', {'🐢', '👋'}))
+        x.setReactions("id", "🐢👋")
+        self.assertEqual(x.getReactions(), ("id", {"🐢", "👋"}))
 
         x = Message()
-        x.setReactions('id', '')
-        self.assertEqual(x.getReactions(), ('id', set()))
+        x.setReactions("id", "")
+        self.assertEqual(x.getReactions(), ("id", set()))
 
         x = Message()
         self.assertIsNone(x.getReactions())

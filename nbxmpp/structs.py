@@ -66,14 +66,14 @@ from nbxmpp.simplexml import Node
 if TYPE_CHECKING:
     from nbxmpp.modules.security_labels import SecurityLabel
 
-log = logging.getLogger('nbxmpp.structs')
+log = logging.getLogger("nbxmpp.structs")
 
 
 class StanzaHandler(NamedTuple):
     name: str
     callback: Any
-    typ: str = ''
-    ns: str = ''
+    typ: str = ""
+    ns: str = ""
     xmlns: str | None = None
     priority: int = 50
 
@@ -122,7 +122,7 @@ class BookmarkData(NamedTuple):
 
 
 class VoiceRequest(NamedTuple):
-    jid:JID
+    jid: JID
     nick: str
     form: Any
 
@@ -428,30 +428,34 @@ class RosterItem:
     @classmethod
     def from_node(cls, node: Node) -> RosterItem:
         attrs = node.getAttrs(copy=True)
-        jid = attrs.get('jid')
+        jid = attrs.get("jid")
         if jid is None:
-            raise Exception('jid attribute missing')
+            raise Exception("jid attribute missing")
 
         jid = JID.from_string(jid)
         if jid.is_full:
-            raise Exception('full jid in roster not allowed')
+            raise Exception("full jid in roster not allowed")
 
-        groups = {group.getData() for group in node.getTags('group')}
+        groups = {group.getData() for group in node.getTags("group")}
 
-        return cls(jid=jid,
-                   name=attrs.get('name'),
-                   ask=attrs.get('ask'),
-                   subscription=attrs.get('subscription') or 'none',
-                   approved=attrs.get('approved'),
-                   groups=groups)
+        return cls(
+            jid=jid,
+            name=attrs.get("name"),
+            ask=attrs.get("ask"),
+            subscription=attrs.get("subscription") or "none",
+            approved=attrs.get("approved"),
+            groups=groups,
+        )
 
     def asdict(self) -> dict[str, Any]:
-        return {'jid': self.jid,
-                'name': self.name,
-                'ask': self.ask,
-                'subscription': self.subscription,
-                'approved': self.approved,
-                'groups': self.groups}
+        return {
+            "jid": self.jid,
+            "name": self.name,
+            "ask": self.ask,
+            "subscription": self.subscription,
+            "approved": self.approved,
+            "groups": self.groups,
+        }
 
 
 class DiscoInfo(NamedTuple):
@@ -463,14 +467,14 @@ class DiscoInfo(NamedTuple):
 
     def get_caps_hash(self) -> str | None:
         try:
-            return self.node.split('#')[1]
+            return self.node.split("#")[1]
         except Exception:
             return None
 
     def has_field(self, form_type: str, var: str) -> bool:
         for dataform in self.dataforms:
             try:
-                if dataform['FORM_TYPE'].value != form_type:
+                if dataform["FORM_TYPE"].value != form_type:
                     continue
                 if var in dataform.vars:
                     return True
@@ -482,10 +486,10 @@ class DiscoInfo(NamedTuple):
     def get_field_value(self, form_type: str, var: str) -> Optional[Any]:
         for dataform in self.dataforms:
             try:
-                if dataform['FORM_TYPE'].value != form_type:
+                if dataform["FORM_TYPE"].value != form_type:
                     continue
 
-                if dataform[var].type_ == 'jid-multi':
+                if dataform[var].type_ == "jid-multi":
                     return dataform[var].values or None
                 return dataform[var].value or None
 
@@ -499,7 +503,7 @@ class DiscoInfo(NamedTuple):
 
     def serialize(self) -> str:
         if self.stanza is None:
-            raise ValueError('Unable to serialize DiscoInfo, no stanza found')
+            raise ValueError("Unable to serialize DiscoInfo, no stanza found")
         return str(self.stanza)
 
     @property
@@ -510,7 +514,7 @@ class DiscoInfo(NamedTuple):
             return None
 
         if query is not None:
-            return query.getAttr('node')
+            return query.getAttr("node")
         return None
 
     @property
@@ -547,8 +551,8 @@ class DiscoInfo(NamedTuple):
     @property
     def has_message_moderation(self) -> bool:
         return (
-            Namespace.MESSAGE_MODERATE in self.features or
-            Namespace.MESSAGE_MODERATE_1 in self.features
+            Namespace.MESSAGE_MODERATE in self.features
+            or Namespace.MESSAGE_MODERATE_1 in self.features
         )
 
     @property
@@ -562,7 +566,7 @@ class DiscoInfo(NamedTuple):
     @property
     def is_muc(self) -> bool:
         for identity in self.identities:
-            if identity.category == 'conference':
+            if identity.category == "conference":
                 if Namespace.MUC in self.features:
                     return True
         return False
@@ -570,7 +574,7 @@ class DiscoInfo(NamedTuple):
     @property
     def is_irc(self) -> bool:
         for identity in self.identities:
-            if identity.category == 'conference' and identity.type == 'irc':
+            if identity.category == "conference" and identity.type == "irc":
                 return True
         return False
 
@@ -589,110 +593,112 @@ class DiscoInfo(NamedTuple):
     @property
     def muc_identity_name(self) -> str | None:
         for identity in self.identities:
-            if identity.category == 'conference':
+            if identity.category == "conference":
                 return identity.name
         return None
 
     @property
     def muc_room_name(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roomconfig_roomname')
+        return self.get_field_value(Namespace.MUC_INFO, "muc#roomconfig_roomname")
 
     @property
     def muc_description(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_description')
+        return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_description")
 
     @property
     def muc_log_uri(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_logs')
+        return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_logs")
 
     @property
     def muc_users(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_occupants')
+        return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_occupants")
 
     @property
     def muc_contacts(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_contactjid')
+        return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_contactjid")
 
     @property
     def muc_subject(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_subject')
+        return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_subject")
 
     @property
     def muc_subjectmod(self) -> Optional[Any]:
         # muc#roominfo_changesubject stems from a wrong example in the MUC XEP
         # Ejabberd and Prosody use this value
         # muc#roomconfig_changesubject is also used by Prosody
-        return (self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_subjectmod') or
-                self.get_field_value(Namespace.MUC_INFO, 'muc#roomconfig_changesubject') or
-                self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_changesubject'))
+        return (
+            self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_subjectmod")
+            or self.get_field_value(Namespace.MUC_INFO, "muc#roomconfig_changesubject")
+            or self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_changesubject")
+        )
 
     @property
     def muc_lang(self) -> Optional[Any]:
-        return self.get_field_value(Namespace.MUC_INFO, 'muc#roominfo_lang')
+        return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_lang")
 
     @property
     def muc_is_persistent(self) -> bool:
-        return 'muc_persistent' in self.features
+        return "muc_persistent" in self.features
 
     @property
     def muc_is_moderated(self) -> bool:
-        return 'muc_moderated' in self.features
+        return "muc_moderated" in self.features
 
     @property
     def muc_is_open(self) -> bool:
-        return 'muc_open' in self.features
+        return "muc_open" in self.features
 
     @property
     def muc_is_members_only(self) -> bool:
-        return 'muc_membersonly' in self.features
+        return "muc_membersonly" in self.features
 
     @property
     def muc_is_hidden(self) -> bool:
-        return 'muc_hidden' in self.features
+        return "muc_hidden" in self.features
 
     @property
     def muc_is_nonanonymous(self) -> bool:
-        return 'muc_nonanonymous' in self.features
+        return "muc_nonanonymous" in self.features
 
     @property
     def muc_is_passwordprotected(self) -> bool:
-        return 'muc_passwordprotected' in self.features
+        return "muc_passwordprotected" in self.features
 
     @property
     def muc_is_public(self) -> bool:
-        return 'muc_public' in self.features
+        return "muc_public" in self.features
 
     @property
     def muc_is_semianonymous(self) -> bool:
-        return 'muc_semianonymous' in self.features
+        return "muc_semianonymous" in self.features
 
     @property
     def muc_is_temporary(self) -> bool:
-        return 'muc_temporary' in self.features
+        return "muc_temporary" in self.features
 
     @property
     def muc_is_unmoderated(self) -> bool:
-        return 'muc_unmoderated' in self.features
+        return "muc_unmoderated" in self.features
 
     @property
     def muc_is_unsecured(self) -> bool:
-        return 'muc_unsecured' in self.features
+        return "muc_unsecured" in self.features
 
     @property
     def is_gateway(self) -> bool:
-        return any(identity.category == 'gateway' for identity in self.identities)
+        return any(identity.category == "gateway" for identity in self.identities)
 
     @property
     def gateway_name(self) -> str | None:
         for identity in self.identities:
-            if identity.category == 'gateway':
+            if identity.category == "gateway":
                 return identity.name
         return None
 
     @property
     def gateway_type(self) -> str | None:
         for identity in self.identities:
-            if identity.category == 'gateway':
+            if identity.category == "gateway":
                 return identity.type
         return None
 
@@ -701,14 +707,13 @@ class DiscoInfo(NamedTuple):
 
     def has_identity(self, category: str, type_: str) -> bool:
         for identity in self.identities:
-            if (identity.category == category and
-                    identity.type == type_):
+            if identity.category == category and identity.type == type_:
                 return True
         return False
 
     @property
     def httpupload_max_file_size(self) -> float | None:
-        size = self.get_field_value(Namespace.HTTPUPLOAD_0, 'max-file-size')
+        size = self.get_field_value(Namespace.HTTPUPLOAD_0, "max-file-size")
         try:
             return float(size)
         except Exception:
@@ -723,14 +728,14 @@ class DiscoIdentity(NamedTuple):
     lang: str | None = None
 
     def get_node(self) -> Node:
-        identity = Node('identity',
-                        attrs={'category': self.category,
-                               'type': self.type})
+        identity = Node(
+            "identity", attrs={"category": self.category, "type": self.type}
+        )
         if self.name is not None:
-            identity.setAttr('name', self.name)
+            identity.setAttr("name", self.name)
 
         if self.lang is not None:
-            identity.setAttr('xml:lang', self.lang)
+            identity.setAttr("xml:lang", self.lang)
         return identity
 
     def __eq__(self, other: object) -> bool:
@@ -740,10 +745,12 @@ class DiscoIdentity(NamedTuple):
         return not self.__eq__(other)
 
     def __str__(self) -> str:
-        return '%s/%s/%s/%s' % (self.category,
-                                self.type,
-                                self.lang or '',
-                                self.name or '')
+        return "%s/%s/%s/%s" % (
+            self.category,
+            self.type,
+            self.lang or "",
+            self.name or "",
+        )
 
     def __hash__(self) -> int:
         return hash(str(self))
@@ -779,11 +786,9 @@ class ProxyData(NamedTuple):
         if self.username is not None:
             username = GLib.uri_escape_string(self.username, None, False)
             password = GLib.uri_escape_string(self.password, None, False)
-            user_pass = f'{username}:{password}'
-            return '%s://%s@%s' % (self.type,
-                                   user_pass,
-                                   self.host)
-        return '%s://%s' % (self.type, self.host)
+            user_pass = f"{username}:{password}"
+            return "%s://%s@%s" % (self.type, user_pass, self.host)
+        return "%s://%s" % (self.type, self.host)
 
     def get_resolver(self) -> Gio.SimpleProxyResolver:
         return Gio.SimpleProxyResolver.new(self.get_uri(), None)
@@ -807,15 +812,15 @@ class ChatMarker(NamedTuple):
 
     @property
     def is_received(self) -> bool:
-        return self.type == 'received'
+        return self.type == "received"
 
     @property
     def is_displayed(self) -> bool:
-        return self.type == 'displayed'
+        return self.type == "displayed"
 
     @property
     def is_acknowledged(self) -> bool:
-        return self.type == 'acknowledged'
+        return self.type == "acknowledged"
 
 
 class Reactions(NamedTuple):
@@ -826,7 +831,7 @@ class Reactions(NamedTuple):
 class CommonError:
     def __init__(self, stanza: Protocol) -> None:
         self._stanza_name = stanza.getName()
-        self._error_node = stanza.getTag('error')
+        self._error_node = stanza.getTag("error")
         self.condition = stanza.getError()
         self.condition_data = self._error_node.getTagData(self.condition)
         self.app_condition = stanza.getAppError()
@@ -836,14 +841,14 @@ class CommonError:
         self.id = stanza.getID()
         self._text: dict[str, str] = {}
 
-        by = self._error_node.getAttr('by')
+        by = self._error_node.getAttr("by")
         if by is not None:
             try:
                 self.by = JID.from_string(by)
             except Exception:
                 pass
 
-        text_elements = self._error_node.getTags('text', namespace=Namespace.STANZAS)
+        text_elements = self._error_node.getTags("text", namespace=Namespace.STANZAS)
         for element in text_elements:
             lang = element.getXmlLang()
             text = element.getData()
@@ -860,7 +865,7 @@ class CommonError:
                 return text
 
         if self._text:
-            text = self._text.get('en')
+            text = self._text.get("en")
             if text is not None:
                 return text
 
@@ -868,7 +873,7 @@ class CommonError:
             if text is not None:
                 return text
             return self._text.popitem()[1]
-        return ''
+        return ""
 
     def set_text(self, lang: str, text: str) -> None:
         self._text[lang] = text
@@ -876,18 +881,22 @@ class CommonError:
     def __str__(self) -> str:
         condition = self.condition
         if self.app_condition is not None:
-            condition = '%s (%s)' % (self.condition, self.app_condition)
-        text = self.get_text('en') or ''
+            condition = "%s (%s)" % (self.condition, self.app_condition)
+        text = self.get_text("en") or ""
         if text:
-            text = ' - %s' % text
-        return 'Error from %s: %s%s' % (self.jid, condition, text)
+            text = " - %s" % text
+        return "Error from %s: %s%s" % (self.jid, condition, text)
 
     def serialize(self) -> str:
-        return str(Protocol(name=self._stanza_name,
-                            frm=self.jid,
-                            xmlns=Namespace.CLIENT,
-                            attrs={'id': self.id},
-                            payload=self._error_node))
+        return str(
+            Protocol(
+                name=self._stanza_name,
+                frm=self.jid,
+                xmlns=Namespace.CLIENT,
+                attrs={"id": self.id},
+                payload=self._error_node,
+            )
+        )
 
 
 class HTTPUploadError(CommonError):
@@ -895,24 +904,24 @@ class HTTPUploadError(CommonError):
         CommonError.__init__(self, stanza)
 
     def get_max_file_size(self) -> float | None:
-        if not self.app_condition == 'file-too-large':
+        if not self.app_condition == "file-too-large":
             return None
         node = self._error_node.getTag(self.app_condition)
         try:
-            return float(node.getTagData('max-file-size'))
+            return float(node.getTagData("max-file-size"))
         except Exception:
             return None
 
     def get_retry_date(self):
-        if not self.app_condition == 'retry':
+        if not self.app_condition == "retry":
             return None
-        return self._error_node.getTagAttr('stamp')
+        return self._error_node.getTagAttr("stamp")
 
 
 class StanzaMalformedError(CommonError):
     def __init__(self, stanza: Protocol, text: str | None) -> None:
         self._error_node = None
-        self.condition = 'stanza-malformed'
+        self.condition = "stanza-malformed"
         self.condition_data = None
         self.app_condition = None
         self.type = None
@@ -920,17 +929,17 @@ class StanzaMalformedError(CommonError):
         self.id = stanza.getID()
         self._text: dict[str, str] = {}
         if text:
-            self._text['en'] = text
+            self._text["en"] = text
 
     @classmethod
     def from_string(cls, node_string: str) -> Any:
         raise NotImplementedError
 
     def __str__(self) -> str:
-        text = self.get_text('en')
+        text = self.get_text("en")
         if text:
-            text = ': %s' % text
-        return 'Received malformed stanza from %s%s' % (self.jid, text)
+            text = ": %s" % text
+        return "Received malformed stanza from %s%s" % (self.jid, text)
 
     def serialize(self) -> str:
         raise NotImplementedError
@@ -946,7 +955,7 @@ class StreamError(CommonError):
         self.id = stanza.getID()
         self._text: dict[str, str] = {}
 
-        text_elements = self._error_node.getTags('text', namespace=Namespace.STREAMS)
+        text_elements = self._error_node.getTags("text", namespace=Namespace.STREAMS)
         for element in text_elements:
             lang = element.getXmlLang()
             text = element.getData()
@@ -957,10 +966,10 @@ class StreamError(CommonError):
         raise NotImplementedError
 
     def __str__(self) -> str:
-        text = self.get_text('en') or ''
+        text = self.get_text("en") or ""
         if text:
-            text = ' - %s' % text
-        return 'Error from %s: %s%s' % (self.jid, self.condition, text)
+            text = " - %s" % text
+        return "Error from %s: %s%s" % (self.jid, self.condition, text)
 
     def serialize(self) -> str:
         raise NotImplementedError
@@ -977,9 +986,7 @@ class TuneData(NamedTuple):
 
     @property
     def was_removed(self) -> bool:
-        return (self.artist is None and
-                self.title is None and
-                self.track is None)
+        return self.artist is None and self.title is None and self.track is None
 
 
 class MAMData(NamedTuple):
@@ -1003,11 +1010,11 @@ class CarbonData(NamedTuple):
 
     @property
     def is_sent(self) -> bool:
-        return self.type == 'sent'
+        return self.type == "sent"
 
     @property
     def is_received(self) -> bool:
-        return self.type == 'received'
+        return self.type == "received"
 
 
 class ReceiptData(NamedTuple):
@@ -1016,11 +1023,11 @@ class ReceiptData(NamedTuple):
 
     @property
     def is_request(self) -> bool:
-        return self.type == 'request'
+        return self.type == "request"
 
     @property
     def is_received(self) -> bool:
-        return self.type == 'received'
+        return self.type == "received"
 
 
 @dataclass
@@ -1040,8 +1047,7 @@ class HatData:
         self._hat_map[language_tag].append(hat)
 
     def get_hats(
-        self,
-        language_range: Sequence[LanguageRange] | None = None
+        self, language_range: Sequence[LanguageRange] | None = None
     ) -> list[Hat]:
 
         if language_range is None:
@@ -1132,7 +1138,7 @@ class MessageProperties:
 
     def is_from_us(self, bare_match: bool = True) -> bool:
         if self.from_ is None:
-            raise ValueError('from attribute missing')
+            raise ValueError("from attribute missing")
 
         if bare_match:
             return self.own_jid.bare_match(self.from_)
@@ -1188,9 +1194,11 @@ class MessageProperties:
 
     @property
     def is_muc_subject(self) -> bool:
-        return (self.type == MessageType.GROUPCHAT and
-                self.body is None and
-                self.subject is not None)
+        return (
+            self.type == MessageType.GROUPCHAT
+            and self.body is None
+            and self.subject is not None
+        )
 
     @property
     def is_muc_config_change(self) -> bool:
@@ -1202,8 +1210,7 @@ class MessageProperties:
 
     @property
     def is_muc_invite_or_decline(self) -> bool:
-        return (self.muc_invite is not None or
-                self.muc_decline is not None)
+        return self.muc_invite is not None or self.muc_decline is not None
 
     @property
     def is_captcha_challenge(self) -> bool:
@@ -1325,7 +1332,7 @@ class PresenceProperties:
     self_bare: bool = False
     from_muc: bool = False
     occupant_id: str | None = None
-    status: str = ''
+    status: str = ""
     timestamp: float = field(default_factory=time.time)
     user_timestamp: float | None = None
     idle_timestamp: float | None = None
@@ -1355,29 +1362,35 @@ class PresenceProperties:
 
     @property
     def is_muc_self_presence(self) -> bool:
-        return (self.from_muc and
-                self.muc_status_codes is not None and
-                StatusCode.SELF in self.muc_status_codes)
+        return (
+            self.from_muc
+            and self.muc_status_codes is not None
+            and StatusCode.SELF in self.muc_status_codes
+        )
 
     @property
     def is_nickname_modified(self) -> bool:
-        return (self.from_muc and
-                self.muc_status_codes is not None and
-                StatusCode.NICKNAME_MODIFIED in self.muc_status_codes and
-                self.type == PresenceType.AVAILABLE)
+        return (
+            self.from_muc
+            and self.muc_status_codes is not None
+            and StatusCode.NICKNAME_MODIFIED in self.muc_status_codes
+            and self.type == PresenceType.AVAILABLE
+        )
 
     @property
     def is_nickname_changed(self) -> bool:
-        return (self.from_muc and
-                self.muc_status_codes is not None and
-                StatusCode.NICKNAME_CHANGE in self.muc_status_codes and
-                self.muc_user.nick is not None and
-                self.type == PresenceType.UNAVAILABLE)
+        return (
+            self.from_muc
+            and self.muc_status_codes is not None
+            and StatusCode.NICKNAME_CHANGE in self.muc_status_codes
+            and self.muc_user.nick is not None
+            and self.type == PresenceType.UNAVAILABLE
+        )
 
     @property
     def new_jid(self) -> JID:
         if not self.is_nickname_changed:
-            raise ValueError('This is not a nickname change')
+            raise ValueError("This is not a nickname change")
         return self.jid.new_with(resource=self.muc_user.nick)
 
     @property
@@ -1388,28 +1401,31 @@ class PresenceProperties:
             StatusCode.REMOVED_AFFILIATION_CHANGE,
             StatusCode.REMOVED_NONMEMBER_IN_MEMBERS_ONLY,
             StatusCode.REMOVED_SERVICE_SHUTDOWN,
-            StatusCode.REMOVED_ERROR
+            StatusCode.REMOVED_ERROR,
         }
-        return (self.from_muc and
-                self.muc_status_codes is not None and
-                bool(status_codes.intersection(self.muc_status_codes)) and
-                self.type == PresenceType.UNAVAILABLE)
+        return (
+            self.from_muc
+            and self.muc_status_codes is not None
+            and bool(status_codes.intersection(self.muc_status_codes))
+            and self.type == PresenceType.UNAVAILABLE
+        )
 
     @property
     def is_muc_shutdown(self) -> bool:
-        return (self.from_muc and
-                self.muc_status_codes is not None and
-                StatusCode.REMOVED_SERVICE_SHUTDOWN in self.muc_status_codes)
+        return (
+            self.from_muc
+            and self.muc_status_codes is not None
+            and StatusCode.REMOVED_SERVICE_SHUTDOWN in self.muc_status_codes
+        )
 
     @property
     def is_new_room(self) -> bool:
-        status_codes = {
-            StatusCode.CREATED,
-            StatusCode.SELF
-        }
-        return (self.from_muc and
-                self.muc_status_codes is not None and
-                status_codes.issubset(self.muc_status_codes))
+        status_codes = {StatusCode.CREATED, StatusCode.SELF}
+        return (
+            self.from_muc
+            and self.muc_status_codes is not None
+            and status_codes.issubset(self.muc_status_codes)
+        )
 
     @property
     def affiliation(self) -> Affiliation | None:
@@ -1429,7 +1445,7 @@ class PresenceProperties:
 class XHTMLData:
     def __init__(self, xhtml: Node) -> None:
         self._bodys: dict[str | None, Node] = {}
-        for body in xhtml.getTags('body', namespace=Namespace.XHTML):
+        for body in xhtml.getTags("body", namespace=Namespace.XHTML):
             lang = body.getXmlLang()
             self._bodys[lang] = body
 
@@ -1439,7 +1455,7 @@ class XHTMLData:
             if body is not None:
                 return str(body)
 
-        body = self._bodys.get('en')
+        body = self._bodys.get("en")
         if body is not None:
             return str(body)
 
@@ -1475,8 +1491,8 @@ class BodyData:
         self._fallbacks_for = fallbacks_for
         self._fallback_ns = fallback_ns
 
-        for body in stanza.getTags('body'):
-            lang = body.getAttr('xml:lang')
+        for body in stanza.getTags("body"):
+            lang = body.getAttr("xml:lang")
             lang_tag = LanguageTag(tag=lang) if lang else None
             self._body_map[lang_tag] = (lang, body.getData())
 
@@ -1486,7 +1502,7 @@ class BodyData:
     ) -> str:
 
         if not self._body_map:
-            return ''
+            return ""
 
         if language_range is None:
             lang, text = self._body_map.any()
@@ -1501,8 +1517,7 @@ class BodyData:
             return text
 
         try:
-            return strip_fallback(
-                self._fallbacks_for, self._fallback_ns, lang, text)
+            return strip_fallback(self._fallbacks_for, self._fallback_ns, lang, text)
         except exceptions.FallbackLanguageError:
-            log.warning('Missing fallback for language: %s', lang)
+            log.warning("Missing fallback for language: %s", lang)
             return text

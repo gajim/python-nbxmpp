@@ -35,7 +35,7 @@ def is_error(error: Any) -> bool:
 class BaseError(Exception):
     def __init__(self, is_fatal: bool = False) -> None:
         self.is_fatal = is_fatal
-        self.text = ''
+        self.text = ""
 
     def __str__(self) -> str:
         return self.text
@@ -53,7 +53,7 @@ class StanzaError(BaseError):
         BaseError.__init__(self)
         self.stanza = stanza
         self._stanza_name = stanza.getName()
-        self._error_node = stanza.getTag('error')
+        self._error_node = stanza.getTag("error")
         self.condition: str | None = stanza.getError()
         self.condition_data = self._error_node.getTagData(self.condition)
         self.app_condition = self._get_app_condition()
@@ -62,8 +62,7 @@ class StanzaError(BaseError):
         self.id = stanza.getID()
         self._text: dict[str, str] = {}
 
-        text_elements = self._error_node.getTags('text',
-                                                 namespace=Namespace.STANZAS)
+        text_elements = self._error_node.getTags("text", namespace=Namespace.STANZAS)
         for element in text_elements:
             lang = element.getXmlLang()
             text = element.getData()
@@ -85,7 +84,7 @@ class StanzaError(BaseError):
                 return text
 
         if self._text:
-            text = self._text.get('en')
+            text = self._text.get("en")
             if text is not None:
                 return text
 
@@ -93,7 +92,7 @@ class StanzaError(BaseError):
             if text is not None:
                 return text
             return self._text.popitem()[1]
-        return ''
+        return ""
 
     def set_text(self, lang: str, text: str) -> None:
         self._text[lang] = text
@@ -101,11 +100,11 @@ class StanzaError(BaseError):
     def __str__(self) -> str:
         condition = self.condition
         if self.app_condition is not None:
-            condition = '%s (%s)' % (self.condition, self.app_condition)
-        text = self.get_text('en') or ''
+            condition = "%s (%s)" % (self.condition, self.app_condition)
+        text = self.get_text("en") or ""
         if text:
-            text = ' - %s' % text
-        return 'Error from %s: %s%s' % (self.jid, condition, text)
+            text = " - %s" % text
+        return "Error from %s: %s%s" % (self.jid, condition, text)
 
 
 class PubSubStanzaError(StanzaError):
@@ -118,19 +117,19 @@ class HTTPUploadStanzaError(StanzaError):
     app_namespace = Namespace.HTTPUPLOAD_0
 
     def get_max_file_size(self) -> float | None:
-        if self.app_condition != 'file-too-large':
+        if self.app_condition != "file-too-large":
             return None
 
         node = self._error_node.getTag(self.app_condition)
         try:
-            return float(node.getTagData('max-file-size'))
+            return float(node.getTagData("max-file-size"))
         except Exception:
             return None
 
     def get_retry_date(self) -> str | None:
-        if self.app_condition != 'retry':
+        if self.app_condition != "retry":
             return None
-        return self._error_node.getTagAttr('stamp')
+        return self._error_node.getTagAttr("stamp")
 
 
 class MalformedStanzaError(BaseError):
@@ -149,7 +148,7 @@ class CancelledError(BaseError):
 
     def __init__(self) -> None:
         BaseError.__init__(self, is_fatal=True)
-        self.text = 'Task has been cancelled'
+        self.text = "Task has been cancelled"
 
 
 class TimeoutStanzaError(BaseError):
@@ -158,7 +157,7 @@ class TimeoutStanzaError(BaseError):
 
     def __init__(self) -> None:
         BaseError.__init__(self)
-        self.text = 'Timeout reached'
+        self.text = "Timeout reached"
 
 
 class RegisterStanzaError(StanzaError):
@@ -171,7 +170,9 @@ class RegisterStanzaError(StanzaError):
 
 
 class ChangePasswordStanzaError(StanzaError):
-    def __init__(self, stanza: Protocol, form: SimpleDataForm | MultipleDataForm) -> None:
+    def __init__(
+        self, stanza: Protocol, form: SimpleDataForm | MultipleDataForm
+    ) -> None:
         StanzaError.__init__(self, stanza)
         self._form = form
 

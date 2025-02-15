@@ -20,15 +20,15 @@ class TestHelpers(unittest.TestCase):
         timestamp = parse_delay(message)
         self.assertEqual(timestamp, 1031699305.0)
 
-        timestamp = parse_delay(message, from_=['capulet.com'])
+        timestamp = parse_delay(message, from_=["capulet.com"])
         self.assertEqual(timestamp, 1031699305.0)
 
-        timestamp = parse_delay(message, from_=['romeo.com'])
+        timestamp = parse_delay(message, from_=["romeo.com"])
         self.assertEqual(timestamp, 1284160105.0)
 
-        timestamp = parse_delay(message, not_from=['romeo.com'])
+        timestamp = parse_delay(message, not_from=["romeo.com"])
         self.assertEqual(timestamp, 1031699305.0)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

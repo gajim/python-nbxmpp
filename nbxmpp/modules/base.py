@@ -33,13 +33,14 @@ class BaseModule:
     _depends: dict[str, str] = {}
 
     def __init__(self, client: Client) -> None:
-        logger_name = 'nbxmpp.m.%s' % self.__class__.__name__.lower()
-        self._log = LogAdapter(logging.getLogger(logger_name),
-                               {'context': client.log_context})
+        logger_name = "nbxmpp.m.%s" % self.__class__.__name__.lower()
+        self._log = LogAdapter(
+            logging.getLogger(logger_name), {"context": client.log_context}
+        )
 
     def __getattr__(self, name: str) -> Any:
         if name not in self._depends:
-            raise AttributeError('Unknown method: %s' % name)
+            raise AttributeError("Unknown method: %s" % name)
 
         module = self._client.get_module(self._depends[name])
         return getattr(module, name)

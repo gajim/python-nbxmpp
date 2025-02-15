@@ -14,7 +14,7 @@ class StanzaHandlerTest(unittest.TestCase):
         self.client.is_websocket = False
         self.dispatcher = StanzaDispatcher(self.client)
 
-        self.client.get_bound_jid.return_value = JID.from_string('test@test.test')
+        self.client.get_bound_jid.return_value = JID.from_string("test@test.test")
 
         self.dispatcher.reset_parser()
         self.dispatcher.process_data(STREAM_START)
@@ -43,4 +43,5 @@ def raise_all_exceptions(func):
                 raise tp(value).with_traceback(tb)
 
         return result
+
     return func_wrapper

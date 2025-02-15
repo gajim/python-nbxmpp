@@ -37,36 +37,44 @@ class PGPLegacy(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_pgplegacy_message,
-                          ns=Namespace.ENCRYPTED,
-                          priority=7),
-            StanzaHandler(name='presence',
-                          callback=self._process_signed,
-                          ns=Namespace.SIGNED,
-                          priority=15)
+            StanzaHandler(
+                name="message",
+                callback=self._process_pgplegacy_message,
+                ns=Namespace.ENCRYPTED,
+                priority=7,
+            ),
+            StanzaHandler(
+                name="presence",
+                callback=self._process_signed,
+                ns=Namespace.SIGNED,
+                priority=15,
+            ),
         ]
 
     @staticmethod
-    def _process_signed(_client: Client, stanza: Presence, properties: PresenceProperties) -> None:
-        signed = stanza.getTag('x', namespace=Namespace.SIGNED)
+    def _process_signed(
+        _client: Client, stanza: Presence, properties: PresenceProperties
+    ) -> None:
+        signed = stanza.getTag("x", namespace=Namespace.SIGNED)
         if signed is None:
             return
 
         properties.signed = signed.getData()
 
-    def _process_pgplegacy_message(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
-        pgplegacy = stanza.getTag('x', namespace=Namespace.ENCRYPTED)
+    def _process_pgplegacy_message(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
+        pgplegacy = stanza.getTag("x", namespace=Namespace.ENCRYPTED)
         if pgplegacy is None:
-            self._log.warning('No x node found')
+            self._log.warning("No x node found")
             self._log.warning(stanza)
             return
 
         data = pgplegacy.getData()
         if not data:
-            self._log.warning('No data in x node found')
+            self._log.warning("No data in x node found")
             self._log.warning(stanza)
             return
 
-        self._log.info('Encrypted message received')
+        self._log.info("Encrypted message received")
         properties.pgp_legacy = data

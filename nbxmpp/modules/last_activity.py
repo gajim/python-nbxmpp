@@ -45,11 +45,13 @@ class LastActivity(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='iq',
-                          callback=self._answer_request,
-                          priority=60,
-                          typ='get',
-                          ns=Namespace.LAST),
+            StanzaHandler(
+                name="iq",
+                callback=self._answer_request,
+                priority=60,
+                typ="get",
+                ns=Namespace.LAST,
+            ),
         ]
 
         self._idle_func: Callable[..., int] | None = None
@@ -74,8 +76,10 @@ class LastActivity(BaseModule):
 
         yield _parse_response(response)
 
-    def _answer_request(self, _client: Client, stanza: Iq, _properties: IqProperties) -> None:
-        self._log.info('Request received from %s', stanza.getFrom())
+    def _answer_request(
+        self, _client: Client, stanza: Iq, _properties: IqProperties
+    ) -> None:
+        self._log.info("Request received from %s", stanza.getFrom())
         if self._idle_func is None:
             self._client.send_stanza(Error(stanza, ERR_SERVICE_UNAVAILABLE))
             raise NodeProcessed
@@ -86,25 +90,25 @@ class LastActivity(BaseModule):
                 raise NodeProcessed
 
         seconds = self._idle_func()
-        iq = stanza.buildReply('result')
+        iq = stanza.buildReply("result")
         query = iq.getQuery()
-        query.setAttr('seconds', seconds)
-        self._log.info('Send last activity: %s', seconds)
+        query.setAttr("seconds", seconds)
+        self._log.info("Send last activity: %s", seconds)
         self._client.send_stanza(iq)
         raise NodeProcessed
 
 
 def _make_request(jid: str) -> Iq:
-    return Iq('get', queryNS=Namespace.LAST, to=jid)
+    return Iq("get", queryNS=Namespace.LAST, to=jid)
 
 
 def _parse_response(response: Iq) -> LastActivityData:
     query = response.getQuery()
-    seconds = query.getAttr('seconds')
+    seconds = query.getAttr("seconds")
 
     try:
         seconds = int(seconds)
     except Exception:
-        raise MalformedStanzaError('seconds attribute invalid', response)
+        raise MalformedStanzaError("seconds attribute invalid", response)
 
     return LastActivityData(seconds=seconds, status=query.getData())

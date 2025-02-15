@@ -35,14 +35,18 @@ class Attention(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_message_attention,
-                          ns=Namespace.ATTENTION,
-                          priority=15),
+            StanzaHandler(
+                name="message",
+                callback=self._process_message_attention,
+                ns=Namespace.ATTENTION,
+                priority=15,
+            ),
         ]
 
-    def _process_message_attention(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
-        attention = stanza.getTag('attention', namespace=Namespace.ATTENTION)
+    def _process_message_attention(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
+        attention = stanza.getTag("attention", namespace=Namespace.ATTENTION)
         if attention is None:
             return
 
@@ -52,7 +56,7 @@ class Attention(BaseModule):
         if properties.is_carbon_message and properties.carbon.is_sent:
             return
 
-        if stanza.getTag('delay', namespace=Namespace.DELAY2) is not None:
+        if stanza.getTag("delay", namespace=Namespace.DELAY2) is not None:
             return
 
         properties.attention = True

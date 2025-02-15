@@ -60,7 +60,7 @@ class Register(BaseModule):
         if jid is None:
             jid = self._client.domain
 
-        response = yield Iq('get', Namespace.REGISTER, to=jid)
+        response = yield Iq("get", Namespace.REGISTER, to=jid)
         if response.isError():
             raise StanzaError(response)
 
@@ -86,7 +86,8 @@ class Register(BaseModule):
         _task = yield
 
         response = yield _make_password_change_request(
-            self._client.domain, self._client.username, password)
+            self._client.domain, self._client.username, password
+        )
         if not response.isError():
             yield process_response(response)
 
@@ -95,8 +96,8 @@ class Register(BaseModule):
             if query is None:
                 raise StanzaError(response)
 
-            form = get_form(query, 'jabber:iq:register:changepassword')
-            if form is None or response.getType() != 'modify':
+            form = get_form(query, "jabber:iq:register:changepassword")
+            if form is None or response.getType() != "modify":
                 raise StanzaError(response)
 
             raise ChangePasswordStanzaError(response, form)
@@ -105,6 +106,5 @@ class Register(BaseModule):
     def change_password_with_form(self, form):
         _task = yield
 
-        response = yield _make_password_change_with_form(self._client.domain,
-                                                         form)
+        response = yield _make_password_change_with_form(self._client.domain, form)
         yield process_response(response)

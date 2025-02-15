@@ -36,17 +36,21 @@ class Chatstates(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_message_chatstate,
-                          ns=Namespace.CHATSTATES,
-                          priority=15),
+            StanzaHandler(
+                name="message",
+                callback=self._process_message_chatstate,
+                ns=Namespace.CHATSTATES,
+                priority=15,
+            ),
         ]
 
-    def _process_message_chatstate(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
+    def _process_message_chatstate(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
         try:
             chatstate = parse_chatstate(stanza)
         except ValueError as error:
-            self._log.warning('Invalid chatstate: %s', error)
+            self._log.warning("Invalid chatstate: %s", error)
             self._log.warning(stanza)
             return
 

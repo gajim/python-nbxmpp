@@ -11,28 +11,31 @@ class TuneTest(StanzaHandlerTest):
     def test_tune_parsing(self):
         def _on_message(_con, _stanza, properties):
 
-            data = TuneData(artist='Yes',
-                            length='686',
-                            rating='8',
-                            source='Yessongs',
-                            title='Heart of the Sunrise',
-                            track='3',
-                            uri='https://www.artist.com')
+            data = TuneData(
+                artist="Yes",
+                length="686",
+                rating="8",
+                source="Yessongs",
+                title="Heart of the Sunrise",
+                track="3",
+                uri="https://www.artist.com",
+            )
 
             pubsub_event = PubSubEventData(
-                node='http://jabber.org/protocol/tune',
-                id='bffe6584-0f9c-11dc-84ba-001143d5d5db',
+                node="http://jabber.org/protocol/tune",
+                id="bffe6584-0f9c-11dc-84ba-001143d5d5db",
                 item=None,
                 data=data,
                 deleted=False,
                 retracted=False,
-                purged=False)
+                purged=False,
+            )
 
             # We cant compare Node objects
             pubsub_event_ = properties.pubsub_event._replace(item=None)
             self.assertEqual(pubsub_event, pubsub_event_)
 
-        event = '''
+        event = """
             <message from='test@test.test'>
                 <event xmlns='http://jabber.org/protocol/pubsub#event'>
                     <items node='http://jabber.org/protocol/tune'>
@@ -50,11 +53,12 @@ class TuneTest(StanzaHandlerTest):
                     </items>
                 </event>
             </message>
-        '''
+        """
 
         self.dispatcher.register_handler(
-            StanzaHandler(name='message',
-                          callback=_on_message,
-                          ns=Namespace.PUBSUB_EVENT))
+            StanzaHandler(
+                name="message", callback=_on_message, ns=Namespace.PUBSUB_EVENT
+            )
+        )
 
         self.dispatcher.process_data(event)

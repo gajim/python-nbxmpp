@@ -22,12 +22,16 @@
 
 import math
 
-m = [[3.240969941904521, -1.537383177570093, -0.498610760293],
-     [-0.96924363628087, 1.87596750150772, 0.041555057407175],
-     [0.055630079696993, -0.20397695888897, 1.056971514242878]]
-minv = [[0.41239079926595, 0.35758433938387, 0.18048078840183],
-        [0.21263900587151, 0.71516867876775, 0.072192315360733],
-        [0.019330818715591, 0.11919477979462, 0.95053215224966]]
+m = [
+    [3.240969941904521, -1.537383177570093, -0.498610760293],
+    [-0.96924363628087, 1.87596750150772, 0.041555057407175],
+    [0.055630079696993, -0.20397695888897, 1.056971514242878],
+]
+minv = [
+    [0.41239079926595, 0.35758433938387, 0.18048078840183],
+    [0.21263900587151, 0.71516867876775, 0.072192315360733],
+    [0.019330818715591, 0.11919477979462, 0.95053215224966],
+]
 REF_Y = 1.0
 REF_U = 0.19783000664283
 REF_V = 0.46831999493879
@@ -37,13 +41,12 @@ HEX_CHARS = "0123456789abcdef"
 
 
 def _distance_line_from_origin(line):
-    v = math.pow(line['slope'], 2) + 1
-    return math.fabs(line['intercept']) / math.sqrt(v)
+    v = math.pow(line["slope"], 2) + 1
+    return math.fabs(line["intercept"]) / math.sqrt(v)
 
 
 def _length_of_ray_until_intersect(theta, line):
-    return line['intercept'] / (math.sin(theta) -
-                                line['slope'] * math.cos(theta))
+    return line["intercept"] / (math.sin(theta) - line["slope"] * math.cos(theta))
 
 
 def _get_bounds(l):
@@ -65,16 +68,17 @@ def _get_bounds(l):
             t = _g1
             _g1 = _g1 + 1
             top1 = (284517 * m1 - 94839 * m3) * sub2
-            top2 = ((838422 * m3 + 769860 * m2 + 731718 * m1) *
-                    l * sub2 - (769860 * t) * l)
+            top2 = (838422 * m3 + 769860 * m2 + 731718 * m1) * l * sub2 - (
+                769860 * t
+            ) * l
             bottom = (632260 * m3 - 126452 * m2) * sub2 + 126452 * t
-            result.append({'slope': top1 / bottom, 'intercept': top2 / bottom})
+            result.append({"slope": top1 / bottom, "intercept": top2 / bottom})
     return result
 
 
 def _max_safe_chroma_for_l(l):
     bounds = _get_bounds(l)
-    _hx_min = 1.7976931348623157e+308
+    _hx_min = 1.7976931348623157e308
     _g = 0
     while _g < 2:
         i = _g
@@ -92,11 +96,11 @@ def _max_safe_chroma_for_l(l):
 def _max_chroma_for_lh(l, h):
     hrad = h / 360 * math.pi * 2
     bounds = _get_bounds(l)
-    _hx_min = 1.7976931348623157e+308
+    _hx_min = 1.7976931348623157e308
     _g = 0
     while _g < len(bounds):
         bound = bounds[_g]
-        _g = (_g + 1)
+        _g = _g + 1
         length = _length_of_ray_until_intersect(hrad, bound)
         if length >= 0:
             if math.isnan(_hx_min):
@@ -135,16 +139,21 @@ def xyz_to_rgb(_hx_tuple):
     return [
         _from_linear(_dot_product(m[0], _hx_tuple)),
         _from_linear(_dot_product(m[1], _hx_tuple)),
-        _from_linear(_dot_product(m[2], _hx_tuple))]
+        _from_linear(_dot_product(m[2], _hx_tuple)),
+    ]
 
 
 def rgb_to_xyz(_hx_tuple):
-    rgbl = [_to_linear(_hx_tuple[0]),
-            _to_linear(_hx_tuple[1]),
-            _to_linear(_hx_tuple[2])]
-    return [_dot_product(minv[0], rgbl),
-            _dot_product(minv[1], rgbl),
-            _dot_product(minv[2], rgbl)]
+    rgbl = [
+        _to_linear(_hx_tuple[0]),
+        _to_linear(_hx_tuple[1]),
+        _to_linear(_hx_tuple[2]),
+    ]
+    return [
+        _dot_product(minv[0], rgbl),
+        _dot_product(minv[1], rgbl),
+        _dot_product(minv[2], rgbl),
+    ]
 
 
 def _y_to_l(y):

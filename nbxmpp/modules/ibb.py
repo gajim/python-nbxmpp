@@ -45,25 +45,26 @@ class IBB(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='iq',
-                          callback=self._process_ibb,
-                          ns=Namespace.IBB,
-                          priority=20),
+            StanzaHandler(
+                name="iq", callback=self._process_ibb, ns=Namespace.IBB, priority=20
+            ),
         ]
 
-    def _process_ibb(self, _client: Client, stanza: Iq, properties: IqProperties) -> None:
+    def _process_ibb(
+        self, _client: Client, stanza: Iq, properties: IqProperties
+    ) -> None:
         if properties.type.is_set:
-            open_ = stanza.getTag('open', namespace=Namespace.IBB)
+            open_ = stanza.getTag("open", namespace=Namespace.IBB)
             if open_ is not None:
                 properties.ibb = self._parse_open(stanza, open_)
                 return
 
-            close = stanza.getTag('close', namespace=Namespace.IBB)
+            close = stanza.getTag("close", namespace=Namespace.IBB)
             if close is not None:
                 properties.ibb = self._parse_close(stanza, close)
                 return
 
-            data = stanza.getTag('data', namespace=Namespace.IBB)
+            data = stanza.getTag("data", namespace=Namespace.IBB)
             if data is not None:
                 properties.ibb = self._parse_data(stanza, data)
                 return
@@ -71,7 +72,7 @@ class IBB(BaseModule):
     def _parse_open(self, stanza: Iq, open_: Node) -> IBBData:
         attrs = open_.getAttrs()
         try:
-            block_size = int(attrs.get('block-size'))
+            block_size = int(attrs.get("block-size"))
         except Exception as error:
             self._log.warning(error)
             self._log.warning(stanza)
@@ -79,60 +80,59 @@ class IBB(BaseModule):
             raise NodeProcessed
 
         if block_size > 65535:
-            self._log.warning('Invalid block-size')
+            self._log.warning("Invalid block-size")
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
-        sid = attrs.get('sid')
+        sid = attrs.get("sid")
         if not sid:
-            self._log.warning('Invalid sid')
+            self._log.warning("Invalid sid")
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
-        type_ = attrs.get('stanza')
-        if type_ == 'message':
-            self._client.send_stanza(ErrorStanza(stanza,
-                                                 ERR_FEATURE_NOT_IMPLEMENTED))
+        type_ = attrs.get("stanza")
+        if type_ == "message":
+            self._client.send_stanza(ErrorStanza(stanza, ERR_FEATURE_NOT_IMPLEMENTED))
             raise NodeProcessed
 
-        return IBBData(type='open', block_size=block_size, sid=sid)
+        return IBBData(type="open", block_size=block_size, sid=sid)
 
     def _parse_close(self, stanza: Iq, close: Node) -> IBBData:
-        sid = close.getAttrs().get('sid')
+        sid = close.getAttrs().get("sid")
         if sid is None:
-            self._log.warning('Invalid sid')
+            self._log.warning("Invalid sid")
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
-        return IBBData(type='close', sid=sid)
+        return IBBData(type="close", sid=sid)
 
     def _parse_data(self, stanza: Iq, data: Node) -> IBBData:
         attrs = data.getAttrs()
 
-        sid = attrs.get('sid')
+        sid = attrs.get("sid")
         if sid is None:
-            self._log.warning('Invalid sid')
+            self._log.warning("Invalid sid")
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
         try:
-            seq = int(attrs.get('seq'))
+            seq = int(attrs.get("seq"))
         except Exception:
-            self._log.exception('Invalid seq')
+            self._log.exception("Invalid seq")
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
         try:
             decoded_data = b64decode(data.getData())
         except Exception:
-            self._log.exception('Failed to decode IBB data')
+            self._log.exception("Failed to decode IBB data")
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
 
-        return IBBData(type='data', sid=sid, seq=seq, data=decoded_data)
+        return IBBData(type="data", sid=sid, seq=seq, data=decoded_data)
 
     def send_reply(self, stanza: Iq, error: str | None = None) -> None:
         if error is None:
-            reply = stanza.buildReply('result')
+            reply = stanza.buildReply("result")
             reply.getChildren().clear()
         else:
             reply = ErrorStanza(stanza, error)
@@ -161,23 +161,23 @@ class IBB(BaseModule):
 
 
 def _make_ibb_open(jid: str, sid: str, block_size: int) -> Iq:
-    iq = Iq('set', to=jid)
-    iq.addChild('open',
-                {'block-size': block_size, 'sid': sid, 'stanza': 'iq'},
-                namespace=Namespace.IBB)
+    iq = Iq("set", to=jid)
+    iq.addChild(
+        "open",
+        {"block-size": block_size, "sid": sid, "stanza": "iq"},
+        namespace=Namespace.IBB,
+    )
     return iq
 
 
 def _make_ibb_close(jid: str, sid: str) -> Iq:
-    iq = Iq('set', to=jid)
-    iq.addChild('close', {'sid': sid}, namespace=Namespace.IBB)
+    iq = Iq("set", to=jid)
+    iq.addChild("close", {"sid": sid}, namespace=Namespace.IBB)
     return iq
 
 
 def _make_ibb_data(jid: str, sid: str, seq: int, data: bytes) -> Iq:
-    iq = Iq('set', to=jid)
-    ibb_data = iq.addChild('data',
-                           {'sid': sid, 'seq': seq},
-                           namespace=Namespace.IBB)
+    iq = Iq("set", to=jid)
+    ibb_data = iq.addChild("data", {"sid": sid, "seq": seq}, namespace=Namespace.IBB)
     ibb_data.setData(b64encode(data))
     return iq

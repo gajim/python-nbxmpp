@@ -36,25 +36,29 @@ class Correction(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_message_correction,
-                          ns=Namespace.CORRECT,
-                          priority=15),
+            StanzaHandler(
+                name="message",
+                callback=self._process_message_correction,
+                ns=Namespace.CORRECT,
+                priority=15,
+            ),
         ]
 
-    def _process_message_correction(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
-        replace = stanza.getTag('replace', namespace=Namespace.CORRECT)
+    def _process_message_correction(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
+        replace = stanza.getTag("replace", namespace=Namespace.CORRECT)
         if replace is None:
             return
 
-        id_ = replace.getAttr('id')
+        id_ = replace.getAttr("id")
         if id_ is None:
-            self._log.warning('Correcton without id attribute')
+            self._log.warning("Correcton without id attribute")
             self._log.warning(stanza)
             return
 
         if stanza.getID() == id_:
-            self._log.warning('correcton id == message id')
+            self._log.warning("correcton id == message id")
             self._log.warning(stanza)
             return
 

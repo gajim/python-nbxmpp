@@ -37,23 +37,23 @@ class Replies(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_message,
-                          ns=Namespace.REPLY,
-                          priority=15)
+            StanzaHandler(
+                name="message",
+                callback=self._process_message,
+                ns=Namespace.REPLY,
+                priority=15,
+            )
         ]
 
-    def _process_message(self,
-                         _client: Client,
-                         stanza: Message,
-                         properties: MessageProperties
-                         ) -> None:
+    def _process_message(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
 
-        reply = stanza.getTag('reply', namespace=Namespace.REPLY)
+        reply = stanza.getTag("reply", namespace=Namespace.REPLY)
         if reply is None:
             return
 
-        to = reply.getAttr('to')
+        to = reply.getAttr("to")
         if to is None:
             self._log.warning('Received reply without "to" attribute')
             return
@@ -61,15 +61,12 @@ class Replies(BaseModule):
         try:
             reply_to = JID.from_string(to)
         except Exception:
-            self._log.warning('Invalid jid on reply element: %s', to)
+            self._log.warning("Invalid jid on reply element: %s", to)
             return
 
-        reply_to_id = reply.getAttr('id')
+        reply_to_id = reply.getAttr("id")
         if reply_to_id is None:
             self._log.warning('Received reply without "id"')
             return
 
-        properties.reply_data = ReplyData(
-            to=reply_to,
-            id=reply_to_id
-        )
+        properties.reply_data = ReplyData(to=reply_to, id=reply_to_id)

@@ -39,16 +39,16 @@ class BaseIq(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='iq',
-                          callback=self._process_iq_base,
-                          priority=10),
+            StanzaHandler(name="iq", callback=self._process_iq_base, priority=10),
         ]
 
-    def _process_iq_base(self, _client: Client, stanza: Iq, properties: IqProperties) -> None:
+    def _process_iq_base(
+        self, _client: Client, stanza: Iq, properties: IqProperties
+    ) -> None:
         try:
             properties.type = IqType(stanza.getType())
         except ValueError:
-            self._log.warning('Message with invalid type: %s', stanza.getType())
+            self._log.warning("Message with invalid type: %s", stanza.getType())
             self._log.warning(stanza)
             self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
             raise NodeProcessed
@@ -58,7 +58,7 @@ class BaseIq(BaseModule):
 
         childs = stanza.getChildren()
         for child in childs:
-            if child.getName() != 'error':
+            if child.getName() != "error":
                 properties.payload = child
                 break
 

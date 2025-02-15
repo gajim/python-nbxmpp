@@ -36,7 +36,7 @@ class Reactions(BaseModule):
         self._client = client
         self.handlers = [
             StanzaHandler(
-                name='message',
+                name="message",
                 callback=self._process_message_reaction,
                 ns=Namespace.REACTIONS,
                 priority=15,
@@ -44,30 +44,27 @@ class Reactions(BaseModule):
         ]
 
     def _process_message_reaction(
-        self,
-        _client: Client,
-        stanza: Message,
-        properties: MessageProperties
+        self, _client: Client, stanza: Message, properties: MessageProperties
     ) -> None:
-        reactions = stanza.getTag('reactions', namespace=Namespace.REACTIONS)
+        reactions = stanza.getTag("reactions", namespace=Namespace.REACTIONS)
 
         if reactions is None:
             return
 
-        id_ = reactions.getAttr('id')
+        id_ = reactions.getAttr("id")
         if not id_:
-            self._log.warning('Reactions without ID')
+            self._log.warning("Reactions without ID")
             return
 
         emojis: set[str] = set()
-        for reaction in reactions.getTags('reaction'):
+        for reaction in reactions.getTags("reaction"):
             # we strip for clients that might add white spaces and/or
             # new lines in the reaction content.
             emoji = reaction.getData().strip()
             if emoji:
                 emojis.add(emoji)
             else:
-                self._log.warning('Empty reaction')
+                self._log.warning("Empty reaction")
                 self._log.warning(stanza)
 
         properties.reactions = ReactionStruct(id_, emojis)

@@ -37,22 +37,24 @@ if TYPE_CHECKING:
 
 class Activity(BaseModule):
 
-    _depends = {
-        'publish': 'PubSub'
-    }
+    _depends = {"publish": "PubSub"}
 
     def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_pubsub_activity,
-                          ns=Namespace.PUBSUB_EVENT,
-                          priority=16),
+            StanzaHandler(
+                name="message",
+                callback=self._process_pubsub_activity,
+                ns=Namespace.PUBSUB_EVENT,
+                priority=16,
+            ),
         ]
 
-    def _process_pubsub_activity(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
+    def _process_pubsub_activity(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -64,29 +66,28 @@ class Activity(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        activity_node = item.getTag('activity', namespace=Namespace.ACTIVITY)
+        activity_node = item.getTag("activity", namespace=Namespace.ACTIVITY)
         if not activity_node.getChildren():
-            self._log.info('Received activity: %s - no activity set',
-                           properties.jid)
+            self._log.info("Received activity: %s - no activity set", properties.jid)
             return
 
         activity, subactivity, text = None, None, None
         for child in activity_node.getChildren():
             name = child.getName()
-            if name == 'text':
+            if name == "text":
                 text = child.getData()
             elif name in ACTIVITIES:
                 activity = name
                 subactivity = self._parse_sub_activity(child)
 
         if activity is None and activity_node.getChildren():
-            self._log.warning('No valid activity value found')
+            self._log.warning("No valid activity value found")
             self._log.warning(stanza)
             raise NodeProcessed
 
         data = ActivityData(activity, subactivity, text)
         pubsub_event = properties.pubsub_event._replace(data=data)
-        self._log.info('Received activity: %s - %s', properties.jid, data)
+        self._log.info("Received activity: %s - %s", properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 
@@ -102,14 +103,14 @@ class Activity(BaseModule):
     def set_activity(self, data: ActivityData):
         task = yield
 
-        item = Node('activity', {'xmlns': Namespace.ACTIVITY})
+        item = Node("activity", {"xmlns": Namespace.ACTIVITY})
         if data is not None and data.activity:
             activity_node = item.addChild(data.activity)
             if data.subactivity:
                 activity_node.addChild(data.subactivity)
             if data.text:
-                item.addChild('text', payload=data.text)
+                item.addChild("text", payload=data.text)
 
-        result = yield self.publish(Namespace.ACTIVITY, item, id_='current')
+        result = yield self.publish(Namespace.ACTIVITY, item, id_="current")
 
         yield finalize(task, result)

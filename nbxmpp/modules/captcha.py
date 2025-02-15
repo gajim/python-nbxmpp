@@ -38,25 +38,28 @@ class Captcha(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_captcha,
-                          ns=Namespace.CAPTCHA,
-                          priority=40),
+            StanzaHandler(
+                name="message",
+                callback=self._process_captcha,
+                ns=Namespace.CAPTCHA,
+                priority=40,
+            ),
         ]
 
-    def _process_captcha(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
-        captcha = stanza.getTag('captcha', namespace=Namespace.CAPTCHA)
+    def _process_captcha(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
+        captcha = stanza.getTag("captcha", namespace=Namespace.CAPTCHA)
         if captcha is None:
             return
 
-        data_form = captcha.getTag('x', namespace=Namespace.DATA)
+        data_form = captcha.getTag("x", namespace=Namespace.DATA)
         if data_form is None:
-            self._log.warning('Invalid captcha form')
+            self._log.warning("Invalid captcha form")
             self._log.warning(stanza)
             return
 
         form = extend_form(node=data_form)
         bob_data = parse_bob_data(stanza)
 
-        properties.captcha = CaptchaData(form=form,
-                                         bob_data=bob_data)
+        properties.captcha = CaptchaData(form=form, bob_data=bob_data)

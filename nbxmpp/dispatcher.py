@@ -113,7 +113,7 @@ from nbxmpp.util import Observable
 if TYPE_CHECKING:
     from nbxmpp.client import Client
 
-log = logging.getLogger('nbxmpp.dispatcher')
+log = logging.getLogger("nbxmpp.dispatcher")
 
 
 class StanzaDispatcher(Observable):
@@ -134,7 +134,7 @@ class StanzaDispatcher(Observable):
         self._parser: NodeBuilder | None = None
         self._websocket_stream_error: str | None = None
 
-        self._log = LogAdapter(log, {'context': client.log_context})
+        self._log = LogAdapter(log, {"context": client.log_context})
 
         self._handlers: dict[str, dict[str, dict[str, Any]]] = {}
 
@@ -143,98 +143,98 @@ class StanzaDispatcher(Observable):
         self._timeout_id: int | None = None
 
         self._stanza_types = {
-            'iq': Iq,
-            'message': Message,
-            'presence': Presence,
-            'error': StreamErrorNode,
+            "iq": Iq,
+            "message": Message,
+            "presence": Presence,
+            "error": StreamErrorNode,
         }
 
         self.invalid_chars_re = get_invalid_xml_regex()
 
-        self._register_namespace('unknown')
+        self._register_namespace("unknown")
         self._register_namespace(Namespace.STREAMS)
         self._register_namespace(Namespace.CLIENT)
-        self._register_protocol('iq', Iq)
-        self._register_protocol('presence', Presence)
-        self._register_protocol('message', Message)
+        self._register_protocol("iq", Iq)
+        self._register_protocol("presence", Presence)
+        self._register_protocol("message", Message)
 
         self._register_modules()
 
     def set_dispatch_callback(self, callback: Callable[..., Any]) -> None:
-        self._log.info('Set dispatch callback: %s', callback)
+        self._log.info("Set dispatch callback: %s", callback)
         self._dispatch_callback = callback
 
     @overload
-    def get_module(self, name: Literal['Muclumbus']) -> Muclumbus: ...
+    def get_module(self, name: Literal["Muclumbus"]) -> Muclumbus: ...
 
     @overload
-    def get_module(self, name: Literal['Ping']) -> Ping: ...
+    def get_module(self, name: Literal["Ping"]) -> Ping: ...
 
     @overload
-    def get_module(self, name: Literal['PubSub']) -> PubSub: ...
+    def get_module(self, name: Literal["PubSub"]) -> PubSub: ...
 
     @overload
-    def get_module(self, name: Literal['Register']) -> Register: ...
+    def get_module(self, name: Literal["Register"]) -> Register: ...
 
     def get_module(self, name: str) -> BaseModule:
         return self._modules[name]
 
     def _register_modules(self):
         assert self._client is not None
-        self._modules['Activity'] = Activity(self._client)
-        self._modules['AdHoc'] = AdHoc(self._client)
-        self._modules['Annotations'] = Annotations(self._client)
-        self._modules['Attention'] = Attention(self._client)
-        self._modules['BasePresence'] = BasePresence(self._client)
-        self._modules['BaseMessage'] = BaseMessage(self._client)
-        self._modules['BaseIq'] = BaseIq(self._client)
-        self._modules['Blocking'] = Blocking(self._client)
-        self._modules['Captcha'] = Captcha(self._client)
-        self._modules['ChatMarkers'] = ChatMarkers(self._client)
-        self._modules['Chatstates'] = Chatstates(self._client)
-        self._modules['Correction'] = Correction(self._client)
-        self._modules['Delay'] = Delay(self._client)
-        self._modules['Delimiter'] = Delimiter(self._client)
-        self._modules['Discovery'] = Discovery(self._client)
-        self._modules['EME'] = EME(self._client)
-        self._modules['EntityCaps'] = EntityCaps(self._client)
-        self._modules['EntityTime'] = EntityTime(self._client)
-        self._modules['Hats'] = Hats(self._client)
-        self._modules['HTTPAuth'] = HTTPAuth(self._client)
-        self._modules['HTTPUpload'] = HTTPUpload(self._client)
-        self._modules['IBB'] = IBB(self._client)
-        self._modules['Idle'] = Idle(self._client)
-        self._modules['LastActivity'] = LastActivity(self._client)
-        self._modules['Location'] = Location(self._client)
-        self._modules['MAM'] = MAM(self._client)
-        self._modules['MDS'] = MDS(self._client)
-        self._modules['Moderation'] = Moderation(self._client)
-        self._modules['Mood'] = Mood(self._client)
-        self._modules['MUC'] = MUC(self._client)
-        self._modules['Muclumbus'] = Muclumbus(self._client)
-        self._modules['NativeBookmarks'] = NativeBookmarks(self._client)
-        self._modules['Nickname'] = Nickname(self._client)
-        self._modules['OMEMO'] = OMEMO(self._client)
-        self._modules['OOB'] = OOB(self._client)
-        self._modules['OpenPGP'] = OpenPGP(self._client)
-        self._modules['PEPBookmarks'] = PEPBookmarks(self._client)
-        self._modules['PGPLegacy'] = PGPLegacy(self._client)
-        self._modules['Ping'] = Ping(self._client)
-        self._modules['PrivateBookmarks'] = PrivateBookmarks(self._client)
-        self._modules['PubSub'] = PubSub(self._client)
-        self._modules['Reactions'] = Reactions(self._client)
-        self._modules['Receipts'] = Receipts(self._client)
-        self._modules['Register'] = Register(self._client)
-        self._modules['Replies'] = Replies(self._client)
-        self._modules['Retraction'] = Retraction(self._client)
-        self._modules['Roster'] = Roster(self._client)
-        self._modules['SecurityLabels'] = SecurityLabels(self._client)
-        self._modules['SoftwareVersion'] = SoftwareVersion(self._client)
-        self._modules['Tune'] = Tune(self._client)
-        self._modules['UserAvatar'] = UserAvatar(self._client)
-        self._modules['VCardAvatar'] = VCardAvatar(self._client)
-        self._modules['VCardTemp'] = VCardTemp(self._client)
-        self._modules['VCard4'] = VCard4(self._client)
+        self._modules["Activity"] = Activity(self._client)
+        self._modules["AdHoc"] = AdHoc(self._client)
+        self._modules["Annotations"] = Annotations(self._client)
+        self._modules["Attention"] = Attention(self._client)
+        self._modules["BasePresence"] = BasePresence(self._client)
+        self._modules["BaseMessage"] = BaseMessage(self._client)
+        self._modules["BaseIq"] = BaseIq(self._client)
+        self._modules["Blocking"] = Blocking(self._client)
+        self._modules["Captcha"] = Captcha(self._client)
+        self._modules["ChatMarkers"] = ChatMarkers(self._client)
+        self._modules["Chatstates"] = Chatstates(self._client)
+        self._modules["Correction"] = Correction(self._client)
+        self._modules["Delay"] = Delay(self._client)
+        self._modules["Delimiter"] = Delimiter(self._client)
+        self._modules["Discovery"] = Discovery(self._client)
+        self._modules["EME"] = EME(self._client)
+        self._modules["EntityCaps"] = EntityCaps(self._client)
+        self._modules["EntityTime"] = EntityTime(self._client)
+        self._modules["Hats"] = Hats(self._client)
+        self._modules["HTTPAuth"] = HTTPAuth(self._client)
+        self._modules["HTTPUpload"] = HTTPUpload(self._client)
+        self._modules["IBB"] = IBB(self._client)
+        self._modules["Idle"] = Idle(self._client)
+        self._modules["LastActivity"] = LastActivity(self._client)
+        self._modules["Location"] = Location(self._client)
+        self._modules["MAM"] = MAM(self._client)
+        self._modules["MDS"] = MDS(self._client)
+        self._modules["Moderation"] = Moderation(self._client)
+        self._modules["Mood"] = Mood(self._client)
+        self._modules["MUC"] = MUC(self._client)
+        self._modules["Muclumbus"] = Muclumbus(self._client)
+        self._modules["NativeBookmarks"] = NativeBookmarks(self._client)
+        self._modules["Nickname"] = Nickname(self._client)
+        self._modules["OMEMO"] = OMEMO(self._client)
+        self._modules["OOB"] = OOB(self._client)
+        self._modules["OpenPGP"] = OpenPGP(self._client)
+        self._modules["PEPBookmarks"] = PEPBookmarks(self._client)
+        self._modules["PGPLegacy"] = PGPLegacy(self._client)
+        self._modules["Ping"] = Ping(self._client)
+        self._modules["PrivateBookmarks"] = PrivateBookmarks(self._client)
+        self._modules["PubSub"] = PubSub(self._client)
+        self._modules["Reactions"] = Reactions(self._client)
+        self._modules["Receipts"] = Receipts(self._client)
+        self._modules["Register"] = Register(self._client)
+        self._modules["Replies"] = Replies(self._client)
+        self._modules["Retraction"] = Retraction(self._client)
+        self._modules["Roster"] = Roster(self._client)
+        self._modules["SecurityLabels"] = SecurityLabels(self._client)
+        self._modules["SoftwareVersion"] = SoftwareVersion(self._client)
+        self._modules["Tune"] = Tune(self._client)
+        self._modules["UserAvatar"] = UserAvatar(self._client)
+        self._modules["VCardAvatar"] = VCardAvatar(self._client)
+        self._modules["VCardTemp"] = VCardTemp(self._client)
+        self._modules["VCard4"] = VCard4(self._client)
 
         for instance in self._modules.values():
             for handler in instance.handlers:
@@ -246,12 +246,11 @@ class StanzaDispatcher(Observable):
             self._parser.destroy()
             self._parser = None
 
-        self._parser = NodeBuilder(dispatch_depth=2,
-                                   finished=False)
+        self._parser = NodeBuilder(dispatch_depth=2, finished=False)
         self._parser.dispatch = self.dispatch
 
     def replace_non_character(self, data: str) -> str:
-        return re.sub(self.invalid_chars_re, '\ufffd', data)
+        return re.sub(self.invalid_chars_re, "\ufffd", data)
 
     def process_data(self, data: str) -> None:
         # Parse incoming data
@@ -263,13 +262,12 @@ class StanzaDispatcher(Observable):
             if is_websocket_stream_error(stanza):
                 for tag in stanza.getChildren():
                     name = tag.getName()
-                    if (name != 'text' and
-                            tag.getNamespace() == Namespace.XMPP_STREAMS):
+                    if name != "text" and tag.getNamespace() == Namespace.XMPP_STREAMS:
                         self._websocket_stream_error = name
 
             elif is_websocket_close(stanza):
-                self._log.info('Stream <close> received')
-                self.notify('stream-end', self._websocket_stream_error)
+                self._log.info("Stream <close> received")
+                self.notify("stream-end", self._websocket_stream_error)
                 return
 
             self.dispatch(stanza)
@@ -278,14 +276,14 @@ class StanzaDispatcher(Observable):
         try:
             self._parser.Parse(data)
         except (ExpatError, ValueError) as error:
-            self._log.error('XML parsing error: %s', error)
-            self.notify('parsing-error', str(error))
+            self._log.error("XML parsing error: %s", error)
+            self.notify("parsing-error", str(error))
             return
 
         # end stream:stream tag received
         if self._parser.has_received_endtag():
-            self._log.info('End of stream: %s', self._parser.stream_error)
-            self.notify('stream-end', self._parser.stream_error)
+            self._log.info("End of stream: %s", self._parser.stream_error)
+            self.notify("stream-end", self._parser.stream_error)
             return
 
     def _register_namespace(self, xmlns: str) -> None:
@@ -294,24 +292,20 @@ class StanzaDispatcher(Observable):
         """
         self._log.debug('Register namespace "%s"', xmlns)
         self._handlers[xmlns] = {}
-        self._register_protocol('error', Protocol, xmlns=xmlns)
-        self._register_protocol('unknown', Protocol, xmlns=xmlns)
-        self._register_protocol('default', Protocol, xmlns=xmlns)
+        self._register_protocol("error", Protocol, xmlns=xmlns)
+        self._register_protocol("unknown", Protocol, xmlns=xmlns)
+        self._register_protocol("default", Protocol, xmlns=xmlns)
 
     def _register_protocol(
-        self,
-        tag_name: str,
-        protocol: Any,
-        xmlns: str | None = None
+        self, tag_name: str, protocol: Any, xmlns: str | None = None
     ) -> None:
         """
         Register protocol for top level tag names
         """
         if xmlns is None:
             xmlns = Namespace.CLIENT
-        self._log.debug('Register protocol "%s (%s)" as %s',
-                        tag_name, xmlns, protocol)
-        self._handlers[xmlns][tag_name] = {'type': protocol, 'default': []}
+        self._log.debug('Register protocol "%s (%s)" as %s', tag_name, xmlns, protocol)
+        self._handlers[xmlns][tag_name] = {"type": protocol, "default": []}
 
     def register_handler(self, handler: StanzaHandler) -> None:
         """
@@ -322,12 +316,16 @@ class StanzaDispatcher(Observable):
 
         typ = handler.typ
         if not typ and not handler.ns:
-            typ = 'default'
+            typ = "default"
 
         self._log.debug(
             'Register handler %s for "%s" type->%s ns->%s(%s) priority->%s',
-            handler.callback, handler.name, typ, handler.ns,
-            xmlns, handler.priority
+            handler.callback,
+            handler.name,
+            typ,
+            handler.ns,
+            xmlns,
+            handler.priority,
         )
 
         if xmlns not in self._handlers:
@@ -340,9 +338,12 @@ class StanzaDispatcher(Observable):
             self._handlers[xmlns][handler.name][specific] = []
 
         self._handlers[xmlns][handler.name][specific].append(
-            {'func': handler.callback,
-             'priority': handler.priority,
-             'specific': specific})
+            {
+                "func": handler.callback,
+                "priority": handler.priority,
+                "specific": specific,
+            }
+        )
 
     def unregister_handler(self, handler: StanzaHandler) -> None:
         """
@@ -353,7 +354,7 @@ class StanzaDispatcher(Observable):
 
         typ = handler.typ
         if not typ and not handler.ns:
-            typ = 'default'
+            typ = "default"
 
         specific = typ + handler.ns
         try:
@@ -362,30 +363,39 @@ class StanzaDispatcher(Observable):
             return
 
         for handler_dict in self._handlers[xmlns][handler.name][specific]:
-            if handler_dict['func'] != handler.callback:
+            if handler_dict["func"] != handler.callback:
                 continue
 
             try:
-                self._handlers[xmlns][handler.name][specific].remove(
-                    handler_dict)
+                self._handlers[xmlns][handler.name][specific].remove(handler_dict)
             except ValueError:
                 self._log.warning(
                     'Unregister failed: %s for "%s" type->%s ns->%s(%s)',
-                    handler.callback, handler.name, typ, handler.ns, xmlns)
+                    handler.callback,
+                    handler.name,
+                    typ,
+                    handler.ns,
+                    xmlns,
+                )
             else:
                 self._log.debug(
                     'Unregister handler %s for "%s" type->%s ns->%s(%s)',
-                    handler.callback, handler.name, typ, handler.ns, xmlns)
+                    handler.callback,
+                    handler.name,
+                    typ,
+                    handler.ns,
+                    xmlns,
+                )
 
     def _default_handler(self, stanza: Protocol) -> None:
         """
         Return stanza back to the sender with <feature-not-implemented/> error
         """
-        if stanza.getType() in ('get', 'set'):
+        if stanza.getType() in ("get", "set"):
             self._client.send_stanza(Error(stanza, ERR_FEATURE_NOT_IMPLEMENTED))
 
     def dispatch(self, stanza: Protocol) -> None:
-        self.notify('before-dispatch', stanza)
+        self.notify("before-dispatch", stanza)
 
         if self._dispatch_callback is not None:
             name = stanza.getName()
@@ -402,29 +412,29 @@ class StanzaDispatcher(Observable):
         xmlns = stanza.getNamespace()
 
         if xmlns not in self._handlers:
-            self._log.warning('Unknown namespace: %s', xmlns)
-            xmlns = 'unknown'
+            self._log.warning("Unknown namespace: %s", xmlns)
+            xmlns = "unknown"
 
         if name not in self._handlers[xmlns]:
-            self._log.warning('Unknown stanza: %s', stanza)
-            name = 'unknown'
+            self._log.warning("Unknown stanza: %s", stanza)
+            name = "unknown"
 
         # Convert simplexml to Protocol object
         try:
-            stanza = self._handlers[xmlns][name]['type'](node=stanza)
+            stanza = self._handlers[xmlns][name]["type"](node=stanza)
         except InvalidJid:
-            self._log.warning('Invalid JID, ignoring stanza')
+            self._log.warning("Invalid JID, ignoring stanza")
             self._log.warning(stanza)
             return
 
         own_jid = self._client.get_bound_jid()
         properties = get_properties_struct(name, own_jid)
 
-        if name == 'iq':
+        if name == "iq":
             if stanza.getFrom() is None and own_jid is not None:
                 stanza.setFrom(own_jid.bare)
 
-        if name == 'message':
+        if name == "message":
             # https://tools.ietf.org/html/rfc6120#section-8.1.1.1
             # If the stanza does not include a 'to' address then the client MUST
             # treat it as if the 'to' address were included with a value of the
@@ -435,8 +445,7 @@ class StanzaDispatcher(Observable):
                 stanza.setTo(own_jid)
 
             elif not to.bare_match(own_jid):
-                self._log.warning('Message addressed to someone else: %s',
-                                  stanza)
+                self._log.warning("Message addressed to someone else: %s", stanza)
                 return
 
             if stanza.getFrom() is None:
@@ -463,17 +472,16 @@ class StanzaDispatcher(Observable):
 
         typ = stanza.getType()
         if not typ:
-            if name == 'message':
-                typ = 'normal'
-            elif name == 'presence':
-                typ = 'available'
+            if name == "message":
+                typ = "normal"
+            elif name == "presence":
+                typ = "available"
             else:
-                typ = ''
+                typ = ""
 
         # Process callbacks
         _id = stanza.getID()
-        func, _timeout, user_data = self._id_callbacks.pop(
-            _id, (None, None, {}))
+        func, _timeout, user_data = self._id_callbacks.pop(_id, (None, None, {}))
         if user_data is None:
             user_data = {}
 
@@ -481,11 +489,11 @@ class StanzaDispatcher(Observable):
             try:
                 func(self._client, stanza, **user_data)
             except Exception:
-                self._log.exception('Error while handling stanza')
+                self._log.exception("Error while handling stanza")
             return
 
         props = stanza.getProperties()
-        self._log.debug('type: %s, properties: %s', typ, props)
+        self._log.debug("type: %s, properties: %s", typ, props)
 
         chain = self._build_handler_chain(xmlns, name, typ, props)
 
@@ -493,8 +501,10 @@ class StanzaDispatcher(Observable):
             self._execute_handler_chain(chain, stanza, properties)
         except StanzaDecrypted:
             props = stanza.getProperties()
-            self._log.debug('type: %s, properties after decryption: %s', typ, props)
-            chain = self._build_handler_chain(xmlns, name, typ, props, after_decryption=True)
+            self._log.debug("type: %s, properties after decryption: %s", typ, props)
+            chain = self._build_handler_chain(
+                xmlns, name, typ, props, after_decryption=True
+            )
             self._execute_handler_chain(chain, stanza, properties)
 
     def _build_handler_chain(
@@ -504,11 +514,11 @@ class StanzaDispatcher(Observable):
         typ: str,
         props: Any,
         *,
-        after_decryption: bool = False
+        after_decryption: bool = False,
     ) -> list[dict[str, Any]]:
 
         # Gather specifics depending on stanza properties
-        specifics = ['default']
+        specifics = ["default"]
         if typ and typ in self._handlers[xmlns][name]:
             specifics.append(typ)
 
@@ -521,59 +531,57 @@ class StanzaDispatcher(Observable):
 
         # Create the handler chain
         chain: list[dict[str, Any]] = []
-        chain += self._handlers[xmlns]['default']['default']
+        chain += self._handlers[xmlns]["default"]["default"]
         for specific in specifics:
             chain += self._handlers[xmlns][name][specific]
 
         # Sort chain with priority
-        chain.sort(key=lambda x: x['priority'])
+        chain.sort(key=lambda x: x["priority"])
 
         if after_decryption:
             # Filter everything out which was executed before decryption
             # so it is not executed again
-            chain = list(filter(lambda x: x['priority'] > 9, chain))
+            chain = list(filter(lambda x: x["priority"] > 9, chain))
 
         return chain
 
     def _execute_handler_chain(
-        self,
-        chain: Any,
-        stanza: Protocol,
-        properties: Any
+        self, chain: Any, stanza: Protocol, properties: Any
     ) -> None:
 
         for handler in chain:
-            self._log.info('Call handler: %s', handler['func'].__qualname__)
+            self._log.info("Call handler: %s", handler["func"].__qualname__)
             try:
-                handler['func'](self._client, stanza, properties)
+                handler["func"](self._client, stanza, properties)
             except NodeProcessed:
                 return
             except StanzaDecrypted:
                 raise
             except Exception:
-                self._log.exception('Handler exception:')
+                self._log.exception("Handler exception:")
                 return
 
         # Stanza was not processed call default handler
         self._default_handler(stanza)
 
-    def add_callback_for_id(self, id_: str, func: Callable[..., Any], timeout: float | None, user_data: Any) -> None:
+    def add_callback_for_id(
+        self, id_: str, func: Callable[..., Any], timeout: float | None, user_data: Any
+    ) -> None:
         if timeout is not None and self._timeout_id is None:
-            self._log.info('Add timeout check')
-            self._timeout_id = GLib.timeout_add_seconds(
-                1, self._timeout_check)
+            self._log.info("Add timeout check")
+            self._timeout_id = GLib.timeout_add_seconds(1, self._timeout_check)
             timeout = time.monotonic() + timeout
         self._id_callbacks[id_] = (func, timeout, user_data)
 
     def _timeout_check(self) -> bool:
-        self._log.info('Run timeout check')
+        self._log.info("Run timeout check")
         timeouts: dict[str, tuple[Callable[..., Any], float | None, Any]] = {}
         for id_, data in self._id_callbacks.items():
             if data[1] is not None:
                 timeouts[id_] = data
 
         if not timeouts:
-            self._log.info('Remove timeout check, no timeouts scheduled')
+            self._log.info("Remove timeout check, no timeouts scheduled")
             self._timeout_id = None
             return False
 
@@ -597,7 +605,7 @@ class StanzaDispatcher(Observable):
         self._id_callbacks.pop(id_, None)
 
     def clear_iq_callbacks(self) -> None:
-        self._log.info('Clear IQ callbacks')
+        self._log.info("Clear IQ callbacks")
         self._id_callbacks.clear()
 
     def cleanup(self) -> None:

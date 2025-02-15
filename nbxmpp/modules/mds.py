@@ -20,10 +20,10 @@ if TYPE_CHECKING:
     from nbxmpp.client import Client
 
 MDS_OPTIONS = {
-    'pubsub#persist_items': 'true',
-    'pubsub#max_items': 'max',
-    'pubsub#send_last_published_item': 'never',
-    'pubsub#access_model': 'whitelist',
+    "pubsub#persist_items": "true",
+    "pubsub#max_items": "max",
+    "pubsub#send_last_published_item": "never",
+    "pubsub#access_model": "whitelist",
 }
 
 
@@ -31,22 +31,25 @@ class MDS(BaseModule):
     """
     XEP-0490
     """
-    _depends = {
-        'publish': 'PubSub'
-    }
+
+    _depends = {"publish": "PubSub"}
 
     def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_pubsub_mds,
-                          ns=Namespace.PUBSUB_EVENT,
-                          priority=16),
+            StanzaHandler(
+                name="message",
+                callback=self._process_pubsub_mds,
+                ns=Namespace.PUBSUB_EVENT,
+                priority=16,
+            ),
         ]
 
-    def _process_pubsub_mds(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
+    def _process_pubsub_mds(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -65,7 +68,7 @@ class MDS(BaseModule):
             raise NodeProcessed
 
         pubsub_event = properties.pubsub_event._replace(data=data)
-        self._log.info('Received MDS: %s', data)
+        self._log.info("Received MDS: %s", data)
 
         properties.pubsub_event = pubsub_event
 
@@ -73,16 +76,18 @@ class MDS(BaseModule):
     def set_mds(self, data: MDSData, by: JID):
         task = yield
 
-        item = Node('displayed', {'xmlns': Namespace.MDS})
-        sid = item.addChild('stanza-id', namespace=Namespace.SID)
-        sid.setAttr('id', data.stanza_id)
-        sid.setAttr('by', str(by))
+        item = Node("displayed", {"xmlns": Namespace.MDS})
+        sid = item.addChild("stanza-id", namespace=Namespace.SID)
+        sid.setAttr("id", data.stanza_id)
+        sid.setAttr("by", str(by))
 
-        result = yield self.publish(Namespace.MDS,
-                                    item,
-                                    id_=str(data.jid),
-                                    options=MDS_OPTIONS,
-                                    force_node_options=True)
+        result = yield self.publish(
+            Namespace.MDS,
+            item,
+            id_=str(data.jid),
+            options=MDS_OPTIONS,
+            force_node_options=True,
+        )
 
         yield finalize(task, result)
 
@@ -109,38 +114,32 @@ class MDS(BaseModule):
 
     def _parse_item(self, item: Node) -> MDSData:
 
-        item_id = item.getAttr('id')
+        item_id = item.getAttr("id")
         try:
             jid = JID.from_string(item_id)
         except Exception as e:
             raise MalformedStanzaError(
-                f'MDS item ID "{item_id}" is not a valid JID: {e}',
-                item)
+                f'MDS item ID "{item_id}" is not a valid JID: {e}', item
+            )
 
-        displayed = item.getTag('displayed', namespace=Namespace.MDS)
+        displayed = item.getTag("displayed", namespace=Namespace.MDS)
         if not displayed:
-            raise MalformedStanzaError(
-                'Bad MDS event (no displayed tag)', item)
+            raise MalformedStanzaError("Bad MDS event (no displayed tag)", item)
 
-        sid = displayed.getTag('stanza-id', namespace=Namespace.SID)
+        sid = displayed.getTag("stanza-id", namespace=Namespace.SID)
         if sid is None:
-            raise MalformedStanzaError(
-                'Bad MDS event (no stanza-id tag)', item)
+            raise MalformedStanzaError("Bad MDS event (no stanza-id tag)", item)
 
-        stanza_id = sid.getAttr('id')
+        stanza_id = sid.getAttr("id")
         if not stanza_id:
-            raise MalformedStanzaError(
-                'Bad MDS event (no stanza-id ID)', item)
+            raise MalformedStanzaError("Bad MDS event (no stanza-id ID)", item)
 
-        by = sid.getAttr('by')
+        by = sid.getAttr("by")
         try:
             stanza_id_by = JID.from_string(by)
         except Exception as e:
             raise MalformedStanzaError(
-                f'MDS stanza-id by "{by}" is not a valid JID: {e}', item)
+                f'MDS stanza-id by "{by}" is not a valid JID: {e}', item
+            )
 
-        return MDSData(
-            jid=jid,
-            stanza_id=stanza_id,
-            stanza_id_by=stanza_id_by
-        )
+        return MDSData(jid=jid, stanza_id=stanza_id, stanza_id_by=stanza_id_by)

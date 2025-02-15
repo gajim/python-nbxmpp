@@ -33,8 +33,8 @@ from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
 BOOKMARK_OPTIONS = {
-    'pubsub#persist_items': 'true',
-    'pubsub#access_model': 'whitelist',
+    "pubsub#persist_items": "true",
+    "pubsub#access_model": "whitelist",
 }
 
 if TYPE_CHECKING:
@@ -44,8 +44,8 @@ if TYPE_CHECKING:
 class PEPBookmarks(BaseModule):
 
     _depends = {
-        'publish': 'PubSub',
-        'request_items': 'PubSub',
+        "publish": "PubSub",
+        "request_items": "PubSub",
     }
 
     def __init__(self, client: Client) -> None:
@@ -53,13 +53,17 @@ class PEPBookmarks(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_pubsub_bookmarks,
-                          ns=Namespace.PUBSUB_EVENT,
-                          priority=16),
+            StanzaHandler(
+                name="message",
+                callback=self._process_pubsub_bookmarks,
+                ns=Namespace.PUBSUB_EVENT,
+                priority=16,
+            ),
         ]
 
-    def _process_pubsub_bookmarks(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
+    def _process_pubsub_bookmarks(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -79,11 +83,11 @@ class PEPBookmarks(BaseModule):
             raise NodeProcessed
 
         if not bookmarks:
-            self._log.info('Bookmarks removed')
+            self._log.info("Bookmarks removed")
             return
 
         pubsub_event = properties.pubsub_event._replace(data=bookmarks)
-        self._log.info('Received bookmarks from: %s', properties.jid)
+        self._log.info("Received bookmarks from: %s", properties.jid)
         for bookmark in bookmarks:
             self._log.info(bookmark)
 
@@ -109,10 +113,12 @@ class PEPBookmarks(BaseModule):
     def store_bookmarks(self, bookmarks: list[BookmarkData]):
         _task = yield
 
-        self._log.info('Store Bookmarks')
+        self._log.info("Store Bookmarks")
 
-        self.publish(Namespace.BOOKMARKS,
-                     build_storage_node(bookmarks),
-                     id_='current',
-                     options=BOOKMARK_OPTIONS,
-                     force_node_options=True)
+        self.publish(
+            Namespace.BOOKMARKS,
+            build_storage_node(bookmarks),
+            id_="current",
+            options=BOOKMARK_OPTIONS,
+            force_node_options=True,
+        )

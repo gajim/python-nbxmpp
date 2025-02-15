@@ -37,22 +37,24 @@ if TYPE_CHECKING:
 
 class Mood(BaseModule):
 
-    _depends = {
-        'publish': 'PubSub'
-    }
+    _depends = {"publish": "PubSub"}
 
     def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_pubsub_mood,
-                          ns=Namespace.PUBSUB_EVENT,
-                          priority=16),
+            StanzaHandler(
+                name="message",
+                callback=self._process_pubsub_mood,
+                ns=Namespace.PUBSUB_EVENT,
+                priority=16,
+            ),
         ]
 
-    def _process_pubsub_mood(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
+    def _process_pubsub_mood(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -64,27 +66,27 @@ class Mood(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        mood_node = item.getTag('mood', namespace=Namespace.MOOD)
+        mood_node = item.getTag("mood", namespace=Namespace.MOOD)
         if not mood_node.getChildren():
-            self._log.info('Received mood: %s - removed mood', properties.jid)
+            self._log.info("Received mood: %s - removed mood", properties.jid)
             return
 
         mood, text = None, None
         for child in mood_node.getChildren():
             name = child.getName().strip()
-            if name == 'text':
+            if name == "text":
                 text = child.getData()
             elif name in MOODS:
                 mood = name
 
         if mood is None and mood_node.getChildren():
-            self._log.warning('No valid mood value found')
+            self._log.warning("No valid mood value found")
             self._log.warning(stanza)
             raise NodeProcessed
 
         data = MoodData(mood, text)
         pubsub_event = properties.pubsub_event._replace(data=data)
-        self._log.info('Received mood: %s - %s', properties.jid, data)
+        self._log.info("Received mood: %s - %s", properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 
@@ -92,13 +94,13 @@ class Mood(BaseModule):
     def set_mood(self, data: MoodData):
         task = yield
 
-        item = Node('mood', {'xmlns': Namespace.MOOD})
+        item = Node("mood", {"xmlns": Namespace.MOOD})
         if data is not None and data.mood:
             item.addChild(data.mood)
 
             if data.text:
-                item.addChild('text', payload=data.text)
+                item.addChild("text", payload=data.text)
 
-        result = yield self.publish(Namespace.MOOD, item, id_='current')
+        result = yield self.publish(Namespace.MOOD, item, id_="current")
 
         yield finalize(task, result)

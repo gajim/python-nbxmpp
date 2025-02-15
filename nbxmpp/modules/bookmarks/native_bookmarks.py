@@ -38,21 +38,21 @@ if TYPE_CHECKING:
     from nbxmpp.client import Client
 
 BOOKMARK_OPTIONS = {
-    'pubsub#notify_delete': 'true',
-    'pubsub#notify_retract': 'true',
-    'pubsub#persist_items': 'true',
-    'pubsub#max_items': 'max',
-    'pubsub#access_model': 'whitelist',
-    'pubsub#send_last_published_item': 'never',
+    "pubsub#notify_delete": "true",
+    "pubsub#notify_retract": "true",
+    "pubsub#persist_items": "true",
+    "pubsub#max_items": "max",
+    "pubsub#access_model": "whitelist",
+    "pubsub#send_last_published_item": "never",
 }
 
 
 class NativeBookmarks(BaseModule):
 
     _depends = {
-        'retract': 'PubSub',
-        'publish': 'PubSub',
-        'request_items': 'PubSub',
+        "retract": "PubSub",
+        "publish": "PubSub",
+        "request_items": "PubSub",
     }
 
     def __init__(self, client: Client) -> None:
@@ -60,13 +60,17 @@ class NativeBookmarks(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_pubsub_bookmarks,
-                          ns=Namespace.PUBSUB_EVENT,
-                          priority=16),
+            StanzaHandler(
+                name="message",
+                callback=self._process_pubsub_bookmarks,
+                ns=Namespace.PUBSUB_EVENT,
+                priority=16,
+            ),
         ]
 
-    def _process_pubsub_bookmarks(self, _client: Client, _stanza: Message, properties: MessageProperties) -> None:
+    def _process_pubsub_bookmarks(
+        self, _client: Client, _stanza: Message, properties: MessageProperties
+    ) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -86,7 +90,7 @@ class NativeBookmarks(BaseModule):
             raise NodeProcessed
 
         pubsub_event = properties.pubsub_event._replace(data=bookmark_item)
-        self._log.info('Received bookmark item from: %s', properties.jid)
+        self._log.info("Received bookmark item from: %s", properties.jid)
         self._log.info(bookmark_item)
 
         properties.pubsub_event = pubsub_event
@@ -118,7 +122,7 @@ class NativeBookmarks(BaseModule):
     def retract_bookmark(self, bookmark_jid: JID):
         task = yield
 
-        self._log.info('Retract Bookmark: %s', bookmark_jid)
+        self._log.info("Retract Bookmark: %s", bookmark_jid)
 
         result = yield self.retract(Namespace.BOOKMARKS_1, str(bookmark_jid))
         yield finalize(task, result)
@@ -127,13 +131,15 @@ class NativeBookmarks(BaseModule):
     def store_bookmarks(self, bookmarks: list[BookmarkData]):
         _task = yield
 
-        self._log.info('Store Bookmarks')
+        self._log.info("Store Bookmarks")
 
         for bookmark in bookmarks:
-            self.publish(Namespace.BOOKMARKS_1,
-                         build_conference_node(bookmark),
-                         id_=str(bookmark.jid),
-                         options=BOOKMARK_OPTIONS,
-                         force_node_options=True)
+            self.publish(
+                Namespace.BOOKMARKS_1,
+                build_conference_node(bookmark),
+                id_=str(bookmark.jid),
+                options=BOOKMARK_OPTIONS,
+                force_node_options=True,
+            )
 
         yield True

@@ -30,22 +30,22 @@ from gi.repository import Soup
 import nbxmpp
 from nbxmpp.const import HTTPRequestError
 
-log = logging.getLogger('nbxmpp.http')
+log = logging.getLogger("nbxmpp.http")
 
 
 HTTP_METHODS_T = Literal[
-    'CONNECT',
-    'DELETE',
-    'GET',
-    'HEAD',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
-    'TRACE',
+    "CONNECT",
+    "DELETE",
+    "GET",
+    "HEAD",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+    "TRACE",
 ]
 CHUNK_SIZE = 32768
-DEFAULT_USER_AGENT = f'nbxmpp/{nbxmpp.__version__}'
+DEFAULT_USER_AGENT = f"nbxmpp/{nbxmpp.__version__}"
 SIGNAL_ACTIONS = GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.ACTION
 MIN_SOUP_3_3_0 = Soup.check_version(3, 3, 0)
 
@@ -65,9 +65,7 @@ class HTTPSession:
     def get_soup_session(self) -> Soup.Session:
         return self._session
 
-    def set_proxy_resolver(self,
-                           resolver: Gio.SimpleProxyResolver | None
-                           ) -> None:
+    def set_proxy_resolver(self, resolver: Gio.SimpleProxyResolver | None) -> None:
 
         self._session.set_proxy_resolver(resolver)
 
@@ -80,21 +78,18 @@ class HTTPRequest(GObject.GObject):
     __gtype_name__ = "HTTPRequest"
 
     __gsignals__ = {
-        'content-sniffed': (SIGNAL_ACTIONS, None, (int, str)),
-        'starting-response-body': (SIGNAL_ACTIONS, None, ()),
-        'response-progress': (SIGNAL_ACTIONS, None, (float,)),
-        'request-progress': (SIGNAL_ACTIONS, None, (float,)),
-        'finished': (SIGNAL_ACTIONS, None, ()),
-        'destroy': (SIGNAL_ACTIONS, None, ()),
+        "content-sniffed": (SIGNAL_ACTIONS, None, (int, str)),
+        "starting-response-body": (SIGNAL_ACTIONS, None, ()),
+        "response-progress": (SIGNAL_ACTIONS, None, (float,)),
+        "request-progress": (SIGNAL_ACTIONS, None, (float,)),
+        "finished": (SIGNAL_ACTIONS, None, ()),
+        "destroy": (SIGNAL_ACTIONS, None, ()),
     }
 
-    def __init__(self,
-                 session: HTTPSession,
-                 force_http1: bool = False
-                 ) -> None:
+    def __init__(self, session: HTTPSession, force_http1: bool = False) -> None:
         GObject.GObject.__init__(self)
 
-        self._log = HTTPLogAdapter(log, extra={'request': self})
+        self._log = HTTPLogAdapter(log, extra={"request": self})
 
         self._session = session
 
@@ -112,16 +107,16 @@ class HTTPRequest(GObject.GObject):
         self._accept_certificate_func = None
 
         self._response_body_file: Gio.File | None = None
-        self._response_body_data = b''
+        self._response_body_data = b""
         self._body_received = False
 
         self._request_body_file: Gio.File | None = None
         self._request_body_data: bytes | None = None
 
-        self._request_content_type = ''
+        self._request_content_type = ""
         self._request_content_length = 0
 
-        self._response_content_type = ''
+        self._response_content_type = ""
         self._response_content_length = 0
 
         self._emit_request_progress = False
@@ -132,7 +127,7 @@ class HTTPRequest(GObject.GObject):
             self._message.set_force_http1(force_http1)  # type: ignore
         self._user_data = None
 
-        self._log.info('Created')
+        self._log.info("Created")
 
     def is_finished(self) -> bool:
         return self._is_finished
@@ -156,7 +151,7 @@ class HTTPRequest(GObject.GObject):
 
     def get_data(self) -> bytes:
         if not self._is_finished:
-            raise ValueError('Process not finished, data not available')
+            raise ValueError("Process not finished, data not available")
         return self._response_body_data
 
     def get_uri(self) -> GLib.Uri | None:
@@ -176,9 +171,9 @@ class HTTPRequest(GObject.GObject):
 
     def cancel(self) -> None:
         if self._is_finished:
-            raise ValueError('Session already finished')
+            raise ValueError("Session already finished")
 
-        self._log.info('Cancel requested')
+        self._log.info("Cancel requested")
         self._cancellable.cancel()
 
     def set_accept_certificate_func(self, func: Any) -> None:
@@ -186,10 +181,10 @@ class HTTPRequest(GObject.GObject):
 
     def set_request_body_from_path(self, content_type: str, path: Path) -> None:
         if not path.exists():
-            raise ValueError('%s does not exist' % path)
+            raise ValueError("%s does not exist" % path)
 
         if not path.is_file():
-            raise ValueError('%s is not a file' % path)
+            raise ValueError("%s is not a file" % path)
 
         self._request_body_file = Gio.File.new_for_path(str(path))
         self._request_content_type = content_type
@@ -203,16 +198,12 @@ class HTTPRequest(GObject.GObject):
     def set_response_body_from_path(self, path: Path) -> None:
         self._response_body_file = Gio.File.new_for_path(str(path))
 
-    def connect(self,
-                signal_name: str,
-                callback: Any,
-                *args: Any
-                ) -> None:
+    def connect(self, signal_name: str, callback: Any, *args: Any) -> None:
 
-        if signal_name == 'response-progress':
+        if signal_name == "response-progress":
             self._emit_response_progress = True
 
-        if signal_name == 'request-progress':
+        if signal_name == "request-progress":
             self._emit_request_progress = True
 
         if signal_name in GObject.signal_list_names(HTTPRequest):
@@ -221,93 +212,81 @@ class HTTPRequest(GObject.GObject):
 
         user_data = (callback, args)
 
-        self._message.connect(signal_name,
-                              self._on_connect_callback,
-                              user_data)
+        self._message.connect(signal_name, self._on_connect_callback, user_data)
 
     def _on_connect_callback(self, _message: Soup.Message, *args: Any) -> None:
         signal_args = args[:-1]
         callback, user_data = args[-1]
         callback(self, *signal_args, *user_data)
 
-    def send(self,
-             method: HTTP_METHODS_T,
-             uri_string: str,
-             timeout: int | None = None,
-             callback: Callable[[HTTPRequest], Any] | None = None
-             ) -> None:
+    def send(
+        self,
+        method: HTTP_METHODS_T,
+        uri_string: str,
+        timeout: int | None = None,
+        callback: Callable[[HTTPRequest], Any] | None = None,
+    ) -> None:
 
         if callback:
-            self.connect('finished', callback)
+            self.connect("finished", callback)
         self._send(method, uri_string, timeout)
 
-    def _send(self,
-              method: HTTP_METHODS_T,
-              uri_string: str,
-              timeout: int | None = None
-              ) -> None:
+    def _send(
+        self, method: HTTP_METHODS_T, uri_string: str, timeout: int | None = None
+    ) -> None:
 
         if self._is_finished:
-            raise ValueError('Session already finished')
+            raise ValueError("Session already finished")
 
         self._message.set_method(method)
 
         if self._response_body_file is not None:
             self._output_stream = self._response_body_file.replace(
-                None,
-                False,
-                Gio.FileCreateFlags.REPLACE_DESTINATION,
-                self._cancellable)
+                None, False, Gio.FileCreateFlags.REPLACE_DESTINATION, self._cancellable
+            )
 
         uri = GLib.Uri.parse(uri_string, GLib.UriFlags(Soup.HTTP_URI_FLAGS))
         self._message.set_uri(uri)
 
         if self._request_body_data is not None:
             self._message.set_request_body_from_bytes(
-                self._request_content_type,
-                GLib.Bytes.new(self._request_body_data)
+                self._request_content_type, GLib.Bytes.new(self._request_body_data)
             )
             if self._emit_request_progress:
-                self._message.connect('wrote-body-data',
-                                      self._on_request_body_progress)
+                self._message.connect("wrote-body-data", self._on_request_body_progress)
 
         if self._request_body_file is not None:
-            request_input_stream = self._request_body_file.read(
-                self._cancellable)
-            self._message.set_request_body(self._request_content_type,
-                                           request_input_stream,
-                                           self._request_content_length)
+            request_input_stream = self._request_body_file.read(self._cancellable)
+            self._message.set_request_body(
+                self._request_content_type,
+                request_input_stream,
+                self._request_content_length,
+            )
             if self._emit_request_progress:
-                self._message.connect('wrote-body-data',
-                                      self._on_request_body_progress)
+                self._message.connect("wrote-body-data", self._on_request_body_progress)
 
-        self._message.connect('content-sniffed', self._on_content_sniffed)
-        self._message.connect('got-body', self._on_got_body)
-        self._message.connect('restarted', self._on_restarted)
-        self._message.connect('finished', self._on_finished)
-        self._message.connect('got-headers', self._on_got_headers)
+        self._message.connect("content-sniffed", self._on_content_sniffed)
+        self._message.connect("got-body", self._on_got_body)
+        self._message.connect("restarted", self._on_restarted)
+        self._message.connect("finished", self._on_finished)
+        self._message.connect("got-headers", self._on_got_headers)
         if self._accept_certificate_func is not None:
-            self._message.connect('accept-certificate', self._accept_certificate_func)
+            self._message.connect("accept-certificate", self._accept_certificate_func)
 
         soup_session = self._session.get_soup_session()
-        soup_session.send_async(self._message,
-                                GLib.PRIORITY_DEFAULT,
-                                self._cancellable,
-                                self._on_response)
+        soup_session.send_async(
+            self._message, GLib.PRIORITY_DEFAULT, self._cancellable, self._on_response
+        )
 
         if timeout is not None:
-            self._timeout_id = GLib.timeout_add_seconds(
-                timeout, self._on_timeout)
+            self._timeout_id = GLib.timeout_add_seconds(timeout, self._on_timeout)
 
-        self._log.info('Request sent, method: %s, uri: %s', method, uri_string)
+        self._log.info("Request sent, method: %s, uri: %s", method, uri_string)
 
-    def _on_request_body_progress(self,
-                                  _message: Soup.Message,
-                                  chunk: int) -> None:
+    def _on_request_body_progress(self, _message: Soup.Message, chunk: int) -> None:
 
         self._sent_size += chunk
-        self.emit('request-progress',
-                  self._sent_size / self._request_content_length)
+        self.emit("request-progress", self._sent_size / self._request_content_length)
 
     def _on_timeout(self) -> None:
         self._timeout_reached = True
@@ -315,18 +294,14 @@ class HTTPRequest(GObject.GObject):
         self._set_error(HTTPRequestError.TIMEOUT)
         self.cancel()
 
-    def _on_response(self,
-                     session: Soup.Session,
-                     result: Gio.AsyncResult
-                     ) -> None:
+    def _on_response(self, session: Soup.Session, result: Gio.AsyncResult) -> None:
 
-        self._log.info('HTTP version: %s',
-                       self._message.get_http_version().value_name)
-        self._log.info('Request response received')
+        self._log.info("HTTP version: %s", self._message.get_http_version().value_name)
+        self._log.info("Request response received")
         try:
             self._input_stream = session.send_finish(result)
         except GLib.Error as error:
-            quark = GLib.quark_try_string('g-io-error-quark')
+            quark = GLib.quark_try_string("g-io-error-quark")
             if error.matches(quark, Gio.IOErrorEnum.CANCELLED):
                 self._set_failed(HTTPRequestError.CANCELLED)
                 return
@@ -337,32 +312,32 @@ class HTTPRequest(GObject.GObject):
 
         status = self._message.get_status()
         if status not in (Soup.Status.OK, Soup.Status.CREATED):
-            self._log.info('Response status: %s %s',
-                           int(status), self._message.get_reason_phrase())
+            self._log.info(
+                "Response status: %s %s", int(status), self._message.get_reason_phrase()
+            )
             self._set_failed(HTTPRequestError.STATUS_NOT_OK)
             return
 
-        self._log.info('Start downloading response body')
-        self.emit('starting-response-body')
+        self._log.info("Start downloading response body")
+        self.emit("starting-response-body")
 
         self._read_async()
 
     def _read_async(self) -> None:
         assert self._input_stream is not None
-        self._input_stream.read_bytes_async(CHUNK_SIZE,
-                                            GLib.PRIORITY_LOW,
-                                            self._cancellable,
-                                            self._on_bytes_read_result)
+        self._input_stream.read_bytes_async(
+            CHUNK_SIZE, GLib.PRIORITY_LOW, self._cancellable, self._on_bytes_read_result
+        )
 
-    def _on_bytes_read_result(self,
-                              input_stream: Gio.InputStream,
-                              result: Gio.AsyncResult) -> None:
+    def _on_bytes_read_result(
+        self, input_stream: Gio.InputStream, result: Gio.AsyncResult
+    ) -> None:
 
         try:
             data = input_stream.read_bytes_finish(result)
         except GLib.Error as error:
             self._log.error(error)
-            quark = GLib.quark_try_string('g-io-error-quark')
+            quark = GLib.quark_try_string("g-io-error-quark")
             if error.matches(quark, Gio.IOErrorEnum.CANCELLED):
                 self._finish_read(HTTPRequestError.CANCELLED)
             else:
@@ -387,7 +362,7 @@ class HTTPRequest(GObject.GObject):
                 self._output_stream.write_all(bytes_, self._cancellable)
             except GLib.Error as error:
                 self._log.error(error)
-                quark = GLib.quark_try_string('g-io-error-quark')
+                quark = GLib.quark_try_string("g-io-error-quark")
                 if error.matches(quark, Gio.IOErrorEnum.CANCELLED):
                     self._finish_read(HTTPRequestError.CANCELLED)
                 else:
@@ -398,18 +373,19 @@ class HTTPRequest(GObject.GObject):
         self._emit_progress()
 
     def _finish_read(self, error: HTTPRequestError | None = None) -> None:
-        self._log.info('Finished reading')
+        self._log.info("Finished reading")
         if error is None:
             self._close_all_streams()
             return
 
         self._set_failed(error)
 
-    def _on_content_sniffed(self,
-                            message: Soup.Message,
-                            content_type: str | None,
-                            _params: GLib.HashTable,
-                            ) -> None:
+    def _on_content_sniffed(
+        self,
+        message: Soup.Message,
+        content_type: str | None,
+        _params: GLib.HashTable,
+    ) -> None:
 
         # Signal is only raised when there is content in the response
         headers = message.get_response_headers()
@@ -418,38 +394,39 @@ class HTTPRequest(GObject.GObject):
             # decides to trust the content-type sent by the server.
             content_type, _ = headers.get_content_type()
 
-        self._response_content_type = content_type or ''
+        self._response_content_type = content_type or ""
 
-        self._log.info('Sniffed: content-type: %s',
-                       self._response_content_type)
+        self._log.info("Sniffed: content-type: %s", self._response_content_type)
 
-        self.emit('content-sniffed',
-                  self._response_content_length,
-                  self._response_content_type)
+        self.emit(
+            "content-sniffed",
+            self._response_content_length,
+            self._response_content_type,
+        )
 
     def _on_got_headers(self, message: Soup.Message) -> None:
         headers = message.get_response_headers()
         self._response_content_length = headers.get_content_length()
-        self._log.info('Got Headers: content-length: %s',
-                       self._response_content_length)
+        self._log.info("Got Headers: content-length: %s", self._response_content_length)
 
     def _on_got_body(self, _message: Soup.Message) -> None:
         # This signal tells us that the full body was received.
         # The `finished` signal is not a sure indicator if the message body
         # was received in full, as its also triggered when a message is
         # cancelled.
-        self._log.info('Body received')
+        self._log.info("Body received")
         self._body_received = True
 
     def _emit_progress(self) -> None:
         if not self._emit_response_progress:
             return
 
-        if not self._message.get_method() == 'GET':
+        if not self._message.get_method() == "GET":
             return
 
-        self.emit('response-progress',
-                  self._received_size / self._response_content_length)
+        self.emit(
+            "response-progress", self._received_size / self._response_content_length
+        )
 
     def _check_content_overflow(self) -> bool:
         if self._received_size > self._response_content_length:
@@ -458,14 +435,14 @@ class HTTPRequest(GObject.GObject):
         return False
 
     def _on_restarted(self, _message: Soup.Message) -> None:
-        self._log.info('Restarted')
+        self._log.info("Restarted")
         self._body_received = False
-        self._response_content_type = ''
+        self._response_content_type = ""
         self._response_content_length = 0
         self._received_size = 0
 
     def _on_finished(self, _message: Soup.Message) -> None:
-        self._log.info('Message finished')
+        self._log.info("Message finished")
         if not self._body_received:
             # This can happen when the message is cancelled. The `finished`
             # signal is raised whenever the input stream is closed.
@@ -482,40 +459,41 @@ class HTTPRequest(GObject.GObject):
             self._set_failed(HTTPRequestError.STATUS_NOT_OK)
             return
 
-        self._log.info('Request status: %s', Soup.Status.get_phrase(status))
+        self._log.info("Request status: %s", Soup.Status.get_phrase(status))
 
         if self._cancellable.is_cancelled():
             # It can happen that the message is finished before the
             # response callback returns after calling cancel(). If
             # we call complete, the response callback will also
             # try to cleanup and will fail.
-            self._log.info('Skip setting message complete because '
-                           'cancel is in progess')
+            self._log.info(
+                "Skip setting message complete because " "cancel is in progess"
+            )
             return
 
         self._set_complete()
 
     def _set_error(self, error: HTTPRequestError) -> None:
-        self._log.info('Set Error: %s', error)
+        self._log.info("Set Error: %s", error)
         self._error = error
 
     def _set_failed(self, error: HTTPRequestError) -> None:
-        self._log.info('Set Failed: %s', error)
+        self._log.info("Set Failed: %s", error)
         self._is_finished = True
 
         if self._error is None:
             self._set_error(error)
 
         self._close_all_streams()
-        self.emit('finished')
+        self.emit("finished")
         self._cleanup()
 
     def _set_complete(self) -> None:
-        self._log.info('Set Complete')
+        self._log.info("Set Complete")
         self._is_finished = True
         self._is_complete = True
         self._close_all_streams()
-        self.emit('finished')
+        self.emit("finished")
         self._cleanup()
 
     def _close_all_streams(self) -> None:
@@ -539,9 +517,9 @@ class HTTPRequest(GObject.GObject):
                 output_stream.close(None)
 
     def _cleanup(self) -> None:
-        self._log.info('Run cleanup')
+        self._log.info("Run cleanup")
 
-        self._response_body_data = b''
+        self._response_body_data = b""
         self._message.run_dispose()
 
         del self._cancellable
@@ -551,8 +529,8 @@ class HTTPRequest(GObject.GObject):
             GLib.source_remove(self._timeout_id)
             self._timeout_id = None
 
-        self.emit('destroy')
+        self.emit("destroy")
         self.run_dispose()
 
     def __repr__(self) -> str:
-        return f'Request({id(self)})'
+        return f"Request({id(self)})"

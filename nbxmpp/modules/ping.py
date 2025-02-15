@@ -39,16 +39,20 @@ class Ping(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='iq',
-                          callback=self._process_ping,
-                          typ='get',
-                          ns=Namespace.PING,
-                          priority=15),
+            StanzaHandler(
+                name="iq",
+                callback=self._process_ping,
+                typ="get",
+                ns=Namespace.PING,
+                priority=15,
+            ),
         ]
 
-    def _process_ping(self, _client: Client, stanza: Iq, _properties: IqProperties) -> None:
-        self._log.info('Send pong to %s', stanza.getFrom())
-        iq = stanza.buildSimpleReply('result')
+    def _process_ping(
+        self, _client: Client, stanza: Iq, _properties: IqProperties
+    ) -> None:
+        self._log.info("Send pong to %s", stanza.getFrom())
+        iq = stanza.buildSimpleReply("result")
         self._client.send_stanza(iq)
         raise NodeProcessed
 
@@ -61,6 +65,6 @@ class Ping(BaseModule):
 
 
 def _make_ping_request(jid: JID) -> Iq:
-    iq = Iq('get', to=jid)
-    iq.addChild(name='ping', namespace=Namespace.PING)
+    iq = Iq("get", to=jid)
+    iq.addChild(name="ping", namespace=Namespace.PING)
     return iq

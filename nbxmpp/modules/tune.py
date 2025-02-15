@@ -36,22 +36,24 @@ if TYPE_CHECKING:
 
 class Tune(BaseModule):
 
-    _depends = {
-        'publish': 'PubSub'
-    }
+    _depends = {"publish": "PubSub"}
 
     def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_pubsub_tune,
-                          ns=Namespace.PUBSUB_EVENT,
-                          priority=16),
+            StanzaHandler(
+                name="message",
+                callback=self._process_pubsub_tune,
+                ns=Namespace.PUBSUB_EVENT,
+                priority=16,
+            ),
         ]
 
-    def _process_pubsub_tune(self, _client: Client, _stanza: Message, properties: MessageProperties) -> None:
+    def _process_pubsub_tune(
+        self, _client: Client, _stanza: Message, properties: MessageProperties
+    ) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -63,9 +65,9 @@ class Tune(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        tune_node = item.getTag('tune', namespace=Namespace.TUNE)
+        tune_node = item.getTag("tune", namespace=Namespace.TUNE)
         if not tune_node.getChildren():
-            self._log.info('Received tune: %s - no tune set', properties.jid)
+            self._log.info("Received tune: %s - no tune set", properties.jid)
             return
 
         tune_dict = {}
@@ -74,12 +76,11 @@ class Tune(BaseModule):
 
         data = TuneData(**tune_dict)
         if data.artist is None and data.title is None:
-            self._log.warning('Missing artist or title: %s %s',
-                              data, properties.jid)
+            self._log.warning("Missing artist or title: %s %s", data, properties.jid)
             return
 
         pubsub_event = properties.pubsub_event._replace(data=data)
-        self._log.info('Received tune: %s - %s', properties.jid, data)
+        self._log.info("Received tune: %s - %s", properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 
@@ -87,13 +88,13 @@ class Tune(BaseModule):
     def set_tune(self, data: TuneData):
         task = yield
 
-        item = Node('tune', {'xmlns': Namespace.TUNE})
+        item = Node("tune", {"xmlns": Namespace.TUNE})
         if data is not None:
             data = data._asdict()
             for tag, value in data.items():
                 if value is not None:
                     item.addChild(tag, payload=value)
 
-        result = yield self.publish(Namespace.TUNE, item, id_='current')
+        result = yield self.publish(Namespace.TUNE, item, id_="current")
 
         yield finalize(task, result)

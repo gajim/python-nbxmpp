@@ -43,14 +43,18 @@ class SecurityLabels(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_message_security_label,
-                          ns=Namespace.SECLABEL,
-                          priority=15),
+            StanzaHandler(
+                name="message",
+                callback=self._process_message_security_label,
+                ns=Namespace.SECLABEL,
+                priority=15,
+            ),
         ]
 
-    def _process_message_security_label(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
-        security = stanza.getTag('securitylabel', namespace=Namespace.SECLABEL)
+    def _process_message_security_label(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
+        security = stanza.getTag("securitylabel", namespace=Namespace.SECLABEL)
         if security is None:
             return
 
@@ -70,28 +74,26 @@ class SecurityLabels(BaseModule):
         if response.isError():
             raise StanzaError(response)
 
-        catalog_node = response.getTag('catalog',
-                                       namespace=Namespace.SECLABEL_CATALOG)
+        catalog_node = response.getTag("catalog", namespace=Namespace.SECLABEL_CATALOG)
 
         try:
-            restrict = from_xs_boolean(catalog_node.getAttr('restrict'))
+            restrict = from_xs_boolean(catalog_node.getAttr("restrict"))
         except Exception:
             restrict = False
 
-        items = catalog_node.getTags('item')
+        items = catalog_node.getTags("item")
 
         labels: dict[str, SecurityLabel | None] = {}
         default: str | None = None
         for item in items:
-            selector = item.getAttr('selector')
+            selector = item.getAttr("selector")
             if selector is None:
                 continue
 
-            if item.getAttr('default') == 'true':
+            if item.getAttr("default") == "true":
                 default = selector
 
-            security = item.getTag('securitylabel',
-                                   namespace=Namespace.SECLABEL)
+            security = item.getTag("securitylabel", namespace=Namespace.SECLABEL)
             if security is None:
                 labels[selector] = None
                 continue
@@ -107,10 +109,8 @@ class SecurityLabels(BaseModule):
 
 
 def _make_catalog_request(domain: str | None, jid: str) -> Iq:
-    iq = Iq(typ='get', to=domain)
-    iq.addChild(name='catalog',
-                namespace=Namespace.SECLABEL_CATALOG,
-                attrs={'to': jid})
+    iq = Iq(typ="get", to=domain)
+    iq.addChild(name="catalog", namespace=Namespace.SECLABEL_CATALOG, attrs={"to": jid})
     return iq
 
 
@@ -121,12 +121,12 @@ class Displaymarking:
     bgcolor: str
 
     def to_node(self) -> Node:
-        displaymarking = Node(tag='displaymarking')
-        if self.fgcolor and self.fgcolor != '#000':
-            displaymarking.setAttr('fgcolor', self.fgcolor)
+        displaymarking = Node(tag="displaymarking")
+        if self.fgcolor and self.fgcolor != "#000":
+            displaymarking.setAttr("fgcolor", self.fgcolor)
 
-        if self.bgcolor and self.bgcolor != '#FFF':
-            displaymarking.setAttr('bgcolor', self.bgcolor)
+        if self.bgcolor and self.bgcolor != "#FFF":
+            displaymarking.setAttr("bgcolor", self.bgcolor)
 
         if self.name:
             displaymarking.setData(self.name)
@@ -135,9 +135,11 @@ class Displaymarking:
 
     @classmethod
     def from_node(cls, node: Node) -> Displaymarking:
-        return cls(name=node.getData(),
-                   fgcolor=node.getAttr('fgcolor') or '#000',
-                   bgcolor=node.getAttr('bgcolor') or '#FFF')
+        return cls(
+            name=node.getData(),
+            fgcolor=node.getAttr("fgcolor") or "#000",
+            bgcolor=node.getAttr("bgcolor") or "#FFF",
+        )
 
 
 @dataclass
@@ -146,8 +148,7 @@ class SecurityLabel:
     label: Node
 
     def to_node(self) -> Node:
-        security = Node(tag='securitylabel',
-                        attrs={'xmlns': Namespace.SECLABEL})
+        security = Node(tag="securitylabel", attrs={"xmlns": Namespace.SECLABEL})
         if self.displaymarking is not None:
             security.addChild(node=self.displaymarking.to_node())
         security.addChild(node=self.label)
@@ -155,13 +156,13 @@ class SecurityLabel:
 
     @classmethod
     def from_node(cls, security: Node) -> SecurityLabel:
-        displaymarking = security.getTag('displaymarking')
+        displaymarking = security.getTag("displaymarking")
         if displaymarking is not None:
             displaymarking = Displaymarking.from_node(displaymarking)
 
-        label = security.getTag('label')
+        label = security.getTag("label")
         if label is None:
-            raise ValueError('label node missing')
+            raise ValueError("label node missing")
 
         return cls(displaymarking=displaymarking, label=label)
 

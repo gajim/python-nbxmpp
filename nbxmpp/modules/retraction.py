@@ -21,13 +21,13 @@ class Retraction(BaseModule):
         self._client = client
         self.handlers = [
             StanzaHandler(
-                name='message',
+                name="message",
                 callback=self._process_message,
                 ns=Namespace.MESSAGE_RETRACT_1,
                 priority=20,
             ),
             StanzaHandler(
-                name='message',
+                name="message",
                 callback=self._process_message_retracted_tombstone,
                 ns=Namespace.MESSAGE_RETRACT_1,
                 priority=20,
@@ -37,17 +37,15 @@ class Retraction(BaseModule):
     def _process_message(
         self, _client: Client, stanza: Node, properties: MessageProperties
     ) -> None:
-        retraction = stanza.getTag(
-            'retract', namespace=Namespace.MESSAGE_RETRACT_1
-        )
+        retraction = stanza.getTag("retract", namespace=Namespace.MESSAGE_RETRACT_1)
 
         if retraction is None:
             return
 
-        retracted_id = retraction.getAttr('id')
+        retracted_id = retraction.getAttr("id")
 
         if retracted_id is None:
-            self._log.warning('<retract> without retracted message id')
+            self._log.warning("<retract> without retracted message id")
             return
 
         properties.retraction = RetractionData(
@@ -60,19 +58,17 @@ class Retraction(BaseModule):
         if not properties.is_mam_message:
             return
 
-        retracted = stanza.getTag(
-            'retracted', namespace=Namespace.MESSAGE_RETRACT_1
-        )
+        retracted = stanza.getTag("retracted", namespace=Namespace.MESSAGE_RETRACT_1)
 
         if retracted is None:
             return
 
-        retracted_stamp = retracted.getAttr('stamp')
+        retracted_stamp = retracted.getAttr("stamp")
 
         properties.retraction = RetractionData(
             id=None,
             is_tombstone=True,
             timestamp=parse_datetime(
-                retracted_stamp, check_utc=True, convert='utc', epoch=True
+                retracted_stamp, check_utc=True, convert="utc", epoch=True
             ),
         )

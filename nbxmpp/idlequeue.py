@@ -34,41 +34,45 @@ from collections.abc import Callable
 # needed for get_idleqeue
 try:
     from gi.repository import GLib
+
     HAVE_GLIB = True
 except ImportError:
     HAVE_GLIB = False
 
 
-if os.name == 'posix':
+if os.name == "posix":
     import fcntl
 
-log = logging.getLogger('nbxmpp.idlequeue')
+log = logging.getLogger("nbxmpp.idlequeue")
 
 if HAVE_GLIB:
     FLAG_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.HUP
-    FLAG_READ = GLib.IOCondition.IN  | GLib.IOCondition.PRI | \
-                GLib.IOCondition.HUP
-    FLAG_READ_WRITE = GLib.IOCondition.OUT | GLib.IOCondition.IN | \
-                      GLib.IOCondition.PRI | GLib.IOCondition.HUP
+    FLAG_READ = GLib.IOCondition.IN | GLib.IOCondition.PRI | GLib.IOCondition.HUP
+    FLAG_READ_WRITE = (
+        GLib.IOCondition.OUT
+        | GLib.IOCondition.IN
+        | GLib.IOCondition.PRI
+        | GLib.IOCondition.HUP
+    )
     FLAG_CLOSE = GLib.IOCondition.HUP
     PENDING_READ = GLib.IOCondition.IN  # There is data to read.
-    PENDING_WRITE = GLib.IOCondition.OUT # Data CAN be written without blocking
-    IS_CLOSED = GLib.IOCondition.HUP # Hung up (connection broken)
+    PENDING_WRITE = GLib.IOCondition.OUT  # Data CAN be written without blocking
+    IS_CLOSED = GLib.IOCondition.HUP  # Hung up (connection broken)
 else:
-    FLAG_WRITE = 20         # write only           10100
-    FLAG_READ = 19          # read only            10011
-    FLAG_READ_WRITE = 23    # read and write       10111
-    FLAG_CLOSE = 16         # wait for close       10000
-    PENDING_READ = 3        # waiting read event      11
-    PENDING_WRITE = 4       # waiting write event    100
-    IS_CLOSED = 16          # channel closed       10000
+    FLAG_WRITE = 20  # write only           10100
+    FLAG_READ = 19  # read only            10011
+    FLAG_READ_WRITE = 23  # read and write       10111
+    FLAG_CLOSE = 16  # wait for close       10000
+    PENDING_READ = 3  # waiting read event      11
+    PENDING_WRITE = 4  # waiting write event    100
+    IS_CLOSED = 16  # channel closed       10000
 
 
 def get_idlequeue() -> SelectIdleQueue | GlibIdleQueue:
     """
     Get an appropriate idlequeue
     """
-    if os.name == 'nt':
+    if os.name == "nt":
         # gobject.io_add_watch does not work on windows
         return SelectIdleQueue()
 
@@ -85,7 +89,7 @@ class IdleObject:
     """
 
     def __init__(self) -> None:
-        self.fd: int = -1 #: filedescriptor, must be unique for each IdleObject
+        self.fd: int = -1  #: filedescriptor, must be unique for each IdleObject
 
     def pollend(self) -> None:
         """
@@ -124,7 +128,7 @@ class IdleCommand(IdleObject):
         # if it is True, we can safetely execute the command
         self.canexecute = True
         self.idlequeue: IdleQueue | None = None
-        self.result: str = ''
+        self.result: str = ""
         self.endtime = None
         self.pipe = None
 
@@ -137,14 +141,14 @@ class IdleCommand(IdleObject):
         self.result_handler = None
 
     @staticmethod
-    def _compose_command_args() -> list[Literal['echo', 'da']]:
-        return ['echo', 'da']
+    def _compose_command_args() -> list[Literal["echo", "da"]]:
+        return ["echo", "da"]
 
     def _compose_command_line(self) -> str:
         """
         Return one line representation of command and its arguments
         """
-        return ' '.join(self._compose_command_args())
+        return " ".join(self._compose_command_args())
 
     def wait_child(self) -> None:
         if self.pipe.poll() is None:
@@ -165,24 +169,26 @@ class IdleCommand(IdleObject):
 
     def start(self) -> None:
         if not self.canexecute:
-            self.result = ''
+            self.result = ""
             self._return_result()
             return
-        if os.name == 'nt':
+        if os.name == "nt":
             self._start_nt()
-        elif os.name == 'posix':
+        elif os.name == "posix":
             self._start_posix()
 
     def _start_nt(self) -> None:
         # if program is started from noninteraactive shells stdin is closed and
         # cannot be forwarded, so we have to keep it open
 
-        self.pipe = subprocess.Popen(self._compose_command_args(),  # noqa: S602
-                                     stdout=subprocess.PIPE,
-                                     bufsize=1024,
-                                     shell=True,  # noqa: S602
-                                     stderr=subprocess.STDOUT,
-                                     stdin=subprocess.PIPE)
+        self.pipe = subprocess.Popen(  # noqa: S602
+            self._compose_command_args(),
+            stdout=subprocess.PIPE,
+            bufsize=1024,
+            shell=True,  # noqa: S602
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.PIPE,
+        )
         if self.commandtimeout >= 0:
             self.endtime = self.idlequeue.current_time() + self.commandtimeout
             self.idlequeue.set_alarm(self.wait_child, 0.1)
@@ -211,8 +217,8 @@ class IdleCommand(IdleObject):
         try:
             res = self.pipe.read()
         except Exception:
-            res = ''
-        if res == '':
+            res = ""
+        if res == "":
             return self.pollend()
 
         self.result += res
@@ -296,7 +302,7 @@ class IdleQueue:
         """
         Remove the read timeout
         """
-        log.debug('read timeout removed for fd %s', fd)
+        log.debug("read timeout removed for fd %s", fd)
         if fd in self.read_timeouts:
             if timeout:
                 if timeout in self.read_timeouts[fd]:
@@ -306,16 +312,18 @@ class IdleQueue:
             else:
                 del self.read_timeouts[fd]
 
-    def set_read_timeout(self, fd: int, seconds: int, func: Callable[..., Any] | None = None) -> None:
+    def set_read_timeout(
+        self, fd: int, seconds: int, func: Callable[..., Any] | None = None
+    ) -> None:
         """
         Seta a new timeout. If it is not removed after specified seconds,
         func or obj.read_timeout() will be called
 
         A filedescriptor fd can have several timeouts.
         """
-        log_txt = 'read timeout set for fd %s on %i seconds' % (fd, seconds)
+        log_txt = "read timeout set for fd %s on %i seconds" % (fd, seconds)
         if func:
-            log_txt += ' with function ' + str(func)
+            log_txt += " with function " + str(func)
         log.info(log_txt)
         timeout = self.current_time() + seconds
         if fd in self.read_timeouts:
@@ -338,10 +346,10 @@ class IdleQueue:
                 if timeout > current_time:
                     continue
                 if func:
-                    log.debug('Calling %s for fd %s', func, fd)
+                    log.debug("Calling %s for fd %s", func, fd)
                     func()
                 else:
-                    log.debug('Calling read_timeout for fd %s', fd)
+                    log.debug("Calling read_timeout for fd %s", fd)
                     self.queue[fd].read_timeout()
                 self.remove_timeout(fd, timeout)
 
@@ -355,7 +363,9 @@ class IdleQueue:
                 if alarm_time in self.alarms:
                     del self.alarms[alarm_time]
 
-    def plug_idle(self, obj: IdleObject, writable: bool = True, readable: bool = True) -> None:
+    def plug_idle(
+        self, obj: IdleObject, writable: bool = True, readable: bool = True
+    ) -> None:
         """
         Plug an IdleObject into idlequeue. Filedescriptor fd must be set
 
@@ -413,7 +423,7 @@ class IdleQueue:
 
         read_write = False
         if flags & PENDING_READ:
-            #print 'waiting read on %d, flags are %d' % (fd, flags)
+            # print 'waiting read on %d, flags are %d' % (fd, flags)
             obj.pollin()
             read_write = True
 
@@ -515,7 +525,8 @@ class SelectIdleQueue(IdleQueue):
                 list(self.read_fds.keys()),
                 list(self.write_fds.keys()),
                 list(self.error_fds.keys()),
-                0)
+                0,
+            )
         except OSError as error:
             waiting_descriptors = ((), (), ())
             if error.errno != errno.EINTR:
@@ -559,10 +570,7 @@ class GlibIdleQueue(IdleQueue):
         This method is called when we plug a new idle object.
         Start listening for events from fd
         """
-        res = GLib.io_add_watch(fd,
-                                GLib.PRIORITY_LOW,
-                                flags,
-                                self._process_events)
+        res = GLib.io_add_watch(fd, GLib.PRIORITY_LOW, flags, self._process_events)
 
         # store the id of the watch, so that we can remove it on unplug
         self.events[fd] = res

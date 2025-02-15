@@ -67,20 +67,20 @@ class VCardTemp(BaseModule):
 
 
 def _make_vcard_request(jid: JID) -> Iq:
-    iq = Iq(typ='get', to=jid)
-    iq.addChild('vCard', namespace=Namespace.VCARD)
+    iq = Iq(typ="get", to=jid)
+    iq.addChild("vCard", namespace=Namespace.VCARD)
     return iq
 
 
 def _get_vcard_node(response: Node) -> Node:
-    vcard_node = response.getTag('vCard', namespace=Namespace.VCARD)
+    vcard_node = response.getTag("vCard", namespace=Namespace.VCARD)
     if vcard_node is None:
-        raise MalformedStanzaError('vCard node missing', response)
+        raise MalformedStanzaError("vCard node missing", response)
     return vcard_node
 
 
 def _make_vcard_publish(jid: JID, vcard: VCard) -> Iq:
-    iq = Iq(typ='set', to=jid)
+    iq = Iq(typ="set", to=jid)
     iq.addChild(node=vcard.to_node())
     return iq
 
@@ -94,7 +94,7 @@ class VCard:
         dict_ = {}
         for info in node.getChildren():
             name = info.getName()
-            if name in ('ADR', 'TEL', 'EMAIL'):
+            if name in ("ADR", "TEL", "EMAIL"):
                 dict_.setdefault(name, [])
                 entry = {}
                 for child in info.getChildren():
@@ -110,9 +110,9 @@ class VCard:
         return cls(data=dict_)
 
     def to_node(self) -> Node:
-        vcard = Node(tag='vCard', attrs={'xmlns': Namespace.VCARD})
+        vcard = Node(tag="vCard", attrs={"xmlns": Namespace.VCARD})
         for i in self.data:
-            if i == 'jid':
+            if i == "jid":
                 continue
             if isinstance(self.data[i], dict):
                 child = vcard.addChild(i)
@@ -129,17 +129,17 @@ class VCard:
 
     def set_avatar(self, avatar: bytes, type_: str | None = None) -> None:
         encoded_avatar = b64encode(avatar)
-        if 'PHOTO' not in self.data:
-            self.data['PHOTO'] = {}
+        if "PHOTO" not in self.data:
+            self.data["PHOTO"] = {}
 
-        self.data['PHOTO']['BINVAL'] = encoded_avatar
+        self.data["PHOTO"]["BINVAL"] = encoded_avatar
 
         if type_ is not None:
-            self.data['PHOTO']['TYPE'] = type_
+            self.data["PHOTO"]["TYPE"] = type_
 
     def get_avatar(self) -> tuple[bytes | None, str | None]:
         try:
-            avatar = self.data['PHOTO']['BINVAL']
+            avatar = self.data["PHOTO"]["BINVAL"]
         except Exception:
             return None, None
 

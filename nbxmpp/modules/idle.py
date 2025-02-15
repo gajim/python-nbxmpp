@@ -36,26 +36,30 @@ class Idle(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='presence',
-                          callback=self._process_idle,
-                          ns=Namespace.IDLE,
-                          priority=15)
+            StanzaHandler(
+                name="presence",
+                callback=self._process_idle,
+                ns=Namespace.IDLE,
+                priority=15,
+            )
         ]
 
-    def _process_idle(self, _client: Client, stanza: Presence, properties: PresenceProperties) -> None:
-        idle_tag = stanza.getTag('idle', namespace=Namespace.IDLE)
+    def _process_idle(
+        self, _client: Client, stanza: Presence, properties: PresenceProperties
+    ) -> None:
+        idle_tag = stanza.getTag("idle", namespace=Namespace.IDLE)
         if idle_tag is None:
             return
 
-        since = idle_tag.getAttr('since')
+        since = idle_tag.getAttr("since")
         if since is None:
-            self._log.warning('No since attr in idle node')
+            self._log.warning("No since attr in idle node")
             self._log.warning(stanza)
             return
 
-        timestamp = parse_datetime(since, convert='utc', epoch=True)
+        timestamp = parse_datetime(since, convert="utc", epoch=True)
         if timestamp is None:
-            self._log.warning('Invalid timestamp received: %s', since)
+            self._log.warning("Invalid timestamp received: %s", since)
             self._log.warning(stanza)
 
         properties.idle_timestamp = timestamp

@@ -8,7 +8,7 @@ from nbxmpp.util import error_factory
 class TestErrorParsing(unittest.TestCase):
 
     def test_error_parsing(self):
-        stanza = '''
+        stanza = """
         <iq from='upload.montague.tld'
             id='step_03'
             to='romeo@montague.tld/garden'
@@ -21,13 +21,15 @@ class TestErrorParsing(unittest.TestCase):
               <max-file-size>20000</max-file-size>
             </file-too-large>
           </error>
-        </iq>'''
+        </iq>"""
 
         error = error_factory(Iq(node=stanza))
-        self.assertEqual(error.condition, 'not-acceptable')
-        self.assertEqual(error.app_condition, 'file-too-large')
-        self.assertEqual(error.get_text(), 'File too large. The maximum file size is 20000 bytes')
-        self.assertEqual(error.get_text('de'), 'File zu groß. Erlaubt sind 20000 bytes')
-        self.assertEqual(error.type, 'modify')
-        self.assertEqual(error.id, 'step_03')
-        self.assertEqual(error.jid, JID.from_string('upload.montague.tld'))
+        self.assertEqual(error.condition, "not-acceptable")
+        self.assertEqual(error.app_condition, "file-too-large")
+        self.assertEqual(
+            error.get_text(), "File too large. The maximum file size is 20000 bytes"
+        )
+        self.assertEqual(error.get_text("de"), "File zu groß. Erlaubt sind 20000 bytes")
+        self.assertEqual(error.type, "modify")
+        self.assertEqual(error.id, "step_03")
+        self.assertEqual(error.jid, JID.from_string("upload.montague.tld"))

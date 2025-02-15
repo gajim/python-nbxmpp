@@ -36,22 +36,26 @@ class EME(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_eme,
-                          ns=Namespace.EME,
-                          priority=40)
+            StanzaHandler(
+                name="message",
+                callback=self._process_eme,
+                ns=Namespace.EME,
+                priority=40,
+            )
         ]
 
-    def _process_eme(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
-        encryption = stanza.getTag('encryption', namespace=Namespace.EME)
+    def _process_eme(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
+        encryption = stanza.getTag("encryption", namespace=Namespace.EME)
         if encryption is None:
             return
 
-        name = encryption.getAttr('name')
-        namespace = encryption.getAttr('namespace')
+        name = encryption.getAttr("name")
+        namespace = encryption.getAttr("namespace")
         if namespace is None:
-            self._log.warning('No namespace on message')
+            self._log.warning("No namespace on message")
             return
 
         properties.eme = EMEData(name=name, namespace=namespace)
-        self._log.info('Found data: %s', properties.eme)
+        self._log.info("Found data: %s", properties.eme)

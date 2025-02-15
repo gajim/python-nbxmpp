@@ -11,45 +11,48 @@ class LocationTest(StanzaHandlerTest):
     def test_location_parsing(self):
         def _on_message(_con, _stanza, properties):
 
-            data = LocationData(accuracy='20',
-                                alt='1609',
-                                altaccuracy='10',
-                                area='Central Park',
-                                bearing='12.33',
-                                building='The Empire State Building',
-                                country='United States',
-                                countrycode='US',
-                                datum='Some datum',
-                                description='Bill\'s house',
-                                error='290.8882087',
-                                floor='102',
-                                lat='39.75',
-                                locality='New York City',
-                                lon='-104.99',
-                                postalcode='10118',
-                                region='New York',
-                                room='Observatory',
-                                speed='52.69',
-                                street='350 Fifth Avenue / 34th and Broadway',
-                                text='Northwest corner of the lobby',
-                                timestamp='2004-02-19T21:12Z',
-                                tzo='-07:00',
-                                uri='http://www.nyc.com/')
+            data = LocationData(
+                accuracy="20",
+                alt="1609",
+                altaccuracy="10",
+                area="Central Park",
+                bearing="12.33",
+                building="The Empire State Building",
+                country="United States",
+                countrycode="US",
+                datum="Some datum",
+                description="Bill's house",
+                error="290.8882087",
+                floor="102",
+                lat="39.75",
+                locality="New York City",
+                lon="-104.99",
+                postalcode="10118",
+                region="New York",
+                room="Observatory",
+                speed="52.69",
+                street="350 Fifth Avenue / 34th and Broadway",
+                text="Northwest corner of the lobby",
+                timestamp="2004-02-19T21:12Z",
+                tzo="-07:00",
+                uri="http://www.nyc.com/",
+            )
 
             pubsub_event = PubSubEventData(
-                node='http://jabber.org/protocol/geoloc',
-                id='d81a52b8-0f9c-11dc-9bc8-001143d5d5db',
+                node="http://jabber.org/protocol/geoloc",
+                id="d81a52b8-0f9c-11dc-9bc8-001143d5d5db",
                 item=None,
                 data=data,
                 deleted=False,
                 retracted=False,
-                purged=False)
+                purged=False,
+            )
 
             # We cant compare Node objects
             pubsub_event_ = properties.pubsub_event._replace(item=None)
             self.assertEqual(pubsub_event, pubsub_event_)
 
-        event = '''
+        event = """
             <message from='test@test.test'>
                 <event xmlns='http://jabber.org/protocol/pubsub#event'>
                     <items node='http://jabber.org/protocol/geoloc'>
@@ -84,11 +87,12 @@ class LocationTest(StanzaHandlerTest):
                     </items>
                 </event>
             </message>
-        '''
+        """
 
         self.dispatcher.register_handler(
-            StanzaHandler(name='message',
-                          callback=_on_message,
-                          ns=Namespace.PUBSUB_EVENT))
+            StanzaHandler(
+                name="message", callback=_on_message, ns=Namespace.PUBSUB_EVENT
+            )
+        )
 
         self.dispatcher.process_data(event)

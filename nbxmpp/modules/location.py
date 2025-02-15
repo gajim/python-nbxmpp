@@ -36,22 +36,24 @@ if TYPE_CHECKING:
 
 class Location(BaseModule):
 
-    _depends = {
-        'publish': 'PubSub'
-    }
+    _depends = {"publish": "PubSub"}
 
     def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_pubsub_location,
-                          ns=Namespace.PUBSUB_EVENT,
-                          priority=16),
+            StanzaHandler(
+                name="message",
+                callback=self._process_pubsub_location,
+                ns=Namespace.PUBSUB_EVENT,
+                priority=16,
+            ),
         ]
 
-    def _process_pubsub_location(self, _client: Client, _stanza: Message, properties: MessageProperties) -> None:
+    def _process_pubsub_location(
+        self, _client: Client, _stanza: Message, properties: MessageProperties
+    ) -> None:
         if not properties.is_pubsub_event:
             return
 
@@ -63,10 +65,9 @@ class Location(BaseModule):
             # Retract, Deleted or Purged
             return
 
-        location_node = item.getTag('geoloc', namespace=Namespace.LOCATION)
+        location_node = item.getTag("geoloc", namespace=Namespace.LOCATION)
         if not location_node.getChildren():
-            self._log.info('Received location: %s - no location set',
-                           properties.jid)
+            self._log.info("Received location: %s - no location set", properties.jid)
             return
 
         location_dict = {}
@@ -74,7 +75,7 @@ class Location(BaseModule):
             location_dict[node] = location_node.getTagData(node)
         data = LocationData(**location_dict)
         pubsub_event = properties.pubsub_event._replace(data=data)
-        self._log.info('Received location: %s - %s', properties.jid, data)
+        self._log.info("Received location: %s - %s", properties.jid, data)
 
         properties.pubsub_event = pubsub_event
 
@@ -82,13 +83,13 @@ class Location(BaseModule):
     def set_location(self, data: LocationData):
         task = yield
 
-        item = Node('geoloc', {'xmlns': Namespace.LOCATION})
+        item = Node("geoloc", {"xmlns": Namespace.LOCATION})
         if data is not None:
             data = data._asdict()
             for tag, value in data.items():
                 if value is not None:
                     item.addChild(tag, payload=value)
 
-        result = yield self.publish(Namespace.LOCATION, item, id_='current')
+        result = yield self.publish(Namespace.LOCATION, item, id_="current")
 
         yield finalize(task, result)

@@ -43,15 +43,17 @@ class BaseMessage(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_message_base,
-                          priority=5),
-            StanzaHandler(name='message',
-                          callback=self._process_message_after_base,
-                          priority=10),
+            StanzaHandler(
+                name="message", callback=self._process_message_base, priority=5
+            ),
+            StanzaHandler(
+                name="message", callback=self._process_message_after_base, priority=10
+            ),
         ]
 
-    def _process_message_base(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
+    def _process_message_base(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
         properties.type = self._parse_type(stanza)
 
         if properties.is_carbon_message and properties.carbon.is_sent:
@@ -86,20 +88,24 @@ class BaseMessage(BaseModule):
             return properties.jid
         return properties.jid.new_as_bare()
 
-    def _parse_if_private_message(self, stanza: Message, properties: MessageProperties) -> None:
-        muc_user = stanza.getTag('x', namespace=Namespace.MUC_USER)
+    def _parse_if_private_message(
+        self, stanza: Message, properties: MessageProperties
+    ) -> None:
+        muc_user = stanza.getTag("x", namespace=Namespace.MUC_USER)
         if muc_user is None:
             return
 
         if not properties.jid.is_full:
             return
 
-        if (properties.type.is_chat or
-                (properties.type.is_error and
-                not muc_user.getChildren())):
+        if properties.type.is_chat or (
+            properties.type.is_error and not muc_user.getChildren()
+        ):
             properties.muc_private_message = True
 
-    def _process_message_after_base(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
+    def _process_message_after_base(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
         # This handler runs after decryption handlers had the chance
         # to decrypt the body
 
@@ -107,10 +113,11 @@ class BaseMessage(BaseModule):
 
         properties.body = stanza.getBody()
         properties.bodies = BodyData(
-            stanza, fallbacks_for, self._client.get_supported_fallback_ns())
+            stanza, fallbacks_for, self._client.get_supported_fallback_ns()
+        )
         properties.thread = stanza.getThread()
         properties.subject = stanza.getSubject()
-        forms = stanza.getTags('x', namespace=Namespace.DATA)
+        forms = stanza.getTags("x", namespace=Namespace.DATA)
         if forms:
             properties.forms = forms
 
@@ -118,8 +125,8 @@ class BaseMessage(BaseModule):
         if xhtml is None:
             return
 
-        if xhtml.getTag('body', namespace=Namespace.XHTML) is None:
-            self._log.warning('xhtml without body found')
+        if xhtml.getTag("body", namespace=Namespace.XHTML) is None:
+            self._log.warning("xhtml without body found")
             self._log.warning(stanza)
             return
 
@@ -133,7 +140,7 @@ class BaseMessage(BaseModule):
         try:
             return MessageType(type_)
         except ValueError:
-            self._log.warning('Message with invalid type: %s', type_)
+            self._log.warning("Message with invalid type: %s", type_)
             self._log.warning(stanza)
             raise NodeProcessed
 
@@ -145,11 +152,11 @@ class BaseMessage(BaseModule):
 
     def _parse_stanza_ids(self, stanza: Message) -> list[StanzaIDData]:
         stanza_ids: list[StanzaIDData] = []
-        for stanza_id in stanza.getTags('stanza-id', namespace=Namespace.SID):
-            id_ = stanza_id.getAttr('id')
-            by = stanza_id.getAttr('by')
+        for stanza_id in stanza.getTags("stanza-id", namespace=Namespace.SID):
+            id_ = stanza_id.getAttr("id")
+            by = stanza_id.getAttr("by")
             if not id_ or not by:
-                self._log.warning('Missing attributes on stanza-id')
+                self._log.warning("Missing attributes on stanza-id")
                 self._log.warning(stanza)
                 continue
 

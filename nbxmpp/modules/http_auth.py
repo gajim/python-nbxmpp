@@ -37,27 +37,35 @@ class HTTPAuth(BaseModule):
         BaseModule.__init__(self, client)
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_http_auth,
-                          ns=Namespace.HTTP_AUTH,
-                          priority=40),
-            StanzaHandler(name='iq',
-                          callback=self._process_http_auth,
-                          typ='get',
-                          ns=Namespace.HTTP_AUTH,
-                          priority=40)
+            StanzaHandler(
+                name="message",
+                callback=self._process_http_auth,
+                ns=Namespace.HTTP_AUTH,
+                priority=40,
+            ),
+            StanzaHandler(
+                name="iq",
+                callback=self._process_http_auth,
+                typ="get",
+                ns=Namespace.HTTP_AUTH,
+                priority=40,
+            ),
         ]
 
-    def _process_http_auth(self, _client: Client, stanza: Iq | Message, properties: IqProperties | MessageProperties) -> None:
-        confirm = stanza.getTag('confirm', namespace=Namespace.HTTP_AUTH)
+    def _process_http_auth(
+        self,
+        _client: Client,
+        stanza: Iq | Message,
+        properties: IqProperties | MessageProperties,
+    ) -> None:
+        confirm = stanza.getTag("confirm", namespace=Namespace.HTTP_AUTH)
         if confirm is None:
             return
 
         attrs = confirm.getAttrs()
-        body = stanza.getTagData('body')
-        id_ = attrs.get('id')
-        method = attrs.get('method')
-        url = attrs.get('url')
+        body = stanza.getTagData("body")
+        id_ = attrs.get("id")
+        method = attrs.get("method")
+        url = attrs.get("url")
         properties.http_auth = HTTPAuthData(id_, method, url, body)
-        self._log.info('HTTPAuth received: %s %s %s %s',
-                       id_, method, url, body)
+        self._log.info("HTTPAuth received: %s %s %s %s", id_, method, url, body)

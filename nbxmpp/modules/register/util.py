@@ -31,25 +31,25 @@ from nbxmpp.structs import RegisterData
 
 
 def _make_password_change_request(domain: str, username: str, password: str) -> Iq:
-    iq = Iq('set', Namespace.REGISTER, to=domain)
+    iq = Iq("set", Namespace.REGISTER, to=domain)
     query = iq.getQuery()
-    query.setTagData('username', username)
-    query.setTagData('password', password)
+    query.setTagData("username", username)
+    query.setTagData("password", password)
     return iq
 
 
 def _make_password_change_with_form(domain: str, form) -> Iq:
-    iq = Iq('set', Namespace.REGISTER, to=domain)
+    iq = Iq("set", Namespace.REGISTER, to=domain)
     iq.setQueryPayload(form)
     return iq
 
 
 def _make_register_form(jid: JID, form) -> Iq:
-    iq = Iq('set', Namespace.REGISTER, to=jid)
+    iq = Iq("set", Namespace.REGISTER, to=jid)
     if form.is_fake_form():
-        query = iq.getTag('query')
+        query = iq.getTag("query")
         for field in form.iter_fields():
-            if field.var == 'fakeform':
+            if field.var == "fakeform":
                 continue
             query.addChild(field.var, payload=[field.value])
         return iq
@@ -59,34 +59,34 @@ def _make_register_form(jid: JID, form) -> Iq:
 
 
 def _make_unregister_request(jid: JID) -> Iq:
-    iq = Iq('set', to=jid)
+    iq = Iq("set", to=jid)
     query = iq.setQuery()
     query.setNamespace(Namespace.REGISTER)
-    query.addChild('remove')
+    query.addChild("remove")
     return iq
 
 
 def _parse_oob_url(query: Iq) -> str | None:
-    oob = query.getTag('x', namespace=Namespace.X_OOB)
+    oob = query.getTag("x", namespace=Namespace.X_OOB)
     if oob is not None:
-        return oob.getTagData('url') or None
+        return oob.getTagData("url") or None
     return None
 
 
 def _parse_form(stanza):
-    query = stanza.getTag('query', namespace=Namespace.REGISTER)
-    form = query.getTag('x', namespace=Namespace.DATA)
+    query = stanza.getTag("query", namespace=Namespace.REGISTER)
+    form = query.getTag("x", namespace=Namespace.DATA)
     if form is None:
         return None
 
     form = extend_form(node=form)
-    field = form.vars.get('FORM_TYPE')
+    field = form.vars.get("FORM_TYPE")
     if field is None:
         return None
 
     # Invalid urn:xmpp:captcha used by ejabberd
     # See https://github.com/processone/ejabberd/issues/3045
-    if field.value in ('jabber:iq:register', 'urn:xmpp:captcha'):
+    if field.value in ("jabber:iq:register", "urn:xmpp:captcha"):
         return form
     return None
 
@@ -98,37 +98,35 @@ def _parse_fields_form(query: Protocol) -> SimpleDataForm | None:
         if field_name not in REGISTER_FIELDS:
             continue
 
-        required = field_name in ('username', 'password')
-        typ = 'text-single' if field_name != 'password' else 'text-private'
-        fields.append(create_field(typ=typ,
-                                   var=field_name,
-                                   required=required))
+        required = field_name in ("username", "password")
+        typ = "text-single" if field_name != "password" else "text-private"
+        fields.append(create_field(typ=typ, var=field_name, required=required))
 
     if not fields:
         return None
 
-    fields.append(create_field(typ='hidden', var='fakeform'))
-    return SimpleDataForm(type_='form',
-                          instructions=query.getTagData('instructions'),
-                          fields=fields)
+    fields.append(create_field(typ="hidden", var="fakeform"))
+    return SimpleDataForm(
+        type_="form", instructions=query.getTagData("instructions"), fields=fields
+    )
 
 
 def _parse_register_data(response: Protocol) -> RegisterData:
-    query = response.getTag('query', namespace=Namespace.REGISTER)
+    query = response.getTag("query", namespace=Namespace.REGISTER)
     if query is None:
         raise StanzaError(response)
 
-    instructions = query.getTagData('instructions') or None
+    instructions = query.getTagData("instructions") or None
 
-    data = RegisterData(instructions=instructions,
-                        form=_parse_form(response),
-                        fields_form=_parse_fields_form(query),
-                        oob_url=_parse_oob_url(query),
-                        bob_data=parse_bob_data(query))
+    data = RegisterData(
+        instructions=instructions,
+        form=_parse_form(response),
+        fields_form=_parse_fields_form(query),
+        oob_url=_parse_oob_url(query),
+        bob_data=parse_bob_data(query),
+    )
 
-    if (data.form is None and
-            data.fields_form is None and
-            data.oob_url is None):
-        raise MalformedStanzaError('invalid register response', response)
+    if data.form is None and data.fields_form is None and data.oob_url is None:
+        raise MalformedStanzaError("invalid register response", response)
 
     return data

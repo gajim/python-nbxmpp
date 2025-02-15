@@ -28,16 +28,16 @@ from nbxmpp.types import CustomHostT
 from nbxmpp.util import Observable
 from nbxmpp.util import parse_websocket_uri
 
-log = logging.getLogger('nbxmpp.addresses')
+log = logging.getLogger("nbxmpp.addresses")
 
 
 class ServerAddresses(Observable):
-    '''
+    """
     Signals:
 
         resolved
 
-    '''
+    """
 
     def __init__(self, domain: str | None) -> None:
         Observable.__init__(self, log)
@@ -49,47 +49,54 @@ class ServerAddresses(Observable):
         self._is_resolved = False
 
         self._addresses: list[ServerAddress] = [
-            ServerAddress(domain=self._domain,
-                          service='xmpps-client',
-                          host=None,
-                          uri=None,
-                          protocol=ConnectionProtocol.TCP,
-                          type=ConnectionType.DIRECT_TLS,
-                          proxy=None),
-
-            ServerAddress(domain=self._domain,
-                          service='xmpp-client',
-                          host=None,
-                          uri=None,
-                          protocol=ConnectionProtocol.TCP,
-                          type=ConnectionType.START_TLS,
-                          proxy=None),
-
-            ServerAddress(domain=self._domain,
-                          service='xmpp-client',
-                          host=None,
-                          uri=None,
-                          protocol=ConnectionProtocol.TCP,
-                          type=ConnectionType.PLAIN,
-                          proxy=None)
+            ServerAddress(
+                domain=self._domain,
+                service="xmpps-client",
+                host=None,
+                uri=None,
+                protocol=ConnectionProtocol.TCP,
+                type=ConnectionType.DIRECT_TLS,
+                proxy=None,
+            ),
+            ServerAddress(
+                domain=self._domain,
+                service="xmpp-client",
+                host=None,
+                uri=None,
+                protocol=ConnectionProtocol.TCP,
+                type=ConnectionType.START_TLS,
+                proxy=None,
+            ),
+            ServerAddress(
+                domain=self._domain,
+                service="xmpp-client",
+                host=None,
+                uri=None,
+                protocol=ConnectionProtocol.TCP,
+                type=ConnectionType.PLAIN,
+                proxy=None,
+            ),
         ]
 
         self._fallback_addresses: list[ServerAddress] = [
-            ServerAddress(domain=self._domain,
-                          service=None,
-                          host='%s:%s' % (self._domain, 5222),
-                          uri=None,
-                          protocol=ConnectionProtocol.TCP,
-                          type=ConnectionType.START_TLS,
-                          proxy=None),
-
-            ServerAddress(domain=self._domain,
-                          service=None,
-                          host='%s:%s' % (self._domain, 5222),
-                          uri=None,
-                          protocol=ConnectionProtocol.TCP,
-                          type=ConnectionType.PLAIN,
-                          proxy=None)
+            ServerAddress(
+                domain=self._domain,
+                service=None,
+                host="%s:%s" % (self._domain, 5222),
+                uri=None,
+                protocol=ConnectionProtocol.TCP,
+                type=ConnectionType.START_TLS,
+                proxy=None,
+            ),
+            ServerAddress(
+                domain=self._domain,
+                service=None,
+                host="%s:%s" % (self._domain, 5222),
+                uri=None,
+                protocol=ConnectionProtocol.TCP,
+                type=ConnectionType.PLAIN,
+                proxy=None,
+            ),
         ]
 
     @property
@@ -122,46 +129,52 @@ class ServerAddresses(Observable):
             return
 
         request = self._http_session.create_request()
-        request.send('GET', f'https://{self._domain}/.well-known/host-meta',
-                     timeout=5,
-                     callback=self._on_alternatives_result)
+        request.send(
+            "GET",
+            f"https://{self._domain}/.well-known/host-meta",
+            timeout=5,
+            callback=self._on_alternatives_result,
+        )
 
     def _on_alternatives_result(self, request: HTTPRequest) -> None:
         if not request.is_complete():
-            log.info('Failed to retrieve host-meta file: %s',
-                     request.get_error_string())
+            log.info(
+                "Failed to retrieve host-meta file: %s", request.get_error_string()
+            )
             self._on_request_resolved()
             return
 
         response_body = request.get_data()
         if not response_body:
-            log.info('No response body data found')
+            log.info("No response body data found")
             self._on_request_resolved()
             return
 
         try:
             uri = parse_websocket_uri(response_body.decode())
         except Exception as error:
-            log.info('Error parsing websocket uri: %s', error)
+            log.info("Error parsing websocket uri: %s", error)
             self._on_request_resolved()
             return
 
-        if uri.startswith('wss'):
+        if uri.startswith("wss"):
             type_ = ConnectionType.DIRECT_TLS
-        elif uri.startswith('ws'):
+        elif uri.startswith("ws"):
             type_ = ConnectionType.PLAIN
         else:
-            log.warning('Invalid websocket uri: %s', uri)
+            log.warning("Invalid websocket uri: %s", uri)
             self._on_request_resolved()
             return
 
-        addr = ServerAddress(domain=self._domain,
-                             service=None,
-                             host=None,
-                             uri=uri,
-                             protocol=ConnectionProtocol.WEBSOCKET,
-                             type=type_,
-                             proxy=None)
+        addr = ServerAddress(
+            domain=self._domain,
+            service=None,
+            host=None,
+            uri=uri,
+            protocol=ConnectionProtocol.WEBSOCKET,
+            type=type_,
+            proxy=None,
+        )
         self._addresses.append(addr)
 
         self._on_request_resolved()
@@ -183,13 +196,16 @@ class ServerAddresses(Observable):
 
         self._fallback_addresses = []
         self._addresses = [
-            ServerAddress(domain=self._domain,
-                          service=None,
-                          host=host,
-                          uri=uri,
-                          protocol=protocol,
-                          type=type_,
-                          proxy=None)]
+            ServerAddress(
+                domain=self._domain,
+                service=None,
+                host=host,
+                uri=uri,
+                protocol=protocol,
+                type=type_,
+                proxy=None,
+            )
+        ]
 
     def set_proxy(self, proxy: ProxyData | None) -> None:
         self._proxy = proxy
@@ -199,24 +215,26 @@ class ServerAddresses(Observable):
 
     def _on_request_resolved(self) -> None:
         self._is_resolved = True
-        self.notify('resolved')
+        self.notify("resolved")
         self.remove_subscriptions()
 
-    def get_next_address(self,
-                         allowed_types: list[ConnectionType],
-                         allowed_protocols: list[ConnectionProtocol]) -> Iterator[ServerAddress]:
-        '''
+    def get_next_address(
+        self,
+        allowed_types: list[ConnectionType],
+        allowed_protocols: list[ConnectionProtocol],
+    ) -> Iterator[ServerAddress]:
+        """
         Selects next address
-        '''
+        """
 
-        for addr in self._filter_allowed(self._addresses,
-                                         allowed_types,
-                                         allowed_protocols):
+        for addr in self._filter_allowed(
+            self._addresses, allowed_types, allowed_protocols
+        ):
             yield self._assure_proxy(addr)
 
-        for addr in self._filter_allowed(self._fallback_addresses,
-                                         allowed_types,
-                                         allowed_protocols):
+        for addr in self._filter_allowed(
+            self._fallback_addresses, allowed_types, allowed_protocols
+        ):
             yield self._assure_proxy(addr)
 
         raise NoMoreAddresses
@@ -230,19 +248,22 @@ class ServerAddresses(Observable):
 
         return addr
 
-    def _filter_allowed(self, addresses: list[ServerAddress], allowed_types: list[ConnectionType], allowed_protocols: list[ConnectionProtocol]) -> Iterator[ServerAddress]:
+    def _filter_allowed(
+        self,
+        addresses: list[ServerAddress],
+        allowed_types: list[ConnectionType],
+        allowed_protocols: list[ConnectionProtocol],
+    ) -> Iterator[ServerAddress]:
         if self._proxy is not None:
             addresses = filter(lambda addr: addr.host is not None, addresses)
 
-        addresses = filter(lambda addr: addr.type in allowed_types,
-                           addresses)
-        addresses = filter(lambda addr: addr.protocol in allowed_protocols,
-                           addresses)
+        addresses = filter(lambda addr: addr.type in allowed_types, addresses)
+        addresses = filter(lambda addr: addr.protocol in allowed_protocols, addresses)
         return addresses
 
     def __str__(self) -> str:
         addresses = self._addresses + self._fallback_addresses
-        return '\n'.join([str(addr) for addr in addresses])
+        return "\n".join([str(addr) for addr in addresses])
 
 
 class NoMoreAddresses(Exception):

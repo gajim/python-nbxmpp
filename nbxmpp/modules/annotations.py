@@ -55,32 +55,30 @@ class Annotations(BaseModule):
             raise StanzaError(response)
 
         query = response.getQuery()
-        storage = query.getTag('storage', namespace=Namespace.ROSTERNOTES)
+        storage = query.getTag("storage", namespace=Namespace.ROSTERNOTES)
         if storage is None:
-            raise MalformedStanzaError('storage node missing', response)
+            raise MalformedStanzaError("storage node missing", response)
 
         notes: list[AnnotationNote] = []
-        for note in storage.getTags('note'):
+        for note in storage.getTags("note"):
             try:
-                jid = JID.from_string(note.getAttr('jid'))
+                jid = JID.from_string(note.getAttr("jid"))
             except Exception as error:
-                self._log.warning('Invalid JID: %s, %s',
-                                  note.getAttr('jid'), error)
+                self._log.warning("Invalid JID: %s, %s", note.getAttr("jid"), error)
                 continue
 
-            cdate = note.getAttr('cdate')
+            cdate = note.getAttr("cdate")
             if cdate is not None:
                 cdate = parse_datetime(cdate, epoch=True)
 
-            mdate = note.getAttr('mdate')
+            mdate = note.getAttr("mdate")
             if mdate is not None:
                 mdate = parse_datetime(mdate, epoch=True)
 
             data = note.getData()
-            notes.append(AnnotationNote(jid=jid, cdate=cdate,
-                                        mdate=mdate, data=data))
+            notes.append(AnnotationNote(jid=jid, cdate=cdate, mdate=mdate, data=data))
 
-        self._log.info('Received annotations from %s:', self.domain)
+        self._log.info("Received annotations from %s:", self.domain)
         for note in notes:
             self._log.info(note)
         yield notes
@@ -97,17 +95,18 @@ class Annotations(BaseModule):
 
 
 def _make_request() -> Iq:
-    payload = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
-    return Iq(typ='get', queryNS=Namespace.PRIVATE, payload=payload)
+    payload = Node("storage", attrs={"xmlns": Namespace.ROSTERNOTES})
+    return Iq(typ="get", queryNS=Namespace.PRIVATE, payload=payload)
+
 
 def _make_set_request(notes: list[AnnotationNote]) -> Iq:
-    storage = Node('storage', attrs={'xmlns': Namespace.ROSTERNOTES})
+    storage = Node("storage", attrs={"xmlns": Namespace.ROSTERNOTES})
     for note in notes:
-        node = Node('note', attrs={'jid': note.jid})
+        node = Node("note", attrs={"jid": note.jid})
         node.setData(note.data)
         if note.cdate is not None:
-            node.setAttr('cdate', note.cdate)
+            node.setAttr("cdate", note.cdate)
         if note.mdate is not None:
-            node.setAttr('mdate', note.mdate)
+            node.setAttr("mdate", note.mdate)
         storage.addChild(node=node)
-    return Iq(typ='set', queryNS=Namespace.PRIVATE, payload=storage)
+    return Iq(typ="set", queryNS=Namespace.PRIVATE, payload=storage)

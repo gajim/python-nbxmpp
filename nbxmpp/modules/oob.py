@@ -36,22 +36,26 @@ class OOB(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name='message',
-                          callback=self._process_message_oob,
-                          ns=Namespace.X_OOB,
-                          priority=15),
+            StanzaHandler(
+                name="message",
+                callback=self._process_message_oob,
+                ns=Namespace.X_OOB,
+                priority=15,
+            ),
         ]
 
-    def _process_message_oob(self, _client: Client, stanza: Message, properties: MessageProperties) -> None:
-        oob = stanza.getTag('x', namespace=Namespace.X_OOB)
+    def _process_message_oob(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
+        oob = stanza.getTag("x", namespace=Namespace.X_OOB)
         if oob is None:
             return
 
-        url = oob.getTagData('url')
+        url = oob.getTagData("url")
         if url is None:
-            self._log.warning('OOB data without url')
+            self._log.warning("OOB data without url")
             self._log.warning(stanza)
             return
 
-        desc = oob.getTagData('desc')
+        desc = oob.getTagData("desc")
         properties.oob = OOBData(url, desc)

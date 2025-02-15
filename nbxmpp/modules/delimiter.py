@@ -46,7 +46,7 @@ class Delimiter(BaseModule):
         if response.isError():
             raise StanzaError(response)
 
-        delimiter = response.getQuery().getTagData('roster') or None
+        delimiter = response.getQuery().getTagData("roster") or None
         yield delimiter
 
     @iq_request_task
@@ -58,13 +58,13 @@ class Delimiter(BaseModule):
 
 
 def _make_request() -> Iq:
-    node = Node('storage', attrs={'xmlns': Namespace.DELIMITER})
-    iq = Iq('get', Namespace.PRIVATE, payload=node)
+    node = Node("storage", attrs={"xmlns": Namespace.DELIMITER})
+    iq = Iq("get", Namespace.PRIVATE, payload=node)
     return iq
 
 
 def _make_set_request(delimiter: str) -> Iq:
-    iq = Iq('set', Namespace.PRIVATE)
-    roster = iq.getQuery().addChild('roster', namespace=Namespace.DELIMITER)
+    iq = Iq("set", Namespace.PRIVATE)
+    roster = iq.getQuery().addChild("roster", namespace=Namespace.DELIMITER)
     roster.setData(delimiter)
     return iq
