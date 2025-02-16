@@ -11,7 +11,6 @@ sub- stanzas) handling routines
 from __future__ import annotations
 
 from typing import Any
-from typing import cast
 from typing import Literal
 from typing import TYPE_CHECKING
 
@@ -714,29 +713,29 @@ def unescape_localpart(localpart: str) -> str:
     return localpart
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class JID:
-    localpart: str | None = None
-    domain: str | None = None
-    resource: str | None = None
+    localpart: str | None
+    domain: str
+    resource: str | None
 
     def __init__(
         self,
-        localpart: str | None = None,
-        domain: str | None = None,
-        resource: str | None = None,
+        localpart: str | None,
+        domain: str,
+        resource: str | None,
     ):
 
         if localpart is not None:
             localpart = validate_localpart(localpart)
-            object.__setattr__(self, "localpart", localpart)
+        object.__setattr__(self, "localpart", localpart)
 
         domain = validate_domainpart(domain)
         object.__setattr__(self, "domain", domain)
 
         if resource is not None:
             resource = validate_resourcepart(resource)
-            object.__setattr__(self, "resource", resource)
+        object.__setattr__(self, "resource", resource)
 
     @classmethod
     @functools.cache
@@ -809,7 +808,7 @@ class JID:
         if self.localpart:
             jid = f"{self.localpart}@{self.domain}"
         else:
-            jid = cast(str, self.domain)
+            jid = self.domain
 
         if self.resource is not None:
             return f"{jid}/{self.resource}"
@@ -871,11 +870,7 @@ class JID:
 
     @property
     def is_full(self) -> bool:
-        return (
-            self.localpart is not None
-            and self.domain is not None
-            and self.resource is not None
-        )
+        return self.localpart is not None and self.resource is not None
 
     def new_with(self, **kwargs: Any) -> JID:
         new = asdict(self)

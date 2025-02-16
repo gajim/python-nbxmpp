@@ -243,3 +243,25 @@ class JIDParsing(unittest.TestCase):
         for jid_string, iri_string in tests:
             parsed_jid = JID.from_iri(iri_string)
             self.assertEqual(str(parsed_jid), jid_string)
+
+    def test_compare_jid(self):
+        jid1 = JID(localpart="test", domain="test.com", resource="test")
+        jid2 = JID(localpart="test", domain="test.com", resource="test")
+        self.assertNotEqual(id(jid1), id(jid2))
+        self.assertEqual(jid1, jid2)
+
+    def test_jid_init(self):
+        with self.assertRaises(DomainpartByteLimit):
+            JID(localpart=None, domain="", resource=None)
+
+        with self.assertRaises(DomainpartByteLimit):
+            JID(localpart=None, domain=None, resource=None)  # pyright: ignore
+
+        with self.assertRaises(TypeError):
+            JID(localpart=None, domain=None)  # pyright: ignore
+
+        with self.assertRaises(TypeError):
+            JID(domain=None)  # pyright: ignore
+
+        with self.assertRaises(TypeError):
+            JID(localpart=None)  # pyright: ignore
