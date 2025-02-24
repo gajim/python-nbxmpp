@@ -36,6 +36,17 @@ test-ruff:
     - ruff check .
   interruptible: true
 
+test-pyright:
+  stage: test
+  rules:
+    - changes:
+      - "**/*.py"
+  script:
+    - pip install git+https://github.com/pygobject/pygobject-stubs.git
+    - pyright --version
+    - pyright
+  interruptible: true
+
 build-unix:
   stage: build
   dependencies: []

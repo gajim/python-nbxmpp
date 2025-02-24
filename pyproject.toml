@@ -55,6 +55,46 @@ reportUnnecessaryTypeIgnoreComment = "error"
 reportPropertyTypeMismatch = "error"
 reportMissingModuleSource = "none"
 
+exclude = [
+  "**/__pycache__",
+  ".git",
+  ".venv",
+  "build",
+  "nbxmpp/modules",
+  "nbxmpp/third_party/hsluv.py",
+  "nbxmpp/addresses.py",
+  "nbxmpp/client.py",
+  "nbxmpp/const.py",
+  "nbxmpp/dispatcher.py",
+  "nbxmpp/errors.py",
+  "nbxmpp/http.py",
+  "nbxmpp/old_dispatcher.py",
+  "nbxmpp/plugin.py",
+  "nbxmpp/protocol.py",
+  "nbxmpp/sasl.py",
+  "nbxmpp/simplexml.py",
+  "nbxmpp/smacks.py",
+  "nbxmpp/structs.py",
+  "nbxmpp/tcp.py",
+  "nbxmpp/util.py",
+  "nbxmpp/websocket.py",
+  "test"
+]
+
+include = [
+  "nbxmpp/modules/base.py",
+  "nbxmpp/modules/bits_of_binary.py",
+  "nbxmpp/modules/chat_markers.py",
+  "nbxmpp/modules/correction.py",
+  "nbxmpp/modules/date_and_time.py",
+  "nbxmpp/modules/fallback.py",
+  "nbxmpp/modules/http_auth.py",
+  "nbxmpp/modules/pgplegacy.py",
+  "nbxmpp/modules/reactions.py",
+  "nbxmpp/modules/replies.py",
+  "nbxmpp/modules/vcard_avatar.py"
+]
+
 [tool.black]
 line-length = 88
 target-version = ["py310", "py311", "py312"]
