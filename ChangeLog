@@ -1,3 +1,13 @@
+nbxmpp 6.0.0 (24 Feb 2025)
+
+  Change
+
+  * JID: Remove default arguments
+
+  Bug Fixes
+
+  * Moderation: Parse moderation messages correctly (#164)
+
 nbxmpp 5.0.4 (19 Sep 2024)
 
   Bug Fixes
