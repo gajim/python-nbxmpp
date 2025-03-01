@@ -244,6 +244,17 @@ class JIDParsing(unittest.TestCase):
             parsed_jid = JID.from_iri(iri_string)
             self.assertEqual(str(parsed_jid), jid_string)
 
+        raise_tests = [
+            "xmpp://node@example.com",
+            "xmpp://node@example.com/test",
+            "xmpp:/auth@example.com/node@example.com",
+            "xmpp:/node@example.com/test",
+        ]
+
+        for iri_string in raise_tests:
+            with self.assertRaises(InvalidJid):
+                JID.from_iri(iri_string)
+
     def test_compare_jid(self):
         jid1 = JID(localpart="test", domain="test.com", resource="test")
         jid2 = JID(localpart="test", domain="test.com", resource="test")

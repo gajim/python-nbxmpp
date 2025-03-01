@@ -787,7 +787,11 @@ class JID:
     @classmethod
     @functools.cache
     def from_iri(cls, iri_str: str, *, force_bare: bool = False) -> JID:
-        iri_str = clean_iri(iri_str)
+        try:
+            iri_str = clean_iri(iri_str)
+        except ValueError as error:
+            raise InvalidJid('Unable to parse "%s"' % iri_str) from error
+
         localpart, domainpart, resourcepart = split_jid_string(iri_str)
 
         if localpart is not None:

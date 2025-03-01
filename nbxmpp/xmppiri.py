@@ -123,9 +123,7 @@ def clean_iri(iri_str: str) -> str:
     iri_str = iri_str.removeprefix("xmpp:")
 
     if iri_str.startswith("//"):
-        # Remove auth component
-        iri_str = iri_str.removeprefix("//")
-        iri_str = iri_str.split("/", maxsplit=1)[1]
+        raise ValueError("IRI with auth component is unsupported")
 
     # Remove query and fragment
     iri_str = iri_str.split("?", maxsplit=1)[0]
