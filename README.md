@@ -20,19 +20,27 @@
 
 - [setuptools](https://pypi.org/project/setuptools/) (>=65.0.0)
 
+## Tests
+
+- `python -m unittest discover -s test`
+
 ## Features
 
-* List of [supported XEPs](https://xmpp.org/software/libraries/python-nbxmpp/)
+- List of [supported XEPs](https://xmpp.org/software/libraries/python-nbxmpp/)
 
 ### Setup
 
 Run the following:
 
-    pip install .
+```shell
+pip install .
+```
 
 or
 
+```shell
     pip install .[gssapi]
+```
 
 to also install the optional dependency `gssapi`.
 
