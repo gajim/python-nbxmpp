@@ -626,6 +626,21 @@ class DiscoInfo(NamedTuple):
         return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_lang")
 
     @property
+    def muc_allows_invites(self) -> bool | None:
+        return self.get_field_value(Namespace.MUC_INFO, "muc#roomconfig_allowinvites")
+
+    @property
+    def prosody_allow_member_invites(self) -> bool | None:
+        return self.get_field_value(
+            Namespace.MUC_INFO,
+            r"{http://prosody.im/protocol/muc}roomconfig_allowmemberinvites",
+        )
+
+    @property
+    def roomconfig_allowpm(self) -> str | None:
+        return self.get_field_value(Namespace.MUC_INFO, "muc#roomconfig_allowpm")
+
+    @property
     def muc_is_persistent(self) -> bool:
         return "muc_persistent" in self.features
 
