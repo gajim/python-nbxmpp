@@ -480,7 +480,7 @@ class DiscoInfo(NamedTuple):
 
                 if dataform[var].type_ == "jid-multi":
                     return dataform[var].values or None
-                return dataform[var].value or None
+                return dataform[var].value
 
             except Exception:
                 continue
