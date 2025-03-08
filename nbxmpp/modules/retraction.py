@@ -45,7 +45,7 @@ class Retraction(BaseModule):
         retracted_id = retraction.getAttr("id")
 
         if retracted_id is None:
-            self._log.warning("<retract> without retracted message id")
+            self._log.warning("<retract> without id")
             return
 
         properties.retraction = RetractionData(
@@ -63,10 +63,16 @@ class Retraction(BaseModule):
         if retracted is None:
             return
 
+        retracted_id = retracted.getAttr("id")
+
+        if retracted_id is None:
+            self._log.warning("<retracted> without id")
+            return
+
         retracted_stamp = retracted.getAttr("stamp")
 
         properties.retraction = RetractionData(
-            id=None,
+            id=retracted_id,
             is_tombstone=True,
             timestamp=parse_datetime(
                 retracted_stamp, check_utc=True, convert="utc", epoch=True
