@@ -166,10 +166,11 @@ class OpenPGP(BaseModule):
             "pubsub#access_model": access_model,
         }
 
+        date_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(date))
         result = yield self.publish(
             f"{Namespace.OPENPGP_PK}:{fingerprint}",
-            _make_public_key(key, date),
-            id_="current",
+            _make_public_key(key, date_str),
+            id_=date_str,
             options=options,
             force_node_options=True,
         )
@@ -375,9 +376,9 @@ def _make_keylist(keylist: list[PGPKeyMetadata] | None) -> Node:
     return item
 
 
-def _make_public_key(key: str | bytes, date: float) -> Node:
-    date_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(date))
-    item = Node("pubkey", attrs={"xmlns": Namespace.OPENPGP, "date": date_str})
+def _make_public_key(key: str | bytes, date: str) -> Node:
+    # date attribute is added for backwards compatibility
+    item = Node("pubkey", attrs={"xmlns": Namespace.OPENPGP, "date": date})
     data = item.addChild("data")
     data.addData(b64encode(key))
     return item
@@ -395,9 +396,6 @@ def _parse_public_key(jid: JID, item: Node) -> PGPPublicKey:
     if pub_key is None:
         raise ValueError("pubkey node missing")
 
-    date = parse_datetime(pub_key.getAttr("date"), epoch=True)
-    assert isinstance(date, float)
-
     data = pub_key.getTag("data")
     if data is None:
         raise ValueError("data node missing")
@@ -407,7 +405,8 @@ def _parse_public_key(jid: JID, item: Node) -> PGPPublicKey:
     except Exception as error:
         raise ValueError(f"decoding error: {error}")
 
-    return PGPPublicKey(jid, key, date)
+    # Set date to 0 because the attribute is deprecated
+    return PGPPublicKey(jid, key, 0)
 
 
 def _parse_keylist(jid: JID, item: Node) -> list[PGPKeyMetadata] | None:
