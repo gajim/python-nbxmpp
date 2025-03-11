@@ -1,3 +1,13 @@
+nbxmpp 6.0.2 (11 Mar 2025)
+
+  Improvements
+
+  * Retraction: Parse id attribute for tombstones
+
+  Bug Fixes
+
+  * OpenPGP: Depreacted pubkey date attribute
+
 nbxmpp 6.0.1 (03 Mar 2025)
 
   Improvements

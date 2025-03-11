@@ -4,4 +4,4 @@ gi.require_version("Soup", "3.0")
 
 from .protocol import *  # noqa: F403, E402
 
-__version__: str = "6.0.1"
+__version__: str = "6.0.2"
