@@ -7,7 +7,7 @@
 - [Python](https://www.python.org/) (>=3.10)
 - [PyGObject](https://pypi.org/project/PyGObject/) (>=3.42.0)
 - [GLib](https://gitlab.com/gnome/glib) (>=2.66.0)
-- [libsoup3](https://libsoup.org/)
+- [libsoup3](https://libsoup.gnome.org/)
 - [precis-i18n](https://pypi.org/project/precis-i18n/) (>=1.0.0)
 - [packaging](https://pypi.org/project/packaging/)
 - [idna](https://pypi.org/project/idna/)
