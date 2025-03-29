@@ -129,6 +129,7 @@ class SASL:
             self._sasl_ns = Namespace.SASL2
 
         self._log.info("Using %s", self._sasl_ns)
+        self._log.info("Allowed mechanisms: %s", self._allowed_mechs)
 
         self._error = None
 
@@ -144,7 +145,12 @@ class SASL:
         if not GSSAPI_AVAILABLE:
             self._enabled_mechs.discard("GSSAPI")
 
-        available_mechs = features.get_mechs() & self._enabled_mechs
+        feature_mechs = features.get_mechs()
+
+        self._log.info("Enabled mechanisms: %s", self._enabled_mechs)
+        self._log.info("Server mechanisms: %s", feature_mechs)
+
+        available_mechs = feature_mechs & self._enabled_mechs
         self._log.info("Available mechanisms: %s", available_mechs)
 
         domain_based_name = features.get_domain_based_name()
