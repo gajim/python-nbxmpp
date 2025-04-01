@@ -73,18 +73,20 @@ class MDS(BaseModule):
         properties.pubsub_event = pubsub_event
 
     @iq_request_task
-    def set_mds(self, data: MDSData, by: JID):
+    def set_mds(self, jid: JID, stanza_id: str):
         task = yield
 
-        item = Node("displayed", {"xmlns": Namespace.MDS})
-        sid = item.addChild("stanza-id", namespace=Namespace.SID)
-        sid.setAttr("id", data.stanza_id)
-        sid.setAttr("by", str(by))
+        by = self._client.get_bound_jid().bare
+
+        displayed = Node("displayed", {"xmlns": Namespace.MDS})
+        displayed.addChild(
+            "stanza-id", namespace=Namespace.SID, attrs={"id": stanza_id, "by": by}
+        )
 
         result = yield self.publish(
             Namespace.MDS,
-            item,
-            id_=str(data.jid),
+            displayed,
+            id_=str(jid),
             options=MDS_OPTIONS,
             force_node_options=True,
         )
