@@ -98,6 +98,7 @@ class _Namespaces:
     MESSAGE_RETRACT: str = "urn:xmpp:message-retract:0"
     MESSAGE_RETRACT_1: str = "urn:xmpp:message-retract:1"
     MDS: str = "urn:xmpp:mds:displayed:0"
+    MDS_ASSIST: str = "urn:xmpp:mds:server-assist:0"
     MOOD: str = "http://jabber.org/protocol/mood"
     MSG_HINTS: str = "urn:xmpp:hints"
     MUCLUMBUS: str = "https://xmlns.zombofant.net/muclumbus/search/1.0"

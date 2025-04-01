@@ -1410,6 +1410,12 @@ class Message(Protocol):
     def setMarkable(self) -> None:
         self.setTag("markable", namespace=Namespace.CHATMARKERS)
 
+    def setMdsAssist(self, stanza_id: str, by: JID) -> None:
+        displayed = self.setTag("displayed", namespace=Namespace.MDS)
+        displayed.addChild(
+            "stanza-id", namespace=Namespace.SID, attrs={"id": stanza_id, "by": str(by)}
+        )
+
     def setReceiptRequest(self) -> None:
         self.setTag("request", namespace=Namespace.RECEIPTS)
 
