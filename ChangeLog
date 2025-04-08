@@ -1,3 +1,17 @@
+nbxmpp 6.1.0 (01 Apr 2025)
+
+  New
+
+  * MDS: Allow setting MDS assist on message
+
+  Improvements
+
+  * SASL: Improve logging
+
+  Change
+
+  * MDS: Simplify set_mds()
+
 nbxmpp 6.0.2 (11 Mar 2025)
 
   Improvements
