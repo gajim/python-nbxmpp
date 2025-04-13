@@ -119,6 +119,7 @@ class MUC(BaseModule):
             StanzaHandler(
                 name="message",
                 callback=self._process_voice_request,
+                typ="normal",
                 ns=Namespace.DATA,
                 priority=11,
             ),
