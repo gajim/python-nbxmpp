@@ -1,3 +1,14 @@
+nbxmpp 6.1.1 (13 Apr 2025)
+
+  Improvements
+
+  * MUC: Return message id after sending
+
+  Bug Fixes
+
+  * VoiceRequests: Don’t parse errors
+  * MDS: Make by attribute configurable
+
 nbxmpp 6.1.0 (01 Apr 2025)
 
   New
