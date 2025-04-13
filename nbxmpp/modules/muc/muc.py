@@ -421,11 +421,11 @@ class MUC(BaseModule):
         properties.from_muc = True
         properties.muc_jid = properties.jid.new_as_bare()
 
-    def approve_voice_request(self, muc_jid: JID, voice_request: VoiceRequest) -> None:
+    def approve_voice_request(self, muc_jid: JID, voice_request: VoiceRequest) -> str:
         form = voice_request.form
         form.type_ = "submit"
         form["muc#request_allow"].value = True
-        self._client.send_stanza(Message(to=muc_jid, payload=form))
+        return self._client.send_stanza(Message(to=muc_jid, payload=form))
 
     @iq_request_task
     def get_affiliation(self, jid: JID | str, affiliation: AffiliationT):
@@ -556,22 +556,20 @@ class MUC(BaseModule):
     ) -> None:
         self.send_moderation_request(namespace, room_jid, stanza_id, reason)
 
-    def set_subject(self, room_jid: JID, subject: MucSubject | None) -> None:
+    def set_subject(self, room_jid: JID, subject: MucSubject | None) -> str:
         message = Message(room_jid, typ="groupchat", subject=subject)
         self._log.info("Set subject for %s", room_jid)
-        self._client.send_stanza(message)
+        return self._client.send_stanza(message)
 
-    def decline(
-        self, room: JID | str, to: JID | str, reason: str | None = None
-    ) -> None:
+    def decline(self, room: JID | str, to: JID | str, reason: str | None = None) -> str:
         message = Message(to=room)
         muc_user = message.addChild("x", namespace=Namespace.MUC_USER)
         decline = muc_user.addChild("decline", attrs={"to": to})
         if reason:
             decline.setTagData("reason", reason)
-        self._client.send_stanza(message)
+        return self._client.send_stanza(message)
 
-    def request_voice(self, room: JID) -> None:
+    def request_voice(self, room: JID) -> str:
         message = Message(to=room)
         xdata = DataForm(typ="submit")
         xdata.addChild(node=DataField(name="FORM_TYPE", value=Namespace.MUC_REQUEST))
@@ -579,7 +577,7 @@ class MUC(BaseModule):
             node=DataField(name="muc#role", value="participant", typ="text-single")
         )
         message.addChild(node=xdata)
-        self._client.send_stanza(message)
+        return self._client.send_stanza(message)
 
     def invite(
         self,
