@@ -1543,7 +1543,7 @@ class Presence(Protocol):
         """
         return self.getTagData("priority")
 
-    def getShow(self) -> str:
+    def getShow(self) -> str | None:
         """
         Return the show value of the message
         """
