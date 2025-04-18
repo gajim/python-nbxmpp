@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import datetime as dt
+
 from nbxmpp import Namespace
 from nbxmpp import Node
 from nbxmpp.modules.base import BaseModule
@@ -22,59 +24,70 @@ class Retraction(BaseModule):
         self.handlers = [
             StanzaHandler(
                 name="message",
-                callback=self._process_message,
-                ns=Namespace.MESSAGE_RETRACT_1,
-                priority=20,
-            ),
-            StanzaHandler(
-                name="message",
-                callback=self._process_message_retracted_tombstone,
+                callback=self._process_message_retraction,
                 ns=Namespace.MESSAGE_RETRACT_1,
                 priority=20,
             ),
         ]
 
-    def _process_message(
+    def _process_message_retraction(
         self, _client: Client, stanza: Node, properties: MessageProperties
     ) -> None:
-        retraction = stanza.getTag("retract", namespace=Namespace.MESSAGE_RETRACT_1)
 
-        if retraction is None:
+        retract, is_tombstone = _get_retract_element(stanza, properties)
+        if retract is None:
             return
 
-        retracted_id = retraction.getAttr("id")
-
-        if retracted_id is None:
+        retract_id = retract.getAttr("id")
+        if not retract_id:
             self._log.warning("<retract> without id")
+            self._log.warning(stanza)
             return
+
+        timestamp = _parse_retraction_timestamp(retract, is_tombstone, properties)
 
         properties.retraction = RetractionData(
-            id=retracted_id, is_tombstone=False, timestamp=None
+            id=retract_id, is_tombstone=is_tombstone, timestamp=timestamp
         )
 
-    def _process_message_retracted_tombstone(
-        self, _client: Client, stanza: Node, properties: MessageProperties
-    ) -> None:
-        if not properties.is_mam_message:
-            return
 
-        retracted = stanza.getTag("retracted", namespace=Namespace.MESSAGE_RETRACT_1)
+def _get_retract_element(
+    element: Node, properties: MessageProperties
+) -> tuple[Node | None, bool]:
+    """
+    returns a tuple
+        Node and a boolean value which signals if it is a tombstone
+    """
 
-        if retracted is None:
-            return
+    retract = element.getTag("retract", namespace=Namespace.MESSAGE_RETRACT_1)
+    if retract is not None:
+        return retract, False
 
-        retracted_id = retracted.getAttr("id")
+    if not properties.is_mam_message:
+        return None, False
 
-        if retracted_id is None:
-            self._log.warning("<retracted> without id")
-            return
+    retracted = element.getTag("retracted", namespace=Namespace.MESSAGE_RETRACT_1)
+    if retracted is not None:
+        return retracted, True
 
-        retracted_stamp = retracted.getAttr("stamp")
+    return None, False
 
-        properties.retraction = RetractionData(
-            id=retracted_id,
-            is_tombstone=True,
-            timestamp=parse_datetime(
-                retracted_stamp, check_utc=True, convert="utc", epoch=True
-            ),
-        )
+
+def _parse_retraction_timestamp(
+    retract: Node, is_tombstone: bool, properties: MessageProperties
+) -> dt.datetime:
+
+    if is_tombstone:
+        stamp_attr = retract.getAttr("stamp")
+        stamp = parse_datetime(stamp_attr, check_utc=True, convert="utc")
+        if stamp is not None:
+            assert isinstance(stamp, dt.datetime)
+            return stamp
+
+    if properties.is_mam_message:
+        assert properties.mam is not None
+        stamp = properties.mam.timestamp
+    else:
+        stamp = properties.timestamp
+
+    return dt.datetime.fromtimestamp(stamp, dt.timezone.utc)

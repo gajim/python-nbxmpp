@@ -311,9 +311,9 @@ class ModerationData(NamedTuple):
 
 
 class RetractionData(NamedTuple):
-    id: str | None
+    id: str
     is_tombstone: bool
-    timestamp: float | None
+    timestamp: datetime
 
 
 class DiscoItems(NamedTuple):
