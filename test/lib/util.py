@@ -1,3 +1,4 @@
+import datetime as dt
 import sys
 import unittest
 from test.lib.const import STREAM_START
@@ -45,3 +46,7 @@ def raise_all_exceptions(func):
         return result
 
     return func_wrapper
+
+
+def utc_now() -> dt.datetime:
+    return dt.datetime.now(dt.UTC)
