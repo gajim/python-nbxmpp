@@ -143,7 +143,7 @@ class DataField(ExtendedNode):
             if desc is not None:
                 self.desc = desc
             self.required = required
-            self.options = options
+            self.options = options or []
 
     @property
     def type_(self) -> str:
