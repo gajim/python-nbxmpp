@@ -50,7 +50,7 @@ test-pyright:
 test-unittest:
   stage: test
   script:
-    - python -m unittest discover
+    - python -m unittest discover -v
   interruptible: true
 
 build-unix:
