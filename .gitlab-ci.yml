@@ -47,6 +47,12 @@ test-pyright:
     - pyright
   interruptible: true
 
+test-unittest:
+  stage: test
+  script:
+    - python -m unittest discover
+  interruptible: true
+
 build-unix:
   stage: build
   dependencies: []
