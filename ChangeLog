@@ -1,3 +1,13 @@
+nbxmpp 6.2.0 (19 Apr 2025)
+
+  Change
+
+  * Retraction: Rewrite parsing code
+
+  Bug Fixes
+
+  * Dataforms: Fix init list fields with no options (#168)
+
 nbxmpp 6.1.1 (13 Apr 2025)
 
   Improvements
