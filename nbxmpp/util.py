@@ -30,6 +30,8 @@ from packaging.version import Version
 from nbxmpp.const import GIO_TLS_ERRORS
 from nbxmpp.const import GLIB_VERSION
 from nbxmpp.const import SOUP_ENCODING
+from nbxmpp.language import LanguageMap
+from nbxmpp.language import LanguageTag
 from nbxmpp.modules.dataforms import DataForm
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.namespaces import Namespace
@@ -480,3 +482,13 @@ def parse_websocket_uri(data: str) -> str:
                 raise ValueError("No href attr found")
             return href
     raise ValueError("no websocket uri found")
+
+
+def create_language_map_from_nodes(nodes: list[Node]) -> LanguageMap:
+    lang_map = LanguageMap()
+    for node in nodes:
+        lang = node.getAttr("xml:lang")
+        lang_tag = LanguageTag(tag=lang) if lang else None
+        lang_map[lang_tag] = (lang, node.getData())
+
+    return lang_map

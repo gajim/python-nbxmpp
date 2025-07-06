@@ -54,6 +54,8 @@ from nbxmpp.simplexml import Node
 
 if TYPE_CHECKING:
     from nbxmpp.modules.security_labels import SecurityLabel
+    from nbxmpp.modules.sfs import FileSharing
+    from nbxmpp.modules.sfs import FileSources
 
 log = logging.getLogger("nbxmpp.structs")
 
@@ -1139,6 +1141,8 @@ class MessageProperties:
     security_label: SecurityLabel | None = None
     chatstate: Chatstate | None = None
     reactions: Reactions | None = None
+    sfs: list[FileSharing] = field(default_factory=list)
+    sfs_sources: list[FileSources] = field(default_factory=list)
 
     def is_from_us(self, bare_match: bool = True) -> bool:
         if self.from_ is None:
