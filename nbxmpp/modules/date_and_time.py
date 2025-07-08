@@ -202,3 +202,19 @@ def get_local_time() -> tuple[str, str]:
     zone = (zone / 60, abs(zone % 60))
     tzo = "%+03d:%02d" % zone
     return formated_time, tzo
+
+
+def to_xmpp_dt(datetime: dt.datetime) -> str:
+    if datetime.tzinfo is None:
+        raise ValueError("naive datetime not allowed")
+
+    offset = datetime.utcoffset()
+    if offset is not None:
+        if offset.microseconds != 0:
+            raise ValueError("microseconds utc offsets not allowed")
+
+        if offset.seconds % 60 != 0:
+            raise ValueError("sub minute utc offsets not allowed")
+
+    xmpp_dt = datetime.isoformat(sep="T", timespec="auto")
+    return xmpp_dt.replace("+00:00", "Z")

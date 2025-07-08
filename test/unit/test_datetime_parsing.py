@@ -2,10 +2,12 @@ import unittest
 from datetime import datetime
 from datetime import timedelta
 from datetime import timezone
+from zoneinfo import ZoneInfo
 
 from nbxmpp.modules.date_and_time import create_tzinfo
 from nbxmpp.modules.date_and_time import LocalTimezone
 from nbxmpp.modules.date_and_time import parse_datetime
+from nbxmpp.modules.date_and_time import to_xmpp_dt
 
 
 class TestDateTime(unittest.TestCase):
@@ -116,6 +118,92 @@ class TestDateTime(unittest.TestCase):
         for time_string, expected_value in strings.items():
             result = parse_datetime(time_string, check_utc=True, epoch=True)
             self.assertEqual(result, expected_value)
+
+    def test_to_xmpp_dt(self):
+        valid_dt = [
+            (
+                datetime(
+                    year=2025,
+                    month=1,
+                    day=3,
+                    hour=20,
+                    minute=10,
+                    second=10,
+                    microsecond=123456,
+                    tzinfo=timezone.utc,
+                ),
+                "2025-01-03T20:10:10.123456Z",
+            ),
+            (
+                datetime(
+                    year=2025,
+                    month=1,
+                    day=3,
+                    hour=20,
+                    minute=10,
+                    second=10,
+                    tzinfo=timezone.utc,
+                ),
+                "2025-01-03T20:10:10Z",
+            ),
+            (
+                datetime(
+                    year=2025,
+                    month=1,
+                    day=3,
+                    hour=20,
+                    minute=10,
+                    second=10,
+                    microsecond=123456,
+                    tzinfo=timezone(timedelta(seconds=60)),
+                ),
+                "2025-01-03T20:10:10.123456+00:01",
+            ),
+            (
+                datetime(
+                    year=2025,
+                    month=1,
+                    day=3,
+                    hour=20,
+                    minute=10,
+                    second=10,
+                    microsecond=123456,
+                    tzinfo=ZoneInfo("Europe/Berlin"),
+                ),
+                "2025-01-03T20:10:10.123456+01:00",
+            ),
+        ]
+
+        for dt, res in valid_dt:
+            self.assertEqual(to_xmpp_dt(dt), res)
+
+        invalid_dt = [
+            datetime(year=2025, month=1, day=3, hour=20, minute=10, second=10),
+            datetime(
+                year=2025,
+                month=1,
+                day=3,
+                hour=20,
+                minute=10,
+                second=10,
+                microsecond=123456,
+                tzinfo=timezone(timedelta(seconds=59)),
+            ),
+            datetime(
+                year=2025,
+                month=1,
+                day=3,
+                hour=20,
+                minute=10,
+                second=10,
+                microsecond=123456,
+                tzinfo=timezone(timedelta(microseconds=61)),
+            ),
+        ]
+
+        for dt in invalid_dt:
+            with self.assertRaises(ValueError):
+                to_xmpp_dt(dt)
 
 
 if __name__ == "__main__":
