@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+from typing import cast
 from typing import Literal
 from typing import TYPE_CHECKING
 
@@ -14,8 +15,10 @@ from dataclasses import dataclass
 from dataclasses import field
 
 from nbxmpp.language import LanguageMap
+from nbxmpp.language import LanguageTag
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.date_and_time import parse_datetime
+from nbxmpp.modules.date_and_time import to_xmpp_dt
 from nbxmpp.modules.url_data import UrlData
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Message
@@ -122,6 +125,22 @@ class Thumbnail:
     width: int | None = None
     height: int | None = None
 
+    def to_node(self) -> Node:
+        if not self.uri:
+            raise ValueError("uri is a required field")
+
+        attrs: dict[str, str] = {"uri": self.uri}
+        if self.media_type:
+            attrs["media-type"] = self.media_type
+
+        if self.width:
+            attrs["width"] = str(self.width)
+
+        if self.height:
+            attrs["height"] = str(self.height)
+
+        return Node(tag=f"{Namespace.THUMBNAIL} thumbnail", attrs=attrs)
+
     @classmethod
     def from_node(cls, thumbnail: Node) -> Thumbnail:
         width = get_int_value_from_attr(thumbnail, "width")
@@ -140,6 +159,16 @@ class Thumbnail:
 class Hash:
     algo: str
     value: str
+
+    def to_node(self) -> Node:
+        if not self.algo or not self.value:
+            raise ValueError("algo and value are required fields")
+
+        return Node(
+            tag=f"{Namespace.HASHES_2} hash",
+            attrs={"algo": self.algo},
+            payload=self.value,
+        )
 
     @classmethod
     def from_node(cls, hash_: Node) -> Hash:
@@ -166,6 +195,52 @@ class FileMetadata:
     name: str | None
     size: int | None
     thumbnails: list[Thumbnail] = field(default_factory=list)
+
+    def add_desc(self, desc: str, lang: str | None = None) -> None:
+        if self.desc is None:
+            self.desc = LanguageMap()
+
+        tag = LanguageTag(tag=lang) if lang else None
+        self.desc[tag] = desc
+
+    def to_node(self) -> Node:
+        metadata = Node(tag=f"{Namespace.FILE_METADATA} file")
+        if self.date is not None:
+            metadata.setTagData("date", to_xmpp_dt(self.date))
+
+        if self.desc is not None:
+            lang, desc = cast(tuple[str | None, str], self.desc.any())
+            attrs: dict[str, str] = {}
+            if lang is not None:
+                attrs = {"xml:lang": lang}
+
+            metadata.addChild("desc", attrs=attrs, payload=[desc])
+
+        for hash_ in self.hashes:
+            metadata.addChild(node=hash_.to_node())
+
+        if self.height is not None:
+            metadata.setTagData("height", self.height)
+
+        if self.width is not None:
+            metadata.setTagData("width", self.width)
+
+        if self.length is not None:
+            metadata.setTagData("length", self.length)
+
+        if self.media_type is not None:
+            metadata.setTagData("media-type", self.media_type)
+
+        if self.name is not None:
+            metadata.setTagData("name", self.name)
+
+        if self.size is not None:
+            metadata.setTagData("size", self.size)
+
+        for thumbnail in self.thumbnails:
+            metadata.addChild(node=thumbnail.to_node())
+
+        return metadata
 
     @classmethod
     def from_node(cls, metadata: Node) -> FileMetadata:
@@ -223,6 +298,13 @@ class FileSources:
     id: str | None
     sources: list[UrlData] = field(default_factory=list)
 
+    def to_node(self) -> Node:
+        sources = Node(tag=f"{Namespace.SFS} sources")
+        for source in self.sources:
+            sources.addChild(node=source.to_node())
+
+        return sources
+
     @classmethod
     def from_node(cls, sources_node: Node) -> FileSources:
         id_ = sources_node.getAttr("id") or None
@@ -240,6 +322,18 @@ class FileSharing:
     id: str | None = None
     disposition: Literal["inline", "attachment"] | None = None
     sources: FileSources | None = None
+
+    def to_node(self) -> Node:
+        fs = Node(tag=f"{Namespace.SFS} file-sharing")
+        if self.id:
+            fs.setAttr("id", self.id)
+        if self.disposition:
+            fs.setAttr("disposition", self.disposition)
+
+        fs.addChild(node=self.file.to_node())
+        if self.sources:
+            fs.addChild(node=self.sources.to_node())
+        return fs
 
     @classmethod
     def from_node(cls, sfs: Node) -> FileSharing:

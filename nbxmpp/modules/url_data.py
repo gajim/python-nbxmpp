@@ -131,6 +131,19 @@ class UrlData:
     sid: str | None
     scheme_data: dict[str, HTTPUrlSchemeData]
 
+    def to_node(self) -> Node:
+        if not self.target:
+            raise ValueError("target is a required field")
+
+        if self.scheme_data:
+            raise ValueError("schema data is not supported")
+
+        attrs: dict[str, str] = {"target": self.target}
+        if self.sid:
+            attrs["sid"] = self.sid
+
+        return Node(tag=f"{Namespace.URL_DATA} url-data", attrs=attrs)
+
     @classmethod
     def from_node(cls, url_data: Node) -> UrlData:
         target = url_data.getAttr("target")
