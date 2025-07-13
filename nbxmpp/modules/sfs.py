@@ -78,10 +78,18 @@ class StatelessFileSharing(BaseModule):
         sources_list: list[FileSources] = []
         for sources in stanza.getTags("sources", namespace=Namespace.SFS):
             try:
-                sources_list.append(FileSources.from_node(sources))
+                source = FileSources.from_node(sources)
             except Exception as e:
                 self._log.warning("Unable to parse sources node: %s", e)
                 self._log.warning(stanza)
+                continue
+
+            if source.id is None:
+                self._log.warning("Source without id")
+                self._log.warning(stanza)
+                continue
+
+            sources_list.append(source)
 
         unique_ids = {sources.id for sources in sources_list}
         if len(sources_list) > len(unique_ids):
@@ -353,5 +361,8 @@ class FileSharing:
             sources = FileSources.from_node(sources)
         else:
             sources = None
+
+        if id_ is None and sources is None:
+            raise ValueError("fileshare id is missing")
 
         return cls(file=file, sources=sources, id=id_, disposition=disposition)
