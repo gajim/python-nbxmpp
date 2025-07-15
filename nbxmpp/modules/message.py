@@ -106,6 +106,7 @@ class BaseMessage(BaseModule):
         )
         properties.thread = stanza.getThread()
         properties.subject = stanza.getSubject()
+        properties.attach_to = self._parse_attaching(stanza)
         forms = stanza.getTags("x", namespace=Namespace.DATA)
         if forms:
             properties.forms = forms
@@ -120,6 +121,12 @@ class BaseMessage(BaseModule):
             return
 
         properties.xhtml = XHTMLData(xhtml)
+
+    def _parse_attaching(self, stanza: Message) -> str | None:
+        attach_id = stanza.getTagAttr("attach-to", "id", namespace=Namespace.ATTACHING)
+        if attach_id:
+            return attach_id
+        return None
 
     def _parse_type(self, stanza: Message) -> MessageType:
         type_ = stanza.getType()

@@ -1143,6 +1143,7 @@ class MessageProperties:
     reactions: Reactions | None = None
     sfs: list[FileSharing] = field(default_factory=list)
     sfs_sources: list[FileSources] = field(default_factory=list)
+    attach_to: str | None = None
 
     def is_from_us(self, bare_match: bool = True) -> bool:
         if self.from_ is None:

@@ -13,6 +13,7 @@ class _Namespaces:
     ACTIVITY: str = "http://jabber.org/protocol/activity"
     ADDRESS: str = "http://jabber.org/protocol/address"
     AGENTS: str = "jabber:iq:agents"
+    ATTACHING: str = "urn:xmpp:message-attaching:1"
     ATTENTION: str = "urn:xmpp:attention:0"
     AUTH: str = "jabber:iq:auth"
     AVATAR_METADATA: str = "urn:xmpp:avatar:metadata"
