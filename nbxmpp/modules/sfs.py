@@ -75,6 +75,11 @@ class StatelessFileSharing(BaseModule):
         if file_sharings:
             return
 
+        if properties.attach_to is None:
+            self._log.warning("Missing attach-to node")
+            self._log.warning(stanza)
+            return
+
         sources_list: list[FileSources] = []
         for sources in stanza.getTags("sources", namespace=Namespace.SFS):
             try:

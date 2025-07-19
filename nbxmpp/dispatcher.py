@@ -70,6 +70,7 @@ from nbxmpp.modules.replies import Replies
 from nbxmpp.modules.retraction import Retraction
 from nbxmpp.modules.roster import Roster
 from nbxmpp.modules.security_labels import SecurityLabels
+from nbxmpp.modules.sfs import StatelessFileSharing
 from nbxmpp.modules.software_version import SoftwareVersion
 from nbxmpp.modules.tune import Tune
 from nbxmpp.modules.user_avatar import UserAvatar
@@ -154,7 +155,7 @@ NBXMPPModuleNameT = Literal[
     "Roster",
     "SecurityLabels",
     "SoftwareVersion",
-    "Tune",
+    "StatelessFileSharing" "Tune",
     "UserAvatar",
     "VCardAvatar",
     "VCardTemp",
@@ -210,6 +211,7 @@ NBXMPPModuleT = (
     | Roster
     | SecurityLabels
     | SoftwareVersion
+    | StatelessFileSharing
     | Tune
     | UserAvatar
     | VCardAvatar
@@ -365,6 +367,10 @@ class StanzaDispatcher(Observable):
     @overload
     def get_module(self, name: Literal["SoftwareVersion"]) -> SoftwareVersion: ...
     @overload
+    def get_module(
+        self, name: Literal["StatelessFileSharing"]
+    ) -> StatelessFileSharing: ...
+    @overload
     def get_module(self, name: Literal["Tune"]) -> Tune: ...
     @overload
     def get_module(self, name: Literal["UserAvatar"]) -> UserAvatar: ...
@@ -429,6 +435,7 @@ class StanzaDispatcher(Observable):
         self._modules["Roster"] = Roster(self._client)
         self._modules["SecurityLabels"] = SecurityLabels(self._client)
         self._modules["SoftwareVersion"] = SoftwareVersion(self._client)
+        self._modules["StatelessFileSharing"] = StatelessFileSharing(self._client)
         self._modules["Tune"] = Tune(self._client)
         self._modules["UserAvatar"] = UserAvatar(self._client)
         self._modules["VCardAvatar"] = VCardAvatar(self._client)
