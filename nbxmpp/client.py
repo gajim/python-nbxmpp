@@ -237,6 +237,9 @@ class Client(Observable):
     def lang(self) -> str:
         return self._lang
 
+    def set_lang(self, lang: str) -> None:
+        self._lang = lang
+
     @property
     def username(self) -> str | None:
         return self._username
