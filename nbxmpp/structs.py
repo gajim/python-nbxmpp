@@ -922,33 +922,6 @@ class HTTPUploadError(CommonError):
         return self._error_node.getTagAttr("stamp")
 
 
-class StanzaMalformedError(CommonError):
-    def __init__(self, stanza: Protocol, text: str | None) -> None:
-        self._error_node = None
-        self.condition = "stanza-malformed"
-        self.condition_data = None
-        self.app_condition = None
-        self.type = None
-        self.jid = stanza.getFrom()
-        self.id = stanza.getID()
-        self._text: dict[str, str] = {}
-        if text:
-            self._text["en"] = text
-
-    @classmethod
-    def from_string(cls, node_string: str) -> Any:
-        raise NotImplementedError
-
-    def __str__(self) -> str:
-        text = self.get_text("en")
-        if text:
-            text = ": %s" % text
-        return "Received malformed stanza from %s%s" % (self.jid, text)
-
-    def serialize(self) -> str:
-        raise NotImplementedError
-
-
 class StreamError(CommonError):
     def __init__(self, stanza: Protocol) -> None:
         self.condition = stanza.getError()

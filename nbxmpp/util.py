@@ -47,7 +47,6 @@ from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import Properties
-from nbxmpp.structs import StanzaMalformedError
 from nbxmpp.third_party import hsluv
 
 if TYPE_CHECKING:
@@ -117,11 +116,7 @@ def to_xs_boolean(value: bool | None) -> Literal["true", "false"]:
 error_classes = {Namespace.HTTPUPLOAD_0: HTTPUploadError}
 
 
-def error_factory(
-    stanza: Protocol, condition: str | None = None, text: str | None = None
-) -> Any:
-    if condition == "stanza-malformed":
-        return StanzaMalformedError(stanza, text)
+def error_factory(stanza: Protocol) -> Any:
     app_namespace = stanza.getAppErrorNamespace()
     return error_classes.get(app_namespace, CommonError)(stanza)
 
