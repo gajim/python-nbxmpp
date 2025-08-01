@@ -160,7 +160,8 @@ class HTTPRequest(GObject.GObject):
 
     def cancel(self) -> None:
         if self._is_finished:
-            raise ValueError("Session already finished")
+            self._log.warning("Cancel requested after download has already finished")
+            return
 
         self._log.info("Cancel requested")
         self._cancellable.cancel()
