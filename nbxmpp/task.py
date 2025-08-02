@@ -88,7 +88,7 @@ def _setup_task(
     return task
 
 
-def iq_request_task(func: Callable[P, T]) -> Callable[P, T]:
+def iq_request_task(func: Callable[..., T]) -> Callable[..., T]:
     @wraps(func)
     def func_wrapper(
         self: NBXMPPModuleT,
