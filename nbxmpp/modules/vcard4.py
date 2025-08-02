@@ -11,6 +11,7 @@ from typing import Literal
 from typing import TYPE_CHECKING
 
 import logging
+from collections import defaultdict
 from collections.abc import ValuesView
 from dataclasses import dataclass
 from dataclasses import field
@@ -1067,18 +1068,31 @@ def get_property_from_name(name: str, node: Node) -> PropertyT | None:
 
 
 VCardPropertiesT = list[tuple[str | None, PropertyT | list[PropertyT]]]
+NotSupportedNodesT = dict[str | None, list[Node]]
 
 
 class VCard:
-    def __init__(self, properties: VCardPropertiesT | None = None) -> None:
+    def __init__(
+        self,
+        properties: VCardPropertiesT | None = None,
+        not_supported_nodes: NotSupportedNodesT | None = None,
+    ) -> None:
         if properties is None:
             properties = []
+        if not_supported_nodes is None:
+            not_supported_nodes = defaultdict(list)
+
         self._properties = properties
+        self._no_supported_nodes = not_supported_nodes
 
     @classmethod
     def from_node(cls, node: Node) -> VCard:
         properties: VCardPropertiesT = []
+        not_supported_nodes: NotSupportedNodesT = defaultdict(list)
+
         for child in node.getChildren():
+            if isinstance(child, str):
+                continue
             child_name = child.getName()
 
             if child_name == "group":
@@ -1088,9 +1102,13 @@ class VCard:
 
                 group_properties: list[PropertyT] = []
                 for group_child in child.getChildren():
+                    if isinstance(group_child, str):
+                        continue
+
                     group_child_name = group_child.getName()
                     property_ = get_property_from_name(group_child_name, group_child)
                     if property_ is None:
+                        not_supported_nodes[group_name].append(group_child)
                         continue
                     group_properties.append(property_)
 
@@ -1100,10 +1118,11 @@ class VCard:
 
                 property_ = get_property_from_name(child_name, child)
                 if property_ is None:
+                    not_supported_nodes[None].append(child)
                     continue
                 properties.append((None, property_))
 
-        return cls(properties)
+        return cls(properties, not_supported_nodes)
 
     def to_node(self) -> Node:
         vcard = Node(f"{Namespace.VCARD4} vcard")
@@ -1112,11 +1131,19 @@ class VCard:
                 assert not isinstance(props, list)
                 vcard.addChild(node=props.to_node())
             else:
-                group = Node(group)
+                group_node = Node(group)
                 assert isinstance(props, list)
                 for prop in props:
-                    group.addChild(node=prop.to_node())
-                vcard.addChild(node=group)
+                    group_node.addChild(node=prop.to_node())
+
+                for node in self._no_supported_nodes.get(group, []):
+                    group_node.addChild(node=node)
+
+                vcard.addChild(node=group_node)
+
+        for node in self._no_supported_nodes.get(None, []):
+            vcard.addChild(node=node)
+
         return vcard
 
     def get_properties(self) -> list[PropertyT]:
