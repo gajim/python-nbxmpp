@@ -25,6 +25,7 @@ from nbxmpp.protocol import Node
 from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import SASL_AUTH_MECHS
 from nbxmpp.protocol import SASL_ERROR_CONDITIONS
+from nbxmpp.stringprep import saslprep
 from nbxmpp.structs import ChannelBindingData
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
@@ -315,7 +316,12 @@ class PLAIN(BaseMechanism):
     name = "PLAIN"
 
     def get_initiate_data(self) -> str:
-        return b64encode("\x00%s\x00%s" % (self._username, self._password))
+        try:
+            password = saslprep(self._password)
+        except Exception:
+            password = ""
+
+        return b64encode("\x00%s\x00%s" % (self._username, password))
 
 
 class EXTERNAL(BaseMechanism):
@@ -431,8 +437,13 @@ class SCRAM(BaseMechanism):
         if iteration_count < 4096:
             raise AuthFail("Salt iteration count to low: %s" % iteration_count)
 
+        try:
+            password = saslprep(self._password)
+        except Exception:
+            password = ""
+
         salted_password = pbkdf2_hmac(
-            self._hash_method, self._password.encode("utf8"), salt, iteration_count
+            self._hash_method, password.encode("utf8"), salt, iteration_count
         )
 
         client_final_message_wo_proof = "c=%s,r=%s" % (
