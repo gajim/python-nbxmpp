@@ -12,7 +12,6 @@ from typing import overload
 from typing import TYPE_CHECKING
 
 import logging
-import re
 import time
 from collections.abc import Callable
 from xml.parsers.expat import ExpatError
@@ -91,8 +90,8 @@ from nbxmpp.protocol import StreamErrorNode
 from nbxmpp.simplexml import Node
 from nbxmpp.simplexml import NodeBuilder
 from nbxmpp.structs import StanzaHandler
-from nbxmpp.util import get_invalid_xml_regex
 from nbxmpp.util import get_properties_struct
+from nbxmpp.util import INVALID_XML_RX
 from nbxmpp.util import is_websocket_close
 from nbxmpp.util import is_websocket_stream_error
 from nbxmpp.util import LogAdapter
@@ -250,8 +249,6 @@ class StanzaDispatcher(Observable):
             "presence": Presence,
             "error": StreamErrorNode,
         }
-
-        self.invalid_chars_re = get_invalid_xml_regex()
 
         self._register_namespace("unknown")
         self._register_namespace(Namespace.STREAMS)
@@ -449,7 +446,7 @@ class StanzaDispatcher(Observable):
         self._parser.dispatch = self.dispatch
 
     def replace_non_character(self, data: str) -> str:
-        return re.sub(self.invalid_chars_re, "\ufffd", data)
+        return INVALID_XML_RX.sub("\ufffd", data)
 
     def process_data(self, data: str) -> None:
         # Parse incoming data

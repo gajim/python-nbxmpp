@@ -376,6 +376,9 @@ def get_invalid_xml_regex() -> re.Pattern[str]:
     return re.compile(r)
 
 
+INVALID_XML_RX = get_invalid_xml_regex()
+
+
 def get_tls_error_phrase(tls_error: Gio.TlsCertificateFlags) -> str | None:
     phrase = GIO_TLS_ERRORS.get(tls_error)
     if phrase is None:

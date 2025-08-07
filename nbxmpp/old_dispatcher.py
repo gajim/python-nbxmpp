@@ -10,7 +10,6 @@ different handlers to different XMPP stanzas and namespaces
 
 import inspect
 import logging
-import re
 import sys
 import uuid
 from xml.parsers.expat import ExpatError
@@ -69,6 +68,7 @@ from nbxmpp.protocol import Presence
 from nbxmpp.protocol import Protocol
 from nbxmpp.simplexml import NodeBuilder
 from nbxmpp.util import get_properties_struct
+from nbxmpp.util import INVALID_XML_RX
 
 log = logging.getLogger("nbxmpp.dispatcher")
 
@@ -144,24 +144,6 @@ class XMPPDispatcher(PlugIn):
             self.send,
             self.get_module,
         ]
-
-        # \ufddo -> \ufdef range
-        c = "\ufdd0"
-        r = c
-        while c < "\ufdef":
-            c = chr(ord(c) + 1)
-            r += "|" + c
-
-        # \ufffe-\uffff, \u1fffe-\u1ffff, ..., \u10fffe-\u10ffff
-        c = "\ufffe"
-        r += "|" + c
-        r += "|" + chr(ord(c) + 1)
-        while c < "\U0010fffe":
-            c = chr(ord(c) + 0x10000)
-            r += "|" + c
-            r += "|" + chr(ord(c) + 1)
-
-        self.invalid_chars_re = re.compile(r)
 
     def getAnID(self):
         return str(uuid.uuid4())
@@ -293,7 +275,7 @@ class XMPPDispatcher(PlugIn):
             )
 
     def replace_non_character(self, data):
-        return re.sub(self.invalid_chars_re, "\ufffd", data)
+        return INVALID_XML_RX.sub("\ufffd", data)
 
     def ProcessNonBlocking(self, data):
         """
