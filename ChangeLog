@@ -1,3 +1,19 @@
+nbxmpp 6.3.0 (07 Aug 2025)
+
+  New
+
+  * Allow to set stream language
+
+  Improvements
+
+  * Better cache invalid xml regex
+  * HTTP: Log warning on cancel instead of raising exception
+
+  Bug Fixes
+
+  * SASL: Apply SASLPrep for PLAIN and SCRAM
+  * VCard4: Preserve unsupported elements
+
 nbxmpp 6.2.0 (19 Apr 2025)
 
   Change
