@@ -198,6 +198,13 @@ class WebsocketConnection(Connection):
         self._output_closed = True
 
     def _finalize(self, signal_name: str) -> None:
+        if self._websocket is not None:
+            self._websocket.disconnect_by_func(self._on_websocket_message)
+            self._websocket.disconnect_by_func(self._on_websocket_closed)
+            self._websocket.disconnect_by_func(self._on_websocket_closing)
+            self._websocket.disconnect_by_func(self._on_websocket_error)
+            self._websocket.disconnect_by_func(self._on_websocket_pong)
+
         self._input_closed = True
         self._output_closed = True
         self.state = TCPState.DISCONNECTED
