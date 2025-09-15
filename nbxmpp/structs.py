@@ -1174,6 +1174,7 @@ class MessageProperties:
         return (
             self.type == MessageType.GROUPCHAT
             and self.body is None
+            and self.thread is None
             and self.subject is not None
         )
 
