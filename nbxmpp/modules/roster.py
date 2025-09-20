@@ -81,7 +81,9 @@ class Roster(BaseModule):
         ver_support = self._client.features.has_roster_version()
         pushed_items, version = self._parse_push(stanza, ver_support)
         if len(pushed_items) != 1:
-            self._log.warning("Roster push contains more than one item")
+            self._log.warning(
+                "Roster push does not have exactly one item: %s", pushed_items
+            )
             self._log.warning(stanza)
             raise NodeProcessed
 
@@ -134,8 +136,8 @@ class Roster(BaseModule):
         for item in query.getTags("item"):
             try:
                 roster_item = RosterItem.from_node(item)
-            except Exception:
-                self._log.warning("Invalid roster item")
+            except Exception as e:
+                self._log.warning("Invalid roster item: %s", e)
                 self._log.warning(stanza)
                 continue
 
