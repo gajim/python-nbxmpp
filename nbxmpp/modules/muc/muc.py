@@ -440,10 +440,15 @@ class MUC(BaseModule):
         items = query.getTags("item")
         users_dict = {}
         for item in items:
+            user_jid = item.getAttr("jid")
+            if user_jid is None:
+                self._log.warning("Received an affiliation item without JID: %s", item)
+                self._log.warning(response)
+                continue
             try:
-                jid = JID.from_string(item.getAttr("jid"))
-            except Exception as error:
-                self._log.warning("Invalid JID: %s, %s", item.getAttr("jid"), error)
+                jid = JID.from_string(user_jid)
+            except Exception as e:
+                self._log.warning("'%s' is an invalid JID: %s", user_jid, e)
                 continue
 
             users_dict[jid] = {}
