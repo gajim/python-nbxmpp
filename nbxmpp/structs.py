@@ -876,7 +876,7 @@ class CommonError:
             text = self._text.get(None)
             if text is not None:
                 return text
-            return self._text.popitem()[1]
+            return next(iter(self._text.values()))
         return ""
 
     def set_text(self, lang: str, text: str) -> None:
