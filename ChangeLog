@@ -1,3 +1,16 @@
+nbxmpp 6.3.1 (25 Sep 2025)
+
+  Improvements
+
+  * Log details about invalid MUC affiliation items
+  * Log details about invalid roster items
+
+  Bug Fixes
+
+  * Leave text condition in place in CommonError.get_text()
+  * Do not treat thread subject as MUC subject
+  * Websocket: Disconnect signals on finalize
+
 nbxmpp 6.3.0 (07 Aug 2025)
 
   New
