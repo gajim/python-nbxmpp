@@ -478,7 +478,9 @@ class DiscoInfo(NamedTuple):
                 if dataform["FORM_TYPE"].value != form_type:
                     continue
 
-                if dataform[var].type_ == "jid-multi":
+                if dataform[var].type_ == "jid-multi" or dataform[var].type_.startswith(
+                    "list-"
+                ):
                     return dataform[var].values or None
                 return dataform[var].value
 
@@ -722,6 +724,23 @@ class DiscoInfo(NamedTuple):
             return float(size)
         except Exception:
             return None
+
+    @property
+    def reactions_per_user(self) -> int | None:
+        value = self.get_field_value(
+            Namespace.REACTIONS_RESTRICTIONS, "max_reactions_per_user"
+        )
+        if value is None:
+            return None
+        try:
+            return int(value)
+        except ValueError:
+            return None
+
+    @property
+    def reactions_allowlist(self) -> list[str] | None:
+        value = self.get_field_value(Namespace.REACTIONS_RESTRICTIONS, "allowlist")
+        return value
 
 
 class DiscoIdentity(NamedTuple):

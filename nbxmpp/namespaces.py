@@ -132,6 +132,7 @@ class _Namespaces:
     PUBSUB_PUBLISH_OPTIONS: str = "http://jabber.org/protocol/pubsub#publish-options"
     PUBSUB_NODE_MAX: str = "http://jabber.org/protocol/pubsub#config-node-max"
     REACTIONS: str = "urn:xmpp:reactions:0"
+    REACTIONS_RESTRICTIONS: str = "urn:xmpp:reactions:0:restrictions"
     RECEIPTS: str = "urn:xmpp:receipts"
     REGISTER: str = "jabber:iq:register"
     REGISTER_FEATURE: str = "http://jabber.org/features/iq-register"
