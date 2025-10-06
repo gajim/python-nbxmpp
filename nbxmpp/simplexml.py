@@ -286,6 +286,24 @@ class Node:
         """
         return self.attrs.get(key)
 
+    def getNamespacedAttr(self, key: str, namespace: str) -> str | None:
+        """
+        Return an attribute of this Node using a different namespace than the
+        node's main namespace.
+
+        NB: This is not a full implementation. It does not search for prefixes defined
+        in parent elements, only for prefixes defined in this `Node`.
+        """
+        for prefix, ns in self.nsd.items():
+            if ns != namespace:
+                continue
+            attr = self.attrs.get(f"{prefix}:{key}")
+            if attr is None:
+                # there might be several prefixes defined for a given namespace
+                continue
+            return attr
+        return None
+
     def getChildren(self) -> list[Node | str]:
         """
         Return all node's child nodes as list

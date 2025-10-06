@@ -24,6 +24,7 @@ from base64 import b64encode
 from collections.abc import Iterable
 from dataclasses import asdict
 from dataclasses import dataclass
+from dataclasses import fields
 
 import idna
 from gi.repository import Gio
@@ -45,6 +46,7 @@ from nbxmpp.xmppiri import validate_querytype
 
 if TYPE_CHECKING:
     from nbxmpp.structs import MucSubject
+    from nbxmpp.structs import OpenGraphData
 
 
 def ascii_upper(s: str) -> str:
@@ -1493,6 +1495,28 @@ class Message(Protocol):
         )
 
         self.setBody(fallback_text)
+
+    def addOpenGraph(self, about: str, data: OpenGraphData) -> None:
+        """
+        Add opengraph data (=link preview) to this message.
+
+        :param about: The URL related to the opengraph data
+        :param data: The opengraph data
+        """
+        description = self.addChild(
+            "Description",
+            attrs={
+                "xmlns:rdf": Namespace.RDF,
+                "rdf:about": about,
+            },
+            namespace=Namespace.RDF,
+        )
+        for field in fields(data):
+            tag = field.name
+            value = getattr(data, tag, None)
+            if value:
+                el = description.addChild(tag, namespace=Namespace.OPEN_GRAPH)
+                el.setData(value)
 
 
 class Presence(Protocol):

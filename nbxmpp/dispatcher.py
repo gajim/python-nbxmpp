@@ -55,6 +55,7 @@ from nbxmpp.modules.muc.hats import Hats
 from nbxmpp.modules.muc.moderation import Moderation
 from nbxmpp.modules.muclumbus import Muclumbus
 from nbxmpp.modules.nickname import Nickname
+from nbxmpp.modules.ogp import OpenGraph
 from nbxmpp.modules.omemo import OMEMO
 from nbxmpp.modules.oob import OOB
 from nbxmpp.modules.openpgp import OpenPGP
@@ -195,6 +196,7 @@ NBXMPPModuleT = (
     | Nickname
     | OMEMO
     | OOB
+    | OpenGraph
     | OpenPGP
     | PEPBookmarks
     | PGPLegacy
@@ -336,6 +338,8 @@ class StanzaDispatcher(Observable):
     @overload
     def get_module(self, name: Literal["OOB"]) -> OOB: ...
     @overload
+    def get_module(self, name: Literal["OpenGraph"]) -> OpenGraph: ...
+    @overload
     def get_module(self, name: Literal["OpenPGP"]) -> OpenPGP: ...
     @overload
     def get_module(self, name: Literal["PGPLegacy"]) -> PGPLegacy: ...
@@ -412,6 +416,7 @@ class StanzaDispatcher(Observable):
         self._modules["Nickname"] = Nickname(self._client)
         self._modules["OMEMO"] = OMEMO(self._client)
         self._modules["OOB"] = OOB(self._client)
+        self._modules["OpenGraph"] = OpenGraph(self._client)
         self._modules["OpenPGP"] = OpenPGP(self._client)
         self._modules["PEPBookmarks"] = PEPBookmarks(self._client)
         self._modules["PGPLegacy"] = PGPLegacy(self._client)

@@ -1070,6 +1070,18 @@ class EncryptionData:
     trust: int
 
 
+@dataclass
+class OpenGraphData:
+    title: str | None = None
+    description: str | None = None
+    url: str | None = None
+    image: str | None = None
+    type: str | None = None
+    site_name: str | None = None
+    audio: str | None = None
+    video: str | None = None
+
+
 class Properties:
     pass
 
@@ -1131,6 +1143,9 @@ class MessageProperties:
     security_label: SecurityLabel | None = None
     chatstate: Chatstate | None = None
     reactions: Reactions | None = None
+    # keys of the open_graph dict are URLs defined by the "about" attr of the
+    # corresponding <Description> element (RDF namespace)
+    open_graph: dict[str, OpenGraphData] = field(default_factory=dict)
 
     def is_from_us(self, bare_match: bool = True) -> bool:
         if self.from_ is None:
