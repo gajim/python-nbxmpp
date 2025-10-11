@@ -1078,8 +1078,6 @@ class OpenGraphData:
     image: str | None = None
     type: str | None = None
     site_name: str | None = None
-    audio: str | None = None
-    video: str | None = None
 
 
 class Properties:
