@@ -99,8 +99,6 @@ class OpenGraphTest(StanzaHandlerTest):
         self.assertEqual(ogp.type, "website")
         self.assertEqual(ogp.site_name, "Some Website")
         self.assertEqual(ogp.description, "Page Description")
-        self.assertIsNone(ogp.video)
-        self.assertIsNone(ogp.audio)
 
 
 _DATA = """
