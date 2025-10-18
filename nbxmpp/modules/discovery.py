@@ -15,6 +15,8 @@ from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.dataforms import extend_form
+from nbxmpp.modules.dataforms import MultipleDataForm
+from nbxmpp.modules.dataforms import SimpleDataForm
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import ERR_ITEM_NOT_FOUND
 from nbxmpp.protocol import ErrorNode
@@ -81,7 +83,7 @@ class Discovery(BaseModule):
 def parse_disco_info(stanza: Iq, timestamp: float | None = None) -> DiscoInfo:
     identities: list[DiscoIdentity] = []
     features: list[str] = []
-    dataforms = []
+    dataforms: list[SimpleDataForm | MultipleDataForm] = []
 
     if timestamp is None:
         timestamp = time.time()

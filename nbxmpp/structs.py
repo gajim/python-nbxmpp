@@ -43,7 +43,8 @@ from nbxmpp.const import StatusCode
 from nbxmpp.language import LanguageMap
 from nbxmpp.language import LanguageRange
 from nbxmpp.language import LanguageTag
-from nbxmpp.modules.dataforms import DataForm
+from nbxmpp.modules.dataforms import MultipleDataForm
+from nbxmpp.modules.dataforms import SimpleDataForm
 from nbxmpp.modules.fallback import FallbacksForT
 from nbxmpp.modules.fallback import strip_fallback
 from nbxmpp.namespaces import Namespace
@@ -451,7 +452,7 @@ class DiscoInfo(NamedTuple):
     stanza: Iq | None
     identities: list[DiscoIdentity]
     features: list[str]
-    dataforms: list[DataForm]
+    dataforms: list[SimpleDataForm | MultipleDataForm]
     timestamp: float | None = None
 
     def get_caps_hash(self) -> str | None:
