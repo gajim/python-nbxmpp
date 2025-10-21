@@ -9,8 +9,7 @@ stages:
 test-isort:
   stage: test
   rules:
-    - changes:
-      - "**/*.py"
+    - when: always
   script:
     - isort --version
     - isort --check .
@@ -19,8 +18,7 @@ test-isort:
 test-black:
   stage: test
   rules:
-    - changes:
-      - "**/*.py"
+    - when: always
   script:
     - black --version
     - black --check .
@@ -29,8 +27,7 @@ test-black:
 test-ruff:
   stage: test
   rules:
-    - changes:
-      - "**/*.py"
+    - when: always
   script:
     - ruff --version
     - ruff check .
@@ -39,8 +36,7 @@ test-ruff:
 test-pyright:
   stage: test
   rules:
-    - changes:
-      - "**/*.py"
+    - when: always
   script:
     - pip install git+https://github.com/pygobject/pygobject-stubs.git
     - pyright --version
@@ -49,6 +45,8 @@ test-pyright:
 
 test-unittest:
   stage: test
+  rules:
+    - when: always
   script:
     - python -m unittest discover -v
   interruptible: true
@@ -56,6 +54,8 @@ test-unittest:
 build-unix:
   stage: build
   dependencies: []
+  rules:
+    - when: always
   script:
     - pip install git+https://dev.gajim.org/gajim/release-helper.git
     - pip install build
