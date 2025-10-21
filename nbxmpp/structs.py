@@ -1031,7 +1031,7 @@ class ReceiptData(NamedTuple):
 class Hat:
     uri: str
     title: str
-    hue: float | None
+    hue: float | None = None
 
 
 class HatData:
