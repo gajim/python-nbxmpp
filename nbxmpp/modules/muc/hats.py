@@ -54,8 +54,17 @@ class Hats(BaseModule):
                 self._log.warning("Invalid hat received")
                 self._log.warning(stanza)
                 raise NodeProcessed
+            hue_str = hat.getAttr("hue")
+            if hue_str is None:
+                hue: float | None = None
+            else:
+                try:
+                    hue = float(hue_str)
+                except ValueError:
+                    self._log.warning("Invalid hue value: %s", hue_str)
+                    hue = None
 
             lang = hat.getAttr("xml:lang")
-            hat_data.add_hat(Hat(uri, title), lang)
+            hat_data.add_hat(Hat(uri, title, hue), lang)
 
         properties.hats = hat_data
