@@ -309,6 +309,9 @@ class Parameters:
     def values(self) -> ValuesView[Parameter | MultiParameter | TzParameter]:
         return self._parameters.values()
 
+    def get_parameter(self, name: str) -> Parameter | MultiParameter | TzParameter:
+        return self._parameters[name]
+
     def get_types(self) -> set[str]:
         parameter = self._parameters.get("type")
         if parameter is None:

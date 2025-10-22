@@ -1,5 +1,6 @@
 import unittest
 
+from nbxmpp.modules.vcard4 import LanguageParameter
 from nbxmpp.modules.vcard4 import VCard
 from nbxmpp.simplexml import Node
 
@@ -11,7 +12,14 @@ class TestVCard4(unittest.TestCase):
             node="""
             <vcard xmlns="urn:ietf:params:xml:ns:vcard-4.0">
                 <fn><text>Peter Saint-Andre</text></fn>
-                <n><surname>Saint-Andre</surname><given>Peter</given><additional></additional></n>
+                <n>
+                  <parameters>
+                    <language><language-tag>fr</language-tag></language>
+                  </parameters>
+                  <surname>Saint-Andre</surname>
+                  <given>Peter</given>
+                  <additional></additional>
+                </n>
                 <nickname><text>stpeter</text></nickname>
                 <nickname><text>psa</text></nickname>
                 <photo><uri>https://stpeter.im/images/stpeter_oscon.jpg</uri></photo>
@@ -109,6 +117,13 @@ class TestVCard4(unittest.TestCase):
 
         nickname_props = list(filter(lambda p: p.name == "nickname", props))
         self.assertEqual(len(nickname_props), 2)
+
+        n_props = list(filter(lambda p: p.name == "n", props))
+        self.assertEqual(len(n_props), 1)
+        n_prop = n_props[0]
+        lang_param = n_prop.parameters.get_parameter("language")
+        assert isinstance(lang_param, LanguageParameter)
+        self.assertEqual(lang_param.value, "fr")
 
         # Preserve unsupported elements
         node = vcard.to_node()
