@@ -50,6 +50,7 @@ PROPERTY_DEFINITION: dict[str, tuple[list[str], Literal["*", "*1", "1*", "1"]]] 
     "bday": (["altid", "calscale"], "*1"),
     "anniversary": (["altid", "calscale"], "*1"),
     "gender": ([], "*1"),
+    "pronouns": (["language", "pref", "type", "altid"], "*"),
     "adr": (["language", "altid", "pid", "pref", "type", "geo", "tz", "label"], "*"),
     "tel": (["altid", "pid", "pref", "type", "mediatype"], "*"),
     "email": (["altid", "pid", "pref", "type"], "*"),
@@ -682,6 +683,11 @@ class GenderProperty:
 
 
 @dataclass
+class PronounsProperty(TextProperty):
+    name: str = field(default="pronouns", init=False)
+
+
+@dataclass
 class AdrProperty:
 
     name: str = field(default="adr", init=False)
@@ -993,6 +999,7 @@ PROPERTY_CLASSES = {
     "bday": BDayProperty,
     "anniversary": AnniversaryProperty,
     "gender": GenderProperty,
+    "pronouns": PronounsProperty,
     "adr": AdrProperty,
     "tel": TelProperty,
     "email": EmailProperty,
@@ -1030,6 +1037,7 @@ PropertyT = (
     | BDayProperty
     | AnniversaryProperty
     | GenderProperty
+    | PronounsProperty
     | AdrProperty
     | TelProperty
     | EmailProperty

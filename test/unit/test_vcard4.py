@@ -104,6 +104,9 @@ class TestVCard4(unittest.TestCase):
                 <key>
                   <uri>https://stpeter.im/stpeter.asc</uri>
                 </key>
+                <pronouns>
+                  <text>he/him</text>
+                </pronouns>
                 <unsupported-element>unsupported</unsupported-element>
             </vcard>
         """
@@ -125,6 +128,39 @@ class TestVCard4(unittest.TestCase):
         assert isinstance(lang_param, LanguageParameter)
         self.assertEqual(lang_param.value, "fr")
 
+        pronouns_props = list(filter(lambda p: p.name == "pronouns", props))
+        self.assertEqual(len(pronouns_props), 1)
+        self.assertEqual(pronouns_props[0].value, "he/him")
+
         # Preserve unsupported elements
         node = vcard.to_node()
         self.assertEqual(node.getTagData("unsupported-element"), "unsupported")
+
+    def test_vcard4_pronouns(self):
+        vcard_node = Node(
+            node="""
+            <vcard xmlns="urn:ietf:params:xml:ns:vcard-4.0">
+                <fn><text>Cartman</text></fn>
+                <pronouns>
+                  <parameters>
+                    <language><language-tag>fr</language-tag></language>
+                    <pref>
+                      <integer>1</integer>
+                    </pref>
+                  </parameters>
+                  <text>il/lui</text>
+                </pronouns>
+                <pronouns>
+                  <text>he/him</text>
+                </pronouns>
+            </vcard>
+        """
+        )
+
+        vcard = VCard.from_node(vcard_node)
+        props = vcard.get_properties()
+        pronouns_props = list(filter(lambda p: p.name == "pronouns", props))
+        self.assertEqual(len(pronouns_props), 2)
+        self.assertEqual(
+            pronouns_props[0].parameters.get_parameter("language").value, "fr"
+        )
