@@ -22,7 +22,11 @@ from nbxmpp.modules.util import finalize
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import JID
+from nbxmpp.protocol import Message
+from nbxmpp.protocol import NodeProcessed
 from nbxmpp.simplexml import Node
+from nbxmpp.structs import MessageProperties
+from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 
 if TYPE_CHECKING:
@@ -1210,7 +1214,41 @@ class VCard4(BaseModule):
         BaseModule.__init__(self, client)
 
         self._client = client
-        self.handlers = []
+        self.handlers = [
+            StanzaHandler(
+                name="message",
+                callback=self._process_pubsub_vcard,
+                ns=Namespace.PUBSUB_EVENT,
+                priority=16,
+            ),
+        ]
+
+    def _process_pubsub_vcard(
+        self, _client: Client, stanza: Message, properties: MessageProperties
+    ) -> None:
+        if not properties.is_pubsub_event:
+            return
+
+        assert properties.pubsub_event is not None
+        if properties.pubsub_event.node != Namespace.VCARD4_PUBSUB:
+            return
+
+        item = properties.pubsub_event.item
+        if item is None:
+            # Retract, Deleted or Purged
+            return
+
+        try:
+            vcard = _get_vcard(item)
+        except MalformedStanzaError as error:
+            self._log.warning(error)
+            self._log.warning(error.stanza)
+            raise NodeProcessed
+
+        pubsub_event = properties.pubsub_event._replace(data=vcard)
+        self._log.info("Received VCard4: %s", properties.jid)
+
+        properties.pubsub_event = pubsub_event
 
     @iq_request_task
     def request_vcard(self, jid: JID | None = None):
