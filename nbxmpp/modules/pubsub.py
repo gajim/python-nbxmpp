@@ -11,6 +11,8 @@ from typing import Literal
 from typing import NamedTuple
 from typing import TYPE_CHECKING
 
+from dataclasses import dataclass
+
 from nbxmpp.const import MessageType
 from nbxmpp.errors import is_error
 from nbxmpp.errors import MalformedStanzaError
@@ -247,6 +249,61 @@ class PubSub(BaseModule):
         form = _get_configure_form(response, node)
         yield PubSubNodeConfigurationResult(jid=jid, node=node, form=form)
 
+    @iq_request_task
+    def get_subscriptions(self, jid: JID):
+        _task = yield
+
+        response = yield _make_get_subscription_request(jid)
+
+        if response.isError():
+            raise PubSubStanzaError(response)
+
+        pubsub_node = response.getTag("pubsub", namespace=Namespace.PUBSUB)
+        if pubsub_node is None:
+            raise MalformedStanzaError("pubsub node missing", response)
+
+        subscriptions = pubsub_node.getTag("subscriptions", namespace=Namespace.PUBSUB)
+        if subscriptions is None:
+            raise MalformedStanzaError("subscriptions node missing", response)
+
+        result = []
+
+        for item in subscriptions.getTags("subscription", namespace=Namespace.PUBSUB):
+            try:
+                sub = PubSubSubscription.from_response(item)
+            except MalformedStanzaError as error:
+                self._log.warning(error)
+                self._log.warning(error.stanza)
+                continue
+
+            result.append(sub)
+
+        yield result
+
+    @iq_request_task
+    def subscribe(self, node: str, jid: str | None = None):
+        _task = yield
+
+        own_jid = self._client.get_bound_jid().new_as_bare()
+        response = yield _make_subscribe_request(node, own_jid, jid)
+
+        if response.isError():
+            raise PubSubStanzaError(response)
+
+        item = _get_subscription_item(response)
+        if item is None:
+            raise MalformedStanzaError("subscription node missing", response)
+
+        yield PubSubSubscription.from_response(item)
+
+    @iq_request_task
+    def unsubscribe(self, node: str, jid: str | None = None):
+        _task = yield
+
+        own_jid = self._client.get_bound_jid().new_as_bare()
+        response = yield _make_unsubscribe_request(node, own_jid, jid)
+        yield process_response(response)
+
 
 def get_pubsub_request(
     jid: JID, node: str, id_: str | None = None, max_items: int | None = None
@@ -318,6 +375,14 @@ def _get_pubsub_item(response: Iq, node: str, id_: str) -> Node | None:
         raise MalformedStanzaError("invalid item id", response)
 
     return item
+
+
+def _get_subscription_item(response: Iq) -> Node | None:
+    pubsub_node = response.getTag("pubsub", namespace=Namespace.PUBSUB)
+    if pubsub_node is None:
+        raise MalformedStanzaError("pubsub node missing", response)
+
+    return pubsub_node.getTag("subscription", namespace=Namespace.PUBSUB)
 
 
 def _make_pubsub_request(
@@ -464,6 +529,29 @@ def _make_node_configuration_request(node: str, jid: JID | None) -> Iq:
     return query
 
 
+def _make_get_subscription_request(
+    jid: JID | None = None,
+) -> Iq:
+    query = Iq("get", to=jid)
+    pubsub = query.addChild("pubsub", namespace=Namespace.PUBSUB)
+    pubsub.addChild("subscriptions")
+    return query
+
+
+def _make_subscribe_request(node: str, own_jid: JID, jid: JID | None = None) -> Iq:
+    query = Iq("set", to=jid)
+    pb = query.addChild("pubsub", namespace=Namespace.PUBSUB)
+    pb.addChild("subscribe", {"node": node, "jid": str(own_jid)})
+    return query
+
+
+def _make_unsubscribe_request(node: str, own_jid: JID, jid: JID | None = None) -> Iq:
+    query = Iq("set", to=jid)
+    pb = query.addChild("pubsub", namespace=Namespace.PUBSUB)
+    pb.addChild("unsubscribe", {"node": node, "jid": str(own_jid)})
+    return query
+
+
 def _apply_options(form, options: dict[str, str]) -> None:
     for var, value in options.items():
         try:
@@ -484,3 +572,39 @@ class PubSubPublishResult(NamedTuple):
     jid: JID
     node: str
     id: str
+
+
+@dataclass
+class PubSubSubscription:
+    node: str
+    jid: JID
+    subscription: str
+    subid: str | None
+
+    @classmethod
+    def from_response(cls, sub_item: Iq) -> PubSubSubscription:
+        node = sub_item.getAttr("node")
+        if not node:
+            raise MalformedStanzaError("node attr is missing", sub_item)
+
+        jid = sub_item.getAttr("jid")
+        if not jid:
+            raise MalformedStanzaError("jid attr is missing", sub_item)
+
+        try:
+            jid = JID.from_string(jid)
+        except Exception:
+            raise MalformedStanzaError("jid is invalidvalid", sub_item)
+
+        subscription = sub_item.getAttr("subscription")
+        if not subscription:
+            raise MalformedStanzaError("subscription attr is missing", sub_item)
+
+        if subscription not in ("none", "pending", "subscribed", "unconfigured"):
+            raise MalformedStanzaError(
+                "unknown subscription value '%s'" % subscription, sub_item
+            )
+
+        subid = sub_item.getAttr("subid")
+
+        return cls(node=node, jid=jid, subscription=subscription, subid=subid)
