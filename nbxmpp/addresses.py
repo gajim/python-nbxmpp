@@ -243,7 +243,7 @@ class ServerAddresses(Observable):
         allowed_types: list[ConnectionType],
         allowed_protocols: list[ConnectionProtocol],
     ) -> Iterator[ServerAddress]:
-        if self._proxy is not None:
+        if self._proxy is not None and self._proxy.type != "direct":
             addresses = filter(lambda addr: addr.host is not None, addresses)
 
         addresses = filter(lambda addr: addr.type in allowed_types, addresses)
