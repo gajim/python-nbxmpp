@@ -1,3 +1,22 @@
+nbxmpp 6.4.0 (01 Nov 2025)
+
+  New
+
+  * Pubsub: Add subscribe/unsubscribe methods
+  * VCard4: Parse notification events
+  * VCard4: Add get_parameter() method for easier access
+  * Support for open graph data embedded in message
+  * Add support for reaction restrictions
+
+  Improvements
+
+  * Add pronouns field to VCard4
+  * Support for hats "hue" attribute
+
+  Bug Fixes
+
+  * Connection: Allow DNS requests for "direct" proxies
+
 nbxmpp 6.3.1 (25 Sep 2025)
 
   Improvements
