@@ -9,8 +9,6 @@ from collections.abc import Iterator
 
 from nbxmpp.const import ConnectionProtocol
 from nbxmpp.const import ConnectionType
-from nbxmpp.http import HTTPRequest
-from nbxmpp.http import HTTPSession
 from nbxmpp.structs import ProxyData
 from nbxmpp.structs import ServerAddress
 from nbxmpp.types import CustomHostT
@@ -32,7 +30,7 @@ class ServerAddresses(Observable):
         Observable.__init__(self, log)
 
         self._domain = domain
-        self._http_session: HTTPSession | None = None
+        self._host_meta_data: bytes | None = None
         self._custom_host: CustomHostT | None = None
         self._proxy: ProxyData | None = None
         self._is_resolved = False
@@ -96,6 +94,9 @@ class ServerAddresses(Observable):
     def is_resolved(self) -> bool:
         return self._is_resolved
 
+    def set_host_meta_data(self, data: bytes | None) -> None:
+        self._host_meta_data = data
+
     def resolve(self) -> None:
         if self._is_resolved:
             self._on_request_resolved()
@@ -113,34 +114,13 @@ class ServerAddresses(Observable):
         self._resolve_alternatives()
 
     def _resolve_alternatives(self) -> None:
-        if self._http_session is None:
-            self._on_request_resolved()
-            return
-
-        request = self._http_session.create_request()
-        request.send(
-            "GET",
-            f"https://{self._domain}/.well-known/host-meta",
-            timeout=5,
-            callback=self._on_alternatives_result,
-        )
-
-    def _on_alternatives_result(self, request: HTTPRequest) -> None:
-        if not request.is_complete():
-            log.info(
-                "Failed to retrieve host-meta file: %s", request.get_error_string()
-            )
-            self._on_request_resolved()
-            return
-
-        response_body = request.get_data()
-        if not response_body:
-            log.info("No response body data found")
+        if not self._host_meta_data:
+            log.info("No host meta data to process")
             self._on_request_resolved()
             return
 
         try:
-            uri = parse_websocket_uri(response_body.decode())
+            uri = parse_websocket_uri(self._host_meta_data.decode())
         except Exception as error:
             log.info("Error parsing websocket uri: %s", error)
             self._on_request_resolved()
@@ -198,9 +178,6 @@ class ServerAddresses(Observable):
 
     def set_proxy(self, proxy: ProxyData | None) -> None:
         self._proxy = proxy
-
-    def set_http_session(self, session: HTTPSession) -> None:
-        self._http_session = session
 
     def _on_request_resolved(self) -> None:
         self._is_resolved = True

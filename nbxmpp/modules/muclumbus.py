@@ -15,6 +15,7 @@ from nbxmpp.const import AnonymityMode
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.http import HTTPRequest
+from nbxmpp.http import HTTPSession
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.modules.util import finalize
@@ -128,7 +129,7 @@ class Muclumbus(BaseModule):
 
         body = json.dumps(search).encode()
 
-        session = self._client.http_session
+        session = HTTPSession()
         request = session.create_request()
         request.set_request_body("application/json", body)
         request.send("POST", uri)

@@ -31,7 +31,6 @@ from nbxmpp.dispatcher import StanzaDispatcher
 from nbxmpp.errors import CancelledError
 from nbxmpp.errors import StanzaError
 from nbxmpp.errors import TimeoutStanzaError
-from nbxmpp.http import HTTPSession
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import BindRequest
 from nbxmpp.protocol import Features
@@ -157,7 +156,7 @@ class Client(Observable):
         self._client_cert: Any = None
         self._client_cert_pass: str | None = None
         self._proxy: ProxyData | None = None
-        self._http_session = HTTPSession()
+        self._host_meta_data: bytes | None = None
 
         self._allowed_con_types: list[ConnectionType] | None = None
         self._allowed_protocols: list[ConnectionProtocol] | None = None
@@ -433,12 +432,11 @@ class Client(Observable):
     def proxy(self) -> ProxyData | None:
         return self._proxy
 
-    def set_http_session(self, session: HTTPSession) -> None:
-        self._http_session = session
+    def set_host_meta_data(self, data: bytes) -> bytes | None:
+        self._host_meta_data = data
 
-    @property
-    def http_session(self) -> HTTPSession:
-        return self._http_session
+    def get_host_meta_data(self) -> bytes | None:
+        return self._host_meta_data
 
     def get_bound_jid(self) -> JID | None:
         return self._jid
@@ -515,7 +513,7 @@ class Client(Observable):
         self.state = StreamState.RESOLVE
 
         self._addresses = ServerAddresses(self._domain)
-        self._addresses.set_http_session(self._http_session)
+        self._addresses.set_host_meta_data(self._host_meta_data)
         self._addresses.set_custom_host(self._custom_host)
         self._addresses.set_proxy(self._proxy)
         self._addresses.subscribe("resolved", self._on_addresses_resolved)
