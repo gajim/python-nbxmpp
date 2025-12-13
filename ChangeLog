@@ -1,3 +1,10 @@
+nbxmpp 7.0.0 (13 Dec 2025)
+
+  Change
+
+  * Remove HTTP Requests API
+  * Client: Add set_host_meta_data()
+
 nbxmpp 6.4.0 (01 Nov 2025)
 
   New
