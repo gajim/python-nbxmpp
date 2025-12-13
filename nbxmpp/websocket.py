@@ -12,9 +12,9 @@ from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import Soup
 
+import nbxmpp
 from nbxmpp.connection import Connection
 from nbxmpp.const import TCPState
-from nbxmpp.http import DEFAULT_USER_AGENT
 from nbxmpp.protocol import Protocol
 from nbxmpp.util import convert_tls_error_flags
 from nbxmpp.util import get_websocket_close_string
@@ -27,7 +27,7 @@ class WebsocketConnection(Connection):
         Connection.__init__(self, *args, **kwargs)
 
         self._session = Soup.Session()
-        self._session.set_user_agent(DEFAULT_USER_AGENT)
+        self._session.set_user_agent(f"nbxmpp/{nbxmpp.__version__}")
 
         if self._log.getEffectiveLevel() == logging.INFO:
             self._session.add_feature(Soup.Logger.new(Soup.LoggerLogLevel.BODY))
