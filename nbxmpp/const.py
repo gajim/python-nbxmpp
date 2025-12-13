@@ -12,7 +12,6 @@ from functools import total_ordering
 
 from gi.repository import Gio
 from gi.repository import GLib
-from gi.repository import Soup
 from packaging.version import Version
 
 GLIB_VERSION = Version(
@@ -444,18 +443,6 @@ class Mode(IntEnum):
         return self == Mode.ANONYMOUS_TEST
 
 
-class HTTPRequestError(IntEnum):
-    UNKNOWN = 0
-    INCOMPLETE = 1
-    STATUS_NOT_OK = 2
-    CANCELLED = 3
-    CONTENT_OVERFLOW = 4
-    TIMEOUT = 5
-
-    def __str__(self) -> str:
-        return self.name
-
-
 MOODS = [
     "afraid",
     "amazed",
@@ -683,14 +670,4 @@ NOT_ALLOWED_XML_CHARS = {
     '"': "&quot;",
     "\x0C": "",
     "\x1B": "",
-}
-
-
-SOUP_ENCODING: set[Soup.Encoding] = {
-    Soup.Encoding.UNRECOGNIZED,
-    Soup.Encoding.NONE,
-    Soup.Encoding.CONTENT_LENGTH,
-    Soup.Encoding.EOF,
-    Soup.Encoding.CHUNKED,
-    Soup.Encoding.BYTERANGES,
 }

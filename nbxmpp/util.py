@@ -29,7 +29,6 @@ from packaging.version import Version
 
 from nbxmpp.const import GIO_TLS_ERRORS
 from nbxmpp.const import GLIB_VERSION
-from nbxmpp.const import SOUP_ENCODING
 from nbxmpp.modules.dataforms import DataForm
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.namespaces import Namespace
@@ -398,10 +397,6 @@ def convert_tls_error_flags(
         raise ValueError
 
     return set(filter(lambda error: error & flags, GIO_TLS_ERRORS.keys()))
-
-
-def convert_soup_encoding(flags: int) -> set[Soup.Encoding]:
-    return set(filter(lambda enc: enc & flags, SOUP_ENCODING))
 
 
 def get_websocket_close_string(websocket: Soup.WebsocketConnection) -> str:

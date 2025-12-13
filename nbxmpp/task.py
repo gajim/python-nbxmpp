@@ -28,7 +28,6 @@ from nbxmpp.errors import is_error
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.errors import TimeoutStanzaError
-from nbxmpp.http import HTTPRequest
 from nbxmpp.modules.util import make_func_arguments_string
 from nbxmpp.simplexml import Node
 
@@ -104,21 +103,6 @@ def iq_request_task(func: Callable[..., T]) -> Callable[..., T]:
             func(self, *args, **kwargs), self._log, self._client  # type: ignore
         )
         task.set_timeout(timeout)
-        return _setup_task(task, self._client, callback, user_data)  # type: ignore
-
-    return func_wrapper
-
-
-def http_request_task(func: Callable[P, T]) -> Callable[P, T]:
-    @wraps(func)
-    def func_wrapper(
-        self: NBXMPPModuleT,
-        *args: Any,
-        callback: Callable[..., Any] | None = None,
-        user_data: Any = None,
-        **kwargs: Any,
-    ) -> T:
-        task = HTTPRequestTask(func(self, *args, **kwargs), self._log)  # type: ignore
         return _setup_task(task, self._client, callback, user_data)  # type: ignore
 
     return func_wrapper
@@ -385,29 +369,4 @@ class IqRequestTask(Task):
         if self._iq_id is not None:
             self._client._dispatcher.remove_iq_callback(self._iq_id)  # type: ignore
         self._client = None
-        super()._finalize()
-
-
-class HTTPRequestTask(Task):
-    """
-    A Task for running HTTP requests
-
-    """
-
-    _process_types = (HTTPRequest,)
-
-    def __init__(self, gen: Generator[Any, Any, Any], logger: logging.Logger) -> None:
-        super().__init__(gen, logger)
-
-    def _run_async(self, data: HTTPRequest) -> None:
-        data.connect("finished", self._async_finished)
-
-    def _async_finished(self, request: HTTPRequest) -> None:
-        if self._state == TaskState.CANCELLED:
-            return
-
-        self._next_step(request)
-
-    def _finalize(self) -> None:
-        self._session = None
         super()._finalize()
