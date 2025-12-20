@@ -168,50 +168,70 @@ class Node:
                 return "http://www.gajim.org/xmlns/undeclared"
         return ns
 
-    def __str__(self, fancy: int = 0) -> str:
+    def topretty(
+        self,
+        string: str = "",
+        indent: str = "",
+        addindent: str = " " * 2,
+        newl: str = "\n",
+    ) -> str:
         """
-        Method used to dump node into textual representation. If "fancy"
-        argument is set to True produces indented output for readability
+        Write an XML element to a string
+
+        string = buffer where output is added
+        indent = current indentation
+        addindent = indentation to add to higher levels
+        newl = newline string
         """
-        s = (fancy - 1) * 2 * " " + "<" + self.name
+
+        string = indent + "<" + self.name
+
         if self.namespace:
             if not self.parent or self.parent.namespace != self.namespace:
                 if "xmlns" not in self.attrs:
-                    s += ' xmlns="%s"' % self.namespace
+                    string += f' xmlns="{self.namespace}"'
+
         for key in self.attrs:
             val = str(self.attrs[key])
-            s += ' %s="%s"' % (key, XMLescape(val))
+            string += f' {key}="{XMLescape(val)}"'
 
-        s += ">"
-        cnt = 0
+        count = 0
         if self.kids:
-            if fancy:
-                s += "\n"
-            for a in self.kids:
-                if not fancy and (len(self.data) - 1) >= cnt:
-                    s += XMLescape(self.data[cnt])
-                elif (len(self.data) - 1) >= cnt:
-                    s += XMLescape(self.data[cnt].strip())
-                if isinstance(a, str):
-                    s += a.__str__()
+            string += ">"
+            string += newl
+            for child in self.kids:
+                if (len(self.data) - 1) >= count:
+                    data = XMLescape(self.data[count].strip())
+                    if data:
+                        string += f"{indent + addindent}{XMLescape(self.data[count].strip())}{newl}"
+
+                if isinstance(child, str):
+                    string += child
                 else:
-                    s += a.__str__(fancy and fancy + 1)
-                cnt += 1
-        if not fancy and (len(self.data) - 1) >= cnt:
-            s += XMLescape(self.data[cnt])
-        elif (len(self.data) - 1) >= cnt:
-            s += XMLescape(self.data[cnt].strip())
-        if not self.kids and s.endswith(">"):
-            s = s[:-1] + " />"
-            if fancy:
-                s += "\n"
+                    string += child.topretty(
+                        string, indent + addindent, addindent, newl
+                    )
+
+                count += 1
+                string += indent
+
+            if (len(self.data) - 1) >= count:
+                data = XMLescape(self.data[count].strip())
+                if data:
+                    string += f"{indent + addindent}{XMLescape(self.data[count].strip())}{newl}"
+
+            string += f"</{self.name}>{newl}"
+
+        elif self.data:
+            string += f">{XMLescape(self.data[0])}</{self.name}>{newl}"
+
         else:
-            if fancy and not self.data:
-                s += (fancy - 1) * 2 * " "
-            s += "</" + self.name + ">"
-            if fancy:
-                s += "\n"
-        return s
+            string += f"/>{newl}"
+
+        return string
+
+    def __str__(self, fancy: int = 0) -> str:
+        return self.topretty()
 
     def addChild(
         self,
