@@ -170,7 +170,6 @@ class Node:
 
     def topretty(
         self,
-        string: str = "",
         indent: str = "",
         addindent: str = " " * 2,
         newl: str = "\n",
@@ -208,9 +207,8 @@ class Node:
                 if isinstance(child, str):
                     string += child
                 else:
-                    string += child.topretty(
-                        string, indent + addindent, addindent, newl
-                    )
+                    string += child.topretty(indent + addindent, addindent, newl)
+                    string += newl
 
                 count += 1
 
@@ -221,18 +219,20 @@ class Node:
                 if data:
                     string += f"{indent + addindent}{XMLescape(self.data[count].strip())}{newl}"
 
-            string += f"</{self.name}>{newl}"
+            string += f"</{self.name}>"
 
         elif self.data:
-            string += f">{XMLescape(self.data[0])}</{self.name}>{newl}"
+            string += f">{XMLescape(self.data[0])}</{self.name}>"
 
         else:
-            string += f"/>{newl}"
+            string += " />"
 
         return string
 
     def __str__(self, fancy: int = 0) -> str:
-        return self.topretty()
+        if fancy:
+            return self.topretty()
+        return self.topretty(indent="", addindent="", newl="")
 
     def addChild(
         self,
