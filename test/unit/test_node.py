@@ -55,6 +55,20 @@ class TestNode(unittest.TestCase):
         node = Node(node=string)
         self.assertEqual(str(node), string)
 
+        string = """<a xmlns="http://www.gajim.org/xmlns/undeclared">
+  <b>
+    <c>
+      <d/>
+      <e/>
+      <f/>
+    </c>
+  </b>
+</a>
+"""
+
+        node = Node(node=string)
+        self.assertEqual(str(node), string)
+
 
 if __name__ == "__main__":
     unittest.main()

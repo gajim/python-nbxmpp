@@ -213,7 +213,8 @@ class Node:
                     )
 
                 count += 1
-                string += indent
+
+            string += indent
 
             if (len(self.data) - 1) >= count:
                 data = XMLescape(self.data[count].strip())
