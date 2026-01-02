@@ -1273,7 +1273,7 @@ class Message(Protocol):
         to: str | None = None,
         body: str | None = None,
         xhtml: str | None = None,
-        typ: Literal["chat"] | Literal["groupchat"] | Literal["error"] | None = None,
+        typ: Literal["chat", "groupchat", "normal", "headline", "error"] | None = None,
         subject: MucSubject | None = None,
         attrs: dict[str, Any] | None = None,
         frm: JID | str | None = None,
