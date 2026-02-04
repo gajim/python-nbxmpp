@@ -136,7 +136,7 @@ class Node:
                     self.nsd[""] = val
                 elif attr.startswith("xmlns:"):
                     self.nsd[attr[6:]] = val
-                self.attrs[attr] = attrs[attr]
+                self.attrs[attr] = val
 
         if tag:
             if node_built:

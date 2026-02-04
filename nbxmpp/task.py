@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Optional
 from typing import ParamSpec
 from typing import TYPE_CHECKING
 from typing import TypeVar
@@ -140,7 +139,7 @@ class Task:
         self._sub_task: Task | None = None
         self._result = None
         self._error = None
-        self._user_data: Optional[Any] = None
+        self._user_data: Any | None = None
         self._timeout: int | None = None
         self._timeout_id: int | None = None
         self._finalize_func: Callable[..., Any] | None = None

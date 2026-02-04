@@ -9,7 +9,6 @@ from __future__ import annotations
 import typing
 from typing import Any
 from typing import NamedTuple
-from typing import Optional
 from typing import TYPE_CHECKING
 
 import logging
@@ -134,7 +133,7 @@ class MucDestroyed(NamedTuple):
 
 class MucConfigResult(NamedTuple):
     jid: JID
-    form: Optional[Any] = None
+    form: Any | None = None
 
 
 class MucSubject(NamedTuple):
@@ -170,7 +169,7 @@ class PubSubEventData(NamedTuple):
     node: str
     id: str | None = None
     item: Node | None = None
-    data: Optional[Any] = None
+    data: Any | None = None
     deleted: bool = False
     retracted: bool = False
     purged: bool = False
@@ -331,8 +330,8 @@ class DiscoItem(NamedTuple):
 
 class RegisterData(NamedTuple):
     instructions: str | None
-    form: Optional[Any]
-    fields_form: Optional[Any]
+    form: Any | None
+    fields_form: Any | None
     oob_url: str | None
     bob_data: BobData | None
 
@@ -473,7 +472,7 @@ class DiscoInfo(NamedTuple):
                 continue
         return False
 
-    def get_field_value(self, form_type: str, var: str) -> Optional[Any]:
+    def get_field_value(self, form_type: str, var: str) -> Any | None:
         for dataform in self.dataforms:
             try:
                 if dataform["FORM_TYPE"].value != form_type:
@@ -590,31 +589,31 @@ class DiscoInfo(NamedTuple):
         return None
 
     @property
-    def muc_room_name(self) -> Optional[Any]:
+    def muc_room_name(self) -> Any | None:
         return self.get_field_value(Namespace.MUC_INFO, "muc#roomconfig_roomname")
 
     @property
-    def muc_description(self) -> Optional[Any]:
+    def muc_description(self) -> Any | None:
         return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_description")
 
     @property
-    def muc_log_uri(self) -> Optional[Any]:
+    def muc_log_uri(self) -> Any | None:
         return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_logs")
 
     @property
-    def muc_users(self) -> Optional[Any]:
+    def muc_users(self) -> Any | None:
         return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_occupants")
 
     @property
-    def muc_contacts(self) -> Optional[Any]:
+    def muc_contacts(self) -> Any | None:
         return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_contactjid")
 
     @property
-    def muc_subject(self) -> Optional[Any]:
+    def muc_subject(self) -> Any | None:
         return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_subject")
 
     @property
-    def muc_subjectmod(self) -> Optional[Any]:
+    def muc_subjectmod(self) -> Any | None:
         # muc#roominfo_changesubject stems from a wrong example in the MUC XEP
         # Ejabberd and Prosody use this value
         # muc#roomconfig_changesubject is also used by Prosody
@@ -625,7 +624,7 @@ class DiscoInfo(NamedTuple):
         )
 
     @property
-    def muc_lang(self) -> Optional[Any]:
+    def muc_lang(self) -> Any | None:
         return self.get_field_value(Namespace.MUC_INFO, "muc#roominfo_lang")
 
     @property
@@ -1287,7 +1286,7 @@ class IqProperties:
     type: IqType | None = None
     jid: JID | None = None
     id: str | None = None
-    error: Optional[Any] = None
+    error: Any | None = None
     query: Node | None = None
     payload: Node | None = None
     http_auth: HTTPAuthData | None = None
@@ -1317,7 +1316,7 @@ class IqPropertiesBase(typing.Protocol):
     type: IqType
     jid: JID
     id: str
-    error: Optional[Any]
+    error: Any | None
     query: Node | None
     payload: Node | None
 
@@ -1348,8 +1347,8 @@ class PresenceProperties:
     timestamp: float = field(default_factory=time.time)
     user_timestamp: float | None = None
     idle_timestamp: float | None = None
-    signed: Optional[Any] = None
-    error: Optional[Any] = None
+    signed: Any | None = None
+    error: Any | None = None
     avatar_sha: str | None = None
     avatar_state: AvatarState = AvatarState.IGNORE
     muc_jid: JID | None = None

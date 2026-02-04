@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Optional
 from typing import TYPE_CHECKING
 
 import binascii
@@ -106,7 +105,7 @@ class SASL:
 
     def _get_channel_binding_data(
         self, features: Features
-    ) -> Optional[ChannelBindingData]:
+    ) -> ChannelBindingData | None:
         if self._client.tls_version != Gio.TlsProtocolVersion.TLS_1_3:
             return None
 
