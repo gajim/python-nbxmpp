@@ -9,3 +9,4 @@ dist
 *~
 *.sublime-workspace
 *.sublime-project
+uv.lock
