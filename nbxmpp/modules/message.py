@@ -95,7 +95,7 @@ class BaseMessage(BaseModule):
     def _process_message_after_base(
         self, _client: Client, stanza: Message, properties: MessageProperties
     ) -> None:
-        # This handler runs after decryption handlers had the chance
+        # This handler runs after decryption, when handlers had the chance
         # to decrypt the body
 
         fallbacks_for = parse_fallback_indication(self._log, stanza)

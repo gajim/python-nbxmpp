@@ -22,8 +22,10 @@ FallbacksForT = dict[str, FallbackLangMapT | None]
 
 
 def parse_fallback_indication(
-    log: logging.Logger | logging.LoggerAdapter[Any], stanza: Message
+    log: logging.Logger | logging.LoggerAdapter[Any],
+    stanza: Message,
 ) -> FallbacksForT | None:
+
     fallbacks = stanza.getTags(
         "fallback",
         namespace=Namespace.FALLBACK,
@@ -36,10 +38,11 @@ def parse_fallback_indication(
         for_ = fallback.getAttr("for")
         if not for_:
             log.warning('Missing "for" attribute on fallback indication')
-            continue
+            return
 
         bodies = fallback.getTags("body")
         if not bodies:
+            # No <body> means fallback is for all bodies
             fallbacks_for[for_] = None
             continue
 
@@ -51,7 +54,7 @@ def parse_fallback_indication(
 
             if type(start) is not type(end):
                 log.warning("Incorrect range on fallback indication")
-                continue
+                return
 
             range_ = None
             if start is not None:
@@ -60,7 +63,11 @@ def parse_fallback_indication(
                     range_ = FallbackRange(start=int(start), end=int(end))
                 except Exception:
                     log.warning("Incorrect range on fallback indication")
-                    continue
+                    return
+
+                if range_.start < 0 or range_.end < 0:
+                    log.warning("Fallback range with negative numbers: %s", range_)
+                    return
 
             fallback_lang_map[lang] = range_
 
@@ -101,6 +108,10 @@ def strip_fallback(
         if range_ is None:
             # No range means the whole body is considered a fallback
             return ""
+
+        if range_.end > len(text):
+            # Abort processing, because range is invalid
+            return text
 
         fallbacks.append(range_)
 

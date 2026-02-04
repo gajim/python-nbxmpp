@@ -50,6 +50,20 @@ class TestFallback(StanzaHandlerTest):
 
         self.assertEqual(fallbacks_for, expected)
 
+        xml = """
+            <message to='anna@example.com' id='message-id2' type='groupchat'>
+              <body>> Anna wrote:\n> Hi, how are you?\nGreat</body>
+              <fallback xmlns='urn:xmpp:fallback:0' for='urn:xmpp:test:0'>
+                <body start='-1' end='33' />
+              </fallback>
+            </message>
+        """
+
+        message = nbxmpp.Message(node=xml)
+        fallbacks_for = parse_fallback_indication(log, message)
+
+        self.assertIsNone(fallbacks_for)
+
     def test_strip_fallback(self):
         fallbacks_for: FallbacksForT = {
             "urn:xmpp:test:1": {
@@ -96,6 +110,13 @@ class TestFallback(StanzaHandlerTest):
             fallbacks_for, {"urn:xmpp:test:0", "urn:xmpp:test:2"}, "en", text
         )
         self.assertEqual(stripped_text, "")
+
+        text = "> Short text"
+
+        # One Range is bigger then the text, ignore fallback
+        stripped_text = strip_fallback(fallbacks_for, {"urn:xmpp:test:0"}, None, text)
+
+        self.assertEqual(stripped_text, text)
 
     def test_body_with_fallback(self):
         text = "> Anna wrote:\n> Hi, how are you?\nGreat"
