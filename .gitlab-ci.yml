@@ -38,7 +38,7 @@ test-pyright:
   rules:
     - when: always
   script:
-    - pip install git+https://github.com/pygobject/pygobject-stubs.git
+    - pip install pygobject-stubs==2.16.0
     - pyright --version
     - pyright
   interruptible: true
