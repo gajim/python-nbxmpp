@@ -38,12 +38,11 @@ log = logging.getLogger("nbxmpp.sasl")
 
 try:
     gssapi = __import__("gssapi")
-    gssapi_available = True
+    gssapi_error = None
 except (ImportError, OSError) as error:
-    log.info("GSSAPI not available: %s", error)
-    gssapi_available = False
+    gssapi_error = error
 
-GSSAPI_AVAILABLE = gssapi_available
+GSSAPI_ERROR = gssapi_error
 
 
 class SASL:
@@ -142,7 +141,8 @@ class SASL:
             self._enabled_mechs.discard("SCRAM-SHA-256-PLUS")
             self._enabled_mechs.discard("SCRAM-SHA-512-PLUS")
 
-        if not GSSAPI_AVAILABLE:
+        if GSSAPI_ERROR is not None:
+            log.debug("Discard GSSAPI because of error: %s", GSSAPI_ERROR)
             self._enabled_mechs.discard("GSSAPI")
 
         feature_mechs = features.get_mechs()
