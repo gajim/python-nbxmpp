@@ -51,7 +51,15 @@ class OpenGraph(BaseModule):
         data = OpenGraphData()
         for field in fields(OpenGraphData):
             tag = field.name
-            node = description.getTag(tag, namespace=Namespace.OPEN_GRAPH)
-            if node is not None:
-                setattr(data, tag, node.getData())
+            if tag == "image":
+                for node in description.getTags(tag, namespace=Namespace.OPEN_GRAPH):
+                    node_data = node.getData()
+                    if node_data.startswith("data:image"):
+                        setattr(data, tag, node_data)
+                        break
+
+            else:
+                if node := description.getTag(tag, namespace=Namespace.OPEN_GRAPH):
+                    setattr(data, tag, node.getData())
+
         return data

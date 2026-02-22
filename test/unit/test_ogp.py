@@ -74,7 +74,7 @@ class OpenGraphTest(StanzaHandlerTest):
             OpenGraphData(
                 title="Page Title",
                 url="Canonical URL",
-                image="https://link.to.example.com/image.png",
+                image="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDoAAAH",
                 type="website",
                 site_name="Some Website",
                 description="Page Description",
@@ -95,7 +95,9 @@ class OpenGraphTest(StanzaHandlerTest):
         ogp = props["https://the.link.example.com/what-was-linked-to"]
         self.assertEqual(ogp.title, "Page Title")
         self.assertEqual(ogp.url, "Canonical URL")
-        self.assertEqual(ogp.image, "https://link.to.example.com/image.png")
+        self.assertEqual(
+            ogp.image, "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDoAAAH"
+        )
         self.assertEqual(ogp.type, "website")
         self.assertEqual(ogp.site_name, "Some Website")
         self.assertEqual(ogp.description, "Page Description")
@@ -111,7 +113,7 @@ _DATA = """
         <og:title>Page Title</og:title>
         <og:description>Page Description</og:description>
         <og:url>Canonical URL</og:url>
-        <og:image>https://link.to.example.com/image.png</og:image>
+        <og:image>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABDoAAAH</og:image>
         <og:type>website</og:type>
         <og:site_name>Some Website</og:site_name>
     </rdf:Description>
