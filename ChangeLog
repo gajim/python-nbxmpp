@@ -1,3 +1,15 @@
+nbxmpp 7.1.0 (22 Feb 2026)
+
+  Improvements
+
+  * SASL: Improve logging for GSSAPI errors
+  * Fallback: Be more strict in accepting ranges
+  * Add Node.topretty()
+
+  Change
+
+  * OGP: Accept only data uris as image
+
 nbxmpp 7.0.0 (13 Dec 2025)
 
   Change
