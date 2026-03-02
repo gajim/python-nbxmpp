@@ -120,6 +120,7 @@ class _Namespaces:
     OPENPGP_PK: str = "urn:xmpp:openpgp:0:public-keys"
     OPENPGP_SK: str = "urn:xmpp:openpgp:0:secret-key"
     PING: str = "urn:xmpp:ping"
+    PRE_APPROVAL: str = "urn:xmpp:features:pre-approval"
     PRIVACY: str = "jabber:iq:privacy"
     PRIVATE: str = "jabber:iq:private"
     PUBKEY_ATTEST: str = "urn:xmpp:attest:2"
