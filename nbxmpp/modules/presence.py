@@ -109,9 +109,13 @@ class BasePresence(BaseModule):
 
     @log_calls
     def subscribe(
-        self, jid: JID, status: str | None = None, nick: str | None = None
+        self,
+        jid: JID,
+        status: str | None = None,
+        nick: str | None = None,
+        preauth: str | None = None,
     ) -> None:
-        self.send(jid=jid, typ="subscribe", status=status, nick=nick)
+        self.send(jid=jid, typ="subscribe", status=status, nick=nick, preauth=preauth)
 
     def send(
         self,
@@ -127,6 +131,7 @@ class BasePresence(BaseModule):
         muc: bool = False,
         muc_history=None,
         muc_password: str | None = None,
+        preauth: str | None = None,
         extend=None,
     ) -> None:
 
@@ -155,6 +160,9 @@ class BasePresence(BaseModule):
 
             if muc_password is not None:
                 muc_x.setTagData("password", muc_password)
+
+        if preauth is not None:
+            presence.setTag(Namespace.PARS + " preauth", attrs={"token": preauth})
 
         if extend is not None:
             for node in extend:
