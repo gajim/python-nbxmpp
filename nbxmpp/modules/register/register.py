@@ -43,6 +43,19 @@ class Register(BaseModule):
         yield process_response(response)
 
     @iq_request_task
+    def send_preauth(self, token: str, jid: JID | None = None):
+        _task = yield
+
+        if jid is None:
+            jid = self._client.domain
+
+        iq = Iq("set", to=jid)
+        iq.addChild("preauth", namespace=Namespace.PARS, attrs={"token": token})
+
+        response = yield iq
+        yield process_response(response)
+
+    @iq_request_task
     def request_register_form(self, jid: JID | None = None):
         _task = yield
 

@@ -2032,6 +2032,9 @@ class Features(Node):
     def has_register(self) -> bool:
         return self.getTag("register", namespace=Namespace.REGISTER_FEATURE) is not None
 
+    def has_ibr_token(self) -> bool:
+        return self.getTag("register", namespace=Namespace.IBR_TOKEN) is not None
+
     def has_anonymous(self) -> bool:
         return "ANONYMOUS" in self.get_mechs()
 

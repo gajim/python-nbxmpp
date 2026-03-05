@@ -73,6 +73,7 @@ class _Namespaces:
     HTTPUPLOAD_0: str = "urn:xmpp:http:upload:0"
     HTTP_AUTH: str = "http://jabber.org/protocol/http-auth"
     IBB: str = "http://jabber.org/protocol/ibb"
+    IBR_TOKEN = "urn:xmpp:ibr-token:0"  # noqa: S105
     IDLE: str = "urn:xmpp:idle:1"
     JINGLE: str = "urn:xmpp:jingle:1"
     JINGLE_BYTESTREAM: str = "urn:xmpp:jingle:transports:s5b:1"
