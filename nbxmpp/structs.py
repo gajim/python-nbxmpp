@@ -1532,3 +1532,10 @@ class BodyData:
         except exceptions.FallbackLanguageError:
             log.warning("Missing fallback for language: %s", lang)
             return text
+
+
+@dataclass
+class AccountInviteResult:
+    uri: str
+    landing_url: str | None
+    expire: datetime | None
