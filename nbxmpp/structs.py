@@ -781,7 +781,7 @@ class DiscoIdentity(NamedTuple):
 
 class AdHocCommand(NamedTuple):
     jid: JID
-    node: Node
+    node: str
     name: str | None
     sessionid: str | None = None
     status: AdHocStatus | None = None
@@ -1532,3 +1532,10 @@ class BodyData:
         except exceptions.FallbackLanguageError:
             log.warning("Missing fallback for language: %s", lang)
             return text
+
+
+@dataclass
+class AccountInviteResult:
+    uri: str
+    landing_url: str | None
+    expire: datetime | None
