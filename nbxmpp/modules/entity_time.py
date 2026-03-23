@@ -8,13 +8,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import datetime as dt
 from collections.abc import Callable
 
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.date_and_time import create_tzinfo
-from nbxmpp.modules.date_and_time import get_local_time
 from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import ERR_FORBIDDEN
@@ -89,6 +89,18 @@ class EntityTime(BaseModule):
         self._log.info("Send time: %s %s", time, tzo)
         self._client.send_stanza(iq)
         raise NodeProcessed
+
+
+def get_local_time() -> tuple[str, str]:
+    utc = dt.datetime.now(tz=dt.timezone.utc)
+    utc_formated = utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+    local = utc.astimezone()
+    if local.utcoffset() == utc.utcoffset():
+        offset = "Z"
+    else:
+        offset = local.strftime("%:z")
+        offset = f"{offset[:-2]}:{offset[-2:]}"
+    return utc_formated, offset
 
 
 def _make_request(jid: JID) -> Iq:
