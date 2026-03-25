@@ -781,7 +781,7 @@ class DiscoIdentity(NamedTuple):
 
 class AdHocCommand(NamedTuple):
     jid: JID
-    node: Node
+    node: str
     name: str | None
     sessionid: str | None = None
     status: AdHocStatus | None = None
