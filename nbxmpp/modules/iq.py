@@ -10,13 +10,12 @@ from typing import TYPE_CHECKING
 
 from nbxmpp.const import IqType
 from nbxmpp.modules.base import BaseModule
-from nbxmpp.protocol import ERR_BAD_REQUEST
-from nbxmpp.protocol import Error as ErrorStanza
-from nbxmpp.protocol import Iq
-from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import IqProperties
-from nbxmpp.structs import StanzaHandler
+from nbxmpp.structs import PreparationHandler
 from nbxmpp.util import error_factory
+
+from .. import elements
+from .. import exceptions
 
 if TYPE_CHECKING:
     from nbxmpp.client import Client
@@ -28,30 +27,39 @@ class BaseIq(BaseModule):
 
         self._client = client
         self.handlers = [
-            StanzaHandler(name="iq", callback=self._process_iq_base, priority=10),
+            PreparationHandler(
+                name="iq", callback=self._process_message_preparation, priority=10
+            ),
         ]
 
-    def _process_iq_base(
-        self, _client: Client, stanza: Iq, properties: IqProperties
+    def _process_iq_preparation(
+        self, _client: Client, element: elements.Iq, properties: IqProperties
     ) -> None:
+        if jid := self._client.get_bound_jid():
+            if element.get_from() is None:
+                element.set_from(jid.new_as_bare())
+
         try:
-            properties.type = IqType(stanza.getType())
+            properties.type = IqType(element.get("type"))
         except ValueError:
-            self._log.warning("Message with invalid type: %s", stanza.getType())
-            self._log.warning(stanza)
-            self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
-            raise NodeProcessed
+            self._log.warning("Message with invalid type: %s", element.get("type"))
+            self._log.warning(element)
+            # TODO
+            # self._client.send_stanza(ErrorStanza(stanza, ERR_BAD_REQUEST))
+            raise exceptions.NodeProcessed
 
-        properties.jid = stanza.getFrom()
-        properties.id = stanza.getID()
+        # Todo: Add more IQ validation
 
-        childs = stanza.getChildren()
+        properties.jid = element.get_from()
+        properties.id = element.get("id")
+
+        childs = element.iterchildren()
         for child in childs:
-            if child.getName() != "error":
+            if child.tag != "error":
                 properties.payload = child
                 break
 
-        properties.query = stanza.getQuery()
+        properties.query = element.get_query()
 
         if properties.type.is_error:
-            properties.error = error_factory(stanza)
+            properties.error = error_factory(element)

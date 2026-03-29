@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import typing
 from typing import Any
+from typing import Literal
 from typing import NamedTuple
 from typing import TYPE_CHECKING
 
+import dataclasses
 import logging
 import random
 import time
@@ -58,19 +60,42 @@ if TYPE_CHECKING:
 log = logging.getLogger("nbxmpp.structs")
 
 
-class StanzaHandler(NamedTuple):
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class BaseHandler:
+    phase: str = dataclasses.field(init=False, default="base")
     name: str
     callback: Any
-    typ: str = ""
-    ns: str = ""
-    xmlns: str | None = None
+    type: str = ""
     priority: int = 50
 
-    def get_toplevel(self) -> str:
-        return "{%s}%s" % (self.xmlns or Namespace.CLIENT, self.name)
+    def get_details(self) -> tuple[str, str, str]:
+        return (self.phase, "{%s}%s" % (Namespace.CLIENT, self.name), self.type or "*")
 
-    def get_specific(self) -> str:
-        return "{%s}%s" % (self.typ or "*", self.ns or "*")
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class PreparationHandler(BaseHandler):
+    phase: str = dataclasses.field(init=False, default="preparation")
+    name: Literal["iq", "message", "presence"]
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class DecryptionHandler(BaseHandler):
+    phase: str = dataclasses.field(init=False, default="decryption")
+    name: Literal["iq", "message", "presence"]
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
+class StanzaHandler(BaseHandler):
+    phase: str = dataclasses.field(init=False, default="stanza")
+    ns: str = ""
+    xmlns: str | None = None
+
+    def get_details(self) -> tuple[str, str, str]:
+        return (
+            self.phase,
+            "{%s}%s" % (self.xmlns or Namespace.CLIENT, self.name),
+            "{%s}%s" % (self.type or "*", self.ns or "*"),
+        )
 
 
 class CommonResult(NamedTuple):
@@ -1091,7 +1116,6 @@ class Properties:
 
 @dataclass
 class MessageProperties:
-    own_jid: JID
     carbon: CarbonData | None = None
     type: MessageType = MessageType.NORMAL
     id: str | None = None
@@ -1286,7 +1310,6 @@ class MessageProperties:
 
 @dataclass
 class IqProperties:
-    own_jid: JID
     type: IqType | None = None
     jid: JID | None = None
     id: str | None = None
@@ -1334,7 +1357,6 @@ class BlockingProperties(IqPropertiesBase):
 
 @dataclass
 class PresenceProperties:
-    own_jid: JID
     type: PresenceType | None = None
     priority: int | None = None
     show: PresenceShow | None = None

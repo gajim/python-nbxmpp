@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 
 import datetime as dt
 
-from nbxmpp import Namespace
 from nbxmpp import Node
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.date_and_time import parse_datetime
+from nbxmpp.namespaces import Namespace
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import RetractionData
 from nbxmpp.structs import StanzaHandler

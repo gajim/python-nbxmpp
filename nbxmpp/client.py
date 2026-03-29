@@ -24,6 +24,8 @@ from nbxmpp.addresses import ServerAddress
 from nbxmpp.addresses import ServerAddresses
 from nbxmpp.const import ConnectionProtocol
 from nbxmpp.const import ConnectionType
+from nbxmpp.const import ErrorCondition
+from nbxmpp.const import ErrorType
 from nbxmpp.const import Mode
 from nbxmpp.const import StreamError
 from nbxmpp.const import StreamState
@@ -198,6 +200,7 @@ class Client(Observable):
 
         self._dispatcher = Dispatcher(self)
         self._dispatcher.subscribe("before-dispatch", self._on_before_dispatch)
+        self._dispatcher.subscribe("iq-not-processed", self._on_iq_not_processed)
         self._dispatcher.subscribe("parsing-error", self._on_parsing_error)
         self._dispatcher.subscribe("stream-end", self._on_stream_end)
         self._dispatcher.subscribe("stream-start", self._on_stream_start)
@@ -227,12 +230,10 @@ class Client(Observable):
 
     @property
     def resumeable(self) -> bool:
-        assert self._smacks is not None
         return self._smacks.resumeable
 
     @property
     def sm_supported(self) -> bool:
-        assert self._smacks is not None
         return self._smacks.sm_supported
 
     @property
@@ -579,7 +580,6 @@ class Client(Observable):
 
         if not immediate:
             self._stream_close_initiated = True
-            assert self._smacks is not None
             self._smacks.close_session()
             self._end_stream()
             self._con.shutdown_output()
@@ -651,7 +651,6 @@ class Client(Observable):
             self.state = StreamState.DISCONNECTING
             self._remove_ping_timer()
             self._cancel_ping_task()
-            assert self._smacks is not None
             self._smacks.close_session()
             self._end_stream()
             self._con.shutdown_output()
@@ -802,9 +801,21 @@ class Client(Observable):
         self.notify("stanza-sent", data)
 
     def _on_before_dispatch(
-        self, _dispatcher: Dispatcher, _signal_name: str, data: Any
+        self, _dispatcher: Dispatcher, _signal_name: str, element: elements.Base
     ) -> None:
-        self.notify("stanza-received", data)
+        self._smacks.count_incoming(element.localname)
+        self.notify("stanza-received", element)
+
+    def _on_iq_not_processed(
+        self, _dispatcher: Dispatcher, _signal_name: str, element: elements.Iq
+    ) -> None:
+        self.send_stanza(
+            element.make_error(
+                ErrorType.CANCEL,
+                ErrorCondition.FEATURE_NOT_IMPLEMENTED,
+                Namespace.XMPP_STANZAS,
+            )
+        )
 
     def _on_data_received(
         self, _connection: Connection, _signal_name: str, data: str
@@ -839,7 +850,7 @@ class Client(Observable):
 
     def send_stanza(
         self,
-        stanza: Protocol | Any,
+        stanza: elements.Stanza,
         now: bool = False,
         callback: Callable[..., Any] | None = None,
         timeout: int | None = None,
@@ -1149,7 +1160,7 @@ class Client(Observable):
         for task in self._tasks:
             task.cancel()
         self._remove_ping_timer()
-        self._smacks = None
+        del self._smacks
         self._sasl = None
         self._dispatcher.cleanup()
         del self._dispatcher

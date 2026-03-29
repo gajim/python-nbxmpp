@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import typing
 from typing import Any
-from typing import cast
+from typing import Literal
 
 import inspect
 import logging
@@ -32,29 +32,21 @@ from xml.parsers.expat import ExpatError
 
 from gi.repository import GLib
 
-from nbxmpp.const import ErrorCondition
-from nbxmpp.const import ErrorType
-from nbxmpp.elements import Stanza
-from nbxmpp.exceptions import InvalidFrom
-from nbxmpp.exceptions import InvalidJid
-from nbxmpp.exceptions import InvalidStanza
-from nbxmpp.exceptions import NodeProcessed
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
-from nbxmpp.modules.misc import unwrap_carbon
-from nbxmpp.modules.misc import unwrap_mam
-from nbxmpp.namespaces import Namespace
 from nbxmpp.parser import BaseParser
 from nbxmpp.parser import get_stream_parser
+from nbxmpp.structs import BaseHandler
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import Properties
-from nbxmpp.structs import StanzaHandler
 from nbxmpp.util import get_child_namespaces
 from nbxmpp.util import LogAdapter
 from nbxmpp.util import Observable
 
 from . import elements
+from . import exceptions
 
 if typing.TYPE_CHECKING:
     from nbxmpp.client import Client
@@ -65,20 +57,21 @@ IdCallbackDictT = dict[
 ]
 
 TimeoutDictT = dict[str, tuple[Callable[..., Any], float, dict[str, Any] | None]]
+PhaseT = Literal["preparation", "decryption", "stanza"]
 
 log = logging.getLogger("nbxmpp.dispatcher")
 
 
 class Dispatcher(Observable):
     """
-    Dispatches stanzas to handlers
+    Dispatches XMPP stream elements to handlers
 
     Signals:
         before-dispatch
+        iq-not-processed
         parsing-error
-        stream-end
         stream-start
-
+        stream-end
     """
 
     def __init__(self, client: Client):
@@ -90,27 +83,26 @@ class Dispatcher(Observable):
 
         self._log = LogAdapter(log, {"context": client.log_context})
 
-        self._handlers: dict[str, dict[str, list[StanzaHandler]]] = defaultdict(
-            lambda: defaultdict(list)
+        self._handlers: dict[str, dict[str, dict[str, list[BaseHandler]]]] = (
+            defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
         )
 
         self._id_callbacks: IdCallbackDictT = {}
         self._dispatch_callback = None
         self._timeout_id = None
 
-        # self._load_modules()
+        self._account_jid: JID | None = None
 
-    def _get_module_namespace(self, path: Path) -> str:
-        new_path = path.as_posix().rsplit("/modules/", maxsplit=1)[1]
-        return new_path.replace(".py", "").replace("/", ".")
+        self._load_modules()
 
-    def _load_modules(self):
+    def _load_modules(self) -> None:
         path = Path(__file__).parent / "modules"
         for module_path in path.glob("**/*.py"):
             if module_path.name.startswith("__"):
                 continue
 
-            module_namespace = self._get_module_namespace(module_path)
+            new_path = module_path.as_posix().rsplit("/modules/", maxsplit=1)[1]
+            module_namespace = new_path.replace(".py", "").replace("/", ".")
             module = import_module(f".modules.{module_namespace}", package="nbxmpp")
 
             for _, xep_module in inspect.getmembers(module, inspect.isclass):
@@ -127,7 +119,7 @@ class Dispatcher(Observable):
             for handler in instance.handlers:
                 self.register_handler(handler)
 
-    def set_dispatch_callback(self, callback: Callable[..., Any]):
+    def set_dispatch_callback(self, callback: Callable[[elements.Base], Any]):
         self._log.info("Set dispatch callback: %s", callback)
         self._dispatch_callback = callback
 
@@ -146,7 +138,8 @@ class Dispatcher(Observable):
         self._parser.subscribe("stream-end", self._on_stream_end)
         self._parser.subscribe("element", self._on_element)
 
-    def process_data(self, data: str):
+    def process_data(self, data: str) -> None:
+        assert self._parser is not None
         # if self._client.is_websocket:
         #     stanza = Node(node=data)
         #     if is_websocket_stream_error(stanza):
@@ -163,158 +156,121 @@ class Dispatcher(Observable):
             self.notify("parsing-error", str(error))
             return
 
-    def register_handler(self, handler: StanzaHandler):
+    def register_handler(self, handler: BaseHandler) -> None:
         self._log.debug("Register handler: %s", handler)
 
-        toplevel = handler.get_toplevel()
-        specific = handler.get_specific()
+        phase, toplevel, specific = handler.get_details()
+        self._handlers[phase][toplevel][specific].append(handler)
 
-        self._handlers[toplevel][specific].append(handler)
-
-    def unregister_handler(self, handler: StanzaHandler):
+    def unregister_handler(self, handler: BaseHandler) -> None:
         self._log.debug("Unregister handler: %s", handler)
 
-        toplevel = handler.get_toplevel()
-        specific = handler.get_specific()
+        phase, toplevel, specific = handler.get_details()
 
         try:
-            self._handlers[toplevel][specific].remove(handler)
+            self._handlers[phase][toplevel][specific].remove(handler)
         except ValueError:
             self._log.warning("Failed to remove handler: %s", handler)
 
-    def _default_handler(self, stanza: Stanza):
-        if stanza.localname != "iq":
-            return
-
-        if stanza.get("type") in ("get", "set"):
-            self._client.send_stanza(
-                stanza.make_error(
-                    ErrorType.CANCEL,
-                    ErrorCondition.FEATURE_NOT_IMPLEMENTED,
-                    Namespace.XMPP_STANZAS,
-                )
-            )
-
     def _on_stream_start(
         self, _parser: BaseParser, _signal_name: str, element: elements.Base
-    ):
+    ) -> None:
         self.notify("stream-start", element)
 
     def _on_stream_end(
         self, _parser: BaseParser, _signal_name: str, element: elements.Base
-    ):
+    ) -> None:
         self._log.info("End of stream: %s", element)
         # TODO, get real error
         self.notify("stream-end", "error")
 
     def _on_element(
         self, _parser: BaseParser, _signal_name: str, element: elements.Base
-    ):
-        self.prepare_dispatch(element)
+    ) -> None:
+        self._dispatch(element)
 
-    def prepare_dispatch(self, element: elements.Base):
-        own_jid = self._client.get_bound_jid()
-        assert own_jid is not None
+    def _dispatch(self, element: elements.Base) -> None:
+        self.notify("before-dispatch", element)
 
         match element:
             case elements.Nonza():
-                self._dispatch(element, Properties())
+                pass
 
             case elements.Presence():
-                properties = PresenceProperties(own_jid)
-
-                self._dispatch(element, properties)
+                properties = PresenceProperties()
 
             case elements.Iq():
-                if element.get_from() is None:
-                    element.set_from(own_jid.new_as_bare())
-
-                properties = IqProperties(own_jid)
-
-                self._dispatch(element, properties)
+                properties = IqProperties()
 
             case elements.Message():
-                # set default type attr
-                if element.get("type") is None:
-                    element.set("type", "normal")
-
-                # https://tools.ietf.org/html/rfc6120#section-8.1.1.1
-                # If the stanza does not include a 'to' address then the client MUST
-                # treat it as if the 'to' address were included with a value of the
-                # client's full JID.
-
-                to = element.get_to()
-                if to is None:
-                    element.set_to(own_jid)
-
-                elif not to.bare_match(own_jid):
-                    self._log.warning("Message addressed to someone else: %s", element)
-                    return
-
-                if element.get_from() is None:
-                    element.set_from(own_jid.bare)
-
-                properties = MessageProperties(own_jid)
-
-                try:
-                    element, properties.carbon = unwrap_carbon(element, own_jid)
-                except (InvalidFrom, InvalidJid) as exc:
-                    self._log.warning(exc)
-                    self._log.warning(element)
-                    return
-                except NodeProcessed as exc:
-                    self._log.info(exc)
-                    return
-
-                try:
-                    element, properties.mam = unwrap_mam(element, own_jid)
-                except (InvalidStanza, InvalidJid) as exc:
-                    self._log.warning(exc)
-                    self._log.warning(element)
-                    return
-
-                self._dispatch(element, properties)
+                properties = MessageProperties()
 
             case _:
                 self._log.warning("Unknown element received")
                 self._log.warning(element)
-
-    def _dispatch(self, element: elements.Base, properties: Any):
-        self.notify("before-dispatch", element)
+                return
 
         if self._dispatch_callback is not None:
             self._dispatch_callback(element)
             return
 
-        # Count stanza
-        self._client._smacks.count_incoming(element.localname)
+        assert not isinstance(element, elements.Nonza)
 
-        callback_data = self._get_iq_callback_data(element)
-        if callback_data is not None:
-            func, user_data = callback_data
-
-            try:
-                func(self._client, element, **user_data)
-            except Exception:
-                self._log.exception("Error while handling element")
+        if not self._dispatch_phase("preparation", element, properties):
             return
 
-        handlers = self._generate_handler_chain(element)
+        if not self._dispatch_phase("decryption", element, properties):
+            return
 
-        for handler in handlers:
-            self._log.debug("Call handler: %s", handler.callback.__qualname__)
-            try:
-                handler.callback(self._client, element, properties)
-            except NodeProcessed:
-                return
-            except Exception:
-                self._log.exception("Handler exception:")
+        if isinstance(element, elements.Iq):
+            if not self._dispatch_iq_with_callback(element, properties):
                 return
 
-        # Element was not processed call default handler
+        if not self._dispatch_phase("stanza", element, properties):
+            return
+
         self._default_handler(element)
 
-    def _make_specifics(self, element: elements.Base) -> set[str]:
+    def _dispatch_phase(
+        self, phase: PhaseT, element: elements.Stanza, properties: Properties
+    ) -> bool:
+        handlers = self._generate_handler_chain(phase, element)
+
+        for handler in handlers:
+            self._log.debug(
+                "Call handler: %s / %s", phase, handler.callback.__qualname__
+            )
+            try:
+                handler.callback(self._client, element, properties)
+            except exceptions.NodeProcessed:
+                return False
+            except Exception:
+                self._log.exception("Handler exception:")
+                return False
+
+        return True
+
+    def _dispatch_iq_with_callback(self, element: elements.Iq, properties) -> bool:
+        callback_data = self._get_iq_callback_data(element)
+        if callback_data is None:
+            return True
+
+        func, user_data = callback_data
+
+        try:
+            func(self._client, element, properties, **user_data)
+        except Exception:
+            self._log.exception("Error while handling element")
+        return False
+
+    def _default_handler(self, element: elements.Stanza) -> None:
+        if not isinstance(element, elements.Iq):
+            return
+
+        if element.get("type") in ("get", "set"):
+            self.notify("iq-not-processed", element)
+
+    def _make_specifics(self, phase: PhaseT, element: elements.Base) -> set[str]:
         # Example:
         #
         # <message type="error">
@@ -334,6 +290,9 @@ class Dispatcher(Observable):
 
         specifics = {"{*}*", "{%s}*" % type_value}
 
+        if phase == "preparation":
+            return specifics
+
         namespaces = get_child_namespaces(element)
         for namespace in namespaces:
             specifics.add("{*}%s" % namespace)
@@ -341,19 +300,21 @@ class Dispatcher(Observable):
 
         return specifics
 
-    def _generate_handler_chain(self, element: elements.Base) -> list[StanzaHandler]:
-        specifics = self._make_specifics(element)
+    def _generate_handler_chain(
+        self, phase: PhaseT, element: elements.Base
+    ) -> list[BaseHandler]:
+        specifics = self._make_specifics(phase, element)
 
-        chain: list[StanzaHandler] = []
+        chain: list[BaseHandler] = []
         for specific in specifics:
-            chain += self._handlers[element.tag][specific]
+            chain += self._handlers[phase][element.tag][specific]
 
         chain.sort(key=lambda handler: handler.priority)
 
         return chain
 
     def _get_iq_callback_data(
-        self, element: elements.Base
+        self, element: elements.Iq
     ) -> tuple[Callable[..., Any], dict[str, Any]] | None:
         if element.localname != "iq":
             return None
@@ -378,14 +339,14 @@ class Dispatcher(Observable):
         func: Callable[..., Any],
         timeout: float | None = None,
         user_data: dict[str, Any] | None = None,
-    ):
+    ) -> None:
         if timeout is not None and self._timeout_id is None:
             self._log.info("Add timeout check")
             self._timeout_id = GLib.timeout_add_seconds(1, self._timeout_check)
             timeout = time.monotonic() + timeout
         self._id_callbacks[id_] = (func, timeout, user_data)
 
-    def _timeout_check(self):
+    def _timeout_check(self) -> bool:
         self._log.info("Run timeout check")
         timeouts: TimeoutDictT = {}
         for id_, data in self._id_callbacks.items():
@@ -410,20 +371,20 @@ class Dispatcher(Observable):
 
         return True
 
-    def _remove_timeout_source(self):
+    def _remove_timeout_source(self) -> None:
         if self._timeout_id is not None:
             GLib.source_remove(self._timeout_id)
             self._timeout_id = None
 
-    def remove_iq_callback(self, id_: str):
+    def remove_iq_callback(self, id_: str) -> None:
         self._id_callbacks.pop(id_, None)
 
-    def clear_iq_callbacks(self):
+    def clear_iq_callbacks(self) -> None:
         self._log.info("Clear IQ callbacks")
         self._id_callbacks.clear()
 
-    def cleanup(self):
-        self._client = cast(Client, None)
+    def cleanup(self) -> None:
+        del self._client
         self._modules = {}
 
         if self._parser is not None:

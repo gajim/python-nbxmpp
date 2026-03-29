@@ -8,15 +8,20 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from nbxmpp import elements
+from nbxmpp import exceptions
 from nbxmpp.const import MessageType
 from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.fallback import parse_fallback_indication
+from nbxmpp.modules.misc import unwrap_carbon
+from nbxmpp.modules.misc import unwrap_mam
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import BodyData
 from nbxmpp.structs import MessageProperties
+from nbxmpp.structs import PreparationHandler
 from nbxmpp.structs import StanzaHandler
 from nbxmpp.structs import StanzaIDData
 from nbxmpp.structs import XHTMLData
@@ -32,6 +37,9 @@ class BaseMessage(BaseModule):
 
         self._client = client
         self.handlers = [
+            PreparationHandler(
+                name="message", callback=self._process_message_preparation, priority=10
+            ),
             StanzaHandler(
                 name="message", callback=self._process_message_base, priority=5
             ),
@@ -40,9 +48,57 @@ class BaseMessage(BaseModule):
             ),
         ]
 
+    def _process_message_preparation(
+        self, _client: Client, element: elements.Message, properties: MessageProperties
+    ) -> None:
+        # set default type attr
+        if element.get("type") is None:
+            element.set("type", "normal")
+
+        # https://tools.ietf.org/html/rfc6120#section-8.1.1.1
+        # If the stanza does not include a 'to' address then the client MUST
+        # treat it as if the 'to' address were included with a value of the
+        # client's full JID.
+
+        own_jid = self._client.get_bound_jid()
+        assert own_jid is not None
+
+        to = element.get_to()
+        if to is None:
+            element.set_to(own_jid)
+
+        elif not to.bare_match(own_jid):
+            self._log.warning("Message addressed to someone else: %s", element)
+            return
+
+        if element.get_from() is None:
+            element.set_from(own_jid.bare)
+
+        try:
+            element, properties.carbon = unwrap_carbon(element, own_jid)
+        except (exceptions.InvalidFrom, exceptions.InvalidJid) as exc:
+            self._log.warning(exc)
+            self._log.warning(element)
+            return
+        except exceptions.NodeProcessed as exc:
+            self._log.info(exc)
+            return
+
+        try:
+            element, properties.mam = unwrap_mam(element, own_jid)
+        except (exceptions.InvalidStanza, exceptions.InvalidJid) as exc:
+            self._log.warning(exc)
+            self._log.warning(element)
+            return
+
     def _process_message_base(
         self, _client: Client, stanza: Message, properties: MessageProperties
     ) -> None:
+        # if to := stanza.get_to():
+        #     if to.bare_match(own_jid):
+        #         self._log.warning("Message addressed to someone else: %s", stanza)
+        #         raise NodeProcessed
+
         properties.type = self._parse_type(stanza)
 
         if properties.is_carbon_message and properties.carbon.is_sent:
