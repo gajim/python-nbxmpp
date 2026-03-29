@@ -72,7 +72,7 @@ def check_bidi(chars: list[str]) -> None:
 
     has_LCat = any(is_LCat(c) for c in chars)
     if has_LCat:
-        raise ValueError("L and R/AL characters must not occur in the same" " string")
+        raise ValueError("L and R/AL characters must not occur in the same string")
 
     if not is_RandALCat(chars[0]) or not is_RandALCat(chars[-1]):
         raise ValueError("R/AL string must start and end with R/AL character.")
@@ -89,8 +89,9 @@ def check_against_tables(
     violator = _check_against_tables(chars, bad_tables)
     if violator is not None:
         raise ValueError(
-            "Input contains prohibited or unassigned codepoint: "
-            "U+{:04x}".format(ord(violator))
+            "Input contains prohibited or unassigned codepoint: U+{:04x}".format(
+                ord(violator)
+            )
         )
 
 

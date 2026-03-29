@@ -4,7 +4,6 @@ from nbxmpp.simplexml import Node
 
 
 class TestNode(unittest.TestCase):
-
     def test_topretty(self):
         string = """<presence xmlns="jabber:client" xml:lang="en" to="somejid@jid.com">
   <c xmlns="http://jabber.org/protocol/caps" ver="iVeWK58IHqW8e1wc9u4OGClblVo=" />

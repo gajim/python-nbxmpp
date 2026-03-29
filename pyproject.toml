@@ -7,16 +7,17 @@ name = "nbxmpp"
 description = "XMPP Library"
 keywords = ["chat", "messaging", "im", "xmpp"]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = {text = "GPL-3.0-or-later"}
 authors = [
     {name = "Philipp Hörist", email = "philipp@hoerist.com"},
     {name = "Yann Leboulanger", email = "yann@leboulanger.org"},
 ]
 classifiers = [
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 dependencies = [
+    "lxml",
     "precis-i18n>=1.0.0",
     "packaging",
     "idna",
@@ -28,7 +29,7 @@ dynamic = ["version"]
 [dependency-groups]
 gssapi = ["gssapi"]
 dev = [
-  "black==24.10.0",
+  "lxml-stubs",
   "isort>=7.0.0",
   "pre-commit",
   "pygobject-stubs@git+https://github.com/pygobject/pygobject-stubs.git",
@@ -48,7 +49,7 @@ include = ["nbxmpp*"]
 version = {attr = "nbxmpp.__version__"}
 
 [tool.pyright]
-pythonVersion = "3.10"
+pythonVersion = "3.11"
 pythonPlatform = "All"
 typeCheckingMode = "strict"
 
@@ -96,11 +97,6 @@ include = [
   "nbxmpp/modules/vcard_avatar.py"
 ]
 
-[tool.black]
-line-length = 88
-target-version = ["py310", "py311", "py312"]
-required-version = "24.10.0"
-
 [tool.isort]
 force_alphabetical_sort_within_sections = true
 force_single_line = true
@@ -118,8 +114,7 @@ skip_gitignore = true
 
 [tool.ruff]
 line-length = 88
-
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 
@@ -250,9 +245,6 @@ exclude = [
 
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-
-[tool.ruff.lint.per-file-ignores]
-"nbxmpp/old_dispatcher.py" = ["B011", "N803"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 15

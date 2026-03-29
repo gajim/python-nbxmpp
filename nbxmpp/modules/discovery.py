@@ -13,6 +13,7 @@ import time
 
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.modules.dataforms import MultipleDataForm
@@ -21,7 +22,6 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import ERR_ITEM_NOT_FOUND
 from nbxmpp.protocol import ErrorNode
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import DiscoIdentity
 from nbxmpp.structs import DiscoInfo

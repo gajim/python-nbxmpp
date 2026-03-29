@@ -6,7 +6,6 @@ from nbxmpp.simplexml import Node
 
 
 class TestVCard4(unittest.TestCase):
-
     def test_vard4_parsing(self):
         vcard_node = Node(
             node="""

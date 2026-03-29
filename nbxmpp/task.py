@@ -99,7 +99,9 @@ def iq_request_task(func: Callable[..., T]) -> Callable[..., T]:
         if self._log.isEnabledFor(logging.INFO):  # type: ignore
             self._log.info(make_func_arguments_string(func, self, args, kwargs))  # type: ignore
         task = IqRequestTask(
-            func(self, *args, **kwargs), self._log, self._client  # type: ignore
+            func(self, *args, **kwargs),
+            self._log,
+            self._client,  # type: ignore
         )
         task.set_timeout(timeout)
         return _setup_task(task, self._client, callback, user_data)  # type: ignore

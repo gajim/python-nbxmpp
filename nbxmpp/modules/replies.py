@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import ReplyData
@@ -37,7 +37,6 @@ class Replies(BaseModule):
     def _process_message(
         self, _client: Client, stanza: Message, properties: MessageProperties
     ) -> None:
-
         reply = stanza.getTag("reply", namespace=Namespace.REPLY)
         if reply is None:
             return

@@ -25,7 +25,6 @@ def parse_fallback_indication(
     log: logging.Logger | logging.LoggerAdapter[Any],
     stanza: Message,
 ) -> FallbacksForT | None:
-
     fallbacks = stanza.getTags(
         "fallback",
         namespace=Namespace.FALLBACK,

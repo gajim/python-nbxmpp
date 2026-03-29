@@ -34,7 +34,6 @@ class BaseError(Exception):
 
 
 class StanzaError(BaseError):
-
     log_level = logging.INFO
     app_namespace = None
 
@@ -97,12 +96,10 @@ class StanzaError(BaseError):
 
 
 class PubSubStanzaError(StanzaError):
-
     app_namespace = Namespace.PUBSUB_ERROR
 
 
 class HTTPUploadStanzaError(StanzaError):
-
     app_namespace = Namespace.HTTPUPLOAD_0
 
     def get_max_file_size(self) -> float | None:
@@ -122,7 +119,6 @@ class HTTPUploadStanzaError(StanzaError):
 
 
 class MalformedStanzaError(BaseError):
-
     log_level = logging.WARNING
 
     def __init__(self, text: str, stanza: Protocol, is_fatal: bool = True) -> None:
@@ -132,7 +128,6 @@ class MalformedStanzaError(BaseError):
 
 
 class CancelledError(BaseError):
-
     log_level = logging.INFO
 
     def __init__(self) -> None:
@@ -141,7 +136,6 @@ class CancelledError(BaseError):
 
 
 class TimeoutStanzaError(BaseError):
-
     log_level = logging.INFO
 
     def __init__(self) -> None:

@@ -8,7 +8,6 @@ from nbxmpp.structs import StanzaHandler
 
 
 class AvatarTest(StanzaHandlerTest):
-
     def test_avatar_parsing(self):
         def _on_message(_con, _stanza, properties):
             info = AvatarInfo(

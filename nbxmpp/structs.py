@@ -39,6 +39,7 @@ from nbxmpp.const import PresenceShow
 from nbxmpp.const import PresenceType
 from nbxmpp.const import Role
 from nbxmpp.const import StatusCode
+from nbxmpp.jid import JID
 from nbxmpp.language import LanguageMap
 from nbxmpp.language import LanguageRange
 from nbxmpp.language import LanguageTag
@@ -48,7 +49,6 @@ from nbxmpp.modules.fallback import FallbacksForT
 from nbxmpp.modules.fallback import strip_fallback
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Protocol
 from nbxmpp.simplexml import Node
 
@@ -65,6 +65,12 @@ class StanzaHandler(NamedTuple):
     ns: str = ""
     xmlns: str | None = None
     priority: int = 50
+
+    def get_toplevel(self) -> str:
+        return "{%s}%s" % (self.xmlns or Namespace.CLIENT, self.name)
+
+    def get_specific(self) -> str:
+        return "{%s}%s" % (self.typ or "*", self.ns or "*")
 
 
 class CommonResult(NamedTuple):
@@ -744,7 +750,6 @@ class DiscoInfo(NamedTuple):
 
 
 class DiscoIdentity(NamedTuple):
-
     category: str
     type: str
     name: str | None = None
@@ -1046,7 +1051,6 @@ class HatData:
     def get_hats(
         self, language_range: Sequence[LanguageRange] | None = None
     ) -> list[Hat]:
-
         if language_range is None:
             return self._hat_map.any()
 
@@ -1322,7 +1326,6 @@ class IqPropertiesBase(typing.Protocol):
 
 
 class BlockingProperties(IqPropertiesBase):
-
     blocking: BlockingPush
 
     @property
@@ -1497,7 +1500,6 @@ class BodyData:
         fallbacks_for: FallbacksForT | None = None,
         fallback_ns: set[str] | None = None,
     ) -> None:
-
         self._body_map = LanguageMap()
         self._fallbacks_for = fallbacks_for
         self._fallback_ns = fallback_ns
@@ -1511,7 +1513,6 @@ class BodyData:
         self,
         language_range: Sequence[LanguageRange] | None,
     ) -> str:
-
         if not self._body_map:
             return ""
 

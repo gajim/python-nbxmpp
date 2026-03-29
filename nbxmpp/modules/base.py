@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 
 
 class BaseModule:
-
     _depends: dict[str, str] = {}
 
     def __init__(self, client: Client) -> None:

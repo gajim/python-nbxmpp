@@ -2,17 +2,11 @@ repos:
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.14.8
     hooks:
-      - id: ruff
+      - id: ruff-check
         exclude: ".githooks/"
+      - id: ruff-format
 
   - repo: https://github.com/pycqa/isort
     rev: 7.0.0
     hooks:
       - id: isort
-
-  - repo: https://github.com/psf/black
-    # The `refs/tags/<tag>:refs/tags/<tag>` is needed for black's required-version to work:
-    # https://github.com/psf/black/issues/2493#issuecomment-1081987650
-    rev: 'refs/tags/24.10.0:refs/tags/24.10.0'
-    hooks:
-      - id: black

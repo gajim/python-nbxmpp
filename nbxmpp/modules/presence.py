@@ -11,12 +11,12 @@ from typing import TYPE_CHECKING
 
 from nbxmpp.const import PresenceShow
 from nbxmpp.const import PresenceType
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import log_calls
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import ERR_BAD_REQUEST
 from nbxmpp.protocol import Error as ErrorStanza
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import Presence
 from nbxmpp.structs import PresenceProperties
@@ -134,7 +134,6 @@ class BasePresence(BaseModule):
         preauth: str | None = None,
         extend=None,
     ) -> None:
-
         if show is not None and show not in ("chat", "away", "xa", "dnd"):
             raise ValueError("Invalid show value: %s" % show)
 

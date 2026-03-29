@@ -14,6 +14,7 @@ from nbxmpp.const import MessageType
 from nbxmpp.const import StatusCode
 from nbxmpp.errors import is_error
 from nbxmpp.errors import StanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.modules.muc.util import build_direct_invite
@@ -35,7 +36,6 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import DataField
 from nbxmpp.protocol import DataForm
 from nbxmpp.protocol import ERR_NOT_ACCEPTABLE
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.protocol import Presence
@@ -60,7 +60,6 @@ RoleT = Literal["moderator", "participant", "visitor", "none"]
 
 
 class MUC(BaseModule):
-
     _depends = {
         "disco_info": "Discovery",
         "request_vcard": "VCardTemp",

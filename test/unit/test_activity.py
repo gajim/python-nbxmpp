@@ -7,10 +7,8 @@ from nbxmpp.structs import StanzaHandler
 
 
 class ActivityTest(StanzaHandlerTest):
-
     def test_activity_parsing(self):
         def _on_message(_con, _stanza, properties):
-
             data = ActivityData(
                 activity="relaxing", subactivity="partying", text="My nurse's birthday!"
             )

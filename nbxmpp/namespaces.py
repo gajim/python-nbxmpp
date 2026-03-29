@@ -9,7 +9,6 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class _Namespaces:
-
     ACTIVITY: str = "http://jabber.org/protocol/activity"
     ADDRESS: str = "http://jabber.org/protocol/address"
     AGENTS: str = "jabber:iq:agents"
@@ -178,7 +177,10 @@ class _Namespaces:
     VERSION: str = "jabber:iq:version"
     XHTML_IM: str = "http://jabber.org/protocol/xhtml-im"
     XHTML: str = "http://www.w3.org/1999/xhtml"
+    XML: str = "http://www.w3.org/XML/1998/namespace"
     XMPP_STREAMS: str = "urn:ietf:params:xml:ns:xmpp-streams"
+    XMPP_SASL: str = "urn:ietf:params:xml:ns:xmpp-sasl"
+    XMPP_STANZAS: str = "urn:ietf:params:xml:ns:xmpp-stanzas"
     X_OOB: str = "jabber:x:oob"
     XRD: str = "http://docs.oasis-open.org/ns/xri/xrd-1.0"
 

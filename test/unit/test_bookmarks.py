@@ -1,17 +1,15 @@
 from test.lib.util import StanzaHandlerTest
 
+from nbxmpp.jid import JID
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import JID
 from nbxmpp.structs import BookmarkData
 from nbxmpp.structs import PubSubEventData
 from nbxmpp.structs import StanzaHandler
 
 
 class BookmarkTest(StanzaHandlerTest):
-
     def test_bookmark_1_parsing(self):
         def _on_message(_con, _stanza, properties):
-
             data = [
                 BookmarkData(
                     jid=JID.from_string("theplay@conference.shakespeare.lit"),
@@ -76,7 +74,6 @@ class BookmarkTest(StanzaHandlerTest):
 
     def test_bookmark_2_parsing(self):
         def _on_message(_con, _stanza, properties):
-
             data = BookmarkData(
                 jid=JID.from_string("theplay@conference.shakespeare.lit"),
                 name="The Play's the Thing",

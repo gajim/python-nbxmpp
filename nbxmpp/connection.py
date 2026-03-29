@@ -42,7 +42,6 @@ class Connection(Observable):
         ignored_tls_errors: set[Gio.TlsCertificateFlags],
         client_cert: Any,
     ) -> None:
-
         self._log = LogAdapter(log, {"context": log_context})
 
         Observable.__init__(self, self._log)

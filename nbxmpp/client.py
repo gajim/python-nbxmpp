@@ -27,15 +27,15 @@ from nbxmpp.const import ConnectionType
 from nbxmpp.const import Mode
 from nbxmpp.const import StreamError
 from nbxmpp.const import StreamState
-from nbxmpp.dispatcher import StanzaDispatcher
+from nbxmpp.dispatcher import Dispatcher
 from nbxmpp.errors import CancelledError
 from nbxmpp.errors import StanzaError
 from nbxmpp.errors import TimeoutStanzaError
+from nbxmpp.jid import JID
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import BindRequest
 from nbxmpp.protocol import Features
 from nbxmpp.protocol import isResultNode
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Protocol
 from nbxmpp.protocol import SessionRequest
 from nbxmpp.protocol import StanzaMalformed
@@ -54,6 +54,8 @@ from nbxmpp.util import LogAdapter
 from nbxmpp.util import Observable
 from nbxmpp.util import validate_stream_header
 from nbxmpp.websocket import WebsocketConnection
+
+from . import elements
 
 if TYPE_CHECKING:
     from nbxmpp.connection import Connection
@@ -194,10 +196,11 @@ class Client(Observable):
         self._ping_source_id: int | None = None
         self._tasks: list[Task] = []
 
-        self._dispatcher = StanzaDispatcher(self)
+        self._dispatcher = Dispatcher(self)
         self._dispatcher.subscribe("before-dispatch", self._on_before_dispatch)
         self._dispatcher.subscribe("parsing-error", self._on_parsing_error)
         self._dispatcher.subscribe("stream-end", self._on_stream_end)
+        self._dispatcher.subscribe("stream-start", self._on_stream_start)
 
         self._smacks = Smacks(self)
         self._sasl = SASL(self)
@@ -624,15 +627,21 @@ class Client(Observable):
         self.disconnect()
 
     def _on_parsing_error(
-        self, _dispatcher: StanzaDispatcher, _signal_name: str, error: str | None
+        self, _dispatcher: Dispatcher, _signal_name: str, error: str | None
     ) -> None:
         if self._state == StreamState.DISCONNECTING:
             # Don't notify about parsing errors if we already ended the stream
             return
         self._disconnect_with_error(StreamError.PARSING, "parsing-error", error)
 
+    def _on_stream_start(
+        self, _dispatcher: Dispatcher, _signal_name: str, element: elements.Base
+    ):
+        self.notify("stanza-received", element)
+        self._xmpp_state_machine(element)
+
     def _on_stream_end(
-        self, _dispatcher: StanzaDispatcher, _signal_name: str, error: str | None
+        self, _dispatcher: Dispatcher, _signal_name: str, error: str | None
     ) -> None:
         if not self.has_error:
             self._set_error(StreamError.STREAM, error or "stream-end")
@@ -793,7 +802,7 @@ class Client(Observable):
         self.notify("stanza-sent", data)
 
     def _on_before_dispatch(
-        self, _dispatcher: StanzaDispatcher, _signal_name: str, data: Any
+        self, _dispatcher: Dispatcher, _signal_name: str, data: Any
     ) -> None:
         self.notify("stanza-received", data)
 
@@ -836,7 +845,6 @@ class Client(Observable):
         timeout: int | None = None,
         user_data: Any = None,
     ) -> str:
-
         if user_data is not None and not isinstance(user_data, dict):
             raise ValueError("arg user_data must be of dict type")
 
@@ -1144,5 +1152,5 @@ class Client(Observable):
         self._smacks = None
         self._sasl = None
         self._dispatcher.cleanup()
-        self._dispatcher = None
+        del self._dispatcher
         self.remove_subscriptions()

@@ -5,7 +5,7 @@ from test.lib.const import STREAM_START
 from unittest.mock import Mock
 
 from nbxmpp.dispatcher import StanzaDispatcher
-from nbxmpp.protocol import JID
+from nbxmpp.jid import JID
 
 
 class StanzaHandlerTest(unittest.TestCase):
@@ -27,7 +27,6 @@ def raise_all_exceptions(func):
     # This decorator catches all exceptions and raises them
     # after the unittest
     def func_wrapper(self, *args, **kwargs):
-
         exceptions = []
 
         def on_hook(type_, value, tback):

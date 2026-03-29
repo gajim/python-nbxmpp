@@ -17,11 +17,11 @@ from dataclasses import dataclass
 from dataclasses import field
 
 from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.simplexml import Node
@@ -150,7 +150,6 @@ def get_parameters(node: Node) -> Parameters:
 
 @dataclass
 class Parameter:
-
     name: str
     type: str
     value: str
@@ -178,7 +177,6 @@ class Parameter:
 
 @dataclass
 class MultiParameter:
-
     name: str
     type: str
     values: set[str]
@@ -216,70 +214,60 @@ class MultiParameter:
 
 @dataclass
 class LanguageParameter(Parameter):
-
     name: str = field(default="language", init=False)
     type: str = field(default="language-tag", init=False)
 
 
 @dataclass
 class PrefParameter(Parameter):
-
     name: str = field(default="pref", init=False)
     type: str = field(default="integer", init=False)
 
 
 @dataclass
 class AltidParameter(Parameter):
-
     name: str = field(default="altid", init=False)
     type: str = field(default="text", init=False)
 
 
 @dataclass
 class PidParameter(MultiParameter):
-
     name: str = field(default="pid", init=False)
     type: str = field(default="text", init=False)
 
 
 @dataclass
 class TypeParameter(MultiParameter):
-
     name: str = field(default="type", init=False)
     type: str = field(default="text", init=False)
 
 
 @dataclass
 class MediatypeParameter(Parameter):
-
     name: str = field(default="mediatype", init=False)
     type: str = field(default="text", init=False)
 
 
 @dataclass
 class CalscaleParameter(Parameter):
-
     name: str = field(default="calscale", init=False)
     type: str = field(default="text", init=False)
 
 
 @dataclass
 class SortasParameter(MultiParameter):
-
     name: str = field(default="sort-as", init=False)
     type: str = field(default="text", init=False)
 
 
 @dataclass
 class GeoParameter(Parameter):
-
     name: str = field(default="geo", init=False)
     type: str = field(default="uri", init=False)
 
 
 @dataclass
 class TzParameter:
-
     name: str = field(default="tz", init=False)
     value_type: str
     value: str
@@ -370,7 +358,6 @@ PARAMETER_CLASSES = {
 
 @dataclass
 class UriProperty:
-
     name: str
     value: str
     parameters: Parameters = field(default_factory=Parameters)
@@ -401,14 +388,11 @@ class UriProperty:
         return not self.value
 
     def copy(self) -> UriProperty:
-        return self.__class__(
-            value=self.value, parameters=self.parameters.copy()
-        )  # type: ignore
+        return self.__class__(value=self.value, parameters=self.parameters.copy())  # type: ignore
 
 
 @dataclass
 class TextProperty:
-
     name: str
     value: str
     parameters: Parameters = field(default_factory=Parameters)
@@ -439,14 +423,11 @@ class TextProperty:
         return not self.value
 
     def copy(self) -> TextProperty:
-        return self.__class__(
-            value=self.value, parameters=self.parameters.copy()
-        )  # type: ignore
+        return self.__class__(value=self.value, parameters=self.parameters.copy())  # type: ignore
 
 
 @dataclass
 class TextListProperty:
-
     name: str
     values: list[str]
     parameters: Parameters = field(default_factory=Parameters)
@@ -488,7 +469,6 @@ class TextListProperty:
 
 @dataclass
 class MultipleValueProperty:
-
     name: str
     value_type: str
     value: str
@@ -528,13 +508,11 @@ class MultipleValueProperty:
 
 @dataclass
 class SourceProperty(UriProperty):
-
     name: str = field(default="source", init=False)
 
 
 @dataclass
 class KindProperty(TextProperty):
-
     name: str = field(default="kind", init=False)
 
     @classmethod
@@ -557,13 +535,11 @@ class KindProperty(TextProperty):
 
 @dataclass
 class FnProperty(TextProperty):
-
     name: str = field(default="fn", init=False)
 
 
 @dataclass
 class NProperty:
-
     name: str = field(default="n", init=False)
     surname: list[str] = field(default_factory=list)
     given: list[str] = field(default_factory=list)
@@ -618,31 +594,26 @@ class NProperty:
 
 @dataclass
 class NicknameProperty(TextListProperty):
-
     name: str = field(default="nickname", init=False)
 
 
 @dataclass
 class PhotoProperty(UriProperty):
-
     name: str = field(default="photo", init=False)
 
 
 @dataclass
 class BDayProperty(MultipleValueProperty):
-
     name: str = field(default="bday", init=False)
 
 
 @dataclass
 class AnniversaryProperty(MultipleValueProperty):
-
     name: str = field(default="anniversary", init=False)
 
 
 @dataclass
 class GenderProperty:
-
     name: str = field(default="gender", init=False)
     sex: str | None = None
     identity: str | None = None
@@ -693,7 +664,6 @@ class PronounsProperty(TextProperty):
 
 @dataclass
 class AdrProperty:
-
     name: str = field(default="adr", init=False)
     pobox: list[str] = field(default_factory=list)
     ext: list[str] = field(default_factory=list)
@@ -762,25 +732,21 @@ class AdrProperty:
 
 @dataclass
 class TelProperty(MultipleValueProperty):
-
     name: str = field(default="tel", init=False)
 
 
 @dataclass
 class EmailProperty(TextProperty):
-
     name: str = field(default="email", init=False)
 
 
 @dataclass
 class ImppProperty(UriProperty):
-
     name: str = field(default="impp", init=False)
 
 
 @dataclass
 class LangProperty:
-
     name: str = field(default="lang", init=False)
     value: str
     parameters: Parameters = field(default_factory=Parameters)
@@ -816,73 +782,61 @@ class LangProperty:
 
 @dataclass
 class TzProperty(MultipleValueProperty):
-
     name: str = field(default="tz", init=False)
 
 
 @dataclass
 class GeoProperty(UriProperty):
-
     name: str = field(default="geo", init=False)
 
 
 @dataclass
 class TitleProperty(TextProperty):
-
     name: str = field(default="title", init=False)
 
 
 @dataclass
 class RoleProperty(TextProperty):
-
     name: str = field(default="role", init=False)
 
 
 @dataclass
 class LogoProperty(UriProperty):
-
     name: str = field(default="logo", init=False)
 
 
 @dataclass
 class OrgProperty(TextListProperty):
-
     name: str = field(default="org", init=False)
 
 
 @dataclass
 class MemberProperty(UriProperty):
-
     name: str = field(default="member", init=False)
 
 
 @dataclass
 class RelatedProperty(MultipleValueProperty):
-
     name: str = field(default="related", init=False)
 
 
 @dataclass
 class CategoriesProperty(TextListProperty):
-
     name: str = field(default="categories", init=False)
 
 
 @dataclass
 class NoteProperty(TextProperty):
-
     name: str = field(default="note", init=False)
 
 
 @dataclass
 class ProdidProperty(TextProperty):
-
     name: str = field(default="prodid", init=False)
 
 
 @dataclass
 class RevProperty(TextProperty):
-
     name: str = field(default="rev", init=False)
 
     @classmethod
@@ -909,19 +863,16 @@ class RevProperty(TextProperty):
 
 @dataclass
 class SoundProperty(UriProperty):
-
     name: str = field(default="sound", init=False)
 
 
 @dataclass
 class UidProperty(UriProperty):
-
     name: str = field(default="uid", init=False)
 
 
 @dataclass
 class ClientpidmapProperty:
-
     name: str = field(default="clientpidmap", init=False)
     sourceid: int
     uri: str
@@ -965,31 +916,26 @@ class ClientpidmapProperty:
 
 @dataclass
 class UrlProperty(UriProperty):
-
     name: str = field(default="url", init=False)
 
 
 @dataclass
 class KeyProperty(MultipleValueProperty):
-
     name: str = field(default="key", init=False)
 
 
 @dataclass
 class FBurlProperty(UriProperty):
-
     name: str = field(default="fburl", init=False)
 
 
 @dataclass
 class CaladruriProperty(UriProperty):
-
     name: str = field(default="caladruri", init=False)
 
 
 @dataclass
 class CaluriProperty(UriProperty):
-
     name: str = field(default="calurl", init=False)
 
 
@@ -1130,7 +1076,6 @@ class VCard:
                 properties.append((group_name, group_properties))
 
             else:
-
                 property_ = get_property_from_name(child_name, child)
                 if property_ is None:
                     not_supported_nodes[None].append(child)
@@ -1204,7 +1149,6 @@ class VCard:
 
 
 class VCard4(BaseModule):
-
     _depends = {
         "publish": "PubSub",
         "request_items": "PubSub",

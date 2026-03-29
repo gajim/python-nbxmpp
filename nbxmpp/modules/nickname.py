@@ -25,7 +25,6 @@ if TYPE_CHECKING:
 
 
 class Nickname(BaseModule):
-
     _depends = {"publish": "PubSub"}
 
     def __init__(self, client: Client) -> None:

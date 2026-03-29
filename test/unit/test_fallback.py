@@ -14,7 +14,6 @@ from nbxmpp.structs import BodyData
 
 
 class TestFallback(StanzaHandlerTest):
-
     def test_parse_fallback_indication(self):
         xml = """
             <message to='anna@example.com' id='message-id2' type='groupchat'>

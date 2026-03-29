@@ -94,7 +94,7 @@ def create_tzinfo(
         return dt.timezone(dt.timedelta(hours=hours, minutes=minutes))
 
     if tz_string.lower() == "z":
-        return dt.timezone.utc
+        return dt.UTC
 
     try:
         hours, minutes = map(int, tz_string.split(":"))
@@ -170,7 +170,7 @@ def parse_datetime(
         if convert != "utc":
             raise ValueError('check_utc can only be used with convert="utc"')
 
-        if date_time.tzinfo != dt.timezone.utc:
+        if date_time.tzinfo != dt.UTC:
             return None
 
         if epoch:
@@ -178,7 +178,7 @@ def parse_datetime(
         return date_time
 
     if convert == "utc":
-        date_time = date_time.astimezone(dt.timezone.utc)
+        date_time = date_time.astimezone(dt.UTC)
         if epoch:
             return date_time.timestamp()
         return date_time

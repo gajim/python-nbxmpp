@@ -12,11 +12,11 @@ from collections.abc import Generator
 
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import process_response
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.simplexml import Node
 from nbxmpp.structs import BlockingProperties
 from nbxmpp.structs import BlockingPush
@@ -70,7 +70,6 @@ class Blocking(BaseModule):
 
     @iq_request_task
     def block(self, jids: list[JID], report: BlockingReportValues | None = None):
-
         _task = yield
 
         response = yield _make_block_request(jids, report)
@@ -87,7 +86,6 @@ class Blocking(BaseModule):
     def _process_blocking_push(
         client: Client, stanza: Iq, properties: BlockingProperties
     ) -> None:
-
         unblock = stanza.getTag("unblock", namespace=Namespace.BLOCKING)
         if unblock is not None:
             properties.blocking = _parse_push(unblock)
@@ -107,7 +105,6 @@ def _make_blocking_list_request() -> Iq:
 
 
 def _make_block_request(jids: list[JID], report: BlockingReportValues | None) -> Iq:
-
     iq = Iq("set", Namespace.BLOCKING)
     query = iq.setQuery(name="block")
     for jid in jids:

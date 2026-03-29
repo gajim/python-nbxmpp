@@ -9,13 +9,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.bookmarks.util import build_conference_node
 from nbxmpp.modules.bookmarks.util import parse_bookmark
 from nbxmpp.modules.util import finalize
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import BookmarkData
@@ -37,7 +37,6 @@ BOOKMARK_OPTIONS = {
 
 
 class NativeBookmarks(BaseModule):
-
     _depends = {
         "retract": "PubSub",
         "publish": "PubSub",

@@ -12,13 +12,13 @@ from collections.abc import Callable
 
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import ERR_FORBIDDEN
 from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
 from nbxmpp.protocol import Error
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import SoftwareVersionResult

@@ -24,7 +24,6 @@ if TYPE_CHECKING:
 
 
 class Tune(BaseModule):
-
     _depends = {"publish": "PubSub"}
 
     def __init__(self, client: Client) -> None:

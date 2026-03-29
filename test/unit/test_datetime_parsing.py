@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 from datetime import timedelta
-from datetime import timezone
+from datetime import UTC
 
 from nbxmpp.modules.date_and_time import create_tzinfo
 from nbxmpp.modules.date_and_time import LocalTimezone
@@ -9,9 +9,7 @@ from nbxmpp.modules.date_and_time import parse_datetime
 
 
 class TestDateTime(unittest.TestCase):
-
     def test_convert_to_utc(self):
-
         strings = {
             # Valid UTC strings and fractions
             "2017-11-05T01:41:20Z": 1509846080.0,
@@ -31,18 +29,12 @@ class TestDateTime(unittest.TestCase):
 
         strings2 = {
             # Valid strings with offset
-            "2017-11-05T07:41:20-05:00": datetime(
-                2017, 11, 5, 12, 41, 20, 0, timezone.utc
-            ),
-            "2017-11-05T07:41:20+05:00": datetime(
-                2017, 11, 5, 2, 41, 20, 0, timezone.utc
-            ),
-            "2017-11-05T01:41:20+00:00": datetime(
-                2017, 11, 5, 1, 41, 20, 0, timezone.utc
-            ),
-            "2017-11-05T01:41:20Z": datetime(2017, 11, 5, 1, 41, 20, 0, timezone.utc),
-            "0002-11-05T01:41:20Z": datetime(2, 11, 5, 1, 41, 20, 0, timezone.utc),
-            "9998-11-05T01:41:20Z": datetime(9998, 11, 5, 1, 41, 20, 0, timezone.utc),
+            "2017-11-05T07:41:20-05:00": datetime(2017, 11, 5, 12, 41, 20, 0, UTC),
+            "2017-11-05T07:41:20+05:00": datetime(2017, 11, 5, 2, 41, 20, 0, UTC),
+            "2017-11-05T01:41:20+00:00": datetime(2017, 11, 5, 1, 41, 20, 0, UTC),
+            "2017-11-05T01:41:20Z": datetime(2017, 11, 5, 1, 41, 20, 0, UTC),
+            "0002-11-05T01:41:20Z": datetime(2, 11, 5, 1, 41, 20, 0, UTC),
+            "9998-11-05T01:41:20Z": datetime(9998, 11, 5, 1, 41, 20, 0, UTC),
             "0001-11-05T01:41:20Z": None,
             "9999-11-05T01:41:20Z": None,
         }
@@ -56,18 +48,15 @@ class TestDateTime(unittest.TestCase):
             self.assertEqual(result, expected_value)
 
     def test_convert_to_local(self):
-
         strings = {
             # Valid UTC strings and fractions
-            "2017-11-05T01:41:20Z": datetime(2017, 11, 5, 1, 41, 20, 0, timezone.utc),
-            "2017-11-05T01:41:20.123Z": datetime(
-                2017, 11, 5, 1, 41, 20, 123000, timezone.utc
-            ),
+            "2017-11-05T01:41:20Z": datetime(2017, 11, 5, 1, 41, 20, 0, UTC),
+            "2017-11-05T01:41:20.123Z": datetime(2017, 11, 5, 1, 41, 20, 123000, UTC),
             "2017-11-05T01:41:20.123123123+00:00": datetime(
-                2017, 11, 5, 1, 41, 20, 123123, timezone.utc
+                2017, 11, 5, 1, 41, 20, 123123, UTC
             ),
             "2017-11-05T01:41:20.123123123123123-00:00": datetime(
-                2017, 11, 5, 1, 41, 20, 123123, timezone.utc
+                2017, 11, 5, 1, 41, 20, 123123, UTC
             ),
             # Valid strings with offset
             "2017-11-05T01:41:20-05:00": datetime(
@@ -83,7 +72,6 @@ class TestDateTime(unittest.TestCase):
             self.assertEqual(result, expected_value.astimezone(LocalTimezone()))
 
     def test_no_convert(self):
-
         strings = {
             # Valid UTC strings and fractions
             "2017-11-05T01:41:20Z": timedelta(0),
@@ -101,7 +89,6 @@ class TestDateTime(unittest.TestCase):
             self.assertEqual(result.utcoffset(), expected_value)
 
     def test_check_utc(self):
-
         strings = {
             # Valid UTC strings and fractions
             "2017-11-05T01:41:20Z": 1509846080.0,

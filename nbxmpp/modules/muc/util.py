@@ -12,11 +12,11 @@ from dataclasses import dataclass
 
 from nbxmpp.const import Affiliation
 from nbxmpp.const import Role
+from nbxmpp.jid import JID
 from nbxmpp.modules.vcard_temp import VCard
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import InvalidJid
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.simplexml import Node

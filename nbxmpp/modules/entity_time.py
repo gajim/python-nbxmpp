@@ -13,6 +13,7 @@ from collections.abc import Callable
 
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.date_and_time import create_tzinfo
 from nbxmpp.modules.date_and_time import parse_datetime
@@ -21,7 +22,6 @@ from nbxmpp.protocol import ERR_FORBIDDEN
 from nbxmpp.protocol import ERR_SERVICE_UNAVAILABLE
 from nbxmpp.protocol import Error
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import NodeProcessed
 from nbxmpp.structs import IqProperties
 from nbxmpp.structs import StanzaHandler
@@ -92,7 +92,7 @@ class EntityTime(BaseModule):
 
 
 def get_local_time() -> tuple[str, str]:
-    utc = dt.datetime.now(tz=dt.timezone.utc)
+    utc = dt.datetime.now(tz=dt.UTC)
     utc_formated = utc.strftime("%Y-%m-%dT%H:%M:%SZ")
     local = utc.astimezone()
     if local.utcoffset() == utc.utcoffset():

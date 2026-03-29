@@ -31,7 +31,6 @@ if TYPE_CHECKING:
 
 
 class OMEMO(BaseModule):
-
     _depends = {
         "publish": "PubSub",
         "request_items": "PubSub",

@@ -24,7 +24,6 @@ if TYPE_CHECKING:
 
 
 class Location(BaseModule):
-
     _depends = {"publish": "PubSub"}
 
     def __init__(self, client: Client) -> None:

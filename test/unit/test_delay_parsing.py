@@ -5,9 +5,7 @@ from nbxmpp.protocol import Node
 
 
 class TestHelpers(unittest.TestCase):
-
     def test_parse_delay(self):
-
         node = """
         <message>
             <delay xmlns='urn:xmpp:delay' from='capulet.com' stamp='2002-09-10T23:08:25Z' />

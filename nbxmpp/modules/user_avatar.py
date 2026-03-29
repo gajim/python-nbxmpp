@@ -16,11 +16,11 @@ from dataclasses import dataclass
 from dataclasses import field
 
 from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import NodeProcessed
@@ -35,7 +35,6 @@ if TYPE_CHECKING:
 
 
 class UserAvatar(BaseModule):
-
     _depends = {
         "publish": "PubSub",
         "request_item": "PubSub",
@@ -132,7 +131,6 @@ class UserAvatar(BaseModule):
 
     @iq_request_task
     def set_avatar(self, avatar: Avatar | None, public: bool = False):
-
         task = yield
 
         access_model = "open" if public else "presence"
@@ -366,7 +364,6 @@ class Avatar:
         url: str | None = None,
         make_default: bool = True,
     ) -> None:
-
         sha = hashlib.sha1(data).hexdigest()
         info = AvatarInfo(
             bytes=len(data), id=sha, type=type_, height=height, width=width, url=url

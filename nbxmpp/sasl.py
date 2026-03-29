@@ -267,7 +267,6 @@ class SASL:
 
 
 def get_initiate_nonza(ns: str, mechanism: str, data: str | None) -> Node:
-
     if ns == Namespace.SASL:
         node = Node("auth", attrs={"xmlns": ns, "mechanism": mechanism})
         if data is not None:
@@ -292,7 +291,6 @@ def get_success_data(stanza: Protocol, ns: str) -> str | None:
 
 
 class BaseMechanism:
-
     name: str
 
     def __init__(self, username: str, password: str, domain: str) -> None:
@@ -311,7 +309,6 @@ class BaseMechanism:
 
 
 class PLAIN(BaseMechanism):
-
     name = "PLAIN"
 
     def get_initiate_data(self) -> str:
@@ -324,7 +321,6 @@ class PLAIN(BaseMechanism):
 
 
 class EXTERNAL(BaseMechanism):
-
     name = "EXTERNAL"
 
     def get_initiate_data(self) -> str:
@@ -332,7 +328,6 @@ class EXTERNAL(BaseMechanism):
 
 
 class ANONYMOUS(BaseMechanism):
-
     name = "ANONYMOUS"
 
     def get_initiate_data(self) -> None:
@@ -340,7 +335,6 @@ class ANONYMOUS(BaseMechanism):
 
 
 class GSSAPI(BaseMechanism):
-
     # See https://tools.ietf.org/html/rfc4752#section-3.1
 
     name = "GSSAPI"
@@ -376,7 +370,6 @@ class GSSAPI(BaseMechanism):
 
 
 class SCRAM(BaseMechanism):
-
     name = ""
     _hash_method = ""
 
@@ -492,35 +485,29 @@ class SCRAM(BaseMechanism):
 
 
 class SCRAM_SHA_1(SCRAM):
-
     name = "SCRAM-SHA-1"
     _hash_method = "sha1"
 
 
 class SCRAM_SHA_1_PLUS(SCRAM_SHA_1):
-
     name = "SCRAM-SHA-1-PLUS"
 
 
 class SCRAM_SHA_256(SCRAM):
-
     name = "SCRAM-SHA-256"
     _hash_method = "sha256"
 
 
 class SCRAM_SHA_256_PLUS(SCRAM_SHA_256):
-
     name = "SCRAM-SHA-256-PLUS"
 
 
 class SCRAM_SHA_512(SCRAM):
-
     name = "SCRAM-SHA-512"
     _hash_method = "sha512"
 
 
 class SCRAM_SHA_512_PLUS(SCRAM_SHA_512):
-
     name = "SCRAM-SHA-512-PLUS"
 
 

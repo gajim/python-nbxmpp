@@ -29,11 +29,11 @@ from packaging.version import Version
 
 from nbxmpp.const import GIO_TLS_ERRORS
 from nbxmpp.const import GLIB_VERSION
+from nbxmpp.jid import JID
 from nbxmpp.modules.dataforms import DataForm
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import DiscoInfoMalformed
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import StanzaMalformed
 from nbxmpp.protocol import StreamHeader
 from nbxmpp.protocol import WebsocketOpenHeader
@@ -47,6 +47,8 @@ from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import Properties
 from nbxmpp.third_party import hsluv
+
+from . import elements
 
 if TYPE_CHECKING:
     from nbxmpp.protocol import Protocol
@@ -231,7 +233,7 @@ def compute_caps_hash(info: DiscoInfo, compare: bool = True) -> str:
 
         values = form_type.getTags("value")
         if len(values) != 1:
-            raise DiscoInfoMalformed("Form should have exactly " "one FORM_TYPE value")
+            raise DiscoInfoMalformed("Form should have exactly one FORM_TYPE value")
         value = values[0].getData()
 
         dataforms.append(dataform)
@@ -445,8 +447,7 @@ class Observable:
             func(self, signal_name, *args, **kwargs)
 
 
-class LogAdapter(LoggerAdapter):
-
+class LogAdapter(LoggerAdapter[Any]):
     def set_context(self, context: str) -> None:
         self.extra["context"] = context
 
@@ -473,3 +474,7 @@ def parse_websocket_uri(data: str) -> str:
                 raise ValueError("No href attr found")
             return href
     raise ValueError("no websocket uri found")
+
+
+def get_child_namespaces(element: elements.Base) -> set[str]:
+    return {ele.namespace for ele in element.iterchildren()}

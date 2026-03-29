@@ -1,60 +1,57 @@
-# Copyright (C) 2018 Philipp Hörist <philipp AT hoerist.com>
-#
-# This file is part of nbxmpp.
-#
-# SPDX-License-Identifier: GPL-3.0-or-later
+from __future__ import annotations
+
+from typing import cast
 
 import logging
 
+from nbxmpp.exceptions import InvalidFrom
+from nbxmpp.exceptions import InvalidStanza
+from nbxmpp.exceptions import NodeProcessed
+from nbxmpp.jid import JID
 from nbxmpp.modules.delay import parse_delay
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import InvalidFrom
-from nbxmpp.protocol import InvalidStanza
-from nbxmpp.protocol import JID
-from nbxmpp.protocol import Message
-from nbxmpp.protocol import NodeProcessed
-from nbxmpp.protocol import Protocol
 from nbxmpp.structs import CarbonData
 from nbxmpp.structs import MAMData
+
+from .. import elements
 
 log = logging.getLogger("nbxmpp.m.misc")
 
 
-def unwrap_carbon(
-    stanza: Protocol, own_jid: JID
-) -> tuple[Message | Protocol, CarbonData | None]:
-    carbon = stanza.getTag("received", namespace=Namespace.CARBONS)
+def unwrap_carbon(stanza: elements.Message, own_jid: JID):
+    carbon = stanza.find_tag("received", namespace=Namespace.CARBONS)
     if carbon is None:
-        carbon = stanza.getTag("sent", namespace=Namespace.CARBONS)
+        carbon = stanza.find_tag("sent", namespace=Namespace.CARBONS)
         if carbon is None:
             return stanza, None
 
     # Carbon must be from our bare jid
-    if stanza.getFrom() != own_jid.new_as_bare():
-        raise InvalidFrom("Invalid from: %s" % stanza.getAttr("from"))
+    if stanza.get_from() != own_jid.new_as_bare():
+        raise InvalidFrom("Invalid from: %s" % stanza.get("from"))
 
-    forwarded = carbon.getTag("forwarded", namespace=Namespace.FORWARD)
-    message = Message(node=forwarded.getTag("message"))
+    forwarded = carbon.find_tag("forwarded", namespace=Namespace.FORWARD)
+    message = forwarded.find_tag("message")
 
-    type_ = carbon.getName()
+    message = cast(elements.Message, message)
+    type_ = carbon.localname
 
     # Fill missing to/from
-    to = message.getTo()
+    to = message.get_to()
     if to is None:
-        message.setTo(own_jid.bare)
+        message.set_to(own_jid.bare)
 
-    frm = message.getFrom()
+    frm = message.get_from()
     if frm is None:
-        message.setFrom(own_jid.bare)
+        message.set_from(own_jid.bare)
 
     if type_ == "received":
-        if message.getFrom().bare_match(own_jid):
+        if message.get_from().bare_match(own_jid):
             # Drop 'received' Carbons from ourself, we already
             # got the message with the 'sent' Carbon or via the
             # message itself
             raise NodeProcessed('Drop "received"-Carbon from ourself')
 
-        if message.getTag("x", namespace=Namespace.MUC_USER) is not None:
+        if message.find_tag("x", namespace=Namespace.MUC_USER) is not None:
             # A MUC broadcasts messages sent to us to all resources
             # there is no need to process the received carbon
             raise NodeProcessed('Drop MUC-PM "received"-Carbon')
@@ -63,41 +60,43 @@ def unwrap_carbon(
 
 
 def unwrap_mam(
-    stanza: Protocol, own_jid: JID
-) -> tuple[Message | Protocol, MAMData | None]:
-    result = stanza.getTag("result", namespace=Namespace.MAM_2)
+    stanza: elements.Message, own_jid: JID
+) -> tuple[elements.Message, MAMData | None]:
+    result = stanza.find_tag("result", namespace=Namespace.MAM_2)
     if result is None:
-        result = stanza.getTag("result", namespace=Namespace.MAM_1)
+        result = stanza.find_tag("result", namespace=Namespace.MAM_1)
         if result is None:
             return stanza, None
 
-    query_id = result.getAttr("queryid")
+    query_id = result.get("queryid")
     if query_id is None:
         log.warning("No queryid on MAM message")
         log.warning(stanza)
         raise InvalidStanza
 
-    id_ = result.getAttr("id")
+    id_ = result.get("id")
     if id_ is None:
         log.warning("No id on MAM message")
         log.warning(stanza)
         raise InvalidStanza
 
-    forwarded = result.getTag("forwarded", namespace=Namespace.FORWARD)
-    message = Message(node=forwarded.getTag("message"))
+    forwarded = result.find_tag("forwarded", namespace=Namespace.FORWARD)
+    message = forwarded.find_tag("message")
+
+    message = cast(elements.Message, message)
 
     # Fill missing to/from
-    to = message.getTo()
+    to = message.get_to()
     if to is None:
-        message.setTo(own_jid.bare)
+        message.set_to(own_jid.bare)
 
-    frm = message.getFrom()
+    frm = message.get_from()
     if frm is None:
-        message.setFrom(own_jid.bare)
+        message.set_from(own_jid.bare)
 
     # Timestamp parsing
     # Most servers dont set the 'from' attr, so we cant check for it
-    delay_timestamp = parse_delay(forwarded, epoch=True)
+    delay_timestamp = parse_delay(forwarded)
     if delay_timestamp is None:
         log.warning("No timestamp on MAM message")
         log.warning(stanza)
@@ -106,8 +105,8 @@ def unwrap_mam(
     return message, MAMData(
         id=id_,
         query_id=query_id,
-        archive=stanza.getFrom(),
-        namespace=result.getNamespace(),
+        archive=stanza.get_from(),
+        namespace=result.namespace,
         timestamp=delay_timestamp,
     )
 

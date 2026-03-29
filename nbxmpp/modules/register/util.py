@@ -7,6 +7,7 @@
 from nbxmpp.const import REGISTER_FIELDS
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.bits_of_binary import parse_bob_data
 from nbxmpp.modules.dataforms import create_field
 from nbxmpp.modules.dataforms import extend_form
@@ -14,7 +15,6 @@ from nbxmpp.modules.dataforms import FieldT
 from nbxmpp.modules.dataforms import SimpleDataForm
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Protocol
 from nbxmpp.structs import RegisterData
 

@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import NodeProcessed
@@ -118,7 +118,6 @@ class MDS(BaseModule):
         yield data
 
     def _parse_item(self, item: Node) -> MDSData:
-
         item_id = item.getAttr("id")
         try:
             jid = JID.from_string(item_id)

@@ -1,12 +1,11 @@
 import unittest
 
+from nbxmpp.jid import JID
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.util import error_factory
 
 
 class TestErrorParsing(unittest.TestCase):
-
     def test_error_parsing(self):
         stanza = """
         <iq from='upload.montague.tld'

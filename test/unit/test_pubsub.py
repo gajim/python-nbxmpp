@@ -6,10 +6,8 @@ from nbxmpp.structs import StanzaHandler
 
 
 class PubsubTest(StanzaHandlerTest):
-
     def test_purge_event(self):
         def _on_message(_con, _stanza, properties):
-
             pubsub_event = PubSubEventData(
                 node="princely_musings",
                 id=None,
@@ -43,7 +41,6 @@ class PubsubTest(StanzaHandlerTest):
 
     def test_delete_event(self):
         def _on_message(_con, _stanza, properties):
-
             pubsub_event = PubSubEventData(
                 node="princely_musings",
                 id=None,
@@ -77,7 +74,6 @@ class PubsubTest(StanzaHandlerTest):
 
     def test_retracted_event(self):
         def _on_message(_con, _stanza, properties):
-
             pubsub_event = PubSubEventData(
                 node="princely_musings",
                 id="ae890ac52d0df67ed7cfdf51b644e901",

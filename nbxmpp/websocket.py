@@ -98,7 +98,6 @@ class WebsocketConnection(Connection):
         certificate: Gio.TlsCertificate,
         errors: Gio.TlsCertificateFlags,
     ) -> bool:
-
         self._peer_certificate = certificate
         self._peer_certificate_errors = convert_tls_error_flags(errors)
 
@@ -115,7 +114,6 @@ class WebsocketConnection(Connection):
         event: Gio.SocketClientEvent,
         connection: Gio.TlsConnection,
     ) -> None:
-
         if event == Gio.SocketClientEvent.TLS_HANDSHAKED:
             self._tls_con = connection
 

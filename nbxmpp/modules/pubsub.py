@@ -17,6 +17,7 @@ from nbxmpp.const import MessageType
 from nbxmpp.errors import is_error
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import PubSubStanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.dataforms import extend_form
 from nbxmpp.modules.util import finalize
@@ -24,7 +25,6 @@ from nbxmpp.modules.util import process_response
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import Node
 from nbxmpp.structs import CommonResult
@@ -137,7 +137,6 @@ class PubSub(BaseModule):
         jid: JID | None = None,
         force_node_options: bool = False,
     ):
-
         _task = yield
 
         request = _make_publish_request(node, item, id_, options, jid)

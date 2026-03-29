@@ -76,7 +76,6 @@ class Moderation(BaseModule):
     def _process_moderation_1_message(
         self, _client: Client, stanza: Message, properties: MessageProperties
     ) -> None:
-
         retract, is_tombstone = _get_retract_element(stanza, properties)
         if retract is None:
             return
@@ -119,7 +118,6 @@ class Moderation(BaseModule):
     def _process_moderation_0_tombstone_message(
         self, _client: Client, stanza: Message, properties: MessageProperties
     ) -> None:
-
         if not properties.is_mam_message:
             return
 
@@ -134,7 +132,6 @@ class Moderation(BaseModule):
     def _process_moderation_0_message(
         self, _client: Client, stanza: Message, properties: MessageProperties
     ) -> None:
-
         if not properties.jid.is_bare:
             return
 
@@ -159,7 +156,6 @@ class Moderation(BaseModule):
     def _parse_moderated_0(
         self, moderated: Node, properties: MessageProperties, stanza_id: str
     ) -> ModerationData | None:
-
         retract, is_tombstone = _get_retract_element(moderated, properties)
         if retract is None:
             self._log.warning("Failed to find <retract/ed> element")
@@ -231,7 +227,6 @@ def _parse_by_attr(moderated: Node) -> JID | None:
 def _parse_moderation_timestamp(
     retract: Node, is_tombstone: bool, properties: MessageProperties
 ) -> dt.datetime:
-
     if is_tombstone:
         stamp_attr = retract.getAttr("stamp")
         stamp = parse_datetime(stamp_attr, check_utc=True, convert="utc")
@@ -244,7 +239,7 @@ def _parse_moderation_timestamp(
     else:
         stamp = properties.timestamp
 
-    return dt.datetime.fromtimestamp(stamp, dt.timezone.utc)
+    return dt.datetime.fromtimestamp(stamp, dt.UTC)
 
 
 def _make_moderation_request_0(muc_jid: JID, stanza_id: str, reason: str | None) -> Iq:

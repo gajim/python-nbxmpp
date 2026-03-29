@@ -15,22 +15,22 @@ test-isort:
     - isort --check .
   interruptible: true
 
-test-black:
-  stage: test
-  rules:
-    - when: always
-  script:
-    - black --version
-    - black --check .
-  interruptible: true
-
-test-ruff:
+test-ruff-lint:
   stage: test
   rules:
     - when: always
   script:
     - ruff --version
-    - ruff check .
+    - ruff check
+  interruptible: true
+
+test-ruff-format:
+  stage: test
+  rules:
+    - when: always
+  script:
+    - ruff --version
+    - ruff format --diff
   interruptible: true
 
 test-pyright:

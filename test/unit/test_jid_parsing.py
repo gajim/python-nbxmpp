@@ -1,10 +1,10 @@
 import os
 import unittest
 
+from nbxmpp.jid import JID
 from nbxmpp.protocol import DomainpartByteLimit
 from nbxmpp.protocol import DomainpartNotAllowedChar
 from nbxmpp.protocol import InvalidJid
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import LocalpartByteLimit
 from nbxmpp.protocol import LocalpartNotAllowedChar
 from nbxmpp.protocol import ResourcepartByteLimit
@@ -13,7 +13,6 @@ from nbxmpp.protocol import validate_resourcepart
 
 
 class JIDParsing(unittest.TestCase):
-
     def test_valid_jids(self):
         tests = [
             "juliet@example.com",
@@ -22,12 +21,12 @@ class JIDParsing(unittest.TestCase):
             "juliet@example.com/foo@bar",
             "foo\\20bar@example.com",
             "fussball@example.com",
-            "fu\U000000DFball@example.com",
-            "\U000003C0@example.com",
-            "\U000003A3@example.com/foo",
-            "\U000003C3@example.com/foo",
-            "\U000003C2@example.com/foo",
-            "king@example.com/\U0000265A",
+            "fu\U000000dfball@example.com",
+            "\U000003c0@example.com",
+            "\U000003a3@example.com/foo",
+            "\U000003c3@example.com/foo",
+            "\U000003c2@example.com/foo",
+            "king@example.com/\U0000265a",
             "example.com",
             "example.com/foobar",
             "a.example.com/b@example.net",
@@ -58,7 +57,7 @@ class JIDParsing(unittest.TestCase):
         os.environ["NBXMPP_ENFORCE_PRECIS"] = "true"
         tests = [
             ("henry\U00002163@example.com", LocalpartNotAllowedChar),
-            ("\U0000265A@example.com", LocalpartNotAllowedChar),
+            ("\U0000265a@example.com", LocalpartNotAllowedChar),
         ]
 
         for jid, exception in tests:
@@ -133,11 +132,11 @@ class JIDParsing(unittest.TestCase):
             "juliet@example.com",
             "juliet@example.com",
             "fussball@example.com",
-            "fu\U000000DFball@example.com",
-            "\U000003C0@example.com",
-            "\U000003A3@example.com",
-            "\U000003C3@example.com",
-            "\U000003C2@example.com",
+            "fu\U000000dfball@example.com",
+            "\U000003c0@example.com",
+            "\U000003a3@example.com",
+            "\U000003c3@example.com",
+            "\U000003c2@example.com",
             "example.com",
         ]
 

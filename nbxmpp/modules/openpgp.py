@@ -14,12 +14,12 @@ import string
 import time
 
 from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.date_and_time import parse_datetime
 from nbxmpp.modules.util import finalize
 from nbxmpp.modules.util import raise_if_error
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import NodeProcessed
@@ -37,7 +37,6 @@ if TYPE_CHECKING:
 
 
 class OpenPGP(BaseModule):
-
     _depends = {
         "publish": "PubSub",
         "request_items": "PubSub",

@@ -33,7 +33,6 @@ class Retraction(BaseModule):
     def _process_message_retraction(
         self, _client: Client, stanza: Node, properties: MessageProperties
     ) -> None:
-
         retract, is_tombstone = _get_retract_element(stanza, properties)
         if retract is None:
             return
@@ -76,7 +75,6 @@ def _get_retract_element(
 def _parse_retraction_timestamp(
     retract: Node, is_tombstone: bool, properties: MessageProperties
 ) -> dt.datetime:
-
     if is_tombstone:
         stamp_attr = retract.getAttr("stamp")
         stamp = parse_datetime(stamp_attr, check_utc=True, convert="utc")
@@ -90,4 +88,4 @@ def _parse_retraction_timestamp(
     else:
         stamp = properties.timestamp
 
-    return dt.datetime.fromtimestamp(stamp, dt.timezone.utc)
+    return dt.datetime.fromtimestamp(stamp, dt.UTC)

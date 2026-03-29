@@ -7,10 +7,8 @@ from nbxmpp.structs import StanzaHandler
 
 
 class LocationTest(StanzaHandlerTest):
-
     def test_location_parsing(self):
         def _on_message(_con, _stanza, properties):
-
             data = LocationData(
                 accuracy="20",
                 alt="1609",

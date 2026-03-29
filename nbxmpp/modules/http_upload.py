@@ -10,10 +10,10 @@ from typing import TYPE_CHECKING
 
 from nbxmpp.errors import HTTPUploadStanzaError
 from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.structs import HTTPUploadData
 from nbxmpp.task import iq_request_task
 

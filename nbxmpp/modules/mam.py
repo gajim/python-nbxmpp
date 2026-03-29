@@ -12,6 +12,7 @@ import datetime as dt
 
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.errors import StanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.dataforms import create_field
 from nbxmpp.modules.dataforms import SimpleDataForm
@@ -19,7 +20,6 @@ from nbxmpp.modules.rsm import parse_rsm
 from nbxmpp.modules.util import process_response
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Node
 from nbxmpp.structs import MAMPreferencesData
 from nbxmpp.structs import MAMQueryData
@@ -47,7 +47,6 @@ class MAM(BaseModule):
         after: str | None = None,
         max_: int = 70,
     ):
-
         _task = yield
 
         response = yield _make_request(jid, queryid, start, end, with_, after, max_)

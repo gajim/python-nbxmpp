@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from nbxmpp.errors import ChangePasswordStanzaError
 from nbxmpp.errors import RegisterStanzaError
 from nbxmpp.errors import StanzaError
+from nbxmpp.jid import JID
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.register.util import _make_password_change_request
 from nbxmpp.modules.register.util import _make_password_change_with_form
@@ -20,7 +21,6 @@ from nbxmpp.modules.register.util import _parse_register_data
 from nbxmpp.modules.util import process_response
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.task import iq_request_task
 from nbxmpp.util import get_form
 

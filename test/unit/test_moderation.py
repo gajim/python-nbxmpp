@@ -2,8 +2,8 @@ import datetime
 from test.lib.util import StanzaHandlerTest
 
 from nbxmpp import Message
+from nbxmpp.jid import JID
 from nbxmpp.modules.muc.moderation import Moderation
-from nbxmpp.protocol import JID
 from nbxmpp.structs import MessageProperties
 
 

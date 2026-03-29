@@ -3,8 +3,8 @@ from test.lib.util import utc_now
 
 from nbxmpp import Message
 from nbxmpp import Namespace
+from nbxmpp.jid import JID
 from nbxmpp.modules.retraction import Retraction
-from nbxmpp.protocol import JID
 from nbxmpp.structs import MAMData
 from nbxmpp.structs import MessageProperties
 

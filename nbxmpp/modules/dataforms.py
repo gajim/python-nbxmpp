@@ -17,8 +17,8 @@ from typing import Union
 
 from collections.abc import Iterator
 
+from nbxmpp.jid import JID
 from nbxmpp.namespaces import Namespace
-from nbxmpp.protocol import JID
 from nbxmpp.simplexml import Node
 
 FieldT = Union[
@@ -130,7 +130,6 @@ class DataField(ExtendedNode):
         options: list[tuple[str, str]] | None = None,
         extend: Node | None = None,
     ) -> None:
-
         if extend is None:
             ExtendedNode.__init__(self, "field")
 

@@ -7,7 +7,6 @@ from nbxmpp.util import compute_caps_hash
 
 
 class EntityCaps(unittest.TestCase):
-
     def test_multiple_field_values(self):
         node = """
         <iq from='benvolio@capulet.lit/230193' id='disco1' to='juliet@capulet.lit/chamber' type='result'>

@@ -8,7 +8,6 @@ from nbxmpp.structs import BodyData
 
 
 class TestBody(StanzaHandlerTest):
-
     def test_body_language(self):
         text = "> Anna wrote:\n> Hi, how are you?\nGreat"
         text_de = "> Anna schrieb\n>Hallo, wie geht es dir?\nGut"

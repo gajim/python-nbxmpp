@@ -42,9 +42,9 @@ class Smacks:
         self._acked_h = 0  # Last acked stanza
 
         self._uqueue: list[Protocol] = []  # Unhandled stanzas queue
-        self._old_uqueue: list[Protocol] = (
-            []
-        )  # Unhandled stanzas queue of the last session
+        self._old_uqueue: list[
+            Protocol
+        ] = []  # Unhandled stanzas queue of the last session
 
         # Max number of stanzas in queue before making a request
         self.max_queue = 0
@@ -125,7 +125,7 @@ class Smacks:
         self._location = stanza.getAttr("location")
         self.enabled = True
         self._log.info(
-            "Received enabled, location: %s, resume supported: %s, " "session-id: %s",
+            "Received enabled, location: %s, resume supported: %s, session-id: %s",
             self._location,
             resume,
             self._session_id,

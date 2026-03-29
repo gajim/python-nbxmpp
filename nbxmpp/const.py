@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from enum import Enum
 from enum import IntEnum
+from enum import StrEnum
 from functools import total_ordering
 
 from gi.repository import Gio
@@ -443,6 +444,64 @@ class Mode(IntEnum):
         return self == Mode.ANONYMOUS_TEST
 
 
+class ErrorType(StrEnum):
+    AUTH = "auth"
+    CANCEL = "cancel"
+    CONTINUE = "continue"
+    MODIFY = "modify"
+    WAIT = "wait"
+
+
+class ErrorCondition(StrEnum):
+    ABORTED = "aborted"
+    BAD_FORMAT = "bad-format"
+    BAD_NAMESPACE_PREFIX = "bad-namespace-prefix"
+    BAD_REQUEST = "bad-request"
+    CONFLICT = "conflict"
+    CONNECTION_TIMEOUT = "connection-timeout"
+    FEATURE_NOT_IMPLEMENTED = "feature-not-implemented"
+    FORBIDDEN = "forbidden"
+    GONE = "gone"
+    HOST_GONE = "host-gone"
+    HOST_UNKNOWN = "host-unknown"
+    IMPROPER_ADDRESSING = "improper-addressing"
+    INCORRECT_ENCODING = "incorrect-encoding"
+    INTERNAL_SERVER_ERROR = "internal-server-error"
+    INVALID_AUTHZID = "invalid-authzid"
+    INVALID_FROM = "invalid-from"
+    INVALID_ID = "invalid-id"
+    INVALID_MECHANISM = "invalid-mechanism"
+    INVALID_NAMESPACE = "invalid-namespace"
+    INVALID_XML = "invalid-xml"
+    ITEM_NOT_FOUND = "item-not-found"
+    JID_MALFORMED = "jid-malformed"
+    MECHANISM_TOO_WEAK = "mechanism-too-weak"
+    NOT_ACCEPTABLE = "not-acceptable"
+    NOT_ALLOWED = "not-allowed"
+    NOT_AUTHORIZED = "not-authorized"
+    PAYMENT_REQUIRED = "payment-required"
+    POLICY_VIOLATION = "policy-violation"
+    RECIPIENT_UNAVAILABLE = "recipient-unavailable"
+    REDIRECT = "redirect"
+    REGISTRATION_REQUIRED = "registration-required"
+    REMOTE_CONNECTION_FAILED = "remote-connection-failed"
+    REMOTE_SERVER_NOT_FOUND = "remote-server-not-found"
+    REMOTE_SERVER_TIMEOUT = "remote-server-timeout"
+    RESOURCE_CONSTRAINT = "resource-constraint"
+    RESTRICTED_XML = "restricted-xml"
+    SEE_OTHER_HOST = "see-other-host"
+    SERVICE_UNAVAILABLE = "service-unavailable"
+    SUBSCRIPTION_REQUIRED = "subscription-required"
+    SYSTEM_SHUTDOWN = "system-shutdown"
+    TEMPORARY_AUTH_FAILURE = "temporary-auth-failure"
+    UNDEFINED_CONDITION = "undefined-condition"
+    UNEXPECTED_REQUEST = "unexpected-request"
+    UNSUPPORTED_ENCODING = "unsupported-encoding"
+    UNSUPPORTED_STANZA_TYPE = "unsupported-stanza-type"
+    UNSUPPORTED_VERSION = "unsupported-version"
+    XML_NOT_WELL_FORMED = "xml-not-well-formed"
+
+
 MOODS = [
     "afraid",
     "amazed",
@@ -668,6 +727,6 @@ NOT_ALLOWED_XML_CHARS = {
     "<": "&lt;",
     ">": "&gt;",
     '"': "&quot;",
-    "\x0C": "",
-    "\x1B": "",
+    "\x0c": "",
+    "\x1b": "",
 }

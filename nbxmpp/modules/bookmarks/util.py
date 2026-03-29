@@ -7,9 +7,9 @@
 import logging
 
 from nbxmpp.errors import MalformedStanzaError
+from nbxmpp.jid import JID
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Iq
-from nbxmpp.protocol import JID
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import validate_resourcepart
 from nbxmpp.structs import BookmarkData

@@ -7,10 +7,8 @@ from nbxmpp.structs import StanzaHandler
 
 
 class MoodTest(StanzaHandlerTest):
-
     def test_mood_parsing(self):
         def _on_message(_con, _stanza, properties):
-
             data = MoodData(mood="annoyed", text="curse my nurse!")
 
             pubsub_event = PubSubEventData(
