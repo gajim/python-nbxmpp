@@ -16,6 +16,7 @@ from collections.abc import ValuesView
 from dataclasses import dataclass
 from dataclasses import field
 
+from nbxmpp.errors import is_error
 from nbxmpp.errors import MalformedStanzaError
 from nbxmpp.modules.base import BaseModule
 from nbxmpp.modules.util import finalize
@@ -1207,6 +1208,7 @@ class VCard4(BaseModule):
 
     _depends = {
         "publish": "PubSub",
+        "get_access_model": "PubSub",
         "request_items": "PubSub",
     }
 
@@ -1264,10 +1266,14 @@ class VCard4(BaseModule):
         yield _get_vcard(items[0])
 
     @iq_request_task
-    def set_vcard(self, vcard: VCard, public: bool = False):
+    def set_vcard(self, vcard: VCard, public: bool | None = None):
         task = yield
 
-        access_model = "open" if public else "presence"
+        if public is not None:
+            access_model = "open" if public else "presence"
+        else:
+            result = yield self.get_access_model(Namespace.VCARD4_PUBSUB)
+            access_model = "presence" if is_error(result) else result
 
         options = {
             "pubsub#persist_items": "true",
