@@ -168,7 +168,7 @@ class OpenPGP(BaseModule):
 
         date_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(date))
         result = yield self.publish(
-            f"{Namespace.OPENPGP_PK}:{fingerprint}",
+            f"{Namespace.OPENPGP_PK}:{fingerprint.upper()}",
             _make_public_key(key, date_str),
             id_=date_str,
             options=options,
@@ -182,7 +182,7 @@ class OpenPGP(BaseModule):
         task = yield
 
         items = yield self.request_items(
-            f"{Namespace.OPENPGP_PK}:{fingerprint}", max_items=1, jid=jid
+            f"{Namespace.OPENPGP_PK}:{fingerprint.upper()}", max_items=1, jid=jid
         )
 
         raise_if_error(items)
@@ -371,7 +371,7 @@ def _make_keylist(keylist: list[PGPKeyMetadata] | None) -> Node:
     if keylist is not None:
         for key in keylist:
             date = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(key.date))
-            attrs = {"v4-fingerprint": key.fingerprint, "date": date}
+            attrs = {"v4-fingerprint": key.fingerprint.upper(), "date": date}
             item.addChild("pubkey-metadata", attrs=attrs)
     return item
 
