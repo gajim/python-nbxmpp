@@ -98,7 +98,8 @@ def get_local_time() -> tuple[str, str]:
     if local.utcoffset() == utc.utcoffset():
         offset = "Z"
     else:
-        offset = local.strftime("%:z")
+        # %z has the format ±HHMM[SS[.ffffff]]
+        offset = local.strftime("%z")[:5]
         offset = f"{offset[:-2]}:{offset[-2:]}"
     return utc_formated, offset
 
