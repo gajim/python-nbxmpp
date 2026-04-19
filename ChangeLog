@@ -1,3 +1,16 @@
+nbxmpp 7.2.0 (19 Apr 2026)
+
+  New
+
+  * Implement XEP-445 Pre-Auth IBR
+
+  Improvements
+
+  * OpenPGP: Make sure fingerprints are always upper case
+  * VCard4: Request access model before publishing
+  * Presence: Add preauth attribute
+  * Protocol: Add feature method for pre approval
+
 nbxmpp 7.1.0 (22 Feb 2026)
 
   Improvements
