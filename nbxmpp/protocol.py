@@ -1054,7 +1054,7 @@ class Protocol(Node):
     def isResult(self) -> bool:
         return self.getAttr("type") == "result"
 
-    def getTo(self):
+    def getTo(self) -> JID | None:
         """
         Return value of the 'to' attribute
         """
@@ -1064,7 +1064,7 @@ class Protocol(Node):
             pass
         return None
 
-    def getFrom(self):
+    def getFrom(self) -> JID | None:
         """
         Return value of the 'from' attribute
         """
