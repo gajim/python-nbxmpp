@@ -235,7 +235,7 @@ class OMEMOMessage(NamedTuple):
     sid: int
     iv: bytes
     keys: dict[int, tuple[bytes, bool]]
-    payload: bytes
+    payload: bytes | None
 
 
 class AnnotationNote(NamedTuple):
