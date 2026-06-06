@@ -1270,7 +1270,7 @@ class Message(Protocol):
 
     def __init__(
         self,
-        to: str | None = None,
+        to: JID | str | None = None,
         body: str | None = None,
         xhtml: str | None = None,
         typ: Literal["chat", "groupchat", "normal", "headline", "error"] | None = None,
