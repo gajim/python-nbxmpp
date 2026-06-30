@@ -40,7 +40,7 @@ class EME(BaseModule):
         if encryption is None:
             return
 
-        name = encryption.getAttr("name")
+        name = encryption.getAttr("name") or ""
         namespace = encryption.getAttr("namespace")
         if namespace is None:
             self._log.warning("No namespace on message")
