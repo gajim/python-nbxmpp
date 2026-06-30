@@ -349,7 +349,7 @@ def get_rpad() -> str:
 
 
 def create_message_stanza(
-    stanza: Message, encrypted_payload: str | bytes, with_fallback_text: bool
+    stanza: Message, encrypted_payload: str | bytes, with_eme: bool
 ) -> None:
     b64encoded_payload = b64encode(encrypted_payload)
 
@@ -357,13 +357,11 @@ def create_message_stanza(
     openpgp_node.addData(b64encoded_payload)
     stanza.addChild(node=openpgp_node)
 
-    eme_node = Node(
-        "encryption", attrs={"xmlns": Namespace.EME, "namespace": Namespace.OPENPGP}
-    )
-    stanza.addChild(node=eme_node)
-
-    if with_fallback_text:
-        stanza.setBody("This message is *encrypted* with OpenPGP")
+    if with_eme:
+        eme_node = Node(
+            "encryption", attrs={"xmlns": Namespace.EME, "namespace": Namespace.OPENPGP}
+        )
+        stanza.addChild(node=eme_node)
 
 
 def _make_keylist(keylist: list[PGPKeyMetadata] | None) -> Node:
