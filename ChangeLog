@@ -1,3 +1,17 @@
+nbxmpp 7.3.0 (30 Jun 2026)
+
+  New
+
+  * Add helper method parse_account_invite()
+
+  Improvements
+
+  * OpenPGP: Don't add fallback body text
+
+  Bug Fixes
+
+  * EME: Make name always a string
+
 nbxmpp 7.2.0 (19 Apr 2026)
 
   New
