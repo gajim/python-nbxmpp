@@ -53,3 +53,18 @@ class ActivityTest(StanzaHandlerTest):
         )
 
         self.dispatcher.process_data(event)
+
+    def test_activity_item_without_payload(self):
+        # An item published without an <activity/> payload must not crash the handler.
+        event = """
+            <message from='test@test.test'>
+                <event xmlns='http://jabber.org/protocol/pubsub#event'>
+                    <items node='http://jabber.org/protocol/activity'>
+                        <item id='bffe6584-0f9c-11dc-84ba-001143d5d5db'/>
+                    </items>
+                </event>
+            </message>
+        """
+
+        with self.assertNoLogs("nbxmpp", level="ERROR"):
+            self.dispatcher.process_data(event)

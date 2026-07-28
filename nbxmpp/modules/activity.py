@@ -56,7 +56,7 @@ class Activity(BaseModule):
             return
 
         activity_node = item.getTag("activity", namespace=Namespace.ACTIVITY)
-        if not activity_node.getChildren():
+        if activity_node is None or not activity_node.getChildren():
             self._log.info("Received activity: %s - no activity set", properties.jid)
             return
 

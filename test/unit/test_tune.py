@@ -62,3 +62,19 @@ class TuneTest(StanzaHandlerTest):
         )
 
         self.dispatcher.process_data(event)
+
+    def test_tune_item_without_payload(self):
+        # Some clients signal "stopped listening" with an empty <item/> instead
+        # of retracting it, so the <tune/> payload can be absent.
+        event = """
+            <message from='test@test.test'>
+                <event xmlns='http://jabber.org/protocol/pubsub#event'>
+                    <items node='http://jabber.org/protocol/tune'>
+                        <item id='bffe6584-0f9c-11dc-84ba-001143d5d5db'/>
+                    </items>
+                </event>
+            </message>
+        """
+
+        with self.assertNoLogs("nbxmpp", level="ERROR"):
+            self.dispatcher.process_data(event)

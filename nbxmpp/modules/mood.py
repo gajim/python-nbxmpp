@@ -56,7 +56,7 @@ class Mood(BaseModule):
             return
 
         mood_node = item.getTag("mood", namespace=Namespace.MOOD)
-        if not mood_node.getChildren():
+        if mood_node is None or not mood_node.getChildren():
             self._log.info("Received mood: %s - removed mood", properties.jid)
             return
 

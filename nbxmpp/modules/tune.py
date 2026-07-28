@@ -55,7 +55,7 @@ class Tune(BaseModule):
             return
 
         tune_node = item.getTag("tune", namespace=Namespace.TUNE)
-        if not tune_node.getChildren():
+        if tune_node is None or not tune_node.getChildren():
             self._log.info("Received tune: %s - no tune set", properties.jid)
             return
 

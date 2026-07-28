@@ -55,7 +55,7 @@ class Location(BaseModule):
             return
 
         location_node = item.getTag("geoloc", namespace=Namespace.LOCATION)
-        if not location_node.getChildren():
+        if location_node is None or not location_node.getChildren():
             self._log.info("Received location: %s - no location set", properties.jid)
             return
 
