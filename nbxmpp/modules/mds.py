@@ -32,7 +32,7 @@ class MDS(BaseModule):
     XEP-0490
     """
 
-    _depends = {"publish": "PubSub"}
+    _depends = {"publish": "PubSub", "request_items": "PubSub"}
 
     def __init__(self, client: Client) -> None:
         BaseModule.__init__(self, client)
