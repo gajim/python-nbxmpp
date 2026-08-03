@@ -118,6 +118,9 @@ if TYPE_CHECKING:
 log = logging.getLogger("nbxmpp.stream")
 
 
+STREAM_END_TIMEOUT_SEC = 2
+
+
 class Client(Observable):
     def __init__(self, log_context: str | None = None) -> None:
         """
@@ -164,13 +167,13 @@ class Client(Observable):
 
         self._sm_disabled = False
 
+        self._stream_end_timeout_id: int | None = None
         self._stream_id: str | None = None
         self._stream_secure = False
         self._stream_authenticated = False
         self._stream_features: Features | None = None
         self._session_required = False
         self._connect_successful = False
-        self._stream_close_initiated = False
         self._ping_task: Task | None = None
         self._error: tuple[StreamError | None, str | None, str | None] = (
             None,
@@ -569,19 +572,50 @@ class Client(Observable):
 
         self._disconnect(immediate=immediate)
 
+    def _start_stream_end_timeout(self) -> None:
+        if self._stream_end_timeout_id is not None:
+            return
+
+        self._log.info("Start stream end timeout")
+        self._stream_end_timeout_id = GLib.timeout_add_seconds(
+            STREAM_END_TIMEOUT_SEC, self._on_stream_end_timeout
+        )
+
+    def _remove_stream_end_timeout(self) -> None:
+        if self._stream_end_timeout_id is None:
+            return
+
+        self._log.info("Remove stream end timeout")
+        GLib.source_remove(self._stream_end_timeout_id)
+        self._stream_end_timeout_id = None
+
+    def _on_stream_end_timeout(self) -> None:
+        self._stream_end_timeout_id = None
+        if self._state != StreamState.DISCONNECTING:
+            return
+
+        self._log.warning("Timeout while waiting for stream end")
+        self._con.shutdown_input()
+
     def _disconnect(self, immediate: bool = True) -> None:
+        self._log.info("Disconnect immediate=%s", immediate)
+        if immediate:
+            self.state = StreamState.DISCONNECTING
+            self._remove_ping_timer()
+            self._cancel_ping_task()
+            self._con.disconnect()
+        else:
+            self._start_stream_end_timeout()
+            self._graceful_disconnect()
+
+    def _graceful_disconnect(self) -> None:
         self.state = StreamState.DISCONNECTING
         self._remove_ping_timer()
         self._cancel_ping_task()
-
-        if not immediate:
-            self._stream_close_initiated = True
-            assert self._smacks is not None
-            self._smacks.close_session()
-            self._end_stream()
-            self._con.shutdown_output()
-        else:
-            self._con.disconnect()
+        assert self._smacks is not None
+        self._smacks.close_session()
+        self._end_stream()
+        self._con.shutdown_output()
 
     def send(self, stanza: Protocol, *args: Any, **kwargs: Any) -> str:
         # Alias for backwards compat
@@ -637,15 +671,10 @@ class Client(Observable):
         if not self.has_error:
             self._set_error(StreamError.STREAM, error or "stream-end")
 
+        self._remove_stream_end_timeout()
         self._con.shutdown_input()
-        if not self._stream_close_initiated:
-            self.state = StreamState.DISCONNECTING
-            self._remove_ping_timer()
-            self._cancel_ping_task()
-            assert self._smacks is not None
-            self._smacks.close_session()
-            self._end_stream()
-            self._con.shutdown_output()
+        if self._state == StreamState.CONNECTED:
+            self._graceful_disconnect()
 
     def _reset_stream(self) -> None:
         self._stream_id = None
@@ -1146,3 +1175,4 @@ class Client(Observable):
         self._dispatcher.cleanup()
         self._dispatcher = None
         self.remove_subscriptions()
+        self._remove_stream_end_timeout()
