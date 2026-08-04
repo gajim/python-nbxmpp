@@ -669,7 +669,9 @@ class Client(Observable):
 
         self._remove_stream_end_timeout()
         self._con.shutdown_input()
-        if self._state == StreamState.CONNECTED:
+        if self._state not in (StreamState.DISCONNECTING, StreamState.DISCONNECTED):
+            # If we are in DISCONNECTING or DISCONNECTED this means we initiated
+            # the disconnect, so we dont need to call disconnect again.
             self._graceful_disconnect()
 
     def _reset_stream(self) -> None:
