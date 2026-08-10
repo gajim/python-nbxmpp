@@ -275,7 +275,9 @@ def _parse_bundle(item: Node | None, device_id: int) -> OMEMOBundle:
         raise MalformedStanzaError("No bundle node found", item)
 
     result = {}
-    signed_prekey_node = bundle.getTag("signedPreKeyPublic")
+    signed_prekey_node = bundle.getTag(
+        "signedPreKeyPublic", namespace=Namespace.OMEMO_TEMP
+    )
     try:
         result["spk"] = {"key": b64decode(signed_prekey_node.getData())}
     except Exception as error:
@@ -288,26 +290,32 @@ def _parse_bundle(item: Node | None, device_id: int) -> OMEMOBundle:
     except Exception as error:
         raise MalformedStanzaError("Invalid signedPreKeyId: %s" % error, item)
 
-    signed_signature_node = bundle.getTag("signedPreKeySignature")
+    signed_signature_node = bundle.getTag(
+        "signedPreKeySignature", namespace=Namespace.OMEMO_TEMP
+    )
     try:
         result["spk_signature"] = b64decode(signed_signature_node.getData())
     except Exception as error:
         error = "Failed to decode signedPreKeySignature: %s" % error
         raise MalformedStanzaError(error, item)
 
-    identity_key_node = bundle.getTag("identityKey")
+    identity_key_node = bundle.getTag("identityKey", namespace=Namespace.OMEMO_TEMP)
     try:
         result["ik"] = b64decode(identity_key_node.getData())
     except Exception as error:
         error = "Failed to decode IdentityKey: %s" % error
         raise MalformedStanzaError(error, item)
 
-    prekeys = bundle.getTag("prekeys")
-    if prekeys is None or not prekeys.getChildren():
+    prekeys_node = bundle.getTag("prekeys", namespace=Namespace.OMEMO_TEMP)
+    if prekeys_node is None:
         raise MalformedStanzaError("No prekeys node found", item)
 
+    prekeys = prekeys_node.getTags("preKeyPublic", namespace=Namespace.OMEMO_TEMP)
+    if not prekeys:
+        raise MalformedStanzaError("No prekeys found", item)
+
     result["otpks"] = []
-    for prekey in prekeys.getChildren():
+    for prekey in prekeys:
         try:
             id_ = int(prekey.getAttr("preKeyId"))
         except Exception as error:
