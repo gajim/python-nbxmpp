@@ -400,15 +400,16 @@ def _parse_devicelist(item: Node) -> list[int]:
     if list_node is None:
         raise MalformedStanzaError("No list node found", item)
 
-    if not list_node.getChildren():
-        return []
-
     result: list[int] = []
-    devices_nodes = list_node.getChildren()
-    for dn in devices_nodes:
+    for dn in list_node.getTags("device", namespace=Namespace.OMEMO_TEMP):
         _id = dn.getAttr("id")
-        if _id:
+        if _id is None:
+            raise MalformedStanzaError("Device node without id attribute", item)
+
+        try:
             result.append(int(_id))
+        except Exception:
+            raise MalformedStanzaError("Non integer device id", item)
 
     return result
 
