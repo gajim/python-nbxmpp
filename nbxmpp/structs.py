@@ -12,7 +12,7 @@ from typing import NamedTuple
 from typing import TYPE_CHECKING
 
 import logging
-import random
+import secrets
 import time
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -826,7 +826,7 @@ class OMEMOBundle(NamedTuple):
     namespace: str = Namespace.OMEMO_TEMP
 
     def pick_prekey(self) -> dict[str, str]:
-        return random.SystemRandom().choice(self.otpks)
+        return secrets.choice(self.otpks)
 
 
 class ChatMarker(NamedTuple):
