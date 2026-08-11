@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import hashlib
+import logging
 from dataclasses import dataclass
 from dataclasses import field
 
@@ -26,6 +27,9 @@ from nbxmpp.util import b64encode
 
 if TYPE_CHECKING:
     from nbxmpp.client import Client
+
+
+log = logging.getLogger("nbxmpp.m.vcardtemp")
 
 
 class VCardTemp(BaseModule):
@@ -135,6 +139,11 @@ class VCard:
         if not avatar:
             return None, None
 
-        encoded_avatar = b64decode(avatar)
-        avatar_sha = hashlib.sha1(encoded_avatar).hexdigest()
-        return encoded_avatar, avatar_sha
+        try:
+            decoded_avatar = b64decode(avatar)
+        except Exception as error:
+            log.warning("Unable to decode avatar: %s", error)
+            return None, None
+
+        avatar_sha = hashlib.sha1(decoded_avatar).hexdigest()
+        return decoded_avatar, avatar_sha
