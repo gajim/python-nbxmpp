@@ -64,6 +64,20 @@ class TestFallback(StanzaHandlerTest):
 
         self.assertIsNone(fallbacks_for)
 
+        xml = """
+            <message to='anna@example.com' id='message-id2' type='groupchat'>
+              <body>> Anna wrote:\n> Hi, how are you?\nGreat</body>
+              <fallback xmlns='urn:xmpp:fallback:0' for='urn:xmpp:test:0'>
+                <body start='10' end='10' />
+              </fallback>
+            </message>
+        """
+
+        message = nbxmpp.Message(node=xml)
+        fallbacks_for = parse_fallback_indication(log, message)
+
+        self.assertIsNone(fallbacks_for)
+
     def test_strip_fallback(self):
         fallbacks_for: FallbacksForT = {
             "urn:xmpp:test:1": {
