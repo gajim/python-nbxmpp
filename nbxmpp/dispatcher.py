@@ -459,7 +459,13 @@ class StanzaDispatcher(Observable):
         data = self.replace_non_character(data)
 
         if self._client.is_websocket:
-            stanza = Node(node=data)
+            try:
+                stanza = Node(node=data)
+            except (ExpatError, ValueError) as error:
+                self._log.error("XML parsing error: %s", error)
+                self.notify("parsing-error", str(error))
+                return
+
             if is_websocket_stream_error(stanza):
                 for tag in stanza.getChildren():
                     name = tag.getName()
