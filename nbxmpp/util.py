@@ -61,7 +61,7 @@ def b64decode(data: str | bytes) -> bytes:
     if isinstance(data, str):
         data = data.encode()
 
-    return base64.b64decode(data)
+    return base64.b64decode(data, validate=True)
 
 
 def b64encode(data: str | bytes) -> str:
