@@ -744,7 +744,6 @@ class DiscoInfo(NamedTuple):
 
 
 class DiscoIdentity(NamedTuple):
-
     category: str
     type: str
     name: str | None = None
@@ -1072,6 +1071,16 @@ class EncryptionData:
 
 
 @dataclass
+class EncryptionErrorData:
+    protocol: str
+    reason: str
+    sender_jid: JID | None = None
+    device_id: int | None = None
+    fingerprint: str | None = None
+    identity_authenticated: bool = False
+
+
+@dataclass
 class OpenGraphData:
     title: str | None = None
     description: str | None = None
@@ -1128,6 +1137,7 @@ class MessageProperties:
     openpgp: bytes | None = None
     omemo: OMEMOMessage | None = None
     encrypted: EncryptionData | None = None
+    encryption_error: EncryptionErrorData | None = None
     pgp_legacy: str | None = None
     marker: ChatMarker | None = None
     receipt: ReceiptData | None = None
@@ -1322,7 +1332,6 @@ class IqPropertiesBase(typing.Protocol):
 
 
 class BlockingProperties(IqPropertiesBase):
-
     blocking: BlockingPush
 
     @property

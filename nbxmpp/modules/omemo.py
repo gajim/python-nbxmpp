@@ -17,6 +17,7 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Message
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import NodeProcessed
+from nbxmpp.structs import EncryptionErrorData
 from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import OMEMOBundle
 from nbxmpp.structs import OMEMOMessage
@@ -28,6 +29,8 @@ from nbxmpp.util import from_xs_boolean
 
 if TYPE_CHECKING:
     from nbxmpp.client import Client
+
+MAX_DEVICE_ID = 2**31 - 1
 
 
 class OMEMO(BaseModule):
@@ -65,6 +68,11 @@ class OMEMO(BaseModule):
         except MalformedStanzaError as error:
             self._log.warning(error)
             self._log.warning(stanza)
+            properties.encryption_error = EncryptionErrorData(
+                protocol="OMEMO",
+                reason="malformed-envelope",
+                device_id=_get_sender_device_id(stanza),
+            )
             return
 
     def _process_omemo_devicelist(
@@ -237,6 +245,25 @@ def _parse_omemo_message(stanza: Message) -> OMEMOMessage:
             raise MalformedStanzaError("failed to decode key: %s" % error, stanza)
 
     return OMEMOMessage(sid=sid, iv=iv, keys=keys, payload=payload)
+
+
+def _get_sender_device_id(stanza: Message) -> int | None:
+    encrypted = stanza.getTag("encrypted", namespace=Namespace.OMEMO_TEMP)
+    if encrypted is None:
+        return None
+
+    header = encrypted.getTag("header", namespace=Namespace.OMEMO_TEMP)
+    if header is None:
+        return None
+
+    try:
+        device_id = int(header.getAttr("sid"))
+    except Exception:
+        return None
+
+    if not 1 <= device_id <= MAX_DEVICE_ID:
+        return None
+    return device_id
 
 
 def _parse_bundle(item: Node | None, device_id: int) -> OMEMOBundle:
