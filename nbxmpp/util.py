@@ -139,7 +139,7 @@ def hsluv_to_rgb(
     saturation: float,
     lightness: float,
 ) -> tuple[float, float, float]:
-    return clip_rgb(*hsluv.hsluv_to_rgb((hue, saturation, lightness)))  # type: ignore
+    return clip_rgb(*hsluv.hsluv_to_rgb((hue, saturation, lightness)))
 
 
 @lru_cache(maxsize=1024)
