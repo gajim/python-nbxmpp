@@ -1,3 +1,24 @@
+nbxmpp 7.4.0 (26 Aug 2026)
+
+  New
+
+  * Client: Add better disconnect check
+
+  Improvements
+
+  * VCardAvatars: Validate and normalize sha1
+  * Fallback: Improve range validation
+  * Use secrets module instead of random
+  * OMEMO: Harden bundle parser
+  * OMEMO: Harden devicelist parser
+
+  Bug Fixes
+
+  * WebSocket: Disconnect on parsing errors
+  * VCardTemp: Guard against base64 decoding errors
+  * Client: Add timeout when waiting for stream end
+  * MDS: Add request_items dependency
+
 nbxmpp 7.3.0 (30 Jun 2026)
 
   New
