@@ -28,9 +28,6 @@ from nbxmpp.const import Mode
 from nbxmpp.const import StreamError
 from nbxmpp.const import StreamState
 from nbxmpp.dispatcher import StanzaDispatcher
-from nbxmpp.errors import CancelledError
-from nbxmpp.errors import StanzaError
-from nbxmpp.errors import TimeoutStanzaError
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import BindRequest
 from nbxmpp.protocol import Features
@@ -118,6 +115,11 @@ if TYPE_CHECKING:
 log = logging.getLogger("nbxmpp.stream")
 
 
+STREAM_END_TIMEOUT_SEC = 2
+CONNECTION_CHECK_INTERVAL = 30
+CONNECTION_CHECK_TIMEOUT = 3
+
+
 class Client(Observable):
     def __init__(self, log_context: str | None = None) -> None:
         """
@@ -164,14 +166,14 @@ class Client(Observable):
 
         self._sm_disabled = False
 
+        self._stream_end_timeout_id: int | None = None
         self._stream_id: str | None = None
         self._stream_secure = False
         self._stream_authenticated = False
         self._stream_features: Features | None = None
         self._session_required = False
         self._connect_successful = False
-        self._stream_close_initiated = False
-        self._ping_task: Task | None = None
+        self._connection_check_timeout_id: int | None = None
         self._error: tuple[StreamError | None, str | None, str | None] = (
             None,
             None,
@@ -191,7 +193,6 @@ class Client(Observable):
 
         self._fallback_ns: set[str] = set()
 
-        self._ping_source_id: int | None = None
         self._tasks: list[Task] = []
 
         self._dispatcher = StanzaDispatcher(self)
@@ -203,6 +204,8 @@ class Client(Observable):
         self._sasl = SASL(self)
 
         self._state: StreamState = StreamState.DISCONNECTED
+
+        self._connection_check_id = self._enable_connection_check()
 
     def add_task(self, task: Task) -> None:
         self._tasks.append(task)
@@ -569,19 +572,48 @@ class Client(Observable):
 
         self._disconnect(immediate=immediate)
 
-    def _disconnect(self, immediate: bool = True) -> None:
-        self.state = StreamState.DISCONNECTING
-        self._remove_ping_timer()
-        self._cancel_ping_task()
+    def _start_stream_end_timeout(self) -> None:
+        if self._stream_end_timeout_id is not None:
+            return
 
-        if not immediate:
-            self._stream_close_initiated = True
-            assert self._smacks is not None
-            self._smacks.close_session()
-            self._end_stream()
-            self._con.shutdown_output()
-        else:
+        self._log.info("Start stream end timeout")
+        self._stream_end_timeout_id = GLib.timeout_add_seconds(
+            STREAM_END_TIMEOUT_SEC, self._on_stream_end_timeout
+        )
+
+    def _remove_stream_end_timeout(self) -> None:
+        if self._stream_end_timeout_id is None:
+            return
+
+        self._log.info("Remove stream end timeout")
+        GLib.source_remove(self._stream_end_timeout_id)
+        self._stream_end_timeout_id = None
+
+    def _on_stream_end_timeout(self) -> None:
+        self._stream_end_timeout_id = None
+        if self._state != StreamState.DISCONNECTING:
+            return
+
+        self._log.warning("Timeout while waiting for stream end")
+        self._con.shutdown_input()
+
+    def _disconnect(self, immediate: bool = True) -> None:
+        self._log.info("Disconnect immediate=%s", immediate)
+        if immediate:
+            self.state = StreamState.DISCONNECTING
+            self._remove_connection_check_timeout()
             self._con.disconnect()
+        else:
+            self._start_stream_end_timeout()
+            self._graceful_disconnect()
+
+    def _graceful_disconnect(self) -> None:
+        self.state = StreamState.DISCONNECTING
+        self._remove_connection_check_timeout()
+        assert self._smacks is not None
+        self._smacks.close_session()
+        self._end_stream()
+        self._con.shutdown_output()
 
     def send(self, stanza: Protocol, *args: Any, **kwargs: Any) -> str:
         # Alias for backwards compat
@@ -596,8 +628,6 @@ class Client(Observable):
         self.state = StreamState.DISCONNECTED
         for task in self._tasks:
             task.cancel()
-        self._remove_ping_timer()
-        self._cancel_ping_task()
         self._reset_stream()
         self.notify("disconnected")
 
@@ -637,15 +667,12 @@ class Client(Observable):
         if not self.has_error:
             self._set_error(StreamError.STREAM, error or "stream-end")
 
+        self._remove_stream_end_timeout()
         self._con.shutdown_input()
-        if not self._stream_close_initiated:
-            self.state = StreamState.DISCONNECTING
-            self._remove_ping_timer()
-            self._cancel_ping_task()
-            assert self._smacks is not None
-            self._smacks.close_session()
-            self._end_stream()
-            self._con.shutdown_output()
+        if self._state not in (StreamState.DISCONNECTING, StreamState.DISCONNECTED):
+            # If we are in DISCONNECTING or DISCONNECTED this means we initiated
+            # the disconnect, so we dont need to call disconnect again.
+            self._graceful_disconnect()
 
     def _reset_stream(self) -> None:
         self._stream_id = None
@@ -800,33 +827,56 @@ class Client(Observable):
     def _on_data_received(
         self, _connection: Connection, _signal_name: str, data: str
     ) -> None:
+        self._remove_connection_check_timeout()
         self._dispatcher.process_data(data)
-        self._reset_ping_timer()
 
-    def _reset_ping_timer(self) -> None:
-        if self.is_websocket:
+    def _enable_connection_check(self) -> int:
+        def _on_check() -> bool:
+            if self._state == StreamState.ACTIVE:
+                self.check_if_connected()
+            return GLib.SOURCE_CONTINUE
+
+        return GLib.timeout_add_seconds(CONNECTION_CHECK_INTERVAL, _on_check)
+
+    def check_if_connected(self) -> None:
+        if self._connection_check_timeout_id is not None:
+            self._log.info(
+                "Ignore connection check request, because request is already in progress"
+            )
             return
 
-        if not self._mode.is_client:
+        if self._state != StreamState.ACTIVE:
+            self._log.info(
+                "Ignore connection check request, because stream state is %s",
+                self._state,
+            )
             return
 
-        if self.state != StreamState.ACTIVE:
+        self._log.info("Start connection check")
+        self._connection_check_timeout_id = GLib.timeout_add_seconds(
+            CONNECTION_CHECK_TIMEOUT, self._on_connection_check_timeout
+        )
+        assert self._smacks is not None
+        if self._smacks.sm_supported:
+            self._smacks.request_ack()
+        else:
+            self.get_module("Ping").ping(self.domain, timeout=5)
+
+    def _on_connection_check_timeout(self) -> None:
+        self._connection_check_timeout_id = None
+        if self._state == StreamState.ACTIVE:
+            self._log.info("Connection check timeout")
+            self.disconnect(immediate=True)
+
+    def _remove_connection_check_timeout(self) -> None:
+        if self._connection_check_timeout_id is None:
             return
 
-        if self._ping_source_id is not None:
-            self._log.info("Remove ping timer")
-            GLib.source_remove(self._ping_source_id)
-            self._ping_source_id = None
+        GLib.source_remove(self._connection_check_timeout_id)
+        self._connection_check_timeout_id = None
 
-        self._log.info("Start ping timer")
-        self._ping_source_id = GLib.timeout_add_seconds(180, self._ping)
-
-    def _remove_ping_timer(self) -> None:
-        if self._ping_source_id is None:
-            return
-        self._log.info("Remove ping timer")
-        GLib.source_remove(self._ping_source_id)
-        self._ping_source_id = None
+        if self._state == StreamState.ACTIVE:
+            self._log.info("Connection check successful")
 
     def send_stanza(
         self,
@@ -1103,34 +1153,6 @@ class Client(Observable):
                 StreamError.SESSION, stanza.getError(), stanza.getErrorMsg()
             )
 
-    def _ping(self) -> None:
-        self._ping_source_id = None
-        self._ping_task = self.get_module("Ping").ping(
-            self.domain, timeout=10, callback=self._on_pong
-        )
-
-    def _on_pong(self, task: Task) -> None:
-        self._ping_task = None
-
-        try:
-            task.finish()
-        except TimeoutStanzaError:
-            self._log.info("Ping timeout")
-            self._disconnect(immediate=True)
-            return
-
-        except CancelledError:
-            return
-
-        except StanzaError:
-            pass
-
-        self._log.info("Pong")
-
-    def _cancel_ping_task(self) -> None:
-        if self._ping_task is not None:
-            self._ping_task.cancel()
-
     def register_handler(self, *args: Any, **kwargs: Any) -> None:
         self._dispatcher.register_handler(*args, **kwargs)
 
@@ -1140,9 +1162,11 @@ class Client(Observable):
     def destroy(self) -> None:
         for task in self._tasks:
             task.cancel()
-        self._remove_ping_timer()
         self._smacks = None
         self._sasl = None
         self._dispatcher.cleanup()
         self._dispatcher = None
         self.remove_subscriptions()
+        self._remove_stream_end_timeout()
+        self._remove_connection_check_timeout()
+        GLib.source_remove(self._connection_check_id)

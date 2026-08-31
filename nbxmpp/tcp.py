@@ -53,8 +53,6 @@ class TCPConnection(Connection):
         self._input_closed = False
         self._output_closed = False
 
-        self._keepalive_id: int | None = None
-
     def connect(self) -> None:
         self.state = TCPState.CONNECTING
 
@@ -158,25 +156,6 @@ class TCPConnection(Connection):
         self.notify("connected")
         self._read_async()
 
-    def _remove_keepalive_timer(self) -> None:
-        if self._keepalive_id is not None:
-            self._log.info("Remove keepalive timer")
-            GLib.source_remove(self._keepalive_id)
-            self._keepalive_id = None
-
-    def _renew_keepalive_timer(self) -> None:
-        if self._con is None:
-            return
-        self._remove_keepalive_timer()
-        self._log.info("Add keepalive timer")
-        self._keepalive_id = GLib.timeout_add_seconds(5, self._send_keepalive)
-
-    def _send_keepalive(self) -> None:
-        self._log.info("Send keepalive")
-        self._keepalive_id = None
-        if not self._con.get_output_stream().has_pending():
-            self._write_all_async(b" ")
-
     def start_tls_negotiation(self) -> None:
         self._log.info("Start TLS negotiation")
         self._tls_handshake_in_progress = True
@@ -254,8 +233,6 @@ class TCPConnection(Connection):
             self._finalize("disconnected")
             return
 
-        self._renew_keepalive_timer()
-
         self._read_buffer += data
 
         try:
@@ -321,16 +298,11 @@ class TCPConnection(Connection):
         decoded_data = data.decode()
         self._log_stanza(decoded_data, received=False)
 
-        if decoded_data == " ":
-            # keepalive whitespace
-            self._renew_keepalive_timer()
-
-        else:
-            for stanza in self._write_stanza_buffer:
-                try:
-                    self.notify("data-sent", stanza)
-                except Exception:
-                    self._log.exception("Error while executing data-sent:")
+        for stanza in self._write_stanza_buffer:
+            try:
+                self.notify("data-sent", stanza)
+            except Exception:
+                self._log.exception("Error while executing data-sent:")
 
         if self._output_closed and not self._write_queue:
             self._check_for_shutdown()
@@ -353,7 +325,6 @@ class TCPConnection(Connection):
             self._write_stanzas()
 
     def disconnect(self) -> None:
-        self._remove_keepalive_timer()
         if self.state == TCPState.CONNECTING:
             self.state = TCPState.DISCONNECTING
             self._connect_cancellable.cancel()
@@ -371,20 +342,17 @@ class TCPConnection(Connection):
             self._finalize("disconnected")
 
     def shutdown_input(self) -> None:
-        self._remove_keepalive_timer()
         self._log.info("Shutdown input")
         self._input_closed = True
         self._read_cancellable.cancel()
         self._check_for_shutdown()
 
     def shutdown_output(self) -> None:
-        self._remove_keepalive_timer()
         self.state = TCPState.DISCONNECTING
         self._log.info("Shutdown output")
         self._output_closed = True
 
     def _finalize(self, signal_name: str) -> None:
-        self._remove_keepalive_timer()
         if self._con is not None:
             try:
                 self._con.get_socket().shutdown(True, True)

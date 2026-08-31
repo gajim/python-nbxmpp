@@ -16,6 +16,13 @@ class FallbackRange:
     start: int
     end: int
 
+    def __post_init__(self):
+        if self.start < 0 or self.end < 0:
+            raise ValueError("Range with negative numbers: %s", self)
+
+        if self.start >= self.end:
+            raise ValueError("Range with start > end: %s", self)
+
 
 FallbackLangMapT = dict[str | None, FallbackRange | None]
 FallbacksForT = dict[str, FallbackLangMapT | None]
@@ -61,12 +68,8 @@ def parse_fallback_indication(
                 assert end is not None
                 try:
                     range_ = FallbackRange(start=int(start), end=int(end))
-                except Exception:
-                    log.warning("Incorrect range on fallback indication")
-                    return
-
-                if range_.start < 0 or range_.end < 0:
-                    log.warning("Fallback range with negative numbers: %s", range_)
+                except Exception as error:
+                    log.warning("Incorrect range on fallback indication: %s", error)
                     return
 
             fallback_lang_map[lang] = range_

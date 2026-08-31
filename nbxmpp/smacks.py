@@ -159,7 +159,7 @@ class Smacks:
         self._out_h += 1
 
         if len(self._uqueue) > self.max_queue:
-            self._request_ack()
+            self.request_ack()
         # Send an ack after 100 unacked messages
         if (self._in_h - self._acked_h) > 100:
             self._send_ack()
@@ -244,7 +244,7 @@ class Smacks:
         self._log.info("Close session")
         self._reset_state()
 
-    def _request_ack(self) -> None:
+    def request_ack(self) -> None:
         request = Node(Namespace.STREAM_MGMT + " r")
         self._log.debug("Request ack")
         self._client.send_nonza(request, now=False)

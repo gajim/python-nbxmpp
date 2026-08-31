@@ -15,6 +15,7 @@ from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Presence
 from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import StanzaHandler
+from nbxmpp.util import normalize_sha1
 
 if TYPE_CHECKING:
     from nbxmpp.client import Client
@@ -47,15 +48,27 @@ class VCardAvatar(BaseModule):
         avatar_sha = update.getTagData("photo")
         if avatar_sha is None:
             properties.avatar_state = AvatarState.NOT_READY
-            self._log.info("%s is not ready to promote an avatar", stanza.getFrom())
+            self._log.info("%s is not ready to promote an avatar", properties.jid)
             # Empty update element, ignore
             return
 
         if avatar_sha == "":
             properties.avatar_state = AvatarState.EMPTY
-            self._log.info("%s empty avatar advertised", stanza.getFrom())
+            self._log.info("%s empty avatar advertised", properties.jid)
+            return
+
+        # XEP-0153 hashes are hex SHA-1 of the image bytes. Implementations must
+        # accept mixed case and should emit lowercase.
+        normalized_sha = normalize_sha1(avatar_sha)
+        if normalized_sha is None:
+            properties.avatar_state = AvatarState.IGNORE
+            self._log.warning(
+                "%s advertised invalid avatar hash: %r",
+                properties.jid,
+                avatar_sha,
+            )
             return
 
         properties.avatar_sha = avatar_sha
         properties.avatar_state = AvatarState.ADVERTISED
-        self._log.info("%s advertises %s", stanza.getFrom(), avatar_sha)
+        self._log.info("%s advertises %s", properties.jid, avatar_sha)

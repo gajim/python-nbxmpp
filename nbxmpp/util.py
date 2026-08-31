@@ -53,6 +53,8 @@ if TYPE_CHECKING:
 
 log = logging.getLogger("nbxmpp.util")
 
+SHA1_RX = re.compile(r"[a-f0-9]{40}")
+
 
 def b64decode(data: str | bytes) -> bytes:
     if not data:
@@ -61,6 +63,8 @@ def b64decode(data: str | bytes) -> bytes:
     if isinstance(data, str):
         data = data.encode()
 
+    # Don't validate base64 data because in XMPP whitespace in
+    # base64 payloads must be accepted
     return base64.b64decode(data)
 
 
@@ -139,7 +143,7 @@ def hsluv_to_rgb(
     saturation: float,
     lightness: float,
 ) -> tuple[float, float, float]:
-    return clip_rgb(*hsluv.hsluv_to_rgb((hue, saturation, lightness)))  # type: ignore
+    return clip_rgb(*hsluv.hsluv_to_rgb((hue, saturation, lightness)))
 
 
 @lru_cache(maxsize=1024)
@@ -473,3 +477,11 @@ def parse_websocket_uri(data: str) -> str:
                 raise ValueError("No href attr found")
             return href
     raise ValueError("no websocket uri found")
+
+
+def normalize_sha1(value: str) -> str | None:
+    """Return a canonical lowercase SHA-1 hex digest, or None if invalid."""
+    value = value.lower()
+    if SHA1_RX.fullmatch(value) is None:
+        return None
+    return value

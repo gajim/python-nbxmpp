@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Any
 from typing import TYPE_CHECKING
 
-import random
+import secrets
 import string
 import time
 
@@ -344,8 +344,8 @@ def create_signcrypt_node(
 
 
 def get_rpad() -> str:
-    rpad_range = random.randint(30, 50)
-    return "".join(random.choice(string.ascii_letters) for _ in range(rpad_range))
+    rpad_range = secrets.randbelow(21) + 30
+    return "".join(secrets.choice(string.ascii_letters) for _ in range(rpad_range))
 
 
 def create_message_stanza(

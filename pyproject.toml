@@ -219,7 +219,6 @@ ignore = [
   "S112",   # try`-`except`-`continue`
   "S303",   # Use of insecure MD2, MD4, MD5, or SHA1 hash function
   "S310",   # Audit URL open for permitted schemes
-  "S311",   # Standard pseudo-random generators are not suitable for cryptographic purposes
   "S314",   # Using `xml` to parse untrusted data is known to be vulnerable to XML attacks; use `defusedxml` equivalents
   "S324",   # Probable use of insecure hash functions
   "S608",   # Possible SQL injection vector through string-based query construction
