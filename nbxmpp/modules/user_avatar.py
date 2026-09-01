@@ -10,6 +10,7 @@ from typing import Literal
 from typing import TYPE_CHECKING
 
 import hashlib
+import logging
 from collections.abc import Iterator
 from dataclasses import asdict
 from dataclasses import dataclass
@@ -29,9 +30,13 @@ from nbxmpp.structs import StanzaHandler
 from nbxmpp.task import iq_request_task
 from nbxmpp.util import b64decode
 from nbxmpp.util import b64encode
+from nbxmpp.util import normalize_sha1
 
 if TYPE_CHECKING:
     from nbxmpp.client import Client
+
+
+log = logging.getLogger("nbxmpp.m.user_avatar")
 
 
 class UserAvatar(BaseModule):
@@ -82,8 +87,14 @@ class UserAvatar(BaseModule):
             )
             return
 
+        default_avatar_sha = normalize_sha1(item.getAttr("id") or "")
+        if default_avatar_sha is None:
+            self._log.warning("Received avatar with invalid sha")
+            self._log.warning(stanza)
+            raise NodeProcessed
+
         try:
-            data = AvatarMetaData.from_node(metadata, item.getAttr("id"))
+            data = AvatarMetaData.from_node(metadata, default_avatar_sha)
         except Exception as error:
             self._log.warning("Malformed user avatar data: %s", error)
             self._log.warning(stanza)
@@ -128,7 +139,11 @@ class UserAvatar(BaseModule):
         if not metadata.getChildren():
             yield task.set_result(None)
 
-        yield AvatarMetaData.from_node(metadata, item.getAttr("id"))
+        default_avatar_sha = normalize_sha1(item.getAttr("id") or "")
+        if default_avatar_sha is None:
+            raise MalformedStanzaError("Invalid avatar sha", item)
+
+        yield AvatarMetaData.from_node(metadata, default_avatar_sha)
 
     @iq_request_task
     def set_avatar(self, avatar: Avatar | None, public: bool = False):
@@ -253,24 +268,6 @@ def _make_avatar_data_node(avatar: AvatarData) -> Node:
     return item
 
 
-def _get_info_attrs(
-    avatar: bytes, avatar_sha: str, height: int | None, width: int | None
-) -> dict[str, str | int]:
-    info_attrs = {
-        "id": avatar_sha,
-        "bytes": len(avatar),
-        "type": "image/png",
-    }
-
-    if height is not None:
-        info_attrs["height"] = height
-
-    if width is not None:
-        info_attrs["width"] = width
-
-    return info_attrs
-
-
 @dataclass
 class AvatarInfo:
     bytes: int
@@ -279,21 +276,6 @@ class AvatarInfo:
     url: str | None = None
     height: int | None = None
     width: int | None = None
-
-    def __post_init__(self) -> None:
-        if self.bytes is None:
-            raise ValueError
-        if self.id is None:
-            raise ValueError
-        if self.type is None:
-            raise ValueError
-
-        self.bytes = int(self.bytes)
-
-        if self.height is not None:
-            self.height = int(self.height)
-        if self.width is not None:
-            self.width = int(self.width)
 
     def to_dict(self) -> dict[str, str | int]:
         info_dict = asdict(self)
@@ -325,14 +307,41 @@ class AvatarMetaData:
         infos: list[AvatarInfo] = []
         info_nodes = node.getTags("info")
         for info in info_nodes:
+
+            sha = normalize_sha1(info.getAttr("id") or "")
+            if sha is None:
+                log.warning("Invalid sha on avatar metadata\n%s", node)
+                continue
+
+            try:
+                bytes_ = int(info.getAttr("bytes") or "")
+            except Exception:
+                log.warning("Invalid bytes attribute on avatar metadata\n%s", node)
+                continue
+
+            type_ = info.getAttr("type")
+            if not type_:
+                log.warning("Missing type attribute on avatar metadata\n%s", node)
+                continue
+
+            try:
+                height = int(info.getAttr("height") or "")
+            except Exception:
+                height = None
+
+            try:
+                width = int(info.getAttr("width") or "")
+            except Exception:
+                width = None
+
             infos.append(
                 AvatarInfo(
-                    bytes=info.getAttr("bytes"),
-                    id=info.getAttr("id"),
-                    type=info.getAttr("type"),
-                    url=info.getAttr("url"),
-                    height=info.getAttr("height"),
-                    width=info.getAttr("width"),
+                    bytes=bytes_,
+                    id=sha,
+                    type=type_,
+                    url=info.getAttr("url") or None,
+                    height=height,
+                    width=width,
                 )
             )
         return cls(infos=infos, default=default)
