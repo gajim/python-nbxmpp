@@ -22,6 +22,7 @@ from nbxmpp.const import StreamState
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import Node
 from nbxmpp.protocol import Protocol
+from nbxmpp.protocol import SASL2Features
 from nbxmpp.protocol import SASL_AUTH_MECHS
 from nbxmpp.protocol import SASL_ERROR_CONDITIONS
 from nbxmpp.stringprep import saslprep
@@ -190,17 +191,47 @@ class SASL:
         if isinstance(self._mechanism, SCRAM) and channel_binding_data is not None:
             self._mechanism.set_channel_binding_data(channel_binding_data)
 
+        sasl2_features = features.get_sasl2_features()
+
         try:
-            self._send_initiate()
+            self._send_initiate(sasl2_features)
         except AuthFail as error:
             self._log.error(error)
             self._abort_auth()
             return
 
-    def _send_initiate(self) -> None:
+    def _send_initiate(self, sasl2_features: SASL2Features | None) -> None:
         assert self._mechanism is not None
         data = self._mechanism.get_initiate_data()
         nonza = get_initiate_nonza(self._sasl_ns, self._mechanism.name, data)
+
+        if sasl2_features is not None:
+            if sasl2_features.get_bind_2_supported():
+                bind = nonza.addChild("bind", namespace=Namespace.BIND2)
+                if self._client.tag:
+                    bind.addChild(
+                        "tag", namespace=Namespace.BIND2, payload=[self._client.tag]
+                    )
+
+                bind_features = sasl2_features.get_bind_2_features()
+                if Namespace.CARBONS in bind_features:
+                    bind.addChild("enable", namespace=Namespace.CARBONS)
+
+                if Namespace.STREAM_MGMT in bind_features:
+                    bind.addChild(
+                        "enable",
+                        namespace=Namespace.STREAM_MGMT,
+                        attrs={"resume": "true"},
+                    )
+
+            if self._client.user_agent is not None:
+                ua = self._client.user_agent.to_node()
+                nonza.addChild(node=ua)
+
+            if self._client.resumeable:
+                resume = self._client._smacks.get_resume_request()
+                nonza.addChild(node=resume)
+
         self._client.send_nonza(nonza)
 
     def _on_challenge(self, stanza: Protocol) -> None:

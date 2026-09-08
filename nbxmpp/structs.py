@@ -1539,3 +1539,27 @@ class AccountInviteResult:
     uri: str
     landing_url: str | None
     expire: datetime | None
+
+
+@dataclass
+class SASL2UserAgent:
+    id: str
+    software: str | None = None
+    device: str | None = None
+
+    def __post_init__(self) -> None:
+        if not self.id:
+            raise ValueError("Empty id attribute not allowed")
+
+    def to_node(self) -> Node:
+        user_agent = Node("user-agent", attrs={"id": self.id})
+        user_agent.setNamespace(Namespace.BIND2)
+        if self.software:
+            user_agent.addChild(
+                "software", namespace=Namespace.BIND2, payload=[self.software]
+            )
+        if self.device:
+            user_agent.addChild(
+                "device", namespace=Namespace.BIND2, payload=[self.device]
+            )
+        return user_agent

@@ -194,7 +194,7 @@ class Smacks:
             self._client.send_stanza(stanza)
         self._old_uqueue = []
 
-    def resume_request(self) -> None:
+    def get_resume_request(self) -> Node | None:
         if self._session_id is None:
             self._log.error("Attempted to resume without a valid session id")
             return
@@ -214,6 +214,12 @@ class Smacks:
 
         self._acked_h = self._in_h
         self.resume_in_progress = True
+        return resume
+
+    def resume_request(self) -> None:
+        resume = self.get_resume_request()
+        if resume is None:
+            return
         self._client.send_nonza(resume, now=False)
 
     def _on_resumed(self, stanza: Protocol) -> None:

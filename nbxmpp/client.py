@@ -42,6 +42,7 @@ from nbxmpp.sasl import SASL
 from nbxmpp.simplexml import Node
 from nbxmpp.smacks import Smacks
 from nbxmpp.structs import ProxyData
+from nbxmpp.structs import SASL2UserAgent
 from nbxmpp.task import Task
 from nbxmpp.tcp import TCPConnection
 from nbxmpp.types import CustomHostT
@@ -148,6 +149,8 @@ class Client(Observable):
         self._domain: str | None = None
         self._username: str | None = None
         self._resource: str | None = None
+        self._tag: str | None = None
+        self._user_agent: SASL2UserAgent | None = None
 
         self._custom_host: CustomHostT | None = None
 
@@ -262,6 +265,20 @@ class Client(Observable):
 
     def set_resource(self, resource: str) -> None:
         self._resource = resource
+
+    def set_tag(self, tag: str) -> None:
+        self._tag = tag
+
+    def set_user_agent(self, user_agent: SASL2UserAgent) -> None:
+        self._user_agent = user_agent
+
+    @property
+    def tag(self) -> str | None:
+        return self._tag
+
+    @property
+    def user_agent(self) -> SASL2UserAgent | None:
+        return self._user_agent
 
     def set_mode(self, mode: Mode) -> None:
         self._mode = mode
@@ -1004,6 +1021,7 @@ class Client(Observable):
         elif self.state == StreamState.PROCEED_WITH_AUTH:
             assert self._sasl is not None
             self._sasl.delegate(stanza)
+            # TODO
 
         elif self.state == StreamState.AUTH_SUCCESSFUL:
             self._stream_authenticated = True

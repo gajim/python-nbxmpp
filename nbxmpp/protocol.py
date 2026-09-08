@@ -1981,6 +1981,8 @@ class Features(Node):
     def __init__(self, node: Node) -> None:
         Node.__init__(self, node=node)
 
+        self._sasl2_features = self._get_sasl2_features()
+
     def has_starttls(self) -> tuple[bool, bool]:
         tls = self.getTag("starttls", namespace=Namespace.TLS)
         if tls is not None:
@@ -1993,6 +1995,9 @@ class Features(Node):
 
     def has_sasl_2(self) -> bool:
         return self.getTag("authentication", namespace=Namespace.SASL2) is not None
+
+    def get_sasl2_features(self) -> SASL2Features | None:
+        return self._sasl2_features
 
     def get_mechs(self) -> set[str]:
         mechanisms = self.getTag("authentication", namespace=Namespace.SASL2)
@@ -2055,6 +2060,69 @@ class Features(Node):
         if server_end_point is not None:
             return Gio.TlsChannelBindingType.SERVER_END_POINT
         return None
+
+    def _get_sasl2_features(self) -> SASL2Features | None:
+        auth = self.getTag("authentication", namespace=Namespace.SASL2)
+        if auth is None:
+            return None
+
+        return SASL2Features(auth)
+
+
+class SASL2Features(Node):
+    def __init__(self, node: Node) -> None:
+        Node.__init__(self, node=node)
+
+        self._inline = self.getTag("inline", namespace=Namespace.SASL2)
+
+    def get_bind_2_supported(self) -> bool:
+        if self._inline is None:
+            return False
+
+        return self._inline.getTag("bind", namespace=Namespace.BIND2) is not None
+
+    def get_bind_2_features(self) -> set[str]:
+        features: set[str] = set()
+
+        if self._inline is None:
+            return features
+
+        bind2 = self._inline.getTag("bind", namespace=Namespace.BIND2)
+        if bind2 is None:
+            return features
+
+        bind2_inline = bind2.getTag("inline", namespace=Namespace.BIND2)
+        if bind2_inline is None:
+            return features
+
+        feats = bind2_inline.getTags("feature", namespace=Namespace.BIND2)
+        for feat in feats:
+            if ns := feat.getAttr("var"):
+                features.add(ns)
+
+        return features
+
+    def get_fast_mechs(self) -> set[str]:
+        mechs: set[str] = set()
+
+        if self._inline is None:
+            return mechs
+
+        fast = self._inline.getTag("fast", namespace=Namespace.FAST)
+        if fast is None:
+            return mechs
+
+        for mech in fast.getTags("mechanism", namespace=Namespace.FAST):
+            if m := mech.getData():
+                mechs.add(m)
+
+        return mechs
+
+    def get_sm_resume_supported(self) -> bool:
+        if self._inline is None:
+            return False
+
+        return self._inline.getTag("sm", namespace=Namespace.STREAM_MGMT) is not None
 
 
 class ErrorNode(Node):
