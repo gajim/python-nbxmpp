@@ -14,6 +14,9 @@ from lxml import etree
 
 from . import types
 
+T_ = typing.TypeVar("T_")
+
+
 ETreeElementT = etree._Element  # type: ignore
 
 XML_DATA_TYPE_CONVERTERS = {
@@ -296,8 +299,8 @@ def AttrValue(
     )
 
 
-def Child(required: bool = False) -> typing.Any:
-    return dataclasses.field(metadata={"parser": XMLChild(required)})
+def Child(default: typing.Literal[None] = None, required: bool = False) -> typing.Any:
+    return dataclasses.field(default=default, metadata={"parser": XMLChild(required)})
 
 
 def ChildList() -> typing.Any:
@@ -343,3 +346,19 @@ def ChildFlag(default: bool = False, required: bool = False) -> typing.Any:
 )
 def xml_model(f: typing.Type[typing.Any]):
     return dataclasses.dataclass(f)
+
+
+@xml_model
+class Bind(XMLNode):
+    TAG = ("message", "")
+
+
+@xml_model
+class Message(XMLNode):
+    TAG = ("message", "")
+
+    to: str = AttrValue(required=True)
+    test: Bind | None = Child()
+
+
+Message(to="123")
