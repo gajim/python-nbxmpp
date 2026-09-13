@@ -2,12 +2,16 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from abc import ABC, abstractmethod
+import typing
 
 import dataclasses
+from abc import ABC
+from abc import abstractmethod
+from dataclasses import _MISSING_TYPE
+from dataclasses import MISSING
+
 from lxml import etree
-import typing
-from dataclasses import _MISSING_TYPE, MISSING
+
 from . import types
 
 ETreeElementT = etree._Element  # type: ignore
