@@ -32,7 +32,7 @@ dev = [
   "isort>=7.0.0",
   "pre-commit",
   "pygobject-stubs@git+https://github.com/pygobject/pygobject-stubs.git",
-  "ruff==0.14.8",
+  "ruff==0.16.2",
 ]
 
 [project.urls]
@@ -48,7 +48,7 @@ include = ["nbxmpp*"]
 version = {attr = "nbxmpp.__version__"}
 
 [tool.pyright]
-pythonVersion = "3.10"
+pythonVersion = "3.12"
 pythonPlatform = "All"
 typeCheckingMode = "strict"
 
@@ -118,11 +118,9 @@ skip_gitignore = true
 
 [tool.ruff]
 line-length = 88
-
-target-version = "py310"
+target-version = "py312"
 
 [tool.ruff.lint]
-
 select = [
     "A",     # flake8-builtins
     # "AIR",   # Airflow
@@ -148,7 +146,7 @@ select = [
     # "FIX",   # flake8-fixme
     # "FLY",   # flynt
     "G",     # flake8-logging-format
-    # "I",     # isort
+    "I",     # isort
     "ICN",   # flake8-import-conventions
     # "INP",   # flake8-no-pep420
     "INT",   # flake8-gettext
@@ -255,3 +253,19 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [tool.ruff.lint.mccabe]
 max-complexity = 15
+
+[tool.ruff.lint.isort]
+case-sensitive = false
+order-by-type = false
+force-single-line = true
+section-order = [
+  "future",
+  "typing",
+  "standard-library",
+  "third-party",
+  "first-party",
+  "local-folder"
+]
+
+[tool.ruff.lint.isort.sections]
+typing = ["_typeshed", "typing", "typing_extensions"]
