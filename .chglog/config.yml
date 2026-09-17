@@ -2,7 +2,7 @@ style: gitlab
 template: CHANGELOG.tpl.md
 info:
   title: CHANGELOG
-  repository_url: https://dev.gajim.org/gajim/python-nbxmpp
+  repository_url: https://gitlab.com/gajim/python-nbxmpp
 options:
   commits:
     filters:

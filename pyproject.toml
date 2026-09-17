@@ -36,7 +36,7 @@ dev = [
 ]
 
 [project.urls]
-repository = "https://dev.gajim.org/gajim/python-nbxmpp"
+repository = "https://gitlab.com/gajim/python-nbxmpp"
 
 [tool.setuptools.packages.find]
 include = ["nbxmpp*"]

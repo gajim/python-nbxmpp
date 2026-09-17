@@ -16,8 +16,8 @@
     </description>
 
     <homepage rdf:resource="https://gajim.org/"/>
-    <wiki rdf:resource="https://dev.gajim.org/gajim/python-nbxmpp/-/wikis/home"/>
-    <bug-database rdf:resource="https://dev.gajim.org/gajim/python-nbxmpp/-/issues"/>
+    <wiki rdf:resource="https://gitlab.com/gajim/python-nbxmpp/-/wikis/home"/>
+    <bug-database rdf:resource="https://gitlab.com/gajim/python-nbxmpp/-/issues"/>
     <category rdf:resource="https://linkmauve.fr/ns/xmpp-doap#category-library"/>
     <category rdf:resource="http://api.gnome.org/doap-extensions#apps"/>
     <license rdf:resource="http://usefulinc.com/doap/licenses/gplv3"/>
@@ -28,8 +28,8 @@
 
     <repository>
       <GitRepository>
-        <location rdf:resource="https://dev.gajim.org/gajim/python-nbxmpp.git"/>
-        <browse rdf:resource="https://dev.gajim.org/gajim/python-nbxmpp"/>
+        <location rdf:resource="https://gitlab.com/gajim/python-nbxmpp.git"/>
+        <browse rdf:resource="https://gitlab.com/gajim/python-nbxmpp"/>
       </GitRepository>
     </repository>
 

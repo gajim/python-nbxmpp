@@ -57,7 +57,7 @@ build-unix:
   rules:
     - when: always
   script:
-    - pip install git+https://dev.gajim.org/gajim/release-helper.git
+    - pip install git+https://gitlab.com/gajim/release-helper.git
     - pip install build
     - python3 -m build
     - release-helper build-debian-pkg "$(find dist/nbxmpp-*.tar.gz)" 1 --pkgprefix=python3 --pkgsuffix=nightly

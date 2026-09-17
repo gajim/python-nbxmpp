@@ -14,9 +14,9 @@ Build-Depends:
     python3-setuptools (>= 65.0.0),
 Standards-Version: 4.1.4
 Rules-Requires-Root: no
-Homepage: https://dev.gajim.org/gajim/python-nbxmpp
-Vcs-Git: https://dev.gajim.org/gajim/python-nbxmpp.git
-Vcs-Browser: https://dev.gajim.org/gajim/python-nbxmpp/tree/master
+Homepage: https://gitlab.com/gajim/python-nbxmpp
+Vcs-Git: https://gitlab.com/gajim/python-nbxmpp.git
+Vcs-Browser: https://gitlab.com/gajim/python-nbxmpp/tree/master
 
 Package: python3-nbxmpp-nightly
 Architecture: all
