@@ -260,7 +260,7 @@ class Client(Observable):
     def set_domain(self, domain: str | None) -> None:
         self._domain = domain
 
-    def set_resource(self, resource: str) -> None:
+    def set_resource(self, resource: str | None) -> None:
         self._resource = resource
 
     def set_mode(self, mode: Mode) -> None:
