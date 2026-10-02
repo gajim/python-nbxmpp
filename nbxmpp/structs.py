@@ -11,6 +11,7 @@ from typing import Any
 from typing import NamedTuple
 from typing import TYPE_CHECKING
 
+import dataclasses
 import logging
 import secrets
 import time
@@ -1539,3 +1540,18 @@ class AccountInviteResult:
     uri: str
     landing_url: str | None
     expire: datetime | None
+
+
+@dataclass
+class SearchFields:
+    instructions: str
+    first: str
+    last: str
+    nick: str
+    email: str
+
+    def __iter__(self):
+        for field_ in dataclasses.fields(self):
+            if field_.name == "instructions":
+                continue
+            yield (field_.name, getattr(self, field_.name))

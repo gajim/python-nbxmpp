@@ -28,6 +28,8 @@ from nbxmpp.const import Mode
 from nbxmpp.const import StreamError
 from nbxmpp.const import StreamState
 from nbxmpp.dispatcher import StanzaDispatcher
+from nbxmpp.modules.ogp import OpenGraph
+from nbxmpp.modules.search import Search
 from nbxmpp.namespaces import Namespace
 from nbxmpp.protocol import BindRequest
 from nbxmpp.protocol import Features
@@ -762,6 +764,8 @@ class Client(Observable):
     @overload
     def get_module(self, name: Literal["OOB"]) -> OOB: ...
     @overload
+    def get_module(self, name: Literal["OpenGraph"]) -> OpenGraph: ...
+    @overload
     def get_module(self, name: Literal["OpenPGP"]) -> OpenPGP: ...
     @overload
     def get_module(self, name: Literal["PGPLegacy"]) -> PGPLegacy: ...
@@ -783,6 +787,8 @@ class Client(Observable):
     def get_module(self, name: Literal["Retraction"]) -> Retraction: ...
     @overload
     def get_module(self, name: Literal["Roster"]) -> Roster: ...
+    @overload
+    def get_module(self, name: Literal["Search"]) -> Search: ...
     @overload
     def get_module(self, name: Literal["SecurityLabels"]) -> SecurityLabels: ...
     @overload

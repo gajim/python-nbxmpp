@@ -69,6 +69,7 @@ from nbxmpp.modules.register import Register
 from nbxmpp.modules.replies import Replies
 from nbxmpp.modules.retraction import Retraction
 from nbxmpp.modules.roster import Roster
+from nbxmpp.modules.search import Search
 from nbxmpp.modules.security_labels import SecurityLabels
 from nbxmpp.modules.software_version import SoftwareVersion
 from nbxmpp.modules.tune import Tune
@@ -105,13 +106,12 @@ log = logging.getLogger("nbxmpp.dispatcher")
 
 NBXMPPModuleNameT = Literal[
     "Activity",
-    "Activity",
     "AdHoc",
     "Annotations",
     "Attention",
-    "BasePresence",
-    "BaseMessage",
     "BaseIq",
+    "BaseMessage",
+    "BasePresence",
     "Blocking",
     "Captcha",
     "ChatMarkers",
@@ -140,6 +140,7 @@ NBXMPPModuleNameT = Literal[
     "Nickname",
     "OMEMO",
     "OOB",
+    "OpenGraph",
     "OpenPGP",
     "PEPBookmarks",
     "PGPLegacy",
@@ -152,22 +153,23 @@ NBXMPPModuleNameT = Literal[
     "Replies",
     "Retraction",
     "Roster",
+    "Search",
     "SecurityLabels",
     "SoftwareVersion",
     "Tune",
     "UserAvatar",
+    "VCard4",
     "VCardAvatar",
     "VCardTemp",
-    "VCard4",
 ]
 NBXMPPModuleT = (
     Activity
     | AdHoc
     | Annotations
     | Attention
-    | BasePresence
-    | BaseMessage
     | BaseIq
+    | BaseMessage
+    | BasePresence
     | Blocking
     | Captcha
     | ChatMarkers
@@ -209,13 +211,14 @@ NBXMPPModuleT = (
     | Replies
     | Retraction
     | Roster
+    | Search
     | SecurityLabels
     | SoftwareVersion
     | Tune
     | UserAvatar
+    | VCard4
     | VCardAvatar
     | VCardTemp
-    | VCard4
 )
 
 
@@ -362,6 +365,8 @@ class StanzaDispatcher(Observable):
     @overload
     def get_module(self, name: Literal["Roster"]) -> Roster: ...
     @overload
+    def get_module(self, name: Literal["Search"]) -> Search: ...
+    @overload
     def get_module(self, name: Literal["SecurityLabels"]) -> SecurityLabels: ...
     @overload
     def get_module(self, name: Literal["SoftwareVersion"]) -> SoftwareVersion: ...
@@ -429,6 +434,7 @@ class StanzaDispatcher(Observable):
         self._modules["Replies"] = Replies(self._client)
         self._modules["Retraction"] = Retraction(self._client)
         self._modules["Roster"] = Roster(self._client)
+        self._modules["Search"] = Search(self._client)
         self._modules["SecurityLabels"] = SecurityLabels(self._client)
         self._modules["SoftwareVersion"] = SoftwareVersion(self._client)
         self._modules["Tune"] = Tune(self._client)
