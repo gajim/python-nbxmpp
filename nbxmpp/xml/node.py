@@ -126,7 +126,7 @@ class XMLChildList(PropParser):
         if typing.get_origin(type_) is not list:
             raise ValueError("ChildList must have a list[] annotation")
 
-        arg = typing.get_args(type)[0]
+        arg = typing.get_args(type_)[0]
         for xml_node_cls in typing.get_args(arg):
             self._xml_node_classes[xml_node_cls.TAG] = xml_node_cls
 
