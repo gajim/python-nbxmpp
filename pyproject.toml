@@ -49,7 +49,7 @@ include = ["nbxmpp*"]
 version = {attr = "nbxmpp.__version__"}
 
 [tool.pyright]
-pythonVersion = "3.11"
+pythonVersion = "3.12"
 pythonPlatform = "All"
 typeCheckingMode = "strict"
 
@@ -114,7 +114,7 @@ skip_gitignore = true
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 

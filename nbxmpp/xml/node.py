@@ -53,8 +53,8 @@ class XMLNode:
 
 
 class PropParser(ABC):
-    def set_type(self, type: typing.Any) -> None:
-        xml_data_type = XML_DATA_TYPE_CONVERTERS.get(type)
+    def set_type(self, type_: typing.Any) -> None:
+        xml_data_type = XML_DATA_TYPE_CONVERTERS.get(type_)
         if xml_data_type is not None:
             self._xml_data_type = xml_data_type
 
@@ -96,8 +96,8 @@ class XMLChild(PropParser):
     def __init__(self, required: bool) -> None:
         self._required = required
 
-    def set_type(self, type: type[XMLNode]) -> None:
-        self._child = type
+    def set_type(self, type_: type[XMLNode]) -> None:
+        self._child = type_
 
     def deserialize(self, element: ETreeElementT, name: str) -> XMLNode | None:
         tag, _namespace = self._child.TAG
@@ -122,8 +122,8 @@ class XMLChildList(PropParser):
     def __init__(self) -> None:
         self._xml_node_classes: dict[tuple[str, str], XMLNode] = {}
 
-    def set_type(self, type: typing.Any) -> None:
-        if typing.get_origin(type) is not list:
+    def set_type(self, type_: typing.Any) -> None:
+        if typing.get_origin(type_) is not list:
             raise ValueError("ChildList must have a list[] annotation")
 
         arg = typing.get_args(type)[0]
@@ -259,8 +259,8 @@ class XMLChildValueList(PropParser):
         self._required = required
         self._child_converter = child_converter
 
-    def set_type(self, type: typing.Any) -> None:
-        self._container_type = typing.get_origin(type)
+    def set_type(self, type_: typing.Any) -> None:
+        self._container_type = typing.get_origin(type_)
 
     def deserialize(self, element: ETreeElementT, name: str) -> list[ValueTypeT]:
         container = self._container_type()
@@ -344,21 +344,5 @@ def ChildFlag(default: bool = False, required: bool = False) -> typing.Any:
         ChildFlag,
     )
 )
-def xml_model(f: typing.Type[typing.Any]):
+def xml_model(f: type[typing.Any]):
     return dataclasses.dataclass(f)
-
-
-@xml_model
-class Bind(XMLNode):
-    TAG = ("message", "")
-
-
-@xml_model
-class Message(XMLNode):
-    TAG = ("message", "")
-
-    to: str = AttrValue(required=True)
-    test: Bind | None = Child()
-
-
-Message(to="123")
