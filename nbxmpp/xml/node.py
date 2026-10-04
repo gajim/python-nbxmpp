@@ -148,7 +148,7 @@ class XMLChildList(PropParser):
 
 
 class XMLChildText(PropParser):
-    def __init__(self, required: bool, default: typing.Any | _MISSING_TYPE) -> None:
+    def __init__(self, required: bool, default: ValueTypeT | None = None) -> None:
         self._required = required
         self._default = default
 
@@ -157,7 +157,8 @@ class XMLChildText(PropParser):
         if node is None or not node.text:
             if self._required:
                 raise ValueError("missing child value")
-            return None
+
+            return self._default
 
         return self._xml_data_type.deserialize(node.text)
 
