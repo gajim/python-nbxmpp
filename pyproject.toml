@@ -7,20 +7,21 @@ name = "nbxmpp"
 description = "XMPP Library"
 keywords = ["chat", "messaging", "im", "xmpp"]
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license = "GPL-3.0-or-later"
 authors = [
     {name = "Philipp Hörist", email = "philipp@hoerist.com"},
     {name = "Yann Leboulanger", email = "yann@leboulanger.org"},
 ]
 classifiers = [
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
     "precis-i18n>=1.0.0",
     "packaging",
     "idna",
     "PyGObject>=3.42.0",
+    "pytest>=9.1.1",
 ]
 
 dynamic = ["version"]

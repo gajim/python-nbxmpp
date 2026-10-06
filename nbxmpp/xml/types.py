@@ -7,6 +7,8 @@ from typing import Any
 from abc import ABC
 from abc import abstractmethod
 
+from nbxmpp.protocol import JID as _JID
+
 
 class AbstractXMLDataType(ABC):
     @staticmethod
@@ -64,3 +66,13 @@ class Bool(AbstractXMLDataType):
     @staticmethod
     def serialize(value: bool) -> str:
         return "true" if value else "false"
+
+
+class JID(AbstractXMLDataType):
+    @staticmethod
+    def deserialize(value: str) -> _JID:
+        return _JID.from_string(value)
+
+    @staticmethod
+    def serialize(value: _JID) -> str:
+        return str(value)
