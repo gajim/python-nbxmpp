@@ -25,6 +25,7 @@ from logging import LoggerAdapter
 
 from gi.repository import Gio
 from gi.repository import Soup
+from lxml import etree
 from packaging.version import Version
 
 from nbxmpp.const import GIO_TLS_ERRORS
@@ -47,6 +48,7 @@ from nbxmpp.structs import MessageProperties
 from nbxmpp.structs import PresenceProperties
 from nbxmpp.structs import Properties
 from nbxmpp.third_party import hsluv
+from nbxmpp.types import ETreeElementT
 
 if TYPE_CHECKING:
     from nbxmpp.protocol import Protocol
@@ -485,3 +487,26 @@ def normalize_sha1(value: str) -> str | None:
     if SHA1_RX.fullmatch(value) is None:
         return None
     return value
+
+
+def get_child_namespaces(element: ETreeElementT) -> set[str]:
+    return {etree.QName(ele).namespace for ele in element.iterchildren()}
+
+
+def determine_qname(
+    element: ETreeElementT | None, qname: QName | None, field_name: str
+) -> etree.QName:
+    if element is None:
+        return etree.QName(qname.localname if qname is not None else field_name)
+
+    if qname is None:
+        return etree.QName(element, tag=field_name)
+
+    if not qname.namespace:
+        return etree.QName(element, tag=qname.localname)
+    return qname
+
+
+class QName(etree.QName):
+    def __init__(self, tag: str, namespace: str = "") -> None:
+        super().__init__("{%s}%s" % (namespace, tag))

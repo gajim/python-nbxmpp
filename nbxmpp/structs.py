@@ -59,6 +59,18 @@ if TYPE_CHECKING:
 log = logging.getLogger("nbxmpp.structs")
 
 
+@dataclass(frozen=True, kw_only=True)
+class BaseHandler:
+    phase: str = field(init=False, default="base")
+    name: str
+    callback: Any
+    type: str = ""
+    priority: int = 50
+
+    def get_details(self) -> tuple[str, str, str]:
+        return (self.phase, "{%s}%s" % (Namespace.CLIENT, self.name), self.type or "*")
+
+
 class StanzaHandler(NamedTuple):
     name: str
     callback: Any

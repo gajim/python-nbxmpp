@@ -4,10 +4,13 @@
 
 from typing import Any
 
+import re
 from abc import ABC
 from abc import abstractmethod
 
 from nbxmpp.protocol import JID as _JID
+
+DIGIT_RX = re.compile(r"[+-]?[0-9]*")
 
 
 class AbstractXMLDataType(ABC):
@@ -25,6 +28,8 @@ class AbstractXMLDataType(ABC):
 class Integer(AbstractXMLDataType):
     @staticmethod
     def deserialize(value: str) -> int:
+        if DIGIT_RX.fullmatch(value) is None:
+            raise ValueError(f"Unable to convert {value} to integer")
         return int(value)
 
     @staticmethod

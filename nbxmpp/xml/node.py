@@ -5,8 +5,10 @@
 import typing
 
 import dataclasses
+import logging
 from abc import ABC
 from abc import abstractmethod
+from contextvars import ContextVar
 from dataclasses import _MISSING_TYPE
 from dataclasses import MISSING
 from types import NoneType
@@ -15,12 +17,14 @@ from types import UnionType
 from lxml import etree
 
 from nbxmpp.protocol import JID
+from nbxmpp.types import ETreeElementT
+from nbxmpp.util import determine_qname
+from nbxmpp.util import QName
 
 from . import types
 
 T_ = typing.TypeVar("T_")
 
-ETreeElementT = etree._Element  # type: ignore
 
 XML_DATA_TYPE_CONVERTERS = {
     int: types.Integer,
@@ -37,17 +41,45 @@ XML_DATA_TYPE_CONVERTERS = {
 
 ValueTypeT = int | float | str | bool | JID
 
+logger: ContextVar[logging.Logger] = ContextVar("logger")
+
+logger.set(logging.Logger("test"))
+
+
+def tostring(element: ETreeElementT, pretty_print: bool = False) -> str:
+    etree.indent(element, space="  ")
+    return etree.tostring(element, pretty_print=pretty_print).decode()
+
+
+def find_toplevel(element: ETreeElementT) -> ETreeElementT:
+    toplevel = element
+    for e in element.iterancestors():
+        if e.getparent() is not None:
+            toplevel = element
+    return toplevel
+
+
+def toplevel_to_string(element: ETreeElementT) -> str:
+    return tostring(find_toplevel(element))
+
 
 class XMLNode:
-    TAG: typing.ClassVar[tuple[str, str]] = ("", "")
+    TAG: typing.ClassVar[etree.QName]
 
     @classmethod
     def from_xml(cls: type[T_], xml: str) -> T_:
         element = etree.XML(xml)
         return cls.from_element(element)
 
+    def to_xml(self, pretty: bool = False) -> str:
+        element = self.to_element()
+        return etree.tostring(element, pretty_print=pretty).decode()
+
     @classmethod
     def from_element(cls: type[T_], element: ETreeElementT) -> T_:
+        if etree.QName(element) != cls.TAG:
+            raise ValueError(f"Tag {cls.TAG} does not match element {element.tag}")
+
         values = {}
         for field in dataclasses.fields(cls):
             parser = typing.cast(PropParser, field.metadata.get("parser"))
@@ -57,7 +89,7 @@ class XMLNode:
         return cls(**values)
 
     def to_element(self) -> ETreeElementT:
-        element = etree.Element(self.TAG[0])
+        element = etree.Element(self.TAG)
         for field in dataclasses.fields(self):
             parser = typing.cast(PropParser, field.metadata.get("parser"))
             parser.set_type(field.type)
@@ -74,37 +106,121 @@ class PropParser(ABC):
         self._xml_data_type = xml_data_type
 
     @abstractmethod
-    def deserialize(self, element: ETreeElementT, name: str) -> typing.Any:
+    def deserialize(self, element: ETreeElementT, field_name: str) -> typing.Any:
         raise NotImplementedError
 
     @abstractmethod
-    def serialize(self, element: ETreeElementT, name: str, value: typing.Any) -> None:
+    def serialize(
+        self, element: ETreeElementT, field_name: str, value: typing.Any
+    ) -> None:
         raise NotImplementedError
 
 
-class XMLAttrValue(PropParser):
-    def __init__(self, default: typing.Any | _MISSING_TYPE) -> None:
+class XMLAttr(PropParser):
+    def __init__(
+        self, default: ValueTypeT | None | _MISSING_TYPE, qname: QName | None
+    ) -> None:
         self._default = default
+        self._qname = qname
 
-    def deserialize(self, element: ETreeElementT, name: str) -> ValueTypeT | None:
-        attr = element.get(name)
-        if attr is None:
-            if self._default is MISSING:
-                raise ValueError(f"missing attr {name}")
-            return self._default
-        return self._xml_data_type.deserialize(attr)
+    def deserialize(self, element: ETreeElementT, field_name: str) -> ValueTypeT | None:
+        # Don't inherit namespace from element
+        qname = determine_qname(None, self._qname, field_name)
+        attr = element.get(qname.text)
+        if attr is not None:
+            try:
+                return self._xml_data_type.deserialize(attr)
+            except Exception:
+                logger.get().warning(
+                    "%s\nUnable to convert %r to %s",
+                    toplevel_to_string(element),
+                    attr,
+                    self._xml_data_type,
+                )
+
+        if self._default is MISSING:
+            raise ValueError(f"missing attr {qname}")
+        return self._default
 
     def serialize(
-        self, element: ETreeElementT, name: str, value: ValueTypeT | None
+        self, element: ETreeElementT, field_name: str, value: ValueTypeT | None
     ) -> None:
         if value is None:
             return
-        element.set(name, self._xml_data_type.serialize(value))
+        qname = determine_qname(None, self._qname, field_name)
+        element.set(qname.text, self._xml_data_type.serialize(value))
+
+
+class XMLText(PropParser):
+    def __init__(self, default: ValueTypeT | None | _MISSING_TYPE) -> None:
+        self._default = default
+
+    def deserialize(self, element: ETreeElementT, field_name: str) -> ValueTypeT | None:
+        if text := element.text:
+            try:
+                return self._xml_data_type.deserialize(text)
+            except Exception:
+                logger.get().warning(
+                    "%s\nUnable to convert %r to %s",
+                    toplevel_to_string(element),
+                    text,
+                    self._xml_data_type,
+                )
+
+        if self._default is MISSING:
+            raise ValueError("missing text")
+        return self._default
+
+    def serialize(
+        self, element: ETreeElementT, field_name: str, value: ValueTypeT | None
+    ) -> None:
+        if value is None:
+            return
+        element.text = self._xml_data_type.serialize(value)
+
+
+class XMLPathValue(PropParser):
+    def __init__(self, default: ValueTypeT | None | _MISSING_TYPE, expr: str) -> None:
+        self._default = default
+        self._expr = expr
+
+    def deserialize(self, element: ETreeElementT, field_name: str) -> ValueTypeT | None:
+        values = element.xpath(self._expr)
+        if not isinstance(values, list):
+            raise ValueError(f"Unexpected return type: {values!r}")
+
+        if len(values) > 1:
+            raise ValueError(f"XPath expression returned multiple results: {values!r}")
+
+        if values:
+            try:
+                return self._xml_data_type.deserialize(values[0])
+            except Exception:
+                logger.get().warning(
+                    "%s\nUnable to convert %r to %s",
+                    toplevel_to_string(element),
+                    values[0],
+                    self._xml_data_type,
+                )
+
+        if self._default is MISSING:
+            raise ValueError(f"expr did not find a value {self._expr}")
+        return self._default
+
+    def serialize(
+        self, element: ETreeElementT, field_name: str, value: ValueTypeT | None
+    ) -> None:
+        if value is None:
+            return
+        raise NotImplementedError("Unable to serialize PathValue")
 
 
 class XMLChild(PropParser):
-    def __init__(self, default: None | _MISSING_TYPE = MISSING) -> None:
+    def __init__(
+        self, default: None | _MISSING_TYPE = MISSING, expr: str | None = None
+    ) -> None:
         self._default = default
+        self._expr = expr
 
     def set_type(self, type_: type[XMLNode] | UnionType) -> None:
         if not isinstance(type_, UnionType):
@@ -118,28 +234,52 @@ class XMLChild(PropParser):
 
         raise ValueError(f"Unable to set type for XMLChild: {type_}")
 
-    def deserialize(self, element: ETreeElementT, name: str) -> XMLNode | None:
-        tag, _namespace = self._child_cls.TAG
-        node = element.find(tag)
-        if node is None:
-            if self._default is MISSING:
-                raise ValueError("missing child")
-            return self._default
+    def deserialize(self, element: ETreeElementT, field_name: str) -> XMLNode | None:
+        if self._expr is not None:
+            nodes = element.xpath(self._expr)
+            if not isinstance(nodes, list):
+                raise ValueError(f"Unexpected return type: {nodes!r}")
 
-        assert node is not None
-        return self._child_cls.from_element(node)
+            if len(nodes) > 1:
+                raise ValueError(
+                    f"XPath expression returned multiple results: {nodes!r}"
+                )
+
+            node = nodes[0] if nodes else None
+        else:
+            node = element.find(self._child_cls.TAG)
+
+        if node is not None:
+            try:
+                return self._child_cls.from_element(node)
+            except Exception:
+                logger.get().exception("")
+                logger.get().warning(
+                    "%s\nUnable to parse %s to %s",
+                    toplevel_to_string(element),
+                    node.tag,
+                    self._child_cls,
+                )
+
+        if self._default is MISSING:
+            raise ValueError("missing child")
+        return self._default
 
     def serialize(
-        self, element: ETreeElementT, name: str, value: XMLNode | None
+        self, element: ETreeElementT, field_name: str, value: XMLNode | None
     ) -> None:
+        if self._expr is not None:
+            raise ValueError("Unable to serialize child with expression")
+
         if value is None:
             return
+
         element.append(value.to_element())
 
 
 class XMLChildList(PropParser):
     def __init__(self) -> None:
-        self._xml_node_classes: dict[tuple[str, str], XMLNode] = {}
+        self._xml_node_classes: dict[str, XMLNode] = {}
 
     def set_type(self, type_: typing.Any) -> None:
         if typing.get_origin(type_) is not list:
@@ -149,61 +289,91 @@ class XMLChildList(PropParser):
         for xml_node_cls in typing.get_args(arg):
             self._xml_node_classes[xml_node_cls.TAG] = xml_node_cls
 
-    def deserialize(self, element: ETreeElementT, name: str) -> list[XMLNode]:
+    def deserialize(self, element: ETreeElementT, field_name: str) -> list[XMLNode]:
         nodes: list[XMLNode] = []
         for sub in element:
-            xml_node_cls = self._xml_node_classes.get((sub.tag, ""))
+            xml_node_cls = self._xml_node_classes.get(sub.tag)
             if xml_node_cls is None:
                 continue
-            xml_node = xml_node_cls.from_element(sub)
+            try:
+                xml_node = xml_node_cls.from_element(sub)
+            except Exception:
+                logger.get().warning(
+                    "%s\nUnable to parse %r to %s",
+                    toplevel_to_string(element),
+                    sub.tag,
+                    xml_node_cls,
+                )
+                continue
+
             nodes.append(xml_node)
         return nodes
 
     def serialize(
-        self, element: ETreeElementT, name: str, value: list[XMLNode]
+        self, element: ETreeElementT, field_name: str, value: list[XMLNode]
     ) -> None:
         for xml_node in value:
             element.append(xml_node.to_element())
 
 
 class XMLChildText(PropParser):
-    def __init__(self, default: ValueTypeT | None | _MISSING_TYPE = MISSING) -> None:
+    def __init__(
+        self,
+        default: ValueTypeT | None | _MISSING_TYPE = MISSING,
+        qname: QName | None = None,
+    ) -> None:
         self._default = default
+        self._qname = qname
 
-    def deserialize(self, element: ETreeElementT, name: str) -> ValueTypeT | None:
-        node = element.find(name)
-        if node is None or not node.text:
-            if self._default is MISSING:
-                raise ValueError("missing child value")
-            return self._default
+    def deserialize(self, element: ETreeElementT, field_name: str) -> ValueTypeT | None:
+        qname = determine_qname(element, self._qname, field_name)
+        node = element.find(qname.text)
+        if node is not None and node.text:
+            try:
+                return self._xml_data_type.deserialize(node.text)
+            except Exception:
+                logger.get().warning(
+                    "%s\nUnable to convert %r to %s",
+                    toplevel_to_string(element),
+                    node.text,
+                    self._xml_data_type,
+                )
 
-        return self._xml_data_type.deserialize(node.text)
+        if self._default is MISSING:
+            raise ValueError("missing child value")
+        return self._default
 
     def serialize(
-        self, element: ETreeElementT, name: str, value: ValueTypeT | None
+        self, element: ETreeElementT, field_name: str, value: ValueTypeT | None
     ) -> None:
         if value is None:
             return
-        subelement = etree.SubElement(element, name)
+        qname = determine_qname(element, self._qname, field_name)
+        subelement = etree.SubElement(element, qname)
         subelement.text = self._xml_data_type.serialize(value)
 
 
 class XMLChildFlag(PropParser):
-    def __init__(self, default: bool | _MISSING_TYPE = MISSING) -> None:
+    def __init__(self, default: bool | _MISSING_TYPE, qname: QName | None) -> None:
         self._default = default
+        self._qname = qname
 
-    def deserialize(self, element: ETreeElementT, name: str) -> bool:
-        node = element.find(name)
+    def deserialize(self, element: ETreeElementT, field_name: str) -> bool:
+        qname = determine_qname(element, self._qname, field_name)
+        node = element.find(qname.text)
         if node is None:
             if self._default is MISSING:
                 raise ValueError("missing child")
             return self._default
         return True
 
-    def serialize(self, element: ETreeElementT, name: str, value: ValueTypeT) -> None:
+    def serialize(
+        self, element: ETreeElementT, field_name: str, value: ValueTypeT
+    ) -> None:
         if not value:
             return
-        etree.SubElement(element, name)
+        qname = determine_qname(element, self._qname, field_name)
+        etree.SubElement(element, qname)
 
 
 class ChildConverter(typing.Protocol):
@@ -229,7 +399,7 @@ class ChildAttrGetter(ChildConverter):
         return getattr(element, self._attr)
 
     def serialize(self, element: ETreeElementT, value: typing.Any) -> None:
-        subelement = etree.SubElement(element, self._obj.TAG[0])
+        subelement = etree.SubElement(element, self._obj.TAG)
         for field in dataclasses.fields(self._obj):
             if field.name == self._attr:
                 parser = typing.cast(PropParser, field.metadata.get("parser"))
@@ -248,9 +418,9 @@ class XMLChildValue(PropParser):
         self._default = default
 
     def deserialize(self, element: ETreeElementT, name: str) -> ValueTypeT | None:
-        name = self._child_converter.get_xml_node_cls().TAG[0]
+        tag = self._child_converter.get_xml_node_cls().TAG
 
-        node = element.find(name)
+        node = element.find(tag)
         if node is None:
             if self._default is MISSING:
                 raise ValueError("missing child values")
@@ -286,9 +456,9 @@ class XMLChildValueList(PropParser):
         except AttributeError:
             container_add_method = container.append
 
-        name = self._child_converter.get_xml_node_cls().TAG[0]
+        tag = self._child_converter.get_xml_node_cls().TAG
 
-        nodes = element.findall(name)
+        nodes = element.findall(tag)
         if not nodes:
             if self._required:
                 raise ValueError("missing child values")
@@ -309,61 +479,116 @@ class XMLChildValueList(PropParser):
 
 
 @typing.overload
-def AttrValue(*, default: bool) -> bool: ...
+def Text(*, default: bool) -> bool: ...
 @typing.overload
-def AttrValue(*, default: str) -> str: ...
+def Text(*, default: str) -> str: ...
 @typing.overload
-def AttrValue(*, default: int) -> int: ...
+def Text(*, default: int) -> int: ...
 @typing.overload
-def AttrValue(*, default: float) -> float: ...
+def Text(*, default: float) -> float: ...
 @typing.overload
-def AttrValue(*, default: JID) -> JID: ...
+def Text(*, default: JID) -> JID: ...
 @typing.overload
-def AttrValue(*, default: None) -> typing.Any | None: ...
+def Text(*, default: None) -> typing.Any | None: ...
 @typing.overload
-def AttrValue(*, default: _MISSING_TYPE = ...) -> typing.Any: ...
-def AttrValue(
-    *, default: ValueTypeT | None | _MISSING_TYPE = MISSING
+def Text(*, default: _MISSING_TYPE = ...) -> typing.Any: ...
+def Text(*, default: ValueTypeT | None | _MISSING_TYPE = MISSING) -> typing.Any | None:
+    return dataclasses.field(default=default, metadata={"parser": XMLText(default)})
+
+
+@typing.overload
+def Attr(*, default: bool, qname: QName | None = ...) -> bool: ...
+@typing.overload
+def Attr(*, default: str, qname: QName | None = ...) -> str: ...
+@typing.overload
+def Attr(*, default: int, qname: QName | None = ...) -> int: ...
+@typing.overload
+def Attr(*, default: float, qname: QName | None = ...) -> float: ...
+@typing.overload
+def Attr(*, default: JID, qname: QName | None = ...) -> JID: ...
+@typing.overload
+def Attr(*, default: None, qname: QName | None = ...) -> typing.Any | None: ...
+@typing.overload
+def Attr(*, default: _MISSING_TYPE = ..., qname: QName | None = ...) -> typing.Any: ...
+def Attr(
+    *,
+    default: ValueTypeT | None | _MISSING_TYPE = MISSING,
+    qname: QName | None = None,
 ) -> typing.Any | None:
     return dataclasses.field(
-        default=default, metadata={"parser": XMLAttrValue(default)}
+        default=default, metadata={"parser": XMLAttr(default, qname)}
     )
 
 
 @typing.overload
-def Child(*, default: None) -> typing.Any | None: ...
+def Child(*, default: None, expr: str | None = ...) -> typing.Any | None: ...
 @typing.overload
-def Child(*, default: _MISSING_TYPE = ...) -> typing.Any: ...
-def Child(*, default: None | _MISSING_TYPE = MISSING) -> typing.Any | None:
-    return dataclasses.field(default=default, metadata={"parser": XMLChild(default)})
+def Child(*, default: _MISSING_TYPE = ..., expr: str | None = ...) -> typing.Any: ...
+def Child(
+    *, default: None | _MISSING_TYPE = MISSING, expr: str | None = None
+) -> typing.Any | None:
+    return dataclasses.field(
+        default=default, metadata={"parser": XMLChild(default=default, expr=expr)}
+    )
 
 
-def ChildList() -> typing.Any:
+def ChildList() -> list[typing.Any]:
     return dataclasses.field(metadata={"parser": XMLChildList()})
 
 
 @typing.overload
-def ChildText(*, default: bool) -> bool: ...
+def ChildText(*, default: bool, qname: QName | None = ...) -> bool: ...
 @typing.overload
-def ChildText(*, default: str) -> str: ...
+def ChildText(*, default: str, qname: QName | None = ...) -> str: ...
 @typing.overload
-def ChildText(*, default: int) -> int: ...
+def ChildText(*, default: int, qname: QName | None = ...) -> int: ...
 @typing.overload
-def ChildText(*, default: float) -> float: ...
+def ChildText(*, default: float, qname: QName | None = ...) -> float: ...
 @typing.overload
-def ChildText(*, default: JID) -> JID: ...
+def ChildText(*, default: JID, qname: QName | None = ...) -> JID: ...
 @typing.overload
-def ChildText(*, default: None) -> typing.Any | None: ...
+def ChildText(*, default: None, qname: QName | None = ...) -> typing.Any | None: ...
 @typing.overload
-def ChildText(*, default: _MISSING_TYPE = ...) -> typing.Any: ...
 def ChildText(
-    *, default: ValueTypeT | None | _MISSING_TYPE = MISSING
+    *, default: _MISSING_TYPE = ..., qname: QName | None = ...
+) -> typing.Any: ...
+def ChildText(
+    *, default: ValueTypeT | None | _MISSING_TYPE = MISSING, qname: QName | None = None
 ) -> typing.Any | None:
     return dataclasses.field(
-        default=default, metadata={"parser": XMLChildText(default)}
+        default=default, metadata={"parser": XMLChildText(default, qname)}
     )
 
 
+def ChildFlag(
+    default: bool | _MISSING_TYPE = MISSING, qname: QName | None = None
+) -> bool:
+    return dataclasses.field(metadata={"parser": XMLChildFlag(default, qname)})
+
+
+@typing.overload
+def PathValue(*, default: bool, expr: str) -> bool: ...
+@typing.overload
+def PathValue(*, default: str, expr: str) -> str: ...
+@typing.overload
+def PathValue(*, default: int, expr: str) -> int: ...
+@typing.overload
+def PathValue(*, default: float, expr: str) -> float: ...
+@typing.overload
+def PathValue(*, default: JID, expr: str) -> JID: ...
+@typing.overload
+def PathValue(*, default: None, expr: str) -> typing.Any | None: ...
+@typing.overload
+def PathValue(*, default: _MISSING_TYPE = ..., expr: str) -> typing.Any: ...
+def PathValue(
+    *, default: ValueTypeT | None | _MISSING_TYPE = MISSING, expr: str
+) -> typing.Any:
+    return dataclasses.field(
+        default=default, metadata={"parser": XMLPathValue(default, expr)}
+    )
+
+
+# TODO: are they needed?
 def ChildValue(
     child_converter: ChildConverter,
     default: ValueTypeT | None | _MISSING_TYPE = MISSING,
@@ -381,13 +606,9 @@ def ChildValueList(
     )
 
 
-def ChildFlag(default: bool | _MISSING_TYPE = MISSING) -> bool:
-    return dataclasses.field(metadata={"parser": XMLChildFlag(default)})
-
-
 @typing.dataclass_transform(
     field_specifiers=(
-        AttrValue,
+        Attr,
         Child,
         ChildList,
         ChildText,

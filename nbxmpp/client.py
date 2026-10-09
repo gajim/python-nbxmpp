@@ -28,6 +28,7 @@ from nbxmpp.const import Mode
 from nbxmpp.const import StreamError
 from nbxmpp.const import StreamState
 from nbxmpp.dispatcher import StanzaDispatcher
+from nbxmpp.dispatcher2 import Dispatcher
 from nbxmpp.modules.ogp import OpenGraph
 from nbxmpp.modules.search import Search
 from nbxmpp.namespaces import Namespace
@@ -197,7 +198,7 @@ class Client(Observable):
 
         self._tasks: list[Task] = []
 
-        self._dispatcher = StanzaDispatcher(self)
+        self._dispatcher = Dispatcher(self)
         self._dispatcher.subscribe("before-dispatch", self._on_before_dispatch)
         self._dispatcher.subscribe("parsing-error", self._on_parsing_error)
         self._dispatcher.subscribe("stream-end", self._on_stream_end)
