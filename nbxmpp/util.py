@@ -11,10 +11,8 @@ from typing import Literal
 from typing import TYPE_CHECKING
 
 import base64
-import binascii
 import hashlib
 import logging
-import os
 import re
 import uuid
 import xml.etree.ElementTree as ET
@@ -353,10 +351,6 @@ def utf8_decode(data: bytes) -> tuple[str, bytes]:
                 continue
             return data[:i].decode(), data[i:]
         raise
-
-
-def get_rand_number() -> int:
-    return int(binascii.hexlify(os.urandom(6)), 16)
 
 
 def get_invalid_xml_regex() -> re.Pattern[str]:
