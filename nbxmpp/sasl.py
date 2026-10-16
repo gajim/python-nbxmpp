@@ -13,7 +13,7 @@ import binascii
 import hashlib
 import hmac
 import logging
-import os
+import secrets
 from hashlib import pbkdf2_hmac
 
 from gi.repository import Gio
@@ -384,7 +384,7 @@ class SCRAM(BaseMechanism):
         BaseMechanism.__init__(self, *args, **kwargs)
         self._channel_binding_data: ChannelBindingData | None = None
         self._gs2_header = "n,,"
-        self._client_nonce = "%x" % int(binascii.hexlify(os.urandom(24)), 16)
+        self._client_nonce = binascii.hexlify(secrets.token_bytes(32)).decode()
         self._client_first_message_bare = None
         self._server_signature = None
 
