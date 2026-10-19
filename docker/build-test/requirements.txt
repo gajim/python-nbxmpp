@@ -1,0 +1,12 @@
+setuptools
+PyGObject
+precis-i18n
+packaging
+gssapi
+idna
+isort==7.0.0
+twine
+coverage
+ruff==0.14.8
+black==24.10.0
+git+https://gitlab.com/gajim/release-helper.git
