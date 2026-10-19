@@ -136,5 +136,5 @@ build-docker-image:
     - docker:29.9.1-dind-alpine3.24
   script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY -u $CI_REGISTRY_USER --password-stdin
-    - docker build -t $CI_REGISTRY/gajim/gajim/$DOCKER_IMAGE:latest docker/$DOCKER_IMAGE
-    - docker push $CI_REGISTRY/gajim/gajim/$DOCKER_IMAGE:latest
+    - docker build -t $CI_REGISTRY/gajim/python-nbxmpp/$DOCKER_IMAGE:latest docker/$DOCKER_IMAGE
+    - docker push $CI_REGISTRY/gajim/python-nbxmpp/$DOCKER_IMAGE:latest
