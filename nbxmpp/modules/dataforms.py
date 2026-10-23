@@ -360,7 +360,7 @@ class StringField(DataField):
     def value(self, value: str) -> None:
         if value is None:  # type: ignore
             value = ""
-        self.setTagData("value", value)
+        self.setTagData("value", value.strip())
 
     @value.deleter
     def value(self) -> None:
