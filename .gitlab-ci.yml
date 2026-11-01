@@ -110,18 +110,18 @@ deploy-debian-nightly:
         debian_build
 
 publish-release:
-  image: registry.gitlab.com/gajim/python-nbxmpp/publish:latest
+  image: registry.gitlab.com/gitlab-org/cli:v1.119.0
   stage: publish
   dependencies: []
+  variables:
+    GITLAB_TOKEN: '$CI_RELEASE_TOKEN'
+    GITLAB_HOST: gitlab.com
   rules:
     - if: '$CI_COMMIT_TAG'
-  script:
-    - >
-      release-helper create-release \
-        $CI_PROJECT_ID \
-        $CI_RELEASE_TOKEN \
-        --version=$CI_COMMIT_TAG \
-        --tag=$CI_COMMIT_TAG
+  release:
+    name: '$CI_COMMIT_TAG'
+    description: '$CI_COMMIT_TAG'
+    tag_name: '$CI_COMMIT_TAG'
 
 build-docker-image:
   image: docker:29.9.1-cli-alpine3.24
