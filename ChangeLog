@@ -1,3 +1,17 @@
+nbxmpp 7.5.0 (23 Oct 2026)
+
+  New
+
+  * Add Jabber Search (XEP-0055)
+
+  Improvements
+
+  * UserAvatar: Be more strict when parsing metadata node
+
+  Bug Fixes
+
+  * Dataform: Strip whitespace from single string fields
+
 nbxmpp 7.4.0 (26 Aug 2026)
 
   New
