@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import hashlib
+import re
 from dataclasses import dataclass
 
 from nbxmpp.errors import StanzaError
@@ -24,6 +25,9 @@ from nbxmpp.util import from_xs_boolean
 
 if TYPE_CHECKING:
     from nbxmpp.client import Client
+
+
+SECURITY_LABEL_COLOR_RX = re.compile(r"#[0-9a-fA-F]{3,8}|[a-zA-Z]{1,32}")
 
 
 class SecurityLabels(BaseModule):
@@ -124,10 +128,19 @@ class Displaymarking:
 
     @classmethod
     def from_node(cls, node: Node) -> Displaymarking:
+        fg_color = node.getAttr("fgcolor") or ""
+        bg_color = node.getAttr("bgcolor") or ""
+
+        if SECURITY_LABEL_COLOR_RX.fullmatch(fg_color) is None:
+            fg_color = "#000"
+
+        if SECURITY_LABEL_COLOR_RX.fullmatch(bg_color) is None:
+            bg_color = "#FFF"
+
         return cls(
             name=node.getData(),
-            fgcolor=node.getAttr("fgcolor") or "#000",
-            bgcolor=node.getAttr("bgcolor") or "#FFF",
+            fgcolor=fg_color,
+            bgcolor=bg_color,
         )
 
 
