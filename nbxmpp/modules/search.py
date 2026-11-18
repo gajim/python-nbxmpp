@@ -84,10 +84,9 @@ class Search(BaseModule):
 
         dataform = query.getTag("x", namespace=Namespace.DATA)
         if dataform is None:
-            yield finalize(_task, MultipleDataForm(extend=dataform))
-
-        else:
             raise MalformedStanzaError("only dataforms supported", response)
+
+        yield finalize(_task, MultipleDataForm(extend=dataform))
 
 
 def parse_simple_fields(query: Node) -> SearchFields:
