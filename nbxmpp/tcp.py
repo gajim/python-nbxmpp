@@ -360,6 +360,7 @@ class TCPConnection(Connection):
                 self._log.info(error)
         self._input_closed = True
         self._output_closed = True
+        self._read_cancellable.cancel()
         self.state = TCPState.DISCONNECTED
         self.notify(signal_name)
         self.destroy()
