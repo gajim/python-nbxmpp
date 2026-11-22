@@ -628,8 +628,7 @@ class Client(Observable):
 
     def _on_disconnected(self, _connection: Connection, _signal_name: str) -> None:
         self.state = StreamState.DISCONNECTED
-        for task in self._tasks:
-            task.cancel()
+        self.cancel_tasks()
         self._reset_stream()
         self.notify("disconnected")
 
@@ -1165,9 +1164,12 @@ class Client(Observable):
     def unregister_handler(self, *args: Any, **kwargs: Any) -> None:
         self._dispatcher.unregister_handler(*args, **kwargs)
 
-    def destroy(self) -> None:
+    def cancel_tasks(self) -> None:
         for task in self._tasks:
             task.cancel()
+
+    def destroy(self) -> None:
+        self.cancel_tasks()
         self._smacks = None
         self._sasl = None
         self._dispatcher.cleanup()
