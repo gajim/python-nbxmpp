@@ -92,6 +92,7 @@ from nbxmpp.protocol import StreamErrorNode
 from nbxmpp.simplexml import Node
 from nbxmpp.simplexml import NodeBuilder
 from nbxmpp.structs import StanzaHandler
+from nbxmpp.util import get_module_name
 from nbxmpp.util import get_properties_struct
 from nbxmpp.util import INVALID_XML_RX
 from nbxmpp.util import is_websocket_close
@@ -762,8 +763,13 @@ class StanzaDispatcher(Observable):
         self, chain: Any, stanza: Protocol, properties: Any
     ) -> None:
 
+        # This is a hot path, try not to execute uncessecary logging calls
+        log_chain = self._log.getEffectiveLevel() <= logging.INFO
+
         for handler in chain:
-            self._log.info("Call handler: %s", handler["func"].__qualname__)
+            if log_chain:
+                self._log.info("Call handler: %s", get_module_name(handler["func"]))
+
             try:
                 handler["func"](self._client, stanza, properties)
             except NodeProcessed:

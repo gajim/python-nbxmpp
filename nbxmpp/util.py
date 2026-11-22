@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 import base64
 import hashlib
+import inspect
 import logging
 import re
 import uuid
@@ -479,3 +480,11 @@ def normalize_sha1(value: str) -> str | None:
     if SHA1_RX.fullmatch(value) is None:
         return None
     return value
+
+
+def get_module_name(obj: Any) -> str:
+    qname = obj.__qualname__
+    module_name = inspect.getmodule(obj)
+    if module_name is None:
+        return qname
+    return f"{module_name.__name__}.{qname}"
